@@ -1,6 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany } from 'typeorm';
 import { Series } from '../series/series.entity';
 import { Character } from '../characters/character.entity';
+import { Media } from '../media/media.entity';
 
 @Entity()
 export class Arc {
@@ -18,4 +19,7 @@ export class Arc {
 
   @OneToMany(() => Character, character => character.arc)
   characters: Character[];
+
+  @OneToMany(() => Media, media => media.arc, {nullable: true, cascade: true })
+  media: Media[];
 }

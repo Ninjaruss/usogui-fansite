@@ -1,7 +1,8 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, ManyToMany, JoinTable } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, ManyToMany, JoinTable } from 'typeorm';
 import { Arc } from '../arcs/arc.entity';
 import { Character } from '../characters/character.entity';
 import { Series } from '../series/series.entity';
+import { Media } from '../media/media.entity';
 
 @Entity()
 export class Event {
@@ -29,4 +30,7 @@ export class Event {
 
   @ManyToOne(() => Series, series => series.id)
   series: Series;
+
+  @OneToMany(() => Media, media => media.event, {nullable: true, cascade: true })
+  media: Media[];
 }
