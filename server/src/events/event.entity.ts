@@ -3,6 +3,8 @@ import { Arc } from '../arcs/arc.entity';
 import { Character } from '../characters/character.entity';
 import { Series } from '../series/series.entity';
 import { Media } from '../media/media.entity';
+import { User } from '../users/user.entity';
+import { Tag } from '../tags/tag.entity';
 
 @Entity()
 export class Event {
@@ -33,4 +35,10 @@ export class Event {
 
   @OneToMany(() => Media, media => media.event, {nullable: true, cascade: true })
   media: Media[];
+
+  @ManyToOne(() => User, user => user.submittedEvents, { nullable: true })
+createdBy: User;
+
+  @ManyToMany(() => Tag, tag => tag.events, { nullable: true })
+  tags: Tag[];
 }

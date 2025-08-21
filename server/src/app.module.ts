@@ -6,6 +6,9 @@ import { CharactersModule } from './characters/characters.module';
 import { ChaptersModule } from './chapters/chapters.module';
 import { EventsModule } from './events/events.module';
 import { ChapterSpoilersModule } from './chapter_spoilers/chapter_spoilers.module'; // updated
+import { UsersModule } from './users/users.module';
+import { FactionsModule } from './factions/factions.module';
+import { TagsModule } from './tags/tags.module';
 
 @Module({
   imports: [
@@ -25,7 +28,10 @@ import { ChapterSpoilersModule } from './chapter_spoilers/chapter_spoilers.modul
     CharactersModule,
     ChaptersModule,
     EventsModule,
-    ChapterSpoilersModule,       // updated
+    ChapterSpoilersModule,
+    UsersModule,
+    FactionsModule,
+    TagsModule,       // updated
   ],
 })
 export class AppModule {}

@@ -1,7 +1,8 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, ManyToMany } from 'typeorm';
 import { Arc } from '../arcs/arc.entity';
 import { Series } from '../series/series.entity';
 import { Media } from '../media/media.entity';
+import { Faction } from '../factions/faction.entity';
 
 @Entity()
 export class Character {
@@ -22,4 +23,8 @@ export class Character {
 
   @OneToMany(() => Media, media => media.character, {nullable: true, cascade: true })
   media: Media[];
+
+  @ManyToMany(() => Faction, faction => faction.characters, { nullable: true })
+  factions: Faction[];
+
 }
