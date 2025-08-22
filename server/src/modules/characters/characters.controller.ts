@@ -1,8 +1,13 @@
-import { Controller, Get, Post, Put, Delete, Param, Body, NotFoundException, Query, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Param, Body, NotFoundException, Query, UseGuards } from '@nestjs/common';
 import { CharactersService } from './characters.service';
 import { Character } from '../../entities/character.entity';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { UserRole } from '../../entities/user.entity';
 
 @Controller('characters')
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class CharactersController {
   constructor(private readonly service: CharactersService) {}
 
@@ -33,11 +38,13 @@ export class CharactersController {
   }
 
   @Post()
+  @Roles(UserRole.MODERATOR, UserRole.ADMIN)
   create(@Body() data: Partial<Character>) {
     return this.service.create(data);
   }
 
   @Put(':id')
+  @Roles(UserRole.MODERATOR, UserRole.ADMIN)
   async update(@Param('id') id: number, @Body() data: Partial<Character>) {
     const result = await this.service.update(id, data);
     if (result.affected === 0) {
@@ -47,6 +54,7 @@ export class CharactersController {
   }
 
   @Delete(':id')
+  @Roles(UserRole.MODERATOR, UserRole.ADMIN)
   async remove(@Param('id') id: number) {
     const result = await this.service.remove(id);
     if (result.affected === 0) {

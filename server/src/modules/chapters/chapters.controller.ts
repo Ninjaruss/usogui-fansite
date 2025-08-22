@@ -1,9 +1,13 @@
-import { Controller, Get, Post, Put, Delete, Param, Body, NotFoundException, Query, UsePipes, ValidationPipe } from '@nestjs/common';
-// ...existing code...
+import { Controller, Get, Post, Put, Delete, Param, Body, NotFoundException, Query, UseGuards } from '@nestjs/common';
 import { ChaptersService } from './chapters.service';
 import { Chapter } from '../../entities/chapter.entity';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { UserRole } from '../../entities/user.entity';
 
 @Controller('chapters')
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class ChaptersController {
   constructor(private readonly service: ChaptersService) {}
 
@@ -34,13 +38,13 @@ export class ChaptersController {
   }
 
   @Post()
-  @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
+  @Roles(UserRole.MODERATOR, UserRole.ADMIN)
   create(@Body() data: Partial<Chapter>) {
     return this.service.create(data);
   }
 
   @Put(':id')
-  @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
+  @Roles(UserRole.MODERATOR, UserRole.ADMIN)
   async update(@Param('id') id: number, @Body() data: Partial<Chapter>) {
     const result = await this.service.update(id, data);
     if (result.affected === 0) {
@@ -50,6 +54,7 @@ export class ChaptersController {
   }
 
   @Delete(':id')
+  @Roles(UserRole.MODERATOR, UserRole.ADMIN)
   async remove(@Param('id') id: number) {
     const result = await this.service.remove(id);
     if (result.affected === 0) {

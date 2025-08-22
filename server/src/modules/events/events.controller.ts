@@ -1,9 +1,13 @@
-import { Controller, Get, Post, Put, Delete, Param, Body, NotFoundException, Query, UsePipes, ValidationPipe } from '@nestjs/common';
-// ...existing code...
+import { Controller, Get, Post, Put, Delete, Param, Body, NotFoundException, Query, UseGuards } from '@nestjs/common';
 import { EventsService } from './events.service';
 import { Event } from '../../entities/event.entity';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { UserRole } from '../../entities/user.entity';
 
 @Controller('events')
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class EventsController {
   constructor(private readonly service: EventsService) {}
 
@@ -34,13 +38,13 @@ export class EventsController {
   }
 
   @Post()
-  @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
+  @Roles(UserRole.MODERATOR, UserRole.ADMIN)
   create(@Body() data: Partial<Event>) {
     return this.service.create(data);
   }
 
   @Put(':id')
-  @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
+  @Roles(UserRole.MODERATOR, UserRole.ADMIN)
   async update(@Param('id') id: number, @Body() data: Partial<Event>) {
     const result = await this.service.update(id, data);
     if (result.affected === 0) {
@@ -50,6 +54,7 @@ export class EventsController {
   }
 
   @Delete(':id')
+  @Roles(UserRole.MODERATOR, UserRole.ADMIN)
   async remove(@Param('id') id: number) {
     const result = await this.service.remove(id);
     if (result.affected === 0) {
