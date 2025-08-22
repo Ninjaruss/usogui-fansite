@@ -1,49 +1,8 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, ManyToOne, OneToMany, JoinTable, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 import { Character } from './character.entity';
 import { Chapter } from './chapter.entity';
-
-@Entity()
-export class GambleTeam {
-  @PrimaryGeneratedColumn()
-  id: number;
-
-  @Column()
-  name: string;
-
-  @ManyToOne(() => Gamble, gamble => gamble.teams)
-  gamble: Gamble;
-
-  @ManyToMany(() => Character)
-  @JoinTable({ name: 'gamble_team_members' })
-  members: Character[];
-
-  @Column({ type: 'text', nullable: true })
-  stake?: string;
-}
-
-@Entity()
-export class GambleRound {
-  @PrimaryGeneratedColumn()
-  id: number;
-
-  @Column()
-  roundNumber: number;
-
-  @ManyToOne(() => Gamble, gamble => gamble.rounds)
-  gamble: Gamble;
-
-  @ManyToOne(() => GambleTeam, { nullable: true })
-  winner?: GambleTeam;
-
-  @Column({ type: 'text' })
-  outcome: string;
-
-  @Column({ type: 'text', nullable: true })
-  reward?: string;
-
-  @Column({ type: 'text', nullable: true })
-  penalty?: string;
-}
+import { GambleTeam } from './gamble-team.entity';
+import { GambleRound } from './gamble-round.entity';
 
 @Entity()
 export class Gamble {

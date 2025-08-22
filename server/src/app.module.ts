@@ -15,6 +15,7 @@ import { TagsModule } from './modules/tags/tags.module';
 import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { TranslationsModule } from './modules/translations/translations.module';
+import { GamblesModule } from './modules/gambles/gambles.module';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { TranslationsModule } from './modules/translations/translations.module';
     UsersModule, 
     AuthModule,
     TranslationsModule,
+    GamblesModule,
   ],
 })
 export class AppModule {}

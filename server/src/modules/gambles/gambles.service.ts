@@ -1,7 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Gamble, GambleTeam, GambleRound } from '../../entities/gamble.entity';
+import { Gamble } from '../../entities/gamble.entity';
+import { GambleTeam } from '../../entities/gamble-team.entity';
+import { GambleRound } from '../../entities/gamble-round.entity';
 import { Character } from '../../entities/character.entity';
 import { Chapter } from '../../entities/chapter.entity';
 import { CreateGambleDto, CreateGambleTeamDto, CreateGambleRoundDto } from './dtos/create-gamble.dto';
