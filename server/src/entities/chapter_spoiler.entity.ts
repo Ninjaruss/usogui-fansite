@@ -1,6 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, ManyToOne, Column, CreateDateColumn, UpdateDateColumn, ManyToMany, JoinTable } from 'typeorm';
 import { Event } from './event.entity';
 import { Chapter } from './chapter.entity';
+import { Character } from './character.entity';
 
 export enum SpoilerLevel {
   REVEAL = 'reveal',      // Story revelations about past events or character backgrounds
@@ -57,6 +58,18 @@ export class ChapterSpoiler {
 
   @Column({ default: false })
   isVerified: boolean;
+
+  // Characters affected by this spoiler
+  @ManyToMany(() => Character)
+  @JoinTable({ name: 'chapter_spoiler_characters' })
+  affectedCharacters: Character[];
+
+  // Character death information
+  @Column('boolean', { nullable: true })
+  isDeathSpoiler: boolean;
+
+  @Column('text', { nullable: true })
+  deathContext: string;
 
   // The minimum chapter number required to safely view this spoiler
   @Column({ type: 'int' })

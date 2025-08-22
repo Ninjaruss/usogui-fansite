@@ -12,11 +12,33 @@ export class Character {
   @Column()
   name: string;
 
+  @Column({ type: 'simple-array', nullable: true })
+  alternateNames: string[]; // For aliases or nicknames shown in manga
+
   @Column({ type: 'text', nullable: true })
   description: string;
 
+  // First appearance information
+  @Column({ nullable: true })
+  firstAppearanceChapter: number;
+
+  // Character relationships/roles that are explicitly shown
+  @Column({ type: 'simple-array', nullable: true })
+  notableRoles: string[]; // e.g., ["Kakerou Company CEO", "Professional Gambler"]
+
+  @Column({ type: 'simple-array', nullable: true })
+  notableGames: string[]; // Games they've participated in
+
+  // Basic factual info that appears in manga
+  @Column({ nullable: true })
+  occupation: string;
+
+  @Column({ type: 'simple-array', nullable: true })
+  affiliations: string[]; // Organizations/groups mentioned besides factions
+
+  // Relationships
   @ManyToOne(() => Arc, arc => arc.characters, { nullable: true })
-  arc: Arc;
+  arc: Arc; // First major arc appearance
 
   @ManyToOne(() => Series, series => series.id)
   series: Series;
