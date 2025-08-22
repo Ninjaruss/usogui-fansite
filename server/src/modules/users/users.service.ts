@@ -2,7 +2,8 @@ import { Injectable, ConflictException, NotFoundException, BadRequestException }
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
-import { User } from '../../entities/user.entity';
+import { User, UserRole } from '../../entities/user.entity';
+import { Media, MediaStatus } from '../../entities/media.entity';
 import { randomBytes } from 'crypto';
 import { addHours } from 'date-fns';
 
@@ -19,6 +20,68 @@ export class UsersService {
     const user = await this.repo.findOne({ where: { id } });
     if (!user) throw new NotFoundException('User not found');
     return user;
+  }
+
+  async getUserStats() {
+    const stats = await this.repo
+      .createQueryBuilder('user')
+      .select('user.role', 'role')
+      .addSelect('COUNT(*)', 'count')
+      .groupBy('user.role')
+      .getRawMany();
+
+    const totalUsers = stats.reduce((acc, curr) => acc + parseInt(curr.count), 0);
+    const verifiedUsers = await this.repo.count({ where: { isEmailVerified: true } });
+
+    return {
+      totalUsers,
+      verifiedUsers,
+      roleDistribution: stats,
+      registrationsByMonth: await this.getRegistrationsByMonth()
+    };
+  }
+
+  async getUserActivity(id: number) {
+    const user = await this.findOne(id);
+    if (!user) {
+      throw new NotFoundException(`User with id ${id} not found`);
+    }
+
+    // Get media submissions
+    const mediaRepo = this.repo.manager.getRepository(Media);
+    const mediaStats = await mediaRepo
+      .createQueryBuilder('media')
+      .where('media.submittedBy = :userId', { userId: id })
+      .select('media.status', 'status')
+      .addSelect('COUNT(*)', 'count')
+      .groupBy('media.status')
+      .getRawMany();
+
+    return {
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+        isEmailVerified: user.isEmailVerified,
+        createdAt: user.createdAt
+      },
+      mediaActivity: {
+        total: mediaStats.reduce((acc, curr) => acc + parseInt(curr.count), 0),
+        byStatus: mediaStats
+      }
+    };
+  }
+
+  private async getRegistrationsByMonth() {
+    return this.repo
+      .createQueryBuilder('user')
+      .select("DATE_TRUNC('month', user.createdAt)", 'month')
+      .addSelect('COUNT(*)', 'count')
+      .groupBy('month')
+      .orderBy('month', 'DESC')
+      .limit(12)
+      .getRawMany();
   }
 
   async findByUsername(username: string): Promise<User | null> {
@@ -120,7 +183,9 @@ export class UsersService {
 
   // --- Delete user ---
   async deleteUser(id: number): Promise<void> {
-    await this.repo.delete(id);
+    const user = await this.findOne(id);
+    // findOne already throws NotFoundException if user not found
+    await this.repo.remove(user);
   }
 
   // --- Aliases for controller ---
@@ -132,7 +197,7 @@ export class UsersService {
     return this.updateUser(id, data);
   }
 
-  remove(id: number) {
+  remove(id: number): Promise<void> {
     return this.deleteUser(id);
   }
 }

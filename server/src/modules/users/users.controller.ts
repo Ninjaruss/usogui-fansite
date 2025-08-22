@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Post, Body, Put, Delete, Query, ParseIntPipe, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Post, Body, Put, Delete, Query, ParseIntPipe, UseGuards, NotFoundException } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { User } from '../../entities/user.entity';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -32,9 +32,23 @@ export class UsersController {
     return this.service.update(id, data);
   }
 
-  @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
-    return this.service.remove(id);
+    @Delete(':id')
+  @Roles(UserRole.ADMIN)
+  async remove(@Param('id', ParseIntPipe) id: number) {
+    await this.service.remove(id);
+    return { message: 'Deleted successfully' };
+  }
+
+  @Get('stats')
+  @Roles(UserRole.ADMIN)
+  async getUserStats() {
+    return this.service.getUserStats();
+  }
+
+  @Get(':id/activity')
+  @Roles(UserRole.ADMIN)
+  async getUserActivity(@Param('id') id: number) {
+    return this.service.getUserActivity(id);
   }
 
   // --- Password reset endpoints ---

@@ -1,7 +1,14 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, ManyToMany } from 'typeorm';
 import { Arc } from './arc.entity';
 import { Character } from './character.entity';
 import { Event } from './event.entity';
+import { User } from './user.entity';
+
+export enum MediaStatus {
+  PENDING = 'pending',
+  APPROVED = 'approved',
+  REJECTED = 'rejected'
+}
 
 @Entity()
 export class Media {
@@ -26,4 +33,16 @@ export class Media {
   
   @ManyToOne(() => Event, event => event.media, { onDelete: 'CASCADE', nullable: true  })
   event: Event;
+
+  @Column({ type: 'enum', enum: MediaStatus, default: MediaStatus.PENDING })
+  status: MediaStatus;
+
+  @Column({ nullable: true })
+  rejectionReason: string;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @ManyToOne(() => User, { nullable: false })
+  submittedBy: User;
 }
