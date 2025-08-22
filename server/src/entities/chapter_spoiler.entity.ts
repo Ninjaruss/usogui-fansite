@@ -2,6 +2,7 @@ import { Entity, PrimaryGeneratedColumn, ManyToOne, Column, CreateDateColumn, Up
 import { Event } from './event.entity';
 import { Chapter } from './chapter.entity';
 import { Character } from './character.entity';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export enum SpoilerLevel {
   REVEAL = 'reveal',      // Story revelations about past events or character backgrounds
@@ -30,15 +31,24 @@ export enum SpoilerCategory {
 
 @Entity()
 export class ChapterSpoiler {
+  @ApiProperty({ description: 'Unique identifier for the spoiler' })
   @PrimaryGeneratedColumn()
   id: number;
 
+  @ApiPropertyOptional({ description: 'Associated event', type: () => Event })
   @ManyToOne(() => Event, event => event.id)
   event: Event;
 
+  @ApiProperty({ description: 'Chapter where this spoiler occurs', type: () => Chapter })
   @ManyToOne(() => Chapter, chapter => chapter.id)
   chapter: Chapter;
 
+  @ApiProperty({ 
+    description: 'Severity level of the spoiler',
+    enum: SpoilerLevel,
+    default: SpoilerLevel.REVEAL,
+    example: SpoilerLevel.REVEAL
+  })
   @Column({
     type: 'enum',
     enum: SpoilerLevel,
@@ -46,6 +56,12 @@ export class ChapterSpoiler {
   })
   level: SpoilerLevel;
 
+  @ApiProperty({
+    description: 'Category of the spoiler',
+    enum: SpoilerCategory,
+    default: SpoilerCategory.PLOT,
+    example: SpoilerCategory.PLOT
+  })
   @Column({
     type: 'enum',
     enum: SpoilerCategory,

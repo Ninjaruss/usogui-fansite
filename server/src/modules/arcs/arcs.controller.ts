@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Put, Delete, Param, Body, NotFoundException, Query, UsePipes, ValidationPipe } from '@nestjs/common';
-// ...existing code...
 import { ArcsService } from './arcs.service';
 import { Arc } from '../../entities/arc.entity';
+import { CreateArcDto } from './dto/create-arc.dto';
 
 @Controller('arcs')
 export class ArcsController {
@@ -34,8 +34,8 @@ export class ArcsController {
 
   @Post()
   @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
-  create(@Body() data: Partial<Arc>) {
-    return this.service.create(data);
+  create(@Body() createArcDto: CreateArcDto) {
+    return this.service.create(createArcDto);
   }
 
   @Put(':id')

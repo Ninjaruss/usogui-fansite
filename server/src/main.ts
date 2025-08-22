@@ -1,9 +1,10 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
-import { GlobalExceptionFilter } from './filters/global-exception.filter';
+import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
 import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -27,6 +28,38 @@ async function bootstrap() {
   );
 
   // Special rate limit for auth routes
+  app.use('/auth', rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    max: 5, // limit each IP to 5 login requests per hour
+    message: 'Too many login attempts, please try again later',
+  }));
+
+  // Global validation pipe
+  app.useGlobalPipes(new ValidationPipe({
+    transform: true,
+    whitelist: true,
+    forbidNonWhitelisted: true,
+  }));
+
+  // Global exception filter
+  app.useGlobalFilters(new GlobalExceptionFilter());
+
+  // API Documentation
+  const config = new DocumentBuilder()
+    .setTitle('Usogui Fansite API')
+    .setDescription('API documentation for Usogui fansite')
+    .setVersion('1.0')
+    .addBearerAuth()
+    .addTag('characters', 'Character management')
+    .addTag('chapters', 'Chapter management')
+    .addTag('spoilers', 'Spoiler management')
+    .addTag('series', 'Series information')
+    .addTag('events', 'Event management')
+    .addTag('factions', 'Faction management')
+    .addTag('auth', 'Authentication')
+    .addTag('users', 'User management')
+    .addTag('translations', 'Content translations')
+    .build();
   app.use('/auth', 
     rateLimit({
       windowMs: 15 * 60 * 1000, // 15 minutes

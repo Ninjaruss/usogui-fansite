@@ -1,6 +1,7 @@
 import { Controller, Get, Post, Put, Delete, Param, Body, NotFoundException, Query, UseGuards } from '@nestjs/common';
 import { ChaptersService } from './chapters.service';
 import { Chapter } from '../../entities/chapter.entity';
+import { CreateChapterDto } from './dto/create-chapter.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -39,8 +40,8 @@ export class ChaptersController {
 
   @Post()
   @Roles(UserRole.MODERATOR, UserRole.ADMIN)
-  create(@Body() data: Partial<Chapter>) {
-    return this.service.create(data);
+  create(@Body() createChapterDto: CreateChapterDto) {
+    return this.service.create(createChapterDto);
   }
 
   @Put(':id')

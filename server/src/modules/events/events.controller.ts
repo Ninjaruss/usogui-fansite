@@ -1,6 +1,7 @@
 import { Controller, Get, Post, Put, Delete, Param, Body, NotFoundException, Query, UseGuards } from '@nestjs/common';
 import { EventsService } from './events.service';
 import { Event } from '../../entities/event.entity';
+import { CreateEventDto } from './dto/create-event.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -39,8 +40,8 @@ export class EventsController {
 
   @Post()
   @Roles(UserRole.MODERATOR, UserRole.ADMIN)
-  create(@Body() data: Partial<Event>) {
-    return this.service.create(data);
+  create(@Body() createEventDto: CreateEventDto) {
+    return this.service.create(createEventDto);
   }
 
   @Put(':id')

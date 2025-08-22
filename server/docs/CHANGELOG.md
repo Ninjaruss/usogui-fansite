@@ -2,11 +2,15 @@
 
 ## 2025-08-22
 ### Changes
+- Support for Japanese translated database via translation module
 - Added additional character details (firstChapter, alternate names, roles, etc)
 - Included chapter spoiler for deaths 
+- OpenAPI decorators for all API routes
 
 ### Notes
 - Translation setup for Japanese made; however, will need to manually input translations in the admin panel. Considering AI translation for any missing translations.
+- Default language is English, can fetch translation via -jp in request. Translation module allows for us to keep using backend without worrying for missing translations
+- create-character.dto and similar files are made to specify the entity DTO, allowing us to implement pagination and filtering. Recommended if route needs validation.
 
 
 ## 2025-08-21

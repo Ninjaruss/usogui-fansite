@@ -3,49 +3,93 @@ import { Arc } from './arc.entity';
 import { Series } from './series.entity';
 import { Media } from './media.entity';
 import { Faction } from './faction.entity';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 @Entity()
 export class Character {
+  @ApiProperty({ description: 'Unique identifier' })
   @PrimaryGeneratedColumn()
   id: number;
 
+  @ApiProperty({ description: 'Character\'s primary name' })
   @Column()
   name: string;
 
+  @ApiPropertyOptional({ 
+    description: 'Alternative names or aliases',
+    type: [String],
+    example: ['The Emperor', 'Death God']
+  })
   @Column({ type: 'simple-array', nullable: true })
-  alternateNames: string[]; // For aliases or nicknames shown in manga
+  alternateNames: string[];
 
+  @ApiPropertyOptional({ description: 'Character description' })
   @Column({ type: 'text', nullable: true })
   description: string;
 
-  // First appearance information
+  @ApiPropertyOptional({ 
+    description: 'Chapter number where the character first appears',
+    example: 1
+  })
   @Column({ nullable: true })
   firstAppearanceChapter: number;
 
-  // Character relationships/roles that are explicitly shown
+  @ApiPropertyOptional({ 
+    description: 'Notable roles or positions',
+    type: [String],
+    example: ['Kakerou Company CEO', 'Professional Gambler']
+  })
   @Column({ type: 'simple-array', nullable: true })
-  notableRoles: string[]; // e.g., ["Kakerou Company CEO", "Professional Gambler"]
+  notableRoles: string[];
 
+  @ApiPropertyOptional({ 
+    description: 'Notable games participated in',
+    type: [String],
+    example: ['17 Steps', 'One-Card Poker']
+  })
   @Column({ type: 'simple-array', nullable: true })
-  notableGames: string[]; // Games they've participated in
+  notableGames: string[];
 
-  // Basic factual info that appears in manga
+  @ApiPropertyOptional({ 
+    description: 'Character\'s occupation or profession',
+    example: 'Professional Gambler'
+  })
   @Column({ nullable: true })
   occupation: string;
 
+  @ApiPropertyOptional({ 
+    description: 'Organizations or groups the character is affiliated with (besides factions)',
+    type: [String],
+    example: ['Kakerou Company', 'Tournament Committee']
+  })
   @Column({ type: 'simple-array', nullable: true })
-  affiliations: string[]; // Organizations/groups mentioned besides factions
+  affiliations: string[];
 
-  // Relationships
+  @ApiPropertyOptional({ 
+    description: 'First major story arc where the character appears',
+    type: () => Arc
+  })
   @ManyToOne(() => Arc, arc => arc.characters, { nullable: true })
-  arc: Arc; // First major arc appearance
+  arc: Arc;
 
+  @ApiProperty({ 
+    description: 'Series the character belongs to',
+    type: () => Series
+  })
   @ManyToOne(() => Series, series => series.id)
   series: Series;
 
+  @ApiPropertyOptional({ 
+    description: 'Media associated with the character',
+    type: () => [Media]
+  })
   @OneToMany(() => Media, media => media.character, {nullable: true, cascade: true })
   media: Media[];
 
+  @ApiPropertyOptional({ 
+    description: 'Factions the character belongs to',
+    type: () => [Faction]
+  })
   @ManyToMany(() => Faction, faction => faction.characters)
   factions: Faction[];
 

@@ -1,6 +1,7 @@
 import { Controller, Get, Post, Put, Delete, Body, Param, NotFoundException, Query, UseGuards } from '@nestjs/common';
 import { SeriesService } from './series.service';
 import { Series } from '../../entities/series.entity';
+import { CreateSeriesDto } from './dto/create-series.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -35,8 +36,8 @@ export class SeriesController {
 
   @Post()
   @Roles(UserRole.MODERATOR, UserRole.ADMIN)
-  create(@Body() data: Partial<Series>) {
-    return this.service.create(data);
+  create(@Body() createSeriesDto: CreateSeriesDto) {
+    return this.service.create(createSeriesDto);
   }
 
   @Put(':id')

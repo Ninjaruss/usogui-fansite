@@ -8,6 +8,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Event } from './event.entity';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export enum UserRole {
   USER = 'user',
@@ -19,12 +20,21 @@ export enum UserRole {
 @Index(['emailVerificationToken'])
 @Index(['passwordResetToken'])
 export class User {
+  @ApiProperty({ description: 'Unique identifier of the user' })
   @PrimaryGeneratedColumn()
   id: number;
 
+  @ApiProperty({ 
+    description: 'Username for login',
+    example: 'usogui_fan'
+  })
   @Column({ type: 'varchar', unique: true })
   username: string;
 
+  @ApiProperty({ 
+    description: 'User\'s email address',
+    example: 'user@example.com'
+  })
   @Column({ type: 'varchar', unique: true })
   email: string;
 
