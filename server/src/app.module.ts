@@ -14,6 +14,7 @@ import { TagsModule } from './modules/tags/tags.module';
 
 import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { TranslationsModule } from './modules/translations/translations.module';
 
 @Module({
   imports: [
@@ -33,7 +34,10 @@ import { AuthModule } from './modules/auth/auth.module';
         username: configService.get('DATABASE_USERNAME'),
         password: configService.get('DATABASE_PASSWORD'),
         database: configService.get('DATABASE_NAME'),
-        entities: [path.join(__dirname, '**', '*.entity.{ts,js}')],
+        entities: [
+          path.join(__dirname, 'entities', '**', '*.entity.{ts,js}'),
+          path.join(__dirname, 'entities', 'translations', '*.entity.{ts,js}')
+        ],
         migrations: [path.join(__dirname, 'migrations', '**', '*{.ts,.js}')],
         migrationsRun: false,
         synchronize: false,
@@ -52,7 +56,8 @@ import { AuthModule } from './modules/auth/auth.module';
     TagsModule, 
 
     UsersModule, 
-    AuthModule,       
+    AuthModule,
+    TranslationsModule,
   ],
 })
 export class AppModule {}
