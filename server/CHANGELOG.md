@@ -5,6 +5,7 @@
 - Added modules for auth including setup for authentication role guards
 - Authentication reads both local and jwt tokens
 - Confirmed all routes for register user, verify email, log in user, get user, request password request, confirm password request  via Postman testing
+- Added media module to handle saving of media urls
 
 ### Notes
 - Going to focus on implementing an admin dashboard rather than a linked spreadsheet to edit data. Google sheets seems useful, but will likely cause issues once hundreds of entries for chapter spoilers and events are added
