@@ -1,41 +1,72 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsNumber, IsOptional, IsArray } from 'class-validator';
+import { IsString, IsNumber, IsOptional, IsArray, IsNotEmpty, MinLength, MaxLength, Min, ArrayMaxSize, ValidateIf } from 'class-validator';
 
 export class CreateEventDto {
   @IsString()
-  @ApiProperty({ description: 'Event title' })
+  @IsNotEmpty()
+  @MinLength(3)
+  @MaxLength(200)
+  @ApiProperty({ 
+    description: 'Event title',
+    example: 'The 17 Steps Tournament'
+  })
   title: string;
 
   @IsString()
-  @IsOptional()
-  @ApiPropertyOptional({ description: 'Event description' })
-  description?: string;
+  @IsNotEmpty()
+  @MinLength(10)
+  @MaxLength(5000)
+  @ApiProperty({ 
+    description: 'Event description',
+    example: 'A high-stakes tournament where participants must climb 17 steps...'
+  })
+  description: string;
 
   @IsNumber()
-  @ApiProperty({ description: 'ID of the series this event belongs to' })
+  @IsNotEmpty()
+  @Min(1)
+  @ApiProperty({ 
+    description: 'ID of the series this event belongs to',
+    example: 1
+  })
   seriesId: number;
 
   @IsNumber()
   @IsOptional()
-  @ApiPropertyOptional({ description: 'ID of the arc this event belongs to' })
+  @Min(1)
+  @ApiPropertyOptional({ 
+    description: 'ID of the arc this event belongs to',
+    example: 1
+  })
   arcId?: number;
 
   @IsArray()
   @IsNumber({}, { each: true })
   @IsOptional()
+  @ArrayMaxSize(100)
   @ApiPropertyOptional({ 
     description: 'IDs of chapters where this event occurs',
-    type: [Number]
+    type: [Number],
+    example: [45, 46, 47]
   })
   chapterIds?: number[];
 
   @IsNumber()
-  @IsOptional()
-  @ApiPropertyOptional({ description: 'Chapter number where the event starts' })
-  startChapter?: number;
+  @IsNotEmpty()
+  @Min(1)
+  @ApiProperty({ 
+    description: 'Chapter number where the event starts',
+    example: 45
+  })
+  startChapter: number;
 
   @IsNumber()
   @IsOptional()
-  @ApiPropertyOptional({ description: 'Chapter number where the event ends' })
+  @ValidateIf(o => o.endChapter && o.endChapter >= o.startChapter)
+  @Min(1)
+  @ApiPropertyOptional({ 
+    description: 'Chapter number where the event ends',
+    example: 52
+  })
   endChapter?: number;
 }

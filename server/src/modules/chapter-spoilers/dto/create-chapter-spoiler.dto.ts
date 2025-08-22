@@ -1,5 +1,5 @@
 import { IsEnum, IsString, IsNumber, IsOptional, IsArray, IsBoolean } from 'class-validator';
-import { SpoilerLevel, SpoilerCategory } from '../../../entities/chapter_spoiler.entity';
+import { SpoilerLevel, SpoilerCategory } from '../../../entities/chapter-spoiler.entity';
 
 export class CreateChapterSpoilerDto {
   @IsNumber()

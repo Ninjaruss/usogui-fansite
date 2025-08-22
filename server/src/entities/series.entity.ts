@@ -11,7 +11,7 @@ export class Series {
     description: 'Name of the series',
     example: 'Usogui'
   })
-  @Column()
+  @Column({ length: 100 })
   name: string;
 
   @ApiProperty({ 

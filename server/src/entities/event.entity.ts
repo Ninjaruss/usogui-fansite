@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, ManyToMany, JoinTable } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, ManyToMany, JoinTable, Index } from 'typeorm';
 import { Arc } from './arc.entity';
 import { Character } from './character.entity';
 import { Series } from './series.entity';
@@ -8,6 +8,10 @@ import { Tag } from './tag.entity';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 @Entity()
+@Index(['series'])
+@Index(['arc'])
+@Index(['startChapter', 'endChapter'])
+@Index(['title'])
 export class Event {
   @ApiProperty({ description: 'Unique identifier of the event' })
   @PrimaryGeneratedColumn()
@@ -17,14 +21,14 @@ export class Event {
     description: 'Title of the event',
     example: 'The 17 Steps Tournament'
   })
-  @Column()
+  @Column({ length: 200 })
   title: string;
 
   @ApiProperty({ 
     description: 'Detailed description of the event',
     example: 'A high-stakes tournament where participants must climb 17 steps...'
   })
-  @Column({ type: 'text' })
+  @Column({ type: 'text', nullable: false })
   description: string;
 
   @ApiProperty({ 

@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Put, Delete, Param, Query, ParseIntPipe, UseGuards, Body, NotFoundException } from '@nestjs/common';
 import { ChapterSpoilersService } from './chapter-spoilers.service';
-import { ChapterSpoiler, SpoilerLevel, SpoilerCategory } from '../../entities/chapter_spoiler.entity';
+import { ChapterSpoiler, SpoilerLevel, SpoilerCategory } from '../../entities/chapter-spoiler.entity';
 import { CreateChapterSpoilerDto } from './dto/create-chapter-spoiler.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';

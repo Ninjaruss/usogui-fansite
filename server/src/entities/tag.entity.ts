@@ -1,8 +1,9 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, JoinTable } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, JoinTable, Index } from 'typeorm';
 import { Event } from './event.entity';
 import { ApiProperty } from '@nestjs/swagger';
 
 @Entity()
+@Index(['name'], { unique: true })  // Tags should be unique
 export class Tag {
   @ApiProperty({ description: 'Unique identifier of the tag' })
   @PrimaryGeneratedColumn()
@@ -12,7 +13,7 @@ export class Tag {
     description: 'Name of the tag',
     example: 'High Stakes'
   })
-  @Column()
+  @Column({ length: 50 })
   name: string;
 
   @ApiProperty({ 

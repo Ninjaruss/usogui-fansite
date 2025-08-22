@@ -4,7 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Media, MediaStatus } from '../../entities/media.entity';
 import { User } from '../../entities/user.entity';
-import { CreateMediaDto } from './dtos/create-media.dto';
+import { CreateMediaDto } from './dto/create-media.dto';
 import { UrlNormalizerService } from './services/url-normalizer.service';
 import { EmailService } from '../email/email.service';
 

@@ -1,19 +1,25 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsNumber, IsOptional } from 'class-validator';
+import { IsString, IsNumber, IsOptional, IsNotEmpty, MinLength, MaxLength, Min } from 'class-validator';
 
 export class CreateChapterDto {
   @IsString()
+  @IsNotEmpty()
+  @MinLength(1)
+  @MaxLength(200)
   @ApiProperty({ description: 'Chapter title' })
   title: string;
 
   @IsNumber()
+  @IsNotEmpty()
+  @Min(0)
   @ApiProperty({ description: 'Chapter number' })
   number: number;
 
   @IsString()
   @IsOptional()
-  @ApiPropertyOptional({ description: 'Chapter description or summary' })
-  description?: string;
+  @MaxLength(5000)
+  @ApiPropertyOptional({ description: 'Brief summary of the chapter\'s content' })
+  summary?: string;
 
   @IsNumber()
   @ApiProperty({ description: 'ID of the series this chapter belongs to' })

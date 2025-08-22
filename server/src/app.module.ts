@@ -8,7 +8,7 @@ import { ArcsModule } from './modules/arcs/arcs.module';
 import { CharactersModule } from './modules/characters/characters.module';
 import { ChaptersModule } from './modules/chapters/chapters.module';
 import { EventsModule } from './modules/events/events.module';
-import { ChapterSpoilersModule } from './modules/chapter_spoilers/chapter_spoilers.module'; // updated
+import { ChapterSpoilersModule } from './modules/chapter-spoilers/chapter-spoilers.module';
 import { FactionsModule } from './modules/factions/factions.module';
 import { TagsModule } from './modules/tags/tags.module';
 
@@ -16,6 +16,7 @@ import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { TranslationsModule } from './modules/translations/translations.module';
 import { GamblesModule } from './modules/gambles/gambles.module';
+import { GambleTranslationsModule } from './modules/gamble-translations/gamble-translations.module';
 
 @Module({
   imports: [
@@ -46,6 +47,7 @@ import { GamblesModule } from './modules/gambles/gambles.module';
     AuthModule,
     TranslationsModule,
     GamblesModule,
+    GambleTranslationsModule,
   ],
 })
 export class AppModule {}

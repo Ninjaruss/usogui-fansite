@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Series } from '../../entities/series.entity';
+import { CreateSeriesDto } from './dto/create-series.dto';
 
 @Injectable()
 export class SeriesService {
@@ -39,8 +40,15 @@ export class SeriesService {
     return this.seriesRepo.findOne({ where: { id } });
   }
 
-  create(data: Partial<Series>) {
-    const series = this.seriesRepo.create(data);
+  create(dto: CreateSeriesDto) {
+    if (!dto.name) {
+      throw new BadRequestException('Title is required');
+    }
+    const series = this.seriesRepo.create({
+      name: dto.name,
+      order: dto.order,
+      description: dto.description
+    });
     return this.seriesRepo.save(series);
   }
 

@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, ManyToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, ManyToMany, Index } from 'typeorm';
 import { Arc } from './arc.entity';
 import { Series } from './series.entity';
 import { Media } from './media.entity';
@@ -6,13 +6,19 @@ import { Faction } from './faction.entity';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 @Entity()
+@Index(['series'])
+@Index(['arc'])
+@Index(['name'])
 export class Character {
   @ApiProperty({ description: 'Unique identifier' })
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ApiProperty({ description: 'Character\'s primary name' })
-  @Column()
+  @ApiProperty({ 
+    description: 'Character\'s primary name',
+    example: 'Baku Madarame'
+  })
+  @Column({ length: 100 })
   name: string;
 
   @ApiPropertyOptional({ 
@@ -23,7 +29,10 @@ export class Character {
   @Column({ type: 'simple-array', nullable: true })
   alternateNames: string[];
 
-  @ApiPropertyOptional({ description: 'Character description' })
+  @ApiPropertyOptional({ 
+    description: 'Character description',
+    example: 'A professional gambler known for taking on dangerous bets.'
+  })
   @Column({ type: 'text', nullable: true })
   description: string;
 

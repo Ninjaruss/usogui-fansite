@@ -1,10 +1,11 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsNumber, IsOptional, IsUrl, IsArray } from 'class-validator';
+import { IsString, IsNumber, IsOptional, IsUrl, IsArray, IsNotEmpty } from 'class-validator';
 
 export class CreateSeriesDto {
   @IsString()
-  @ApiProperty({ description: 'Series title' })
-  title: string;
+  @IsNotEmpty()
+  @ApiProperty({ description: 'Name of the series' })
+  name: string;
 
   @IsString()
   @IsOptional()

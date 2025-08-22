@@ -1,6 +1,6 @@
 import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { BaseTranslation } from './base-translation.entity';
-import { ChapterSpoiler } from '../chapter_spoiler.entity';
+import { ChapterSpoiler } from '../chapter-spoiler.entity';
 
 @Entity('chapter_spoiler_translations')
 export class ChapterSpoilerTranslation extends BaseTranslation {

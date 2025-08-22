@@ -1,9 +1,11 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, Index } from 'typeorm';
 import { Arc } from './arc.entity';
 import { Series } from './series.entity';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 @Entity()
+@Index(['series'])
+@Index(['arc'])
 export class Chapter {
   @ApiProperty({ description: 'Unique identifier of the chapter' })
   @PrimaryGeneratedColumn()
@@ -20,7 +22,7 @@ export class Chapter {
     description: 'Title of the chapter',
     example: 'The Beginning of Fate'
   })
-  @Column({ nullable: true })
+  @Column({ nullable: true, length: 200 })
   title: string;
 
   @ApiPropertyOptional({ 
@@ -33,13 +35,18 @@ export class Chapter {
     description: 'Story arc this chapter belongs to',
     type: () => Arc
   })
-  @ManyToOne(() => Arc, arc => arc.id, { nullable: true })
+  @ManyToOne(() => Arc, arc => arc.id, { 
+    nullable: true,
+    onDelete: 'SET NULL'  // If arc is deleted, just set arc to null for chapters
+  })
   arc: Arc;
 
   @ApiProperty({ 
     description: 'Series this chapter belongs to',
     type: () => Series
   })
-  @ManyToOne(() => Series, series => series.id)
+  @ManyToOne(() => Series, series => series.id, {
+    onDelete: 'CASCADE'  // If series is deleted, delete all its chapters
+  })
   series: Series;
 }

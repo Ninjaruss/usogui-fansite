@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
-import { ChapterSpoiler, SpoilerLevel } from '../../entities/chapter_spoiler.entity';
+import { ChapterSpoiler, SpoilerLevel } from '../../entities/chapter-spoiler.entity';
 import { Chapter } from '../../entities/chapter.entity';
 import { Event } from '../../entities/event.entity';
 import { CreateChapterSpoilerDto } from './dto/create-chapter-spoiler.dto';
