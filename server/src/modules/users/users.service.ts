@@ -5,7 +5,6 @@ import * as bcrypt from 'bcrypt';
 import { User, UserRole } from '../../entities/user.entity';
 import { Media, MediaStatus } from '../../entities/media.entity';
 import { randomBytes } from 'crypto';
-import { addHours } from 'date-fns';
 
 @Injectable()
 export class UsersService {
@@ -101,7 +100,7 @@ export class UsersService {
   }
 
   // --- Create user ---
-  async createUser(data: { username: string; email: string; password: string }): Promise<User> {
+  async create(data: { username: string; email: string; password: string }): Promise<User> {
     const existingUsername = await this.findByUsername(data.username);
     if (existingUsername) throw new ConflictException('Username already taken');
 
@@ -153,7 +152,11 @@ export class UsersService {
 
     const token = randomBytes(32).toString('hex');
     user.passwordResetToken = token;
-    user.passwordResetExpires = addHours(new Date(), 1);
+    
+    // Set expiration to 1 hour from now
+    const expiresDate = new Date();
+    expiresDate.setHours(expiresDate.getHours() + 1);
+    user.passwordResetExpires = expiresDate;
 
     await this.repo.save(user);
     return token;
@@ -173,7 +176,7 @@ export class UsersService {
   }
 
   // --- Update user ---
-  async updateUser(id: number, data: Partial<User>): Promise<User> {
+  async update(id: number, data: Partial<User>): Promise<User> {
     if (data.password) {
       data.password = await bcrypt.hash(data.password, 12);
     }
@@ -182,22 +185,9 @@ export class UsersService {
   }
 
   // --- Delete user ---
-  async deleteUser(id: number): Promise<void> {
+  async remove(id: number): Promise<void> {
     const user = await this.findOne(id);
     // findOne already throws NotFoundException if user not found
     await this.repo.remove(user);
-  }
-
-  // --- Aliases for controller ---
-  create(data: { username: string; email: string; password: string }) {
-    return this.createUser(data);
-  }
-
-  update(id: number, data: Partial<User>) {
-    return this.updateUser(id, data);
-  }
-
-  remove(id: number): Promise<void> {
-    return this.deleteUser(id);
   }
 }

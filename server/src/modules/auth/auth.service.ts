@@ -3,12 +3,19 @@ import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
 import { User } from '../../entities/user.entity';
 import { randomBytes } from 'crypto';
+import { EmailService } from '../email/email.service';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
+  private readonly isTestUser = (email: string) => 
+    email === 'testuser@example.com';
+
   constructor(
     private readonly usersService: UsersService,
     private readonly jwt: JwtService,
+    private readonly emailService: EmailService,
+    private readonly configService: ConfigService,
   ) {}
 
   // --- Validate login ---
@@ -41,13 +48,19 @@ export class AuthService {
 
   // --- Registration ---
   async register(data: { username: string; email: string; password: string }) {
-    const user = await this.usersService.createUser(data);
-
+    const user = await this.usersService.create(data);
     const token = await this.usersService.generateEmailVerificationToken(user.id);
-    console.log(`(line 47 auth.service) Email verification token: ${token}`);
 
-    // Send email with link: `${FRONTEND_URL}/verify-email?token=${token}`
-    return { message: 'Registration successful. Please verify your email.' };
+    // For test user, return token directly instead of sending email
+    if (this.isTestUser(data.email)) {
+      return { 
+        message: 'Registration successful. Test user - use this token to verify email.',
+        token 
+      };
+    }
+
+    await this.emailService.sendEmailVerification(data.email, token);
+    return { message: 'Registration successful. Please check your email to verify your account.' };
   }
 
   // --- Verify email ---
@@ -59,10 +72,17 @@ export class AuthService {
   // --- Password reset ---
   async requestPasswordReset(email: string) {
     const token = await this.usersService.generatePasswordReset(email);
-    console.log(`(line 62 auth.service) generatePassword token: ${token}`);
 
-    // Send email with link: `${FRONTEND_URL}/password-reset?token=${token}`
-    return { message: 'Password reset link sent' };
+    // For test user, return token directly instead of sending email
+    if (this.isTestUser(email)) {
+      return { 
+        message: 'Password reset request received. Test user - use this token to reset password.',
+        token 
+      };
+    }
+
+    await this.emailService.sendPasswordReset(email, token);
+    return { message: 'If an account exists with this email, a password reset link has been sent.' };
   }
 
   async resetPassword(token: string, newPassword: string) {

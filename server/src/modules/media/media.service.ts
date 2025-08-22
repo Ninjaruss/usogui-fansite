@@ -5,17 +5,27 @@ import { Repository } from 'typeorm';
 import { Media, MediaStatus } from '../../entities/media.entity';
 import { User } from '../../entities/user.entity';
 import { CreateMediaDto } from './dtos/create-media.dto';
+import { UrlNormalizerService } from './services/url-normalizer.service';
+import { EmailService } from '../email/email.service';
 
 @Injectable()
 export class MediaService {
+  private readonly isTestUser = (email: string) => 
+    email === 'testuser@example.com';
+
   constructor(
     @InjectRepository(Media)
     private readonly mediaRepo: Repository<Media>,
+    private readonly urlNormalizer: UrlNormalizerService,
+    private readonly emailService: EmailService,
   ) {}
 
   async create(data: CreateMediaDto, user: User): Promise<Media> {
+    // Normalize the URL based on the media type
+    const normalizedUrl = this.urlNormalizer.normalize(data.url, data.type);
+
     const media = this.mediaRepo.create({
-        url: data.url,
+        url: normalizedUrl,
         type: data.type,
         description: data.description,
         arc: data.arcId ? { id: data.arcId } as any : null,
@@ -55,7 +65,10 @@ export class MediaService {
   }
 
   async approveSubmission(id: number): Promise<Media> {
-    const media = await this.mediaRepo.findOne({ where: { id } });
+    const media = await this.mediaRepo.findOne({ 
+      where: { id },
+      relations: ['submittedBy']
+    });
     if (!media) {
       throw new NotFoundException(`Media with id ${id} not found`);
     }
@@ -64,7 +77,17 @@ export class MediaService {
     }
     
     media.status = MediaStatus.APPROVED;
-    return await this.mediaRepo.save(media);
+    const savedMedia = await this.mediaRepo.save(media);
+
+    // Skip email for test user
+    if (!this.isTestUser(media.submittedBy.email)) {
+      await this.emailService.sendMediaApprovalNotification(
+        media.submittedBy.email,
+        media.description || 'your submission'
+      );
+    }
+
+    return savedMedia;
   }
 
   async rejectSubmission(id: number, reason: string): Promise<Media> {

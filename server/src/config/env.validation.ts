@@ -1,5 +1,5 @@
 import { plainToClass } from 'class-transformer';
-import { IsString, IsNumber, validateSync, IsIn } from 'class-validator';
+import { IsString, IsNumber, validateSync, IsIn, IsUrl } from 'class-validator';
 
 class EnvironmentVariables {
   @IsString()
@@ -31,7 +31,17 @@ class EnvironmentVariables {
   NODE_ENV: string;
 
   @IsString()
-  STORAGE_TYPE: string;
+  RESEND_API_KEY: string;
+
+  // Frontend URL for email links
+  @IsUrl({
+    require_tld: process.env.NODE_ENV === 'production',
+    require_protocol: process.env.NODE_ENV === 'production',
+    require_host: true,
+    require_valid_protocol: true,
+    protocols: ['http', 'https']
+  })
+  FRONTEND_URL: string;
 }
 
 export function validate(config: Record<string, unknown>) {

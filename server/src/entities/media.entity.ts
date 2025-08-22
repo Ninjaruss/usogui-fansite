@@ -18,18 +18,18 @@ export class Media {
   id: number;
 
   @ApiProperty({ 
-    description: 'URL or file path to the media content',
-    example: 'https://example.com/images/character1.jpg'
+    description: 'URL of the media content. Videos must be from YouTube, images must be from DeviantArt, Pixiv, Twitter, or Instagram',
+    example: 'https://www.youtube.com/watch?v=example'
   })
   @Column()
   url: string;
 
-  @ApiPropertyOptional({ 
+  @ApiProperty({ 
     description: 'Type of media content',
-    example: 'image',
+    example: 'video',
     enum: ['image', 'video', 'audio']
   })
-  @Column({ nullable: true })
+  @Column()
   type: string;
 
   @ApiPropertyOptional({ 
