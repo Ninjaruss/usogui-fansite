@@ -29,9 +29,9 @@ async function bootstrap() {
   // Special rate limit for auth routes
   app.use('/auth', 
     rateLimit({
-      windowMs: 60 * 60 * 1000, // 1 hour
-      max: 5, // limit each IP to 5 login attempts per hour
-      message: 'Too many login attempts, please try again later',
+      windowMs: 15 * 60 * 1000, // 15 minutes
+      max: 15, // limit each IP to 15 login attempts per 15 minutes
+      message: 'Too many login attempts, please try again in 15 minutes',
     }),
   );
 

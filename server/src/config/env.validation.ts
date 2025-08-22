@@ -3,19 +3,19 @@ import { IsString, IsNumber, validateSync, IsIn } from 'class-validator';
 
 class EnvironmentVariables {
   @IsString()
-  DB_HOST: string;
+  DATABASE_HOST: string;
 
   @IsNumber()
-  DB_PORT: number;
+  DATABASE_PORT: number;
 
   @IsString()
-  DB_USER: string;
+  DATABASE_USERNAME: string;
 
   @IsString()
-  DB_PASSWORD: string;
+  DATABASE_PASSWORD: string;
 
   @IsString()
-  DB_NAME: string;
+  DATABASE_NAME: string;
 
   @IsString()
   JWT_SECRET: string;

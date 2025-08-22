@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import * as path from 'path';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { validate } from './config/env.validation';
 import { SeriesModule } from './modules/series/series.module';
@@ -32,8 +33,10 @@ import { AuthModule } from './modules/auth/auth.module';
         username: configService.get('DATABASE_USERNAME'),
         password: configService.get('DATABASE_PASSWORD'),
         database: configService.get('DATABASE_NAME'),
-        entities: [__dirname + '/**/*.entity{.ts,.js}'],
-        synchronize: process.env.NODE_ENV !== 'production',
+        entities: [path.join(__dirname, '**', '*.entity.{ts,js}')],
+        migrations: [path.join(__dirname, 'migrations', '**', '*{.ts,.js}')],
+        migrationsRun: false,
+        synchronize: false,
         ssl: process.env.NODE_ENV === 'production',
       }),
       inject: [ConfigService],
