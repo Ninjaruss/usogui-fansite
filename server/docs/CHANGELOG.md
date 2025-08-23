@@ -20,6 +20,7 @@
 - It seems that the Large Language Modules (LLMs) for GitHub Copilot Agent mode chat can easily hallucinate and forget how to keep consistency if using a basic model (ChatGPT 4.1). Currently using Claude Sonnet 3.7 which seems to be a lot more consistent. 
 - Hopefully, copilot instructions are a bit more easier for the basic models to get project context
 - Migrations seem to be an absolute headache when it comes to working with several data points. I need to ensure that any data that is changed their corresponding files that use said data need to be changed (i.e. entity <-> controller). Absolutely annoying when I need to add a new data point like gambles and volumes
+- e2e testing using jest seems really useful, but I highly doubt I would want to spend the time writing out all the tests
 
 
 ## 2025-08-21
