@@ -1,8 +1,12 @@
-import { Controller, Get, Post, Body, Param, ParseIntPipe } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
+import { Controller, Get, Post, Body, Param, ParseIntPipe, UseGuards } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBearerAuth } from '@nestjs/swagger';
 import { GamblesService } from './gambles.service';
 import { CreateGambleDto } from './dtos/create-gamble.dto';
 import { Gamble } from '../../entities/gamble.entity';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { UserRole } from '../../entities/user.entity';
 
 @ApiTags('Gambles')
 @Controller('gambles')
@@ -10,22 +14,61 @@ export class GamblesController {
   constructor(private readonly gamblesService: GamblesService) {}
 
   @Post()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @ApiBearerAuth()
+  @Roles(UserRole.MODERATOR, UserRole.ADMIN)
   @ApiOperation({
     summary: 'Create a new gamble',
-    description: 'Create a new gamble with teams, rounds, and observers'
+    description: 'Create a new gamble with teams, rounds, and observers. Represents high-stakes gambling events from the Usogui manga.'
   })
   @ApiResponse({
     status: 201,
     description: 'The gamble has been successfully created',
-    type: Gamble
+    schema: {
+      example: {
+        id: 1,
+        name: 'Protoporos',
+        description: 'A deadly gambling game involving life and death stakes',
+        gambleType: 'LIFE_OR_DEATH',
+        startChapterId: 1,
+        endChapterId: 15,
+        stakes: 'Lives of the participants',
+        outcome: 'TBD',
+        createdAt: '2024-01-15T10:30:00Z',
+        updatedAt: '2024-01-15T10:30:00Z',
+        teams: [
+          {
+            id: 1,
+            name: 'Baku Team',
+            members: ['Baku Madarame'],
+            isWinner: false
+          }
+        ],
+        rounds: []
+      }
+    }
   })
   @ApiResponse({
     status: 400,
-    description: 'Invalid input (e.g., less than 2 teams)'
+    description: 'Invalid input (e.g., less than 2 teams)',
+    schema: {
+      example: {
+        statusCode: 400,
+        message: 'At least 2 teams are required for a gamble',
+        error: 'Bad Request'
+      }
+    }
   })
   @ApiResponse({
     status: 404,
-    description: 'Chapter or Character not found'
+    description: 'Chapter or Character not found',
+    schema: {
+      example: {
+        statusCode: 404,
+        message: 'Chapter with id 1 not found',
+        error: 'Not Found'
+      }
+    }
   })
   create(@Body() createGambleDto: CreateGambleDto): Promise<Gamble> {
     return this.gamblesService.create(createGambleDto);

@@ -10,7 +10,8 @@ import {
   ArcTranslation,
   FactionTranslation,
   TagTranslation,
-  ChapterSpoilerTranslation
+  ChapterSpoilerTranslation,
+  GambleTranslation
 } from '../../entities/translations';
 
 @Module({
@@ -22,7 +23,8 @@ import {
     ArcTranslation,
     FactionTranslation,
     TagTranslation,
-    ChapterSpoilerTranslation
+    ChapterSpoilerTranslation,
+    GambleTranslation
   ])],
   providers: [TranslationsService],
   controllers: [TranslationsController],

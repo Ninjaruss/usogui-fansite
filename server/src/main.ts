@@ -52,14 +52,25 @@ async function bootstrap() {
     .addBearerAuth()
     .addTag('characters', 'Character management')
     .addTag('chapters', 'Chapter management')
-    .addTag('spoilers', 'Spoiler management')
+    .addTag('chapter-spoilers', 'Chapter spoiler management')
     .addTag('series', 'Series information')
+    .addTag('arcs', 'Story arc management')
     .addTag('events', 'Event management')
     .addTag('factions', 'Faction management')
+    .addTag('tags', 'Content tagging')
+    .addTag('gambles', 'Gambling event management')
     .addTag('auth', 'Authentication')
     .addTag('users', 'User management')
     .addTag('translations', 'Content translations')
     .build();
+
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api-docs', app, document, {
+    swaggerOptions: {
+      persistAuthorization: true,
+    },
+  });
+  // Special rate limit for auth routes
   app.use('/auth', 
     rateLimit({
       windowMs: 15 * 60 * 1000, // 15 minutes

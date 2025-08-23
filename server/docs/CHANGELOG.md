@@ -9,11 +9,14 @@
 - Email service hooked to Resend
 - URL validation for uploaded media including normalization of link url
 - For some reason, I thought I would put gambles into arcs or something; added gambles to database
+- Added copilot instructions file
 
 ### Notes
 - Translation setup for Japanese made; however, will need to manually input translations in the admin panel. Considering AI translation for any missing translations.
 - Default language is English, can fetch translation via -jp in request. Translation module allows for us to keep using backend without worrying for missing translations
 - create-character.dto and similar files are made to specify the entity DTO, allowing us to implement pagination and filtering. Recommended if route needs validation.
+- It seems that the Large Language Modules (LLMs) for GitHub Copilot Agent mode chat can easily hallucinate and forget how to keep consistency if using a basic model (ChatGPT 4.1). Currently using Claude Sonnet 3.7 which seems to be a lot more consistent. 
+- Hopefully, copilot instructions are a bit more easier for the basic models to get project context
 
 
 ## 2025-08-21

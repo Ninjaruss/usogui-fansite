@@ -16,7 +16,6 @@ import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { TranslationsModule } from './modules/translations/translations.module';
 import { GamblesModule } from './modules/gambles/gambles.module';
-import { GambleTranslationsModule } from './modules/gamble-translations/gamble-translations.module';
 
 @Module({
   imports: [
@@ -47,7 +46,6 @@ import { GambleTranslationsModule } from './modules/gamble-translations/gamble-t
     AuthModule,
     TranslationsModule,
     GamblesModule,
-    GambleTranslationsModule,
   ],
 })
 export class AppModule {}

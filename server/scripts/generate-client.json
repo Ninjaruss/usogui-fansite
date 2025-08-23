@@ -1,0 +1,10 @@
+{
+  "name": "generate-api-client",
+  "description": "Generate TypeScript API client from OpenAPI spec",
+  "scripts": {
+    "generate:api": "openapi-generator-cli generate -i http://localhost:3001/api-docs-json -g typescript-axios -o ./generated-api --additional-properties=supportsES6=true,npmName=usogui-api-client,npmVersion=1.0.0"
+  },
+  "devDependencies": {
+    "@openapitools/openapi-generator-cli": "^2.7.0"
+  }
+}
