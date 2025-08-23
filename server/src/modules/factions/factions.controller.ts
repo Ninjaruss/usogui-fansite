@@ -6,6 +6,8 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from '../../entities/user.entity';
+import { CreateFactionDto } from './dto/create-faction.dto';
+import { UpdateFactionDto } from './dto/update-faction.dto';
 
 @ApiTags('factions')
 @Controller('factions')
@@ -77,18 +79,7 @@ export class FactionsController {
     summary: 'Create a new faction',
     description: 'Create a new faction (requires moderator or admin role)'
   })
-  @ApiBody({
-    description: 'Faction data',
-    schema: {
-      type: 'object',
-      properties: {
-        name: { type: 'string', example: 'Ideal' },
-        description: { type: 'string', example: 'A rival organization seeking to overthrow Kakerou' },
-        seriesId: { type: 'number', example: 1 }
-      },
-      required: ['name', 'seriesId']
-    }
-  })
+  @ApiBody({ type: CreateFactionDto })
   @ApiResponse({
     status: 201,
     description: 'Faction created successfully',
@@ -106,7 +97,7 @@ export class FactionsController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden - requires moderator or admin role' })
   @Roles(UserRole.MODERATOR, UserRole.ADMIN)
-  create(@Body() data: Partial<Faction>): Promise<Faction> {
+  create(@Body() data: CreateFactionDto): Promise<Faction> {
     return this.service.create(data);
   }
 
@@ -118,16 +109,7 @@ export class FactionsController {
     description: 'Update an existing faction (requires moderator or admin role)'
   })
   @ApiParam({ name: 'id', description: 'Faction ID', example: 1 })
-  @ApiBody({
-    description: 'Updated faction data',
-    schema: {
-      type: 'object',
-      properties: {
-        name: { type: 'string', example: 'Kakerou' },
-        description: { type: 'string', example: 'Updated description of the underground gambling organization' }
-      }
-    }
-  })
+  @ApiBody({ type: UpdateFactionDto })
   @ApiResponse({
     status: 200,
     description: 'Faction updated successfully',
@@ -146,7 +128,7 @@ export class FactionsController {
   @ApiResponse({ status: 403, description: 'Forbidden - requires moderator or admin role' })
   @ApiResponse({ status: 404, description: 'Faction not found' })
   @Roles(UserRole.MODERATOR, UserRole.ADMIN)
-  update(@Param('id') id: number, @Body() data: Partial<Faction>) {
+  update(@Param('id') id: number, @Body() data: UpdateFactionDto) {
     return this.service.update(id, data);
   }
 

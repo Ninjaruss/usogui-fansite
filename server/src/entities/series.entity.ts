@@ -1,5 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Volume } from './volume.entity';
 
 @Entity()
 export class Series {
@@ -28,4 +29,11 @@ export class Series {
   })
   @Column({ type: 'text', nullable: true })
   description: string;
+
+  @ApiPropertyOptional({
+    description: 'Volumes in this series',
+    type: () => [Volume]
+  })
+  @OneToMany(() => Volume, volume => volume.series)
+  volumes: Volume[];
 }

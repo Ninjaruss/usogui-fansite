@@ -3,6 +3,7 @@ import { ApiTags, ApiOperation, ApiResponse, ApiQuery, ApiParam, ApiBody, ApiBea
 import { VolumesService } from './volumes.service';
 import { Volume } from '../../entities/volume.entity';
 import { CreateVolumeDto } from './dto/create-volume.dto';
+import { UpdateVolumeDto } from './dto/update-volume.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -29,28 +30,20 @@ export class VolumesController {
     status: 200,
     description: 'Volumes retrieved successfully',
     schema: {
-      type: 'object',
       properties: {
-        data: {
+        items: {
           type: 'array',
-          items: {
-            type: 'object',
-            properties: {
-              id: { type: 'number', example: 1 },
-              number: { type: 'number', example: 1 },
-              title: { type: 'string', example: 'The Beginning' },
-              coverUrl: { type: 'string', example: 'https://example.com/covers/volume1.jpg' },
-              startChapter: { type: 'number', example: 1 },
-              endChapter: { type: 'number', example: 10 },
-              description: { type: 'string', example: 'The first volume introducing main characters' },
-              createdAt: { type: 'string', format: 'date-time' },
-              updatedAt: { type: 'string', format: 'date-time' }
-            }
-          }
+          items: { $ref: '#/components/schemas/Volume' }
         },
-        total: { type: 'number', example: 25 },
-        page: { type: 'number', example: 1 },
-        totalPages: { type: 'number', example: 3 }
+        meta: {
+          type: 'object',
+          properties: {
+            totalItems: { type: 'number' },
+            itemsPerPage: { type: 'number' },
+            totalPages: { type: 'number' },
+            currentPage: { type: 'number' }
+          }
+        }
       }
     }
   })
@@ -126,15 +119,17 @@ export class VolumesController {
     status: 200,
     description: 'Chapter range retrieved',
     schema: {
-      type: 'object',
       properties: {
         chapters: {
           type: 'array',
-          items: { type: 'number' },
-          example: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+          items: { type: 'number' }
         }
       }
     }
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Volume not found'
   })
   async getChapters(@Param('id') id: string) {
     const volume = await this.service.findOne(+id);
@@ -186,9 +181,15 @@ export class VolumesController {
     description: 'Update an existing volume (Admin/Moderator only)'
   })
   @ApiParam({ name: 'id', description: 'Volume ID' })
+  @ApiBody({ type: UpdateVolumeDto })
   @ApiResponse({
     status: 200,
-    description: 'Volume updated successfully'
+    description: 'Volume updated successfully',
+    schema: {
+      properties: {
+        message: { type: 'string' }
+      }
+    }
   })
   @ApiResponse({
     status: 404,
@@ -202,7 +203,8 @@ export class VolumesController {
     status: 403,
     description: 'Forbidden - Admin/Moderator role required'
   })
-  async update(@Param('id') id: string, @Body() data: Partial<Volume>) {
+  @UsePipes(new ValidationPipe({ whitelist: true }))
+  async update(@Param('id') id: string, @Body() data: UpdateVolumeDto) {
     const result = await this.service.update(+id, data);
     if (result.affected === 0) {
       throw new NotFoundException('Volume not found');
@@ -221,7 +223,12 @@ export class VolumesController {
   @ApiParam({ name: 'id', description: 'Volume ID' })
   @ApiResponse({
     status: 200,
-    description: 'Volume deleted successfully'
+    description: 'Volume deleted successfully',
+    schema: {
+      properties: {
+        message: { type: 'string' }
+      }
+    }
   })
   @ApiResponse({
     status: 404,

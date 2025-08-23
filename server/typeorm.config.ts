@@ -21,9 +21,9 @@ export default new DataSource({
     'src/entities/translations/*.entity.{ts,js}'
   ],
   migrations: ['src/migrations/**/*{.ts,.js}'],
-  migrationsRun: false,
-  // Only enable synchronize in development or test environments
-  synchronize: isDevelopment || isTest,
+  migrationsRun: process.env.RUN_MIGRATIONS === 'true',
+  // Only enable synchronize in development or test environments and when ENABLE_SCHEMA_SYNC is true
+  synchronize: (isDevelopment || isTest) && process.env.ENABLE_SCHEMA_SYNC === 'true',
   // Ensure schema sync is never run if migrations exist - additional safety
   migrationsTransactionMode: 'all',
   ssl: process.env.NODE_ENV === 'production',

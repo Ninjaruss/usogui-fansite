@@ -2,6 +2,7 @@ import { Controller, Get, Post, Put, Delete, Param, Body, NotFoundException, Que
 import { ChaptersService } from './chapters.service';
 import { Chapter } from '../../entities/chapter.entity';
 import { CreateChapterDto } from './dto/create-chapter.dto';
+import { UpdateChapterDto } from './dto/update-chapter.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -86,7 +87,7 @@ export class ChaptersController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiBearerAuth()
   @Roles(UserRole.MODERATOR, UserRole.ADMIN)
-  async update(@Param('id') id: number, @Body() data: Partial<Chapter>) {
+  async update(@Param('id') id: number, @Body() data: UpdateChapterDto) {
     const result = await this.service.update(id, data);
     if (result.affected === 0) {
       throw new NotFoundException(`Chapter with id ${id} not found`);

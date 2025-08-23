@@ -5,7 +5,7 @@ import { Gamble } from '../../entities/gamble.entity';
 import { GambleTeam } from '../../entities/gamble-team.entity';
 import { GambleRound } from '../../entities/gamble-round.entity';
 import { Character } from '../../entities/character.entity';
-import { CreateGambleDto, CreateGambleTeamDto, CreateGambleRoundDto } from './dtos/create-gamble.dto';
+import { CreateGambleDto, CreateGambleTeamDto, CreateGambleRoundDto } from './dto/create-gamble.dto';
 
 @Injectable()
 export class GamblesService {

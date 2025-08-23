@@ -1,6 +1,6 @@
 import { createConnection } from 'typeorm';
 import { config } from 'dotenv';
-import * as chalk from 'chalk';
+import chalk from 'chalk';
 import * as inquirer from 'inquirer';
 import * as path from 'path';
 
@@ -102,9 +102,4 @@ resetDatabase().catch((error) => {
   process.exit(1);
 });
 
-// Run the reset function
-resetDatabase().catch((error) => {
-  console.error(chalk.red('❌ Error:'));
-  console.error(error);
-  process.exit(1);
-});
+// This function is called above, so we don't need to call it twice

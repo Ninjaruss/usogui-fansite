@@ -1,8 +1,9 @@
-import { Controller, Get, Post, Put, Delete, Param, Body, NotFoundException, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, Query, NotFoundException, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiQuery, ApiParam, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
 import { EventsService } from './events.service';
 import { Event } from '../../entities/event.entity';
 import { CreateEventDto } from './dto/create-event.dto';
+import { UpdateEventDto } from './dto/update-event.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -164,7 +165,7 @@ export class EventsController {
   @ApiResponse({ status: 403, description: 'Forbidden - requires moderator or admin role' })
   @ApiResponse({ status: 404, description: 'Event not found' })
   @Roles(UserRole.MODERATOR, UserRole.ADMIN)
-  async update(@Param('id') id: number, @Body() data: Partial<Event>) {
+  async update(@Param('id') id: number, @Body() data: UpdateEventDto) {
     const result = await this.service.update(id, data);
     if (result.affected === 0) {
       throw new NotFoundException(`Event with id ${id} not found`);

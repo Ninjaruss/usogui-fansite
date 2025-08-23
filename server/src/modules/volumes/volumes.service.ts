@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Volume } from '../../entities/volume.entity';
 import { CreateVolumeDto } from './dto/create-volume.dto';
+import { UpdateVolumeDto } from './dto/update-volume.dto';
 
 @Injectable()
 export class VolumesService {
@@ -45,12 +46,15 @@ export class VolumesService {
     }
 
     query.skip((page - 1) * limit).take(limit);
-    const [data, total] = await query.getManyAndCount();
+    const [items, totalItems] = await query.getManyAndCount();
     return {
-      data,
-      total,
-      page,
-      totalPages: Math.ceil(total / limit),
+      items,
+      meta: {
+        totalItems,
+        itemsPerPage: limit,
+        totalPages: Math.ceil(totalItems / limit),
+        currentPage: page
+      }
     };
   }
 
@@ -69,13 +73,22 @@ export class VolumesService {
       startChapter: data.startChapter,
       endChapter: data.endChapter,
       description: data.description,
+      seriesId: data.seriesId,
       series: { id: data.seriesId } as any
     });
     return this.repo.save(volume);
   }
 
-  update(id: number, data: Partial<Volume>) {
-    return this.repo.update(id, data);
+  update(id: number, data: UpdateVolumeDto) {
+    const updateData: any = { ...data };
+    
+    // Handle the series reference if seriesId is provided
+    if (data.seriesId) {
+      updateData.series = { id: data.seriesId };
+      delete updateData.seriesId;
+    }
+    
+    return this.repo.update(id, updateData);
   }
 
   remove(id: number) {

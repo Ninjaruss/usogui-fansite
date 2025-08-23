@@ -7,7 +7,7 @@ import { CharacterSeeder } from './character.seeder';
 import { ArcSeeder } from './arc.seeder';
 import { VolumeSeeder } from './volume.seeder';
 import { Logger } from '@nestjs/common';
-import * as chalk from 'chalk';
+import chalk from 'chalk';
 
 export class MainSeeder {
   private readonly logger = new Logger(MainSeeder.name);

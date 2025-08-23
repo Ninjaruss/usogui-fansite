@@ -2,6 +2,7 @@ import { Controller, Get, Post, Put, Delete, Body, Param, NotFoundException, Que
 import { SeriesService } from './series.service';
 import { Series } from '../../entities/series.entity';
 import { CreateSeriesDto } from './dto/create-series.dto';
+import { UpdateSeriesDto } from './dto/update-series.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -143,7 +144,7 @@ export class SeriesController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiBearerAuth()
   @Roles(UserRole.MODERATOR, UserRole.ADMIN)
-  async update(@Param('id') id: number, @Body() data: Partial<Series>) {
+  async update(@Param('id') id: number, @Body() data: UpdateSeriesDto) {
     const result = await this.service.update(id, data);
     if (result.affected === 0) {
       throw new NotFoundException(`Series with id ${id} not found`);

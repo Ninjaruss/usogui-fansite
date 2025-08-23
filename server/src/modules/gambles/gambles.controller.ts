@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Body, Param, ParseIntPipe, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBearerAuth } from '@nestjs/swagger';
 import { GamblesService } from './gambles.service';
-import { CreateGambleDto } from './dtos/create-gamble.dto';
+import { CreateGambleDto } from './dto/create-gamble.dto';
 import { Gamble } from '../../entities/gamble.entity';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';

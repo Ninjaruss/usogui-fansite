@@ -1,8 +1,9 @@
-import { Controller, Get, Post, Put, Delete, Param, Body, NotFoundException, Query, UsePipes, ValidationPipe, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, Query, NotFoundException, UseGuards, ValidationPipe, UsePipes } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiQuery, ApiParam, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
 import { ArcsService } from './arcs.service';
 import { Arc } from '../../entities/arc.entity';
 import { CreateArcDto } from './dto/create-arc.dto';
+import { UpdateArcDto } from './dto/update-arc.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -164,7 +165,7 @@ export class ArcsController {
   @ApiResponse({ status: 404, description: 'Arc not found' })
   @Roles(UserRole.MODERATOR, UserRole.ADMIN)
   @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
-  async update(@Param('id') id: number, @Body() data: Partial<Arc>) {
+  async update(@Param('id') id: number, @Body() data: UpdateArcDto) {
     const result = await this.service.update(id, data);
     if (result.affected === 0) {
       throw new NotFoundException(`Arc with id ${id} not found`);

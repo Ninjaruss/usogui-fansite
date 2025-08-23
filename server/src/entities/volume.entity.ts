@@ -55,10 +55,14 @@ export class Volume {
     description: 'Series this volume belongs to',
     type: () => Series
   })
-  @ManyToOne(() => Series, series => series.id, {
+  @ManyToOne(() => Series, series => series.volumes, {
     onDelete: 'CASCADE'
   })
   series: Series;
+
+  @ApiProperty({ description: 'ID of the series this volume belongs to' })
+  @Column()
+  seriesId: number;
 
   @ApiProperty({ description: 'When the volume was created' })
   @CreateDateColumn()

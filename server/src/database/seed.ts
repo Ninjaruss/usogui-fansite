@@ -3,7 +3,7 @@ import { config } from 'dotenv';
 import { MainSeeder } from './seeds/main.seeder';
 import { ConfigService } from '@nestjs/config';
 import { getDatabaseConfig } from '../config/database.config';
-import * as chalk from 'chalk';
+import chalk from 'chalk';
 
 async function runSeed() {
   // Load environment variables

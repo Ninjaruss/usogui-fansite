@@ -2,6 +2,8 @@ import { Controller, Get, Param, Post, Body, Put, Delete, Query, UseGuards } fro
 import { ApiTags, ApiOperation, ApiResponse, ApiQuery, ApiParam, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
 import { TagsService } from './tags.service';
 import { Tag } from '../../entities/tag.entity';
+import { CreateTagDto } from './dto/create-tag.dto';
+import { UpdateTagDto } from './dto/update-tag.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -77,17 +79,7 @@ export class TagsController {
     summary: 'Create a new tag',
     description: 'Create a new tag (requires moderator or admin role)'
   })
-  @ApiBody({
-    description: 'Tag data',
-    schema: {
-      type: 'object',
-      properties: {
-        name: { type: 'string', example: 'Psychology' },
-        description: { type: 'string', example: 'Content involving psychological elements' }
-      },
-      required: ['name']
-    }
-  })
+  @ApiBody({ type: CreateTagDto })
   @ApiResponse({
     status: 201,
     description: 'Tag created successfully',
@@ -105,7 +97,7 @@ export class TagsController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden - requires moderator or admin role' })
   @Roles(UserRole.MODERATOR, UserRole.ADMIN)
-  create(@Body() data: Partial<Tag>): Promise<Tag> {
+  create(@Body() data: CreateTagDto): Promise<Tag> {
     return this.service.create(data);
   }
 
@@ -117,16 +109,7 @@ export class TagsController {
     description: 'Update an existing tag (requires moderator or admin role)'
   })
   @ApiParam({ name: 'id', description: 'Tag ID', example: 1 })
-  @ApiBody({
-    description: 'Updated tag data',
-    schema: {
-      type: 'object',
-      properties: {
-        name: { type: 'string', example: 'Gambling' },
-        description: { type: 'string', example: 'Updated description for gambling content' }
-      }
-    }
-  })
+  @ApiBody({ type: UpdateTagDto })
   @ApiResponse({
     status: 200,
     description: 'Tag updated successfully',
@@ -145,7 +128,7 @@ export class TagsController {
   @ApiResponse({ status: 403, description: 'Forbidden - requires moderator or admin role' })
   @ApiResponse({ status: 404, description: 'Tag not found' })
   @Roles(UserRole.MODERATOR, UserRole.ADMIN)
-  update(@Param('id') id: number, @Body() data: Partial<Tag>) {
+  update(@Param('id') id: number, @Body() data: UpdateTagDto) {
     return this.service.update(id, data);
   }
 
