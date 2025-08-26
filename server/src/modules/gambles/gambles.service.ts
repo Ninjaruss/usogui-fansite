@@ -5,6 +5,7 @@ import { Gamble } from '../../entities/gamble.entity';
 import { GambleTeam } from '../../entities/gamble-team.entity';
 import { GambleRound } from '../../entities/gamble-round.entity';
 import { Character } from '../../entities/character.entity';
+import { Chapter } from '../../entities/chapter.entity';
 import { CreateGambleDto, CreateGambleTeamDto, CreateGambleRoundDto } from './dto/create-gamble.dto';
 
 @Injectable()
@@ -18,6 +19,8 @@ export class GamblesService {
     private gambleRoundsRepository: Repository<GambleRound>,
     @InjectRepository(Character)
     private charactersRepository: Repository<Character>,
+  @InjectRepository(Chapter)
+  private chaptersRepository: Repository<Chapter>,
   ) {}
 
   async create(createGambleDto: CreateGambleDto): Promise<Gamble> {
@@ -102,16 +105,22 @@ export class GamblesService {
     return this.gambleRoundsRepository.save(round);
   }
 
-  async findAll(): Promise<Gamble[]> {
-    return this.gamblesRepository.createQueryBuilder('gamble')
+  async findAll(options: { page?: number; limit?: number } = {}): Promise<{ data: Gamble[]; total: number; page: number; totalPages: number }> {
+    const { page = 1, limit = 100 } = options;
+    const qb = this.gamblesRepository.createQueryBuilder('gamble')
       .leftJoinAndSelect('gamble.teams', 'teams')
       .leftJoinAndSelect('teams.members', 'teamMembers')
       .leftJoinAndSelect('gamble.rounds', 'rounds')
       .leftJoinAndSelect('rounds.winner', 'roundWinner')
       .leftJoinAndSelect('gamble.observers', 'observers')
-      .leftJoinAndSelect('gamble.chapter', 'chapter')
-      .orderBy('gamble.createdAt', 'DESC')
-      .getMany();
+      .orderBy('gamble.createdAt', 'DESC');
+
+    const skip = (page - 1) * limit;
+    qb.skip(skip).take(limit);
+
+    const [data, total] = await qb.getManyAndCount();
+    const totalPages = Math.max(1, Math.ceil(total / limit));
+    return { data, total, page, totalPages };
   }
 
   async findOne(id: number): Promise<Gamble> {
@@ -121,7 +130,6 @@ export class GamblesService {
       .leftJoinAndSelect('gamble.rounds', 'rounds')
       .leftJoinAndSelect('rounds.winner', 'roundWinner')
       .leftJoinAndSelect('gamble.observers', 'observers')
-      .leftJoinAndSelect('gamble.chapter', 'chapter')
       .where('gamble.id = :id', { id })
       .getOne();
 
@@ -133,13 +141,19 @@ export class GamblesService {
   }
 
   async findByChapter(chapterId: number): Promise<Gamble[]> {
+    // Interpret the incoming number as a chapter number (not a relation id).
+    // Find all chapters that have this chapter number (across series) and match gambles by stored chapterId (which references chapter.id in DB).
+    const chapters = await this.chaptersRepository.find({ where: { number: chapterId } });
+    if (!chapters.length) return [];
+    const chapterIds = chapters.map(c => c.id);
+
     return this.gamblesRepository.createQueryBuilder('gamble')
       .leftJoinAndSelect('gamble.teams', 'teams')
       .leftJoinAndSelect('teams.members', 'teamMembers')
       .leftJoinAndSelect('gamble.rounds', 'rounds')
       .leftJoinAndSelect('rounds.winner', 'roundWinner')
       .leftJoinAndSelect('gamble.observers', 'observers')
-      .where('gamble.chapterId = :chapterId', { chapterId })
+      .where('gamble.chapterId IN (:...chapterIds)', { chapterIds })
       .orderBy('gamble.createdAt', 'DESC')
       .getMany();
   }
@@ -151,7 +165,6 @@ export class GamblesService {
       .leftJoinAndSelect('gamble.rounds', 'rounds')
       .leftJoinAndSelect('rounds.winner', 'roundWinner')
       .leftJoinAndSelect('gamble.observers', 'observers')
-      .leftJoinAndSelect('gamble.chapter', 'chapter')
       .where('teamMembers.id = :characterId', { characterId })
       .orWhere('observers.id = :characterId', { characterId })
       .orderBy('gamble.createdAt', 'DESC')
@@ -171,8 +184,7 @@ export class GamblesService {
       .leftJoinAndSelect('teams.members', 'teamMembers')
       .leftJoinAndSelect('gamble.rounds', 'rounds')
       .leftJoinAndSelect('rounds.winner', 'roundWinner')
-      .leftJoinAndSelect('gamble.observers', 'observers')
-      .leftJoinAndSelect('gamble.chapter', 'chapter');
+      .leftJoinAndSelect('gamble.observers', 'observers');
 
     const conditions: string[] = [];
     const parameters: any = {};
@@ -193,8 +205,12 @@ export class GamblesService {
     }
 
     if (options.chapterId) {
-      conditions.push('gamble.chapterId = :chapterId');
-      parameters.chapterId = options.chapterId;
+  // Treat options.chapterId as a chapter number. Resolve to chapter IDs before filtering.
+  const chapters = await this.chaptersRepository.find({ where: { number: options.chapterId } });
+  if (!chapters.length) return [];
+  const chapterIds = chapters.map(c => c.id);
+  conditions.push('gamble.chapterId IN (:...chapterIds)');
+  parameters.chapterIds = chapterIds;
     }
 
     if (options.characterId) {

@@ -36,17 +36,26 @@ export class MediaService {
     }
 
 
-  async findAll(): Promise<Media[]> {
-    return this.mediaRepo.find({ 
-  relations: ['arc', 'character', 'submittedBy'],
-      where: { status: MediaStatus.APPROVED }
-    });
+  async findAll(filters: { page?: number; limit?: number } = {}): Promise<{ data: Media[]; total: number; page: number; totalPages: number }> {
+    const { page = 1, limit = 20 } = filters;
+    const query = this.mediaRepo.createQueryBuilder('media')
+      .leftJoinAndSelect('media.character', 'character')
+      .leftJoinAndSelect('media.submittedBy', 'submittedBy')
+      .where('media.status = :status', { status: MediaStatus.APPROVED });
+
+    query.orderBy('media.createdAt', 'DESC')
+      .skip((page - 1) * limit)
+      .take(limit);
+
+    const [data, total] = await query.getManyAndCount();
+    const totalPages = Math.max(1, Math.ceil(total / limit));
+    return { data, total, page, totalPages };
   }
 
   async findOne(id: number): Promise<Media | null> {
     const media = await this.mediaRepo.findOne({ 
       where: { id },
-  relations: ['arc', 'character', 'submittedBy']
+      relations: ['character', 'submittedBy']
     });
     if (!media) {
       throw new NotFoundException(`Media with id ${id} not found`);
@@ -57,7 +66,7 @@ export class MediaService {
   async findPending(): Promise<Media[]> {
     return this.mediaRepo.find({
       where: { status: MediaStatus.PENDING },
-  relations: ['arc', 'character', 'submittedBy'],
+      relations: ['character', 'submittedBy'],
       order: { createdAt: 'ASC' }
     });
   }

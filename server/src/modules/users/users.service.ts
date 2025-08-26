@@ -20,8 +20,12 @@ export class UsersService {
   ) {}
 
   // --- Find methods ---
-  async findAll(): Promise<User[]> {
-    return this.repo.find();
+  async findAll(filters: { page?: number; limit?: number } = {}): Promise<{ data: User[]; total: number; page: number; totalPages: number }> {
+    const { page = 1, limit = 1000 } = filters;
+    const skip = (page - 1) * limit;
+    const [data, total] = await this.repo.createQueryBuilder('user').skip(skip).take(limit).getManyAndCount();
+    const totalPages = Math.max(1, Math.ceil(total / limit));
+    return { data, total, page, totalPages };
   }
 
   async findOne(id: number): Promise<User> {

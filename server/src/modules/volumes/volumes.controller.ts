@@ -54,7 +54,11 @@ export class VolumesController {
     @Query('sort') sort?: string,
     @Query('order') order?: 'ASC' | 'DESC'
   ) {
-    return this.service.findAll({ series, number, page, limit, sort, order });
+  const pageNum = page || 1;
+  const limitNum = limit || 20;
+  const result = await this.service.findAll({ series, number, page: pageNum, limit: limitNum, sort, order });
+  // Keep compatibility: return items/meta if client expects legacy structure via query param
+  return { data: result.data, meta: result.meta };
   }
 
   @Get(':id')
@@ -68,11 +72,8 @@ export class VolumesController {
     description: 'Volume found',
     type: Volume
   })
-  @ApiResponse({
-    status: 404,
-    description: 'Volume not found'
-  })
-  async findOne(@Param('id') id: string) {
+  @ApiResponse({ status: 404, description: 'Volume not found' })
+  async findOne(@Param('id') id: string): Promise<Volume> {
     const volume = await this.service.findOne(+id);
     if (!volume) {
       throw new NotFoundException('Volume not found');

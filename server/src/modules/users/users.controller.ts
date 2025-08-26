@@ -29,28 +29,34 @@ export class UsersController {
     status: 200, 
     description: 'List of all users',
     schema: {
-      type: 'array',
-      items: {
-        type: 'object',
-        properties: {
-          id: { type: 'number', example: 1 },
-          username: { type: 'string', example: 'john_doe' },
-          email: { type: 'string', example: 'john@example.com' },
-          role: { type: 'string', example: 'USER' },
-          isEmailVerified: { type: 'boolean', example: true },
-          profileImageId: { type: 'string', format: 'uuid', nullable: true },
-          favoriteQuoteId: { type: 'number', nullable: true },
-          favoriteGambleId: { type: 'number', nullable: true },
-          createdAt: { type: 'string', format: 'date-time' },
-          updatedAt: { type: 'string', format: 'date-time' }
-        }
+      type: 'object',
+      properties: {
+        data: { type: 'array', items: { $ref: '#/components/schemas/User' } },
+        meta: { type: 'object', properties: { total: { type: 'number' }, page: { type: 'number' }, perPage: { type: 'number' }, totalPages: { type: 'number' } } }
       }
     }
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden - Admin role required' })
-  getAll(): Promise<User[]> {
-    return this.service.findAll();
+  async getAll(
+    @Query('page') page = '1',
+    @Query('limit') limit = '1000',
+    @Query('legacy') legacy?: string,
+  ) {
+    const pageNum = parseInt(page) || 1;
+    const limitNum = parseInt(limit) || 1000;
+    const result = await this.service.findAll({ page: pageNum, limit: limitNum });
+
+    const response = {
+      data: result.data,
+      meta: { total: result.total, page: result.page, perPage: limitNum, totalPages: result.totalPages },
+    } as const;
+
+    if (legacy === 'true') {
+      return { users: result.data, ...response };
+    }
+
+    return response;
   }
 
   @Get(':id')

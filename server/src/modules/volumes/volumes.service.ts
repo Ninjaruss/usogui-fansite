@@ -44,12 +44,12 @@ export class VolumesService {
     query.skip((page - 1) * limit).take(limit);
     const [items, totalItems] = await query.getManyAndCount();
     return {
-      items,
+      data: items,
       meta: {
-        totalItems,
-        itemsPerPage: limit,
+        total: totalItems,
+        perPage: limit,
         totalPages: Math.ceil(totalItems / limit),
-        currentPage: page
+        page
       }
     };
   }

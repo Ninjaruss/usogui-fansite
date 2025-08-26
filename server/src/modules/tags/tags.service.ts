@@ -10,8 +10,8 @@ export class TagsService {
   /**
    * Sorting: sort (id, name), order (ASC/DESC)
    */
-  async findAll(filters: { sort?: string; order?: 'ASC' | 'DESC' } = {}): Promise<Tag[]> {
-    const { sort, order = 'ASC' } = filters;
+  async findAll(filters: { sort?: string; order?: 'ASC' | 'DESC'; page?: number; limit?: number } = {}): Promise<{ data: Tag[]; total: number; page: number; totalPages: number }> {
+    const { sort, order = 'ASC', page = 1, limit = 1000 } = filters;
     const query = this.repo.createQueryBuilder('tag').leftJoinAndSelect('tag.events', 'events');
     const allowedSort = ['id', 'name'];
     if (sort && allowedSort.includes(sort)) {
@@ -19,7 +19,13 @@ export class TagsService {
     } else {
       query.orderBy('tag.name', 'ASC');
     }
-    return query.getMany();
+
+    const skip = (page - 1) * limit;
+    query.skip(skip).take(limit);
+
+    const [data, total] = await query.getManyAndCount();
+    const totalPages = Math.max(1, Math.ceil(total / limit));
+    return { data, total, page, totalPages };
   }
 
   async findOne(id: number): Promise<Tag> {

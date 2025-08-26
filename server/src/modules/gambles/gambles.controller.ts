@@ -54,11 +54,11 @@ export class GamblesController {
   })
   @ApiResponse({
     status: 404,
-    description: 'Chapter not found',
+    description: 'Not Found',
     schema: {
       example: {
         statusCode: 404,
-        message: 'Chapter with id 1 not found',
+        message: 'Not Found',
         error: 'Not Found'
       }
     }
@@ -91,11 +91,11 @@ export class GamblesController {
     example: 'team'
   })
   @ApiQuery({
-    name: 'chapterId',
-    required: false,
-    type: 'number',
-    description: 'Filter by chapter ID',
-    example: 1
+  name: 'chapterId',
+  required: false,
+  type: 'number',
+  description: 'Filter by chapter number (will match chapters with this number across series)',
+  example: 1
   })
   @ApiQuery({
     name: 'characterId',
@@ -152,14 +152,16 @@ export class GamblesController {
       }
     }
   })
-  findAll(
+  async findAll(
     @Query('gambleName') gambleName?: string,
     @Query('participantName') participantName?: string,
     @Query('teamName') teamName?: string,
     @Query('chapterId', new ParseIntPipe({ optional: true })) chapterId?: number,
     @Query('characterId', new ParseIntPipe({ optional: true })) characterId?: number,
     @Query('limit', new ParseIntPipe({ optional: true })) limit?: number,
-  ): Promise<Gamble[]> {
+    @Query('page') page = '1',
+    @Query('legacy') legacy?: string,
+  ) {
     // If any filters are provided, use the search functionality
     if (gambleName || participantName || teamName || chapterId || characterId || limit) {
       return this.gamblesService.search({
@@ -172,8 +174,12 @@ export class GamblesController {
       });
     }
     
-    // Otherwise return all gambles
-    return this.gamblesService.findAll();
+    // Otherwise return paginated gambles
+    const pageNum = parseInt(page) || 1;
+    const result = await this.gamblesService.findAll({ page: pageNum, limit: 100 });
+    const response = { data: result.data, meta: { total: result.total, page: result.page, perPage: 100, totalPages: result.totalPages } };
+    if (legacy === 'true') return { gambles: result.data, ...response };
+    return response;
   }
 
   @Get(':id')
@@ -238,9 +244,9 @@ export class GamblesController {
     description: 'Retrieve all gambles that occurred in a specific chapter'
   })
   @ApiParam({
-    name: 'chapterId',
-    description: 'ID of the chapter to find gambles for',
-    type: Number
+  name: 'chapterId',
+  description: 'Chapter number to find gambles for (matches chapters by number across series)',
+  type: Number
   })
   @ApiResponse({
     status: 200,

@@ -13,15 +13,12 @@ export class CharactersService {
   async findAll(filters: { name?: string; arc?: string; series?: string; description?: string; page?: number; limit?: number; sort?: string; order?: 'ASC' | 'DESC' }) {
     const { page = 1, limit = 20, sort, order = 'ASC' } = filters;
     const query = this.repo.createQueryBuilder('character')
-      .leftJoinAndSelect('character.arc', 'arc')
       .leftJoinAndSelect('character.series', 'series');
 
     if (filters.name) {
       query.andWhere('LOWER(character.name) LIKE LOWER(:name)', { name: `%${filters.name}%` });
     }
-    if (filters.arc) {
-      query.andWhere('LOWER(arc.name) LIKE LOWER(:arc)', { arc: `%${filters.arc}%` });
-    }
+  // `arc` relation does not exist on Character entity; skip arc filtering
     if (filters.series) {
       query.andWhere('LOWER(series.name) LIKE LOWER(:series)', { series: `%${filters.series}%` });
     }
@@ -48,7 +45,7 @@ export class CharactersService {
   }
 
   findOne(id: number): Promise<Character | null> {
-    return this.repo.findOne({ where: { id }, relations: ['arc', 'series'] });
+    return this.repo.findOne({ where: { id }, relations: ['series'] });
   }
 
   create(data: Partial<Character>): Promise<Character> {

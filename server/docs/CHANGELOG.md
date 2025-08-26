@@ -1,5 +1,19 @@
 # Changelog and notes
+
+## 2025-08-26
+### Changes
+- Generated basic webpage frontend
+- Updating backend endpoints to return Paginated response rather than an Array of data
+- Normalizing expecting paginated responses for all pages
+
+### Notes
+- Working with Gemini's Agent Mode seems to be decent, but fails to have as much consistency as using a premium model with Github Copilot. It feels like the generated code often breaks quickly or the coding structure is a little flawed. I may just stick to GPT-5 mini preview with Copilot as it seems to consistently identify and solve issues.
+- NextJS requires building the frontend to deploy changes
+- I will need to practice identifying and coding state changes on the frontend. Even though I've worked with frontend here and there, I am not familar enough to let the LLM generate a bunch of code for me to try and fix. This is partly due to the errors being a lot more vague to me on the frontend.
+- It's been a little bit of an issue making sure to clean up files. Mainly, it's making sure if I change an entitiy and its relations, that I reflect that change throughout its module.
+
 ## 2025-08-25
+### Changes
 - Added guides module for users to write out guides in markdown
 - Added full search to check across all data (no full text yet; may consider for guides/gambles/events)
 - Updated user to have chapter userProgress stored

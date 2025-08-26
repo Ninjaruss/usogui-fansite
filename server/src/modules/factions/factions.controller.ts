@@ -21,29 +21,40 @@ export class FactionsController {
   })
   @ApiQuery({ name: 'sort', required: false, description: 'Field to sort by (id, name)' })
   @ApiQuery({ name: 'order', required: false, enum: ['ASC', 'DESC'], description: 'Sort order (default: ASC)' })
-  @ApiResponse({
-    status: 200,
-    description: 'Factions retrieved successfully',
-    schema: {
-      type: 'array',
-      items: {
-        type: 'object',
-        properties: {
-          id: { type: 'number', example: 1 },
-          name: { type: 'string', example: 'Kakerou' },
-          description: { type: 'string', example: 'The underground gambling organization that governs illegal gambling' },
-          createdAt: { type: 'string', format: 'date-time' },
-          updatedAt: { type: 'string', format: 'date-time' }
-        }
-      }
-    }
+        @ApiResponse({
+          status: 200,
+          description: 'List of factions',
+          schema: {
+            type: 'object',
+            properties: {
+              data: { type: 'array', items: { $ref: '#/components/schemas/Faction' } },
+              meta: { type: 'object', properties: { total: { type: 'number' }, page: { type: 'number' }, perPage: { type: 'number' }, totalPages: { type: 'number' } } }
+            }
+          }
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async getAll(
     @Query('sort') sort?: string,
     @Query('order') order: 'ASC' | 'DESC' = 'ASC',
-  ): Promise<Faction[]> {
-    return this.service.findAll({ sort, order });
+    @Query('page') page = '1',
+    @Query('limit') limit = '1000',
+    @Query('legacy') legacy?: string,
+  ) {
+    const pageNum = parseInt(page) || 1;
+    const limitNum = parseInt(limit) || 1000;
+    const result = await this.service.findAll({ sort, order, page: pageNum, limit: limitNum });
+
+    const response = {
+      data: result.data,
+      meta: { total: result.total, page: result.page, perPage: limitNum, totalPages: result.totalPages },
+    } as const;
+
+    // If legacy query param set, also include the old top-level array for backward compatibility
+    if (legacy === 'true') {
+      return { factions: result.data, ...response };
+    }
+
+    return response;
   }
 
   @Get(':id')

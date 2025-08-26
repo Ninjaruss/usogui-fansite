@@ -13,7 +13,6 @@ export class ChaptersService {
   async findAll(filters: { title?: string; number?: string; arc?: string; series?: string; page?: number; limit?: number; sort?: string; order?: 'ASC' | 'DESC' }) {
     const { page = 1, limit = 20, sort, order = 'ASC' } = filters;
     const query = this.repo.createQueryBuilder('chapter')
-      .leftJoinAndSelect('chapter.arc', 'arc')
       .leftJoinAndSelect('chapter.series', 'series');
 
     if (filters.title) {
@@ -22,9 +21,7 @@ export class ChaptersService {
     if (filters.number) {
       query.andWhere('chapter.number = :number', { number: filters.number });
     }
-    if (filters.arc) {
-      query.andWhere('LOWER(arc.name) LIKE LOWER(:arc)', { arc: `%${filters.arc}%` });
-    }
+  // arc filtering removed: Chapter entity does not define an 'arc' relation
     if (filters.series) {
       query.andWhere('LOWER(series.name) LIKE LOWER(:series)', { series: `%${filters.series}%` });
     }
@@ -53,7 +50,7 @@ export class ChaptersService {
   }
 
   findOne(id: number): Promise<Chapter | null> {
-    return this.repo.findOne({ where: { id }, relations: ['arc', 'series'] });
+    return this.repo.findOne({ where: { id }, relations: ['series'] });
   }
 
   create(data: Partial<Chapter>): Promise<Chapter> {

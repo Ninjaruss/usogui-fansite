@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import Header from "@/components/header";
 
 export const metadata: Metadata = {
-  title: "Next.js Starter",
-  description: "Starter for small Next.js projects",
+  title: "Usogui Fansite",
+  description: "A fansite for the manga Usogui",
 };
 
 export default function RootLayout({
@@ -14,8 +14,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>
-        {children}
+      <body className="bg-gray-900 text-white">
+        <Header />
+        <main>{children}</main>
       </body>
     </html>
   );

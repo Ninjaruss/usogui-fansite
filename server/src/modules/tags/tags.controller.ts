@@ -25,16 +25,10 @@ export class TagsController {
     status: 200,
     description: 'Tags retrieved successfully',
     schema: {
-      type: 'array',
-      items: {
-        type: 'object',
-        properties: {
-          id: { type: 'number', example: 1 },
-          name: { type: 'string', example: 'Gambling' },
-          description: { type: 'string', example: 'Content related to gambling activities' },
-          createdAt: { type: 'string', format: 'date-time' },
-          updatedAt: { type: 'string', format: 'date-time' }
-        }
+      type: 'object',
+      properties: {
+        data: { type: 'array', items: { $ref: '#/components/schemas/Tag' } },
+        meta: { type: 'object', properties: { total: { type: 'number' }, page: { type: 'number' }, perPage: { type: 'number' }, totalPages: { type: 'number' } } }
       }
     }
   })
@@ -42,8 +36,24 @@ export class TagsController {
   async getAll(
     @Query('sort') sort?: string,
     @Query('order') order: 'ASC' | 'DESC' = 'ASC',
-  ): Promise<Tag[]> {
-    return this.service.findAll({ sort, order });
+    @Query('page') page = '1',
+    @Query('limit') limit = '1000',
+    @Query('legacy') legacy?: string,
+  ) {
+    const pageNum = parseInt(page) || 1;
+    const limitNum = parseInt(limit) || 1000;
+    const result = await this.service.findAll({ sort, order, page: pageNum, limit: limitNum });
+
+    const response = {
+      data: result.data,
+      meta: { total: result.total, page: result.page, perPage: limitNum, totalPages: result.totalPages },
+    } as const;
+
+    if (legacy === 'true') {
+      return { tags: result.data, ...response };
+    }
+
+    return response;
   }
 
   @Get(':id')
