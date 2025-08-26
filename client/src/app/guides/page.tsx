@@ -3,6 +3,7 @@
 
 import { useEffect, useState } from 'react';
 import { Guide } from '../../types/resources';
+import { getGuides } from '../../lib/api/guides';
 
 export default function GuidesPage() {
   const [guides, setGuides] = useState<Guide[]>([]);
@@ -12,14 +13,10 @@ export default function GuidesPage() {
   useEffect(() => {
     const fetchGuides = async () => {
       try {
-        const response = await fetch(`http://localhost:3001/guides`);
-        if (!response.ok) {
-          throw new Error(`Failed to fetch guides`);
-        }
-  const result = await response.json();
-  setGuides(result?.data ?? []);
-      } catch (err: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
-        setError(err.message);
+        const result = await getGuides({ page: 1, limit: 20 });
+        setGuides(result?.data ?? []);
+      } catch (err) {
+        setError((err as Error)?.message ?? 'Failed to fetch guides');
       } finally {
         setLoading(false);
       }

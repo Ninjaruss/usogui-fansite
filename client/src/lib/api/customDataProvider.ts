@@ -89,40 +89,36 @@ const customDataProvider: DataProvider = {
     qs.set('page', String(page));
     qs.set('limit', String(perPage));
     if (sortField) {
-      qs.set('sort', String(sortField));
-      qs.set('order', String(sortOrder));
+      // Server expects `sortBy` and `sortOrder` (GuideQueryDto)
+      qs.set('sortBy', String(sortField));
+      qs.set('sortOrder', String(sortOrder));
     }
 
     if (params.filter && typeof params.filter === 'object') {
       Object.entries(params.filter).forEach(([k, v]) => {
         if (v === undefined || v === null) return;
-        if (Array.isArray(v)) v.forEach(item => qs.append(k, String(item)));
-        else qs.set(k, String(v));
+        // react-admin uses `q` for full-text search; backend expects `search`
+        const mappedKey = k === 'q' ? 'search' : k;
+        if (Array.isArray(v)) v.forEach(item => qs.append(mappedKey, String(item)));
+        else qs.set(mappedKey, String(v));
       });
     }
 
     const url = `${API_URL}/${resource}?${qs.toString()}`;
-    try {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
-    const resp = await fetch(url, { credentials: 'include', headers: token ? { Authorization: `Bearer ${token}` } : undefined });
-      if (!resp.ok) throw new Error(`Failed to fetch ${resource}: ${resp.status}`);
-
+    // Helper to parse a successful fetch response into react-admin shape
+    const parseResp = async (resp: Response): Promise<GetListResult<R> | null> => {
       let body: unknown = null;
-      try {
-        body = await resp.json();
-      } catch {
-        body = null;
+      try { body = await resp.json(); } catch { body = null; }
+
+      if (body && typeof body === 'object' && 'data' in (body as Record<string, unknown>) && Array.isArray((body as Record<string, unknown>).data)) {
+        const obj = body as Record<string, unknown>;
+        const arr = ((obj.data) as unknown[]).map(d => convertKeysToCamelCase(d) as unknown as R);
+        const bodyTotal = typeof obj.total === 'number' ? Number(obj.total) : undefined;
+        const headerTotal = resp.headers.get('x-total-count');
+        const total = bodyTotal ?? (headerTotal ? Number(headerTotal) : arr.length);
+        return { data: arr, total } as GetListResult<R>;
       }
 
-  // Envelope shape: { data: [], total } or { data: [], meta: { total } }
-  if (body && typeof body === 'object' && 'data' in (body as Record<string, unknown>) && Array.isArray((body as Record<string, unknown>).data)) {
-    const obj = body as Record<string, unknown>;
-    const arr = ((obj.data) as unknown[]).map(d => convertKeysToCamelCase(d) as unknown as R);
-    const total = Number((obj.total ?? (obj.meta && (obj.meta as any).total) ?? arr.length));
-    return { data: arr, total } as GetListResult<R>;
-  }
-
-      // Raw array response
       if (Array.isArray(body)) {
         const arr = (body as unknown[]).map(d => convertKeysToCamelCase(d) as unknown as R);
         const headerTotal = resp.headers.get('x-total-count');
@@ -130,52 +126,50 @@ const customDataProvider: DataProvider = {
         return { data: arr, total } as GetListResult<R>;
       }
 
-      // Object with first array key, e.g., { arcs: [...] } or { gambles: [...], meta: { total } }
-      if (body && typeof body === 'object') {
-        const obj = body as Record<string, unknown>;
-        const firstArrayKey = Object.keys(obj).find(k => Array.isArray(obj[k]));
-        if (firstArrayKey) {
-          const arr = (obj[firstArrayKey] as unknown[]).map(d => convertKeysToCamelCase(d) as unknown as R);
-          // Check for meta.total in body before falling back to header
-          const metaTotal = (obj.meta && (obj.meta as any).total) ? Number((obj.meta as any).total) : undefined;
-          const headerTotal = resp.headers.get('x-total-count');
-          const total = metaTotal ?? (headerTotal ? Number(headerTotal) : arr.length);
-          return { data: arr, total } as GetListResult<R>;
-        }
-      }
+      return null;
+    };
 
-      // Fallback to base provider
-      const fallback = await baseDataProvider.getList<R>(resource, params);
-      return {
-        data: (fallback.data as unknown[]).map((d: unknown) => convertKeysToCamelCase(d) as unknown as R),
-        total: fallback.total as number,
-      } as GetListResult<R>;
-  } catch {
-      // Delegate to base provider on error: attempt refresh once if 401
-      // Try to refresh access token
+    const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
+    const resp = await fetch(url, { credentials: 'include', headers: token ? { Authorization: `Bearer ${token}` } : undefined });
+
+    // If response is OK try to parse and return. If parsing fails, reject so react-admin handles it.
+    if (resp.ok) {
+      const parsed = await parseResp(resp);
+      if (parsed) return parsed;
+      // Unknown shape — don't delegate to the strict base provider (it throws on missing headers).
+      throw new Error(`Unexpected response shape from ${resource}`);
+    }
+
+    // If not OK and it's 401, attempt one refresh and retry once. Otherwise reject with status to let authProvider handle it.
+    if (resp.status === 401) {
       try {
         const refreshRes = await fetch(`${API_URL}/auth/refresh`, { method: 'POST', credentials: 'include' });
         if (refreshRes.ok) {
           const b = await refreshRes.json().catch(() => null);
           const newToken = b?.access_token ?? null;
           if (newToken && typeof window !== 'undefined') localStorage.setItem('authToken', newToken);
-          const fallback = await baseDataProvider.getList<R>(resource, params);
-          return {
-            data: (fallback.data as unknown[]).map((d: unknown) => convertKeysToCamelCase(d) as unknown as R),
-            total: fallback.total as number,
-          } as GetListResult<R>;
-        }
-      } catch {
-        // ignore
-      }
-      const fallback = await baseDataProvider.getList<R>(resource, params);
-      return {
-        data: (fallback.data as unknown[]).map((d: unknown) => convertKeysToCamelCase(d) as unknown as R),
-        total: fallback.total as number,
-      } as GetListResult<R>;
-    }
-  },
 
+          const tokenAfter = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
+          const retryResp = await fetch(url, { credentials: 'include', headers: tokenAfter ? { Authorization: `Bearer ${tokenAfter}` } : undefined });
+          if (retryResp.ok) {
+            const parsed = await parseResp(retryResp);
+            if (parsed) return parsed;
+            throw new Error(`Unexpected response shape from ${resource} after refresh`);
+          }
+          // If retry failed, fall through to reject with its status
+          throw new Error(`Failed to fetch ${resource}: ${retryResp.status}`);
+        }
+      } catch (_refreshErr) {
+        // swallow and fall through to reject as unauthorized
+      }
+    }
+
+    // Non-OK response (non-401 or failed refresh): reject so react-admin/authProvider reacts (e.g., redirect to login)
+  const err = new Error(`Failed to fetch ${resource}: ${resp.status}`) as Error & { status?: number };
+  err.status = resp.status;
+    throw err;
+  },
+  
   getOne: <R extends RaRecord = RaRecord>(resource: string, params: GetOneParams<R>): Promise<GetOneResult<R>> =>
     baseDataProvider.getOne<R>(resource, params).then(response => {
       let data = convertKeysToCamelCase(response.data) as unknown as Record<string, unknown> | null;

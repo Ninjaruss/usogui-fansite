@@ -4,7 +4,8 @@ import { API_URL, PaginatedResponse } from './types';
 
 export async function getGuides(options: { page?: number; limit?: number; } = {}): Promise<PaginatedResponse<Guide>> {
   const { page = 1, limit = 20 } = options;
-  const response = await fetch(`${API_URL}/guides?page=${page}&limit=${limit}`);
+  // Public listing endpoint is namespaced under /guides/public
+  const response = await fetch(`${API_URL}/guides/public?page=${page}&limit=${limit}`);
   if (!response.ok) {
     throw new Error('Failed to fetch guides');
   }
