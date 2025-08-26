@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import Header from "@/components/header";
+import InitJQ from '@/components/InitJQ';
+import AuthGate from '@/components/AuthGate';
+import { UserProvider } from '@/context/UserContext';
+import ToastProvider from '@/components/ToastProvider';
 
 export const metadata: Metadata = {
   title: "Usogui Fansite",
@@ -15,8 +19,15 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="bg-gray-900 text-white">
-        <Header />
-        <main>{children}</main>
+        <UserProvider>
+          <ToastProvider>
+            <InitJQ />
+            <Header />
+            <AuthGate>
+              <main>{children}</main>
+            </AuthGate>
+          </ToastProvider>
+        </UserProvider>
       </body>
     </html>
   );

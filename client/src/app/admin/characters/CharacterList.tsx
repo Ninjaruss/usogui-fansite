@@ -1,7 +1,9 @@
-import { List, Datagrid, TextField } from 'react-admin';
+import { List, Datagrid, TextField, TextInput } from 'react-admin';
+
+const CharacterFilter = [<TextInput key="q" source="q" label="Search" alwaysOn />];
 
 export const CharacterList = () => (
-    <List>
+    <List perPage={20} filters={CharacterFilter}>
         <Datagrid rowClick="edit">
             <TextField source="id" />
             <TextField source="name" />

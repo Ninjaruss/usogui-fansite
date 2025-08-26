@@ -122,4 +122,7 @@ export class User {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @Column({ type: 'varchar', nullable: true })
+  refreshToken: string | null;
 }

@@ -20,7 +20,12 @@ export class AuthService {
 
   // --- Validate login ---
   async validateUser(username: string, password: string): Promise<User | null> {
-    const user = await this.usersService.findByUsername(username);
+    // Allow login by username or email
+    let user = await this.usersService.findByUsername(username);
+    if (!user) {
+      // if the provided identifier looks like an email, or username lookup failed, try email lookup
+      user = await this.usersService.findByEmail(username);
+    }
     if (!user) return null;
     const ok = await this.usersService.validatePassword(user, password);
     if (!ok) return null;
@@ -40,10 +45,23 @@ export class AuthService {
 
   async login(user: User) {
     const access_token = this.signToken(user);
+    // create a refresh token (random) and persist it
+    const refreshToken = randomBytes(48).toString('hex');
+    await this.usersService.setRefreshToken(user.id, refreshToken);
     return {
       access_token,
+      refresh_token: refreshToken,
       user: { id: user.id, username: user.username, email: user.email, role: user.role },
     };
+  }
+
+  // Refresh access token using a stored refresh token
+  async refreshAccessToken(refreshToken: string) {
+    if (!refreshToken) throw new UnauthorizedException('No refresh token provided');
+    const user = await this.usersService.findByRefreshToken(refreshToken);
+    if (!user) throw new UnauthorizedException('Invalid refresh token');
+    const access_token = this.signToken(user);
+    return { access_token, user: { id: user.id, username: user.username, email: user.email, role: user.role } };
   }
 
   // --- Registration ---

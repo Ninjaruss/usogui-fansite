@@ -4,8 +4,10 @@ import { ValidationPipe } from '@nestjs/common';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
 import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
+import cookieParser from 'cookie-parser';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { performDatabaseSafetyChecks } from './utils/db-consistency-check';
+import { TransformResponseInterceptor } from './common/interceptors/transform-response.interceptor';
 
 async function bootstrap() {
   // Perform database safety checks before starting the application
@@ -15,26 +17,42 @@ async function bootstrap() {
   
   // Security
   app.use(helmet());
+  // Cookie parsing for refresh token cookie
+  app.use(cookieParser());
   app.enableCors({
-    origin: process.env.NODE_ENV === 'production' 
-      ? ['https://your-frontend-domain.com'] 
+    origin: process.env.NODE_ENV === 'production'
+      ? ['https://your-frontend-domain.com']
       : 'http://localhost:3000',
     credentials: true,
+    // Ensure X-Total-Count is readable by browser clients (used for react-admin pagination)
+    exposedHeaders: ['X-Total-Count'],
   });
   
   // Rate limiting
+  // Allow overriding via environment variables. Defaults increased to reduce accidental blocking during development.
+  const RATE_LIMIT_WINDOW_MS = process.env.RATE_LIMIT_WINDOW_MS ? Number(process.env.RATE_LIMIT_WINDOW_MS) : 15 * 60 * 1000; // default 15 minutes
+  const RATE_LIMIT_MAX = process.env.RATE_LIMIT_MAX ? Number(process.env.RATE_LIMIT_MAX) : 1000; // default 1000 requests per window
+  console.log(`Rate limiter: windowMs=${RATE_LIMIT_WINDOW_MS}, max=${RATE_LIMIT_MAX}`);
+
   app.use(
     rateLimit({
-      windowMs: 15 * 60 * 1000, // 15 minutes
-      max: 100, // limit each IP to 100 requests per windowMs
+      windowMs: RATE_LIMIT_WINDOW_MS,
+      max: RATE_LIMIT_MAX,
       message: 'Too many requests from this IP, please try again later',
     }),
   );
 
   // Special rate limit for auth routes
+  // Special rate limit for auth routes (keep strict defaults to protect against brute force)
+  const AUTH_RATE_LIMIT_WINDOW_MS = process.env.AUTH_RATE_LIMIT_WINDOW_MS ? Number(process.env.AUTH_RATE_LIMIT_WINDOW_MS) : 60 * 60 * 1000; // 1 hour
+  // Keep strict limits in production, but relax for local development to avoid accidental blocks while testing.
+  const AUTH_RATE_LIMIT_MAX = process.env.AUTH_RATE_LIMIT_MAX
+    ? Number(process.env.AUTH_RATE_LIMIT_MAX)
+    : (process.env.NODE_ENV === 'production' ? 50 : 1000);
+  console.log(`Auth rate limiter: windowMs=${AUTH_RATE_LIMIT_WINDOW_MS}, max=${AUTH_RATE_LIMIT_MAX}`);
   app.use('/auth', rateLimit({
-    windowMs: 60 * 60 * 1000, // 1 hour
-    max: 5, // limit each IP to 5 login requests per hour
+    windowMs: AUTH_RATE_LIMIT_WINDOW_MS,
+    max: AUTH_RATE_LIMIT_MAX,
     message: 'Too many login attempts, please try again later',
   }));
 
@@ -47,6 +65,8 @@ async function bootstrap() {
 
   // Global exception filter
   app.useGlobalFilters(new GlobalExceptionFilter());
+  // Global response transformer: normalize list responses and set X-Total-Count header
+  app.useGlobalInterceptors(new TransformResponseInterceptor());
 
   // API Documentation
   const config = new DocumentBuilder()

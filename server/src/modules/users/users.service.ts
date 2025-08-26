@@ -197,6 +197,29 @@ export class UsersService {
     return this.findOne(id);
   }
 
+  // --- Refresh token helpers ---
+  async setRefreshToken(userId: number, token: string): Promise<void> {
+    const user = await this.findOne(userId);
+    user.refreshToken = token;
+    await this.repo.save(user);
+  }
+
+  async clearRefreshToken(userId: number): Promise<void> {
+    const user = await this.findOne(userId);
+    user.refreshToken = null;
+    await this.repo.save(user);
+  }
+
+  async verifyRefreshToken(userId: number, token: string): Promise<boolean> {
+    const user = await this.findOne(userId);
+    return !!(user.refreshToken && user.refreshToken === token);
+  }
+
+  async findByRefreshToken(token: string): Promise<User | null> {
+    if (!token) return null;
+    return this.repo.findOne({ where: { refreshToken: token } });
+  }
+
   // --- Profile customization methods ---
   async updateProfile(userId: number, updateProfileDto: UpdateProfileDto): Promise<User> {
     const user = await this.findOne(userId);

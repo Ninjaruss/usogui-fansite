@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Request, UseGuards, Query } from '@nestjs/common';
+import { Body, Controller, Get, Post, Request, UseGuards, Query, UnauthorizedException } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
@@ -74,7 +74,62 @@ export class AuthController {
   @Post('login')
   @UseGuards(LocalAuthGuard)
   async login(@Body() _dto: LoginDto, @Request() req) {
-    return this.auth.login(req.user);
+    const payload = await this.auth.login(req.user);
+    // Set refresh token as httpOnly cookie
+    try {
+      const res = req.res;
+      if (res && payload.refresh_token) {
+        res.cookie('refreshToken', payload.refresh_token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+          maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+        });
+      }
+    } catch (e) {
+      // ignore if unable to set cookie
+    }
+    // Do not return refresh_token in body for security
+    const { refresh_token, ...safe } = payload as any;
+    return safe;
+  }
+
+  @Post('refresh')
+  async refresh(@Request() req) {
+    const refresh = req.cookies?.refreshToken;
+    if (!refresh) throw new UnauthorizedException('No refresh token');
+    const payload = await this.auth.refreshAccessToken(refresh);
+    // Return access token and canonical user so client can refresh its stored user
+    return { access_token: payload.access_token, user: payload.user };
+  }
+
+  @Post('logout')
+  async logout(@Request() req) {
+    try {
+      const res = req.res;
+      // clear cookie
+      if (res) res.clearCookie('refreshToken');
+      // clear stored refresh token on user if present
+      const user = req.user;
+      if (user && user.id) {
+        await this.auth['usersService'].clearRefreshToken(user.id);
+      } else {
+        // If no authenticated user (e.g., client called logout without Authorization header),
+        // try to clear persisted refresh token by inspecting the refresh cookie value.
+        const refresh = req.cookies?.refreshToken;
+        if (refresh) {
+          try {
+            const u = await this.auth['usersService'].findByRefreshToken(refresh);
+            if (u && u.id) await this.auth['usersService'].clearRefreshToken(u.id);
+          } catch {
+            // ignore lookup errors
+          }
+        }
+      }
+    } catch (e) {
+      // ignore
+    }
+    return { message: 'Logged out' };
   }
 
   @ApiOperation({
@@ -109,7 +164,8 @@ export class AuthController {
   @Get('me')
   @UseGuards(JwtAuthGuard)
   me(@Request() req) {
-    console.log("/me request: " + req.user); // Should print { id, username, email, role }
+    // log a compact, parseable representation for debugging
+    try { console.log('/me request:', JSON.stringify(req.user)); } catch { /* ignore */ }
     return req.user;
   }
 

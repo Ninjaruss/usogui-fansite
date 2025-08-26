@@ -1,7 +1,11 @@
-import { List, Datagrid, TextField, NumberField } from 'react-admin';
+import { List, Datagrid, TextField, NumberField, TextInput } from 'react-admin';
+
+const ArcFilter = [
+  <TextInput key="q" source="q" label="Search" alwaysOn />,
+];
 
 export const ArcList = () => (
-    <List>
+    <List perPage={20} filters={ArcFilter}>
         <Datagrid rowClick="edit">
             <TextField source="id" />
             <TextField source="name" />

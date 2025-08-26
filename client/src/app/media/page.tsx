@@ -6,7 +6,6 @@ import { Media } from '../../types/resources';
 
 export default function MediaPage() {
   const [media, setMedia] = useState<Media[]>([]);
-  const [meta, setMeta] = useState<{ total?: number; page?: number; perPage?: number; totalPages?: number } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -19,7 +18,6 @@ export default function MediaPage() {
         }
   const result = await response.json();
   setMedia(result?.data ?? []);
-  setMeta(result?.meta ?? null);
       } catch (err: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
         setError(err.message);
       } finally {

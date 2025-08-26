@@ -55,7 +55,8 @@ export class GuidesService {
       .leftJoinAndSelect('guide.author', 'author')
       .leftJoinAndSelect('guide.tags', 'tags')
       .select([
-        'guide.id',
+  'guide.id',
+  'guide.authorId',
         'guide.title',
         'guide.description',
         'guide.status',
@@ -136,7 +137,8 @@ export class GuidesService {
       where: { id, status: GuideStatus.PUBLISHED },
       relations: ['author', 'tags'],
       select: {
-        id: true,
+  id: true,
+  authorId: true,
         title: true,
         description: true,
         content: true,

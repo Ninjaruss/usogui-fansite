@@ -25,30 +25,51 @@ export class TransformResponseInterceptor<T> implements NestInterceptor<T, any> 
         }
 
         // If the service already returns a paginated shape expected by the client
-        // e.g. { data: [...], total: number } or { quotes: [...], total }
+        // e.g. { data: [...], total: number } or { data: [...], meta: { total } } or { gambles: [...], meta: { total } }
         if (typeof response === 'object' && response !== null) {
-          if (Array.isArray((response as any).data) && typeof (response as any).total === 'number') {
-            // set header
-            httpResponse.setHeader('X-Total-Count', String((response as any).total));
-            // return normalized object but keep `total` top-level for compatibility
+          // Primary: { data: [...], total }
+          const topData = (response as any).data;
+          const topTotal = (response as any).total;
+          const metaTotal = (response as any).meta?.total;
+
+          if (Array.isArray(topData) && (typeof topTotal === 'number' || typeof metaTotal === 'number')) {
+            const totalValue = typeof topTotal === 'number' ? topTotal : metaTotal;
+            httpResponse.setHeader('X-Total-Count', String(totalValue));
+            // Ensure browsers can read the header when CORS is enabled
+            httpResponse.setHeader('Access-Control-Expose-Headers', 'X-Total-Count');
             return {
-              data: (response as any).data,
-              total: (response as any).total,
-              page: (response as any).page ?? 1,
-              limit: (response as any).limit ?? null,
-              totalPages: (response as any).totalPages ?? Math.ceil((response as any).total / ((response as any).limit || (response as any).data.length || 1)),
+              data: topData,
+              total: totalValue,
+              page: (response as any).page ?? (response as any).meta?.page ?? 1,
+              limit: (response as any).limit ?? (response as any).meta?.perPage ?? null,
+              totalPages: (response as any).totalPages ?? (response as any).meta?.totalPages ?? Math.ceil(totalValue / ((response as any).limit || (response as any).meta?.perPage || topData.length || 1)),
             };
           }
 
-          if (Array.isArray((response as any).quotes) && typeof (response as any).total === 'number') {
-            httpResponse.setHeader('X-Total-Count', String((response as any).total));
-            return response; // keep { quotes, total } shape
+          // Resource-keyed shape: { gambles: [...], meta: { total } }
+          const firstArrayKey = Object.keys(response).find(k => Array.isArray((response as any)[k]));
+          if (firstArrayKey && typeof (response as any).meta?.total === 'number') {
+            const arr = (response as any)[firstArrayKey];
+            const totalValue = (response as any).meta.total;
+            httpResponse.setHeader('X-Total-Count', String(totalValue));
+            // Ensure browsers can read the header when CORS is enabled
+            httpResponse.setHeader('Access-Control-Expose-Headers', 'X-Total-Count');
+            // Return normalized response with `data` and keep meta for compatibility
+            return {
+              data: arr,
+              total: totalValue,
+              page: (response as any).meta?.page ?? 1,
+              limit: (response as any).meta?.perPage ?? null,
+              totalPages: (response as any).meta?.totalPages ?? Math.ceil(totalValue / ((response as any).meta?.perPage || arr.length || 1)),
+            };
           }
         }
 
         // If response is a raw array, wrap it into { data: [...] } and set X-Total-Count
         if (Array.isArray(response)) {
           httpResponse.setHeader('X-Total-Count', String(response.length));
+          // Ensure browsers can read the header when CORS is enabled
+          httpResponse.setHeader('Access-Control-Expose-Headers', 'X-Total-Count');
           return { data: response };
         }
 

@@ -6,7 +6,6 @@ import { Gamble } from '../../types/resources';
 
 export default function GamblesPage() {
   const [gambles, setGambles] = useState<Gamble[]>([]);
-  const [meta, setMeta] = useState<{ total?: number; page?: number; perPage?: number; totalPages?: number } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -20,7 +19,6 @@ export default function GamblesPage() {
   const result = await response.json();
   // expect { data: Gamble[], meta: { ... } }
   setGambles(result?.data ?? []);
-  setMeta(result?.meta ?? null);
       } catch (err: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
         setError(err.message);
       } finally {

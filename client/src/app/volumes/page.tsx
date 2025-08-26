@@ -5,7 +5,6 @@ import { Volume } from '../../types/resources';
 
 export default function VolumesPage() {
   const [volumes, setVolumes] = useState<Volume[]>([]);
-  const [meta, setMeta] = useState<{ total?: number; page?: number; perPage?: number; totalPages?: number } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -18,7 +17,6 @@ export default function VolumesPage() {
         }
   const result = await response.json();
   setVolumes(result?.data ?? []);
-  setMeta(result?.meta ?? null);
       } catch (err: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
         setError(err.message);
       } finally {

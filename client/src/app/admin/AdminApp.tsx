@@ -3,6 +3,8 @@
 
 import { Admin, Resource } from 'react-admin';
 import { dataProvider } from '@/lib/api/dataProvider';
+import authProvider from '@/lib/api/authProvider';
+import AdminLogin from './AdminLogin';
 import { CharacterList } from './characters/CharacterList';
 import { CharacterEdit } from './characters/CharacterEdit';
 import { CharacterCreate } from './characters/CharacterCreate';
@@ -57,7 +59,7 @@ import { VolumeCreate } from './volumes/VolumeCreate';
 import { VolumeShow } from './volumes/VolumeShow';
 
 const AdminApp = () => (
-  <Admin dataProvider={dataProvider}>
+  <Admin dataProvider={dataProvider} authProvider={authProvider} loginPage={AdminLogin}>
     <Resource
       name="characters"
       list={CharacterList}

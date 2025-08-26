@@ -98,12 +98,16 @@ export class ChaptersController {
   @ApiUnauthorizedResponse({ description: 'Unauthorized' })
   @ApiForbiddenResponse({ description: 'Forbidden - requires moderator or admin role' })
   @ApiParam({ name: 'id', description: 'Chapter ID', example: 1 })
-  async update(@Param('id') id: number, @Body() data: UpdateChapterDto) {
+  async update(@Param('id') id: number, @Body() data: UpdateChapterDto): Promise<Chapter> {
     const result = await this.service.update(id, data);
     if (result.affected === 0) {
       throw new NotFoundException(`Chapter with id ${id} not found`);
     }
-    return { message: 'Updated successfully' };
+    const updatedChapter = await this.service.findOne(id);
+    if (!updatedChapter) {
+      throw new NotFoundException(`Chapter with id ${id} not found after update`);
+    }
+    return updatedChapter;
   }
 
   @Delete(':id')
@@ -115,11 +119,11 @@ export class ChaptersController {
   @ApiUnauthorizedResponse({ description: 'Unauthorized' })
   @ApiForbiddenResponse({ description: 'Forbidden - requires moderator or admin role' })
   @ApiParam({ name: 'id', description: 'Chapter ID', example: 1 })
-  async remove(@Param('id') id: number) {
+  async remove(@Param('id') id: number): Promise<{ id: number }> {
     const result = await this.service.remove(id);
     if (result.affected === 0) {
       throw new NotFoundException(`Chapter with id ${id} not found`);
     }
-    return { message: 'Deleted successfully' };
+    return { id };
   }
 }

@@ -1,7 +1,9 @@
-import { List, Datagrid, TextField, ReferenceField } from 'react-admin';
+import { List, Datagrid, TextField, ReferenceField, TextInput } from 'react-admin';
+
+const MediaFilter = [<TextInput key="q" source="q" label="Search" alwaysOn />];
 
 export const MediaList = () => (
-    <List>
+    <List perPage={20} filters={MediaFilter}>
         <Datagrid rowClick="edit">
             <TextField source="id" />
             <TextField source="url" />

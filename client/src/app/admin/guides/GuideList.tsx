@@ -1,7 +1,9 @@
-import { List, Datagrid, TextField, NumberField, ReferenceField } from 'react-admin';
+import { List, Datagrid, TextField, NumberField, ReferenceField, TextInput } from 'react-admin';
+
+const GuideFilter = [<TextInput key="q" source="q" label="Search" alwaysOn />];
 
 export const GuideList = () => (
-    <List>
+    <List perPage={20} filters={GuideFilter}>
         <Datagrid rowClick="edit">
             <TextField source="id" />
             <TextField source="title" />

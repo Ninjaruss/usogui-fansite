@@ -1,7 +1,9 @@
-import { List, Datagrid, TextField, NumberField, BooleanField } from 'react-admin';
+import { List, Datagrid, TextField, NumberField, BooleanField, TextInput } from 'react-admin';
+
+const EventFilter = [<TextInput key="q" source="q" label="Search" alwaysOn />];
 
 export const EventList = () => (
-    <List>
+    <List perPage={20} filters={EventFilter}>
         <Datagrid rowClick="edit">
             <TextField source="id" />
             <TextField source="title" />

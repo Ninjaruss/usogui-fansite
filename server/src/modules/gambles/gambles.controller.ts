@@ -175,11 +175,10 @@ export class GamblesController {
     }
     
     // Otherwise return paginated gambles
-    const pageNum = parseInt(page) || 1;
-    const result = await this.gamblesService.findAll({ page: pageNum, limit: 100 });
-    const response = { data: result.data, meta: { total: result.total, page: result.page, perPage: 100, totalPages: result.totalPages } };
-    if (legacy === 'true') return { gambles: result.data, ...response };
-    return response;
+  const pageNum = parseInt(page) || 1;
+  const result = await this.gamblesService.findAll({ page: pageNum, limit: 100 });
+  // Return a standardized paginated shape: { data, total, page, totalPages }
+  return { data: result.data, total: result.total, page: result.page, totalPages: result.totalPages };
   }
 
   @Get(':id')

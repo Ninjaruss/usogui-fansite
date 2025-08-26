@@ -6,7 +6,6 @@ import { Tag } from '../../types/resources';
 
 export default function TagsPage() {
   const [tags, setTags] = useState<Tag[]>([]);
-  const [meta, setMeta] = useState<{ total?: number; page?: number; perPage?: number; totalPages?: number } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -19,7 +18,6 @@ export default function TagsPage() {
         }
   const result = await response.json();
   setTags(result?.data ?? []);
-  setMeta(result?.meta ?? null);
       } catch (err: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
         setError(err.message);
       } finally {

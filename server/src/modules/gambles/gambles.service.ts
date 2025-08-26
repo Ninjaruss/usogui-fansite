@@ -143,8 +143,8 @@ export class GamblesService {
   async findByChapter(chapterId: number): Promise<Gamble[]> {
     // Interpret the incoming number as a chapter number (not a relation id).
     // Find all chapters that have this chapter number (across series) and match gambles by stored chapterId (which references chapter.id in DB).
-    const chapters = await this.chaptersRepository.find({ where: { number: chapterId } });
-    if (!chapters.length) return [];
+  const chapters = await this.chaptersRepository.find({ where: { number: chapterId } });
+  if (!chapters.length) return [];
     const chapterIds = chapters.map(c => c.id);
 
     return this.gamblesRepository.createQueryBuilder('gamble')
@@ -178,7 +178,9 @@ export class GamblesService {
     chapterId?: number;
     characterId?: number;
     limit?: number;
-  }): Promise<Gamble[]> {
+    page?: number;
+  }): Promise<{ data: Gamble[]; total: number; page: number; totalPages: number }> {
+    const { page = 1, limit = 100 } = options;
     const query = this.gamblesRepository.createQueryBuilder('gamble')
       .leftJoinAndSelect('gamble.teams', 'teams')
       .leftJoinAndSelect('teams.members', 'teamMembers')
@@ -207,7 +209,7 @@ export class GamblesService {
     if (options.chapterId) {
   // Treat options.chapterId as a chapter number. Resolve to chapter IDs before filtering.
   const chapters = await this.chaptersRepository.find({ where: { number: options.chapterId } });
-  if (!chapters.length) return [];
+        if (!chapters.length) return { data: [], total: 0, page: 1, totalPages: 1 };
   const chapterIds = chapters.map(c => c.id);
   conditions.push('gamble.chapterId IN (:...chapterIds)');
   parameters.chapterIds = chapterIds;
@@ -222,12 +224,14 @@ export class GamblesService {
       query.where(conditions.join(' AND '), parameters);
     }
 
-    if (options.limit) {
-      query.limit(options.limit);
-    }
+    const skip = (page - 1) * limit;
+    query.skip(skip).take(limit);
 
-    return query
+    const [data, total] = await query
       .orderBy('gamble.createdAt', 'DESC')
-      .getMany();
+      .getManyAndCount();
+
+    const totalPages = Math.max(1, Math.ceil(total / limit));
+      return { data, total, page, totalPages };
   }
 }

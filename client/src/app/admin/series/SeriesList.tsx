@@ -1,7 +1,9 @@
-import { List, Datagrid, TextField, NumberField } from 'react-admin';
+import { List, Datagrid, TextField, NumberField, TextInput } from 'react-admin';
+
+const SeriesFilter = [<TextInput key="q" source="q" label="Search" alwaysOn />];
 
 export const SeriesList = () => (
-    <List>
+    <List perPage={20} filters={SeriesFilter}>
         <Datagrid rowClick="edit">
             <TextField source="id" />
             <TextField source="name" />

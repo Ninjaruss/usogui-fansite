@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import authProvider from '@/lib/api/authProvider';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -15,31 +16,22 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      const response = await fetch('http://localhost:3001/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        if (errorData.message === 'Email not verified') {
-          throw new Error('Your email is not verified. Please check your inbox for a verification link.');
-        } else {
-          throw new Error(errorData.message || 'Login failed');
-        }
+      await authProvider.login({ username: email, password });
+      // Check stored user and redirect admins to admin panel
+      const raw = typeof window !== 'undefined' ? localStorage.getItem('authUser') : null;
+      if (raw) {
+        try {
+          const u = JSON.parse(raw);
+          if (u?.role === 'admin') {
+            router.push('/admin');
+            return;
+          }
+        } catch {}
       }
-
-      const data = await response.json();
-      // Assuming the backend returns a token or user info
-      console.log('Login successful:', data);
-      // Store token in localStorage or a state management solution
-      localStorage.setItem('authToken', data.access_token);
       router.push('/'); // Redirect to home page
-    } catch (err: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
-      setError(err.message || 'An unexpected error occurred');
+    } catch (e) {
+      const message = e instanceof Error ? e.message : String(e);
+      setError(message || 'An unexpected error occurred');
     }
   };
 
@@ -49,9 +41,9 @@ export default function LoginPage() {
         <h1 className="text-2xl font-bold mb-4">Login</h1>
         {error && <p className="text-red-500 mb-4">{error}</p>}
         <div className="mb-4">
-          <label className="block mb-2">Email</label>
+          <label className="block mb-2">Email or Username</label>
           <input
-            type="email"
+            type="text"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="w-full p-2 rounded bg-gray-700 border border-gray-600 focus:outline-none focus:border-blue-500"
