@@ -303,6 +303,84 @@ export class UsersController {
     return this.service.updateProfile(user.id, updateProfileDto);
   }
 
+  @Get('profile/progress')
+  @Roles(UserRole.USER, UserRole.MODERATOR, UserRole.ADMIN)
+  @ApiOperation({ 
+    summary: 'Get current user reading progress', 
+    description: 'Get the current user\'s reading progress (highest chapter read)' 
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'User reading progress',
+    schema: {
+      type: 'object',
+      properties: {
+        userProgress: { type: 'number', example: 42 },
+        username: { type: 'string', example: 'john_doe' }
+      }
+    }
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async getUserProgress(@CurrentUser() user: User): Promise<{ userProgress: number; username: string }> {
+    return {
+      userProgress: user.userProgress,
+      username: user.username
+    };
+  }
+
+  @Put('profile/progress')
+  @Roles(UserRole.USER, UserRole.MODERATOR, UserRole.ADMIN)
+  @ApiOperation({ 
+    summary: 'Update user reading progress', 
+    description: 'Update the current user\'s reading progress (highest chapter read)' 
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      required: ['userProgress'],
+      properties: {
+        userProgress: { 
+          type: 'number', 
+          example: 45, 
+          minimum: 0,
+          description: 'Highest chapter number the user has read'
+        }
+      }
+    }
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Reading progress updated successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        message: { type: 'string', example: 'Reading progress updated successfully' },
+        userProgress: { type: 'number', example: 45 }
+      }
+    }
+  })
+  @ApiResponse({ status: 400, description: 'Invalid progress value' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async updateUserProgress(
+    @CurrentUser() user: User,
+    @Body('userProgress', ParseIntPipe) userProgress: number
+  ): Promise<{ message: string; userProgress: number }> {
+    if (userProgress < 0) {
+      throw new NotFoundException('User progress cannot be negative');
+    }
+    
+    // Only allow progress to move forward, not backward (to prevent accidental spoilers)
+    if (userProgress < user.userProgress) {
+      throw new NotFoundException('Cannot decrease reading progress. Contact support if you need to reset your progress.');
+    }
+
+    await this.service.updateUserProgress(user.id, userProgress);
+    return {
+      message: 'Reading progress updated successfully',
+      userProgress
+    };
+  }
+
   @Get('profile/images')
   @Roles(UserRole.USER, UserRole.MODERATOR, UserRole.ADMIN)
   @ApiOperation({ 

@@ -11,6 +11,7 @@ import { EventsModule } from './modules/events/events.module';
 import { FactionsModule } from './modules/factions/factions.module';
 import { TagsModule } from './modules/tags/tags.module';
 import { VolumesModule } from './modules/volumes/volumes.module';
+import { SearchModule } from './modules/search/search.module';
 
 import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
@@ -55,6 +56,7 @@ import { Logger } from '@nestjs/common';
     FactionsModule,
     TagsModule, 
     VolumesModule,
+    SearchModule,
 
     UsersModule, 
     AuthModule,

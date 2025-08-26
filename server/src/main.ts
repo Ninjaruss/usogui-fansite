@@ -74,6 +74,7 @@ async function bootstrap() {
     // Content Organization
     .addTag('tags', 'Tags - Content categorization and tagging system')
     .addTag('translations', 'Translations - Multi-language content support')
+    .addTag('search', 'Search - Text search across all content with spoiler protection')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

@@ -62,6 +62,14 @@ export class User {
   role: UserRole;
 
   @ApiPropertyOptional({ 
+    description: 'User\'s reading progress (highest chapter number read)',
+    example: 42,
+    minimum: 0
+  })
+  @Column({ type: 'int', default: 0 })
+  userProgress: number;
+
+  @ApiPropertyOptional({ 
     description: 'ID of the user\'s profile image',
     example: 'uuid-here'
   })

@@ -1,9 +1,12 @@
 # Changelog and notes
 ## 2025-08-25
 - Added guides module for users to write out guides in markdown
+- Added full search to check across all data (no full text yet; may consider for guides/gambles/events)
+- Updated user to have chapter userProgress stored
 
 ### Notes
 - API documentation is simple and straightforward. Although I could spend the time writing out the info by myself, the LLM gives enough relevant info to get started.
+- There is a setting button for Github Copilot's chat window to generate instructions. Using this will generate a reference document for the LLM to refer to based on the entire project. So far, the auto generated one looks really helpful, but could benefit specifics if I plan to implemeent complex features that interact with a lot of moving parts.
 
 ## 2025-08-23
 ### Changes
@@ -78,9 +81,3 @@
 - Another thing to note is that I know how to read the code and understand what's being done, but writing new code would be very difficult unless I am following an example (i.e. existing documentation)
 - Seperation of data into Model-View-Controller is now feeling useful; it actually makes sense to compartmentalize data (especially when using module/factory paradigm)
 - NestJS so far is a lot easier to write once I am aware of the structure required to implement Rest API and features
-
-### TODO: 
-- media module to handle user submissions
-- look into how testing files work
-- user auth and potential for contributor functionality
-- google sheet sync

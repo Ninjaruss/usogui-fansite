@@ -242,6 +242,12 @@ export class UsersService {
     return this.getUserProfile(userId);
   }
 
+  async updateUserProgress(userId: number, userProgress: number): Promise<void> {
+    const user = await this.findOne(userId);
+    user.userProgress = userProgress;
+    await this.repo.save(user);
+  }
+
   async getUserProfile(userId: number): Promise<User> {
     const user = await this.repo.findOne({
       where: { id: userId },
