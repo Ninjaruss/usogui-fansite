@@ -1,67 +1,59 @@
-import { Media } from '../../types/resources';
-import { API_URL, PaginatedResponse } from './types';
+// Media submission API helpers
 
-export async function getMedia(options: { page?: number; limit?: number; } = {}): Promise<PaginatedResponse<Media>> {
-  const { page = 1, limit = 20 } = options;
-  const response = await fetch(`${API_URL}/media?page=${page}&limit=${limit}`);
-  if (!response.ok) {
-    const text = await response.text().catch(() => '');
-    throw new Error(`Failed to fetch media: ${response.status} ${text}`);
+import { CreateMediaRequest, Media, Character } from './types';
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+
+// Submit media for approval
+export async function submitMedia(mediaData: CreateMediaRequest): Promise<Media> {
+  const token = localStorage.getItem('authToken');
+  if (!token) {
+    throw new Error('No authentication token found');
   }
 
-  const body = await response.json();
-  // Expect the server to return the standardized paginated envelope
-  // { data: T[]; total: number; page: number; totalPages: number }
-  return {
-    data: body.data as Media[],
-    total: body.total as number,
-    page: body.page as number,
-    totalPages: body.totalPages as number,
-  };
-}
-
-export async function getMedium(id: number): Promise<Media> {
-  const response = await fetch(`${API_URL}/media/${id}`);
-  if (!response.ok) {
-    throw new Error('Failed to fetch medium');
-  }
-  return response.json();
-}
-
-export async function createMedium(data: Omit<Media, 'id'>): Promise<Media> {
   const response = await fetch(`${API_URL}/media`, {
     method: 'POST',
     headers: {
+      'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(data),
+    body: JSON.stringify(mediaData),
   });
+
   if (!response.ok) {
-    throw new Error('Failed to create medium');
+    const error = await response.json();
+    throw new Error(error.message || 'Failed to submit media');
   }
+
   return response.json();
 }
 
-export async function updateMedium(id: number, data: Partial<Media>): Promise<Media> {
-  const response = await fetch(`${API_URL}/media/${id}`, {
-    method: 'PUT',
+// Get all characters for selection
+export async function getAllCharacters(): Promise<Character[]> {
+  const response = await fetch(`${API_URL}/characters`);
+  if (!response.ok) {
+    throw new Error('Failed to fetch characters');
+  }
+  const data = await response.json();
+  return data.data || [];
+}
+
+// Get user's submitted media
+export async function getUserMedia(page = 1, limit = 20): Promise<{ data: Media[]; total: number; page: number; totalPages: number }> {
+  const token = localStorage.getItem('authToken');
+  if (!token) {
+    throw new Error('No authentication token found');
+  }
+
+  const response = await fetch(`${API_URL}/media?page=${page}&limit=${limit}`, {
     headers: {
-      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
     },
-    body: JSON.stringify(data),
   });
-  if (!response.ok) {
-    throw new Error('Failed to update medium');
-  }
-  return response.json();
-}
 
-export async function deleteMedium(id: number): Promise<void> {
-  const response = await fetch(`${API_URL}/media/${id}`, {
-    method: 'DELETE',
-  });
   if (!response.ok) {
-    throw new Error('Failed to delete medium');
+    throw new Error('Failed to fetch media');
   }
-  // No content expected for successful delete
+
+  return response.json();
 }

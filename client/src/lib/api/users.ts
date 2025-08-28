@@ -1,66 +1,69 @@
+// User profile API helpers
 
-import { User } from '../../types/resources';
-import { API_URL, PaginatedResponse } from './types';
+import { UserProfile, UpdateProfileRequest, Quote, Gamble } from './types';
 
-export async function getUsers(options: { page?: number; limit?: number; } = {}): Promise<PaginatedResponse<User>> {
-  const { page = 1, limit = 20 } = options;
-  const response = await fetch(`${API_URL}/users?page=${page}&limit=${limit}`);
-  if (!response.ok) {
-    const text = await response.text().catch(() => '');
-    throw new Error(`Failed to fetch users: ${response.status} ${text}`);
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+
+// Get current user profile
+export async function getCurrentUserProfile(): Promise<UserProfile> {
+  const token = localStorage.getItem('authToken');
+  if (!token) {
+    throw new Error('No authentication token found');
   }
 
-  const body = await response.json();
-  return {
-    data: body.data as User[],
-    total: body.total as number,
-    page: body.page as number,
-    totalPages: body.totalPages as number,
-  };
-}
+  const response = await fetch(`${API_URL}/users/profile`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
 
-export async function getUser(id: number): Promise<User> {
-  const response = await fetch(`${API_URL}/users/${id}`);
   if (!response.ok) {
-    throw new Error('Failed to fetch user');
+    throw new Error('Failed to fetch user profile');
   }
+
   return response.json();
 }
 
-export async function createUser(data: Omit<User, 'id'>): Promise<User> {
-  const response = await fetch(`${API_URL}/users`, {
-    method: 'POST',
+// Update user profile
+export async function updateUserProfile(updates: UpdateProfileRequest): Promise<UserProfile> {
+  const token = localStorage.getItem('authToken');
+  if (!token) {
+    throw new Error('No authentication token found');
+  }
+
+  const response = await fetch(`${API_URL}/users/profile`, {
+    method: 'PATCH',
     headers: {
+      'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(data),
+    body: JSON.stringify(updates),
   });
+
   if (!response.ok) {
-    throw new Error('Failed to create user');
+    const error = await response.json();
+    throw new Error(error.message || 'Failed to update profile');
   }
+
   return response.json();
 }
 
-export async function updateUser(id: number, data: Partial<User>): Promise<User> {
-  const response = await fetch(`${API_URL}/users/${id}`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(data),
-  });
+// Get all quotes for selection
+export async function getAllQuotes(): Promise<Quote[]> {
+  const response = await fetch(`${API_URL}/quotes`);
   if (!response.ok) {
-    throw new Error('Failed to update user');
+    throw new Error('Failed to fetch quotes');
   }
-  return response.json();
+  const data = await response.json();
+  return data.data || [];
 }
 
-export async function deleteUser(id: number): Promise<void> {
-  const response = await fetch(`${API_URL}/users/${id}`, {
-    method: 'DELETE',
-  });
+// Get all gambles for selection
+export async function getAllGambles(): Promise<Gamble[]> {
+  const response = await fetch(`${API_URL}/gambles`);
   if (!response.ok) {
-    throw new Error('Failed to delete user');
+    throw new Error('Failed to fetch gambles');
   }
-  // No content expected for successful delete
+  const data = await response.json();
+  return data.data || [];
 }

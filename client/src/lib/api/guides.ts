@@ -1,59 +1,49 @@
+// Guide submission API helpers
 
-import { Guide } from '../../types/resources';
-import { API_URL, PaginatedResponse } from './types';
+import { CreateGuideRequest, Guide } from './types';
 
-export async function getGuides(options: { page?: number; limit?: number; } = {}): Promise<PaginatedResponse<Guide>> {
-  const { page = 1, limit = 20 } = options;
-  // Public listing endpoint is namespaced under /guides/public
-  const response = await fetch(`${API_URL}/guides/public?page=${page}&limit=${limit}`);
-  if (!response.ok) {
-    throw new Error('Failed to fetch guides');
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+
+// Create a new guide
+export async function createGuide(guideData: CreateGuideRequest): Promise<Guide> {
+  const token = localStorage.getItem('authToken');
+  if (!token) {
+    throw new Error('No authentication token found');
   }
-  return response.json();
-}
 
-export async function getGuide(id: number): Promise<Guide> {
-  const response = await fetch(`${API_URL}/guides/${id}`);
-  if (!response.ok) {
-    throw new Error('Failed to fetch guide');
-  }
-  return response.json();
-}
-
-export async function createGuide(data: Omit<Guide, 'id'>): Promise<Guide> {
   const response = await fetch(`${API_URL}/guides`, {
     method: 'POST',
     headers: {
+      'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(data),
+    body: JSON.stringify(guideData),
   });
+
   if (!response.ok) {
-    throw new Error('Failed to create guide');
+    const error = await response.json();
+    throw new Error(error.message || 'Failed to create guide');
   }
+
   return response.json();
 }
 
-export async function updateGuide(id: number, data: Partial<Guide>): Promise<Guide> {
-  const response = await fetch(`${API_URL}/guides/${id}`, {
-    method: 'PUT',
+// Get user's guides
+export async function getUserGuides(page = 1, limit = 20): Promise<{ data: Guide[]; total: number; page: number; totalPages: number }> {
+  const token = localStorage.getItem('authToken');
+  if (!token) {
+    throw new Error('No authentication token found');
+  }
+
+  const response = await fetch(`${API_URL}/guides?page=${page}&limit=${limit}`, {
     headers: {
-      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
     },
-    body: JSON.stringify(data),
   });
-  if (!response.ok) {
-    throw new Error('Failed to update guide');
-  }
-  return response.json();
-}
 
-export async function deleteGuide(id: number): Promise<void> {
-  const response = await fetch(`${API_URL}/guides/${id}`, {
-    method: 'DELETE',
-  });
   if (!response.ok) {
-    throw new Error('Failed to delete guide');
+    throw new Error('Failed to fetch guides');
   }
-  // No content expected for successful delete
+
+  return response.json();
 }

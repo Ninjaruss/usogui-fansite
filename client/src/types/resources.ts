@@ -1,116 +1,152 @@
-export interface BaseResource {
+// Resource type definitions for the Usogui fansite
+// These types should match the server entities and be used for client-side data handling
+
+export interface User {
   id: number;
-}
-
-export interface NamedResource extends BaseResource {
-  name: string;
-}
-
-export interface TitledResource extends BaseResource {
-  title: string;
-}
-
-export interface UserResource extends BaseResource {
   username: string;
-}
-
-export interface Arc extends NamedResource {
-  order: number;
-  description: string;
-  startChapter: number;
-  endChapter: number;
-}
-
-export interface Chapter extends BaseResource {
-  number: number;
-  title: string;
-  summary: string;
-}
-
-export interface Character extends NamedResource {
-  alternateNames: string[];
-  description: string;
-  firstAppearanceChapter: number;
-  notableRoles: string[];
-  notableGames: string[];
-  occupation: string;
-  affiliations: string[];
-}
-
-export interface Event extends TitledResource {
-  description: string;
-  type: string;
-  startChapter: number;
-  endChapter: number;
-  spoilerChapter: number;
-  pageNumbers: number[];
-  isVerified: boolean;
-  chapterReferences: { chapterNumber: number; context: string }[];
-}
-
-export interface Faction extends NamedResource {
-  description: string;
-}
-
-export interface Gamble extends NamedResource {
-  rules: string;
-  winCondition: string;
-  chapterId: number;
-}
-
-export interface Guide extends TitledResource {
-  description: string;
-  content: string;
-  status: string;
-  viewCount: number;
-  likeCount: number;
-  authorId: number;
-}
-
-export interface Media extends BaseResource {
-  url: string;
-  type: string;
-  description: string;
-  status: string;
-  rejectionReason: string;
-  characterId: number;
-  submittedById: number;
-}
-
-export interface Quote extends BaseResource {
-  text: string;
-  chapterNumber: number;
-  description: string;
-  pageNumber: number;
-  characterId: number;
-  seriesId: number;
-  submittedById: number;
-}
-
-export interface Series extends NamedResource {
-  order: number;
-  description: string;
-}
-
-export interface Tag extends NamedResource {
-  description: string;
-}
-
-export interface User extends UserResource {
   email: string;
-  isEmailVerified: boolean;
-  role: string;
-  userProgress: number;
-  profileImageId: string;
-  favoriteQuoteId: number;
-  favoriteGambleId: number;
+  role: 'user' | 'moderator' | 'admin';
+  createdAt: string;
+  updatedAt: string;
 }
 
-export interface Volume extends BaseResource {
-  number: number;
-  coverUrl: string;
-  startChapter: number;
-  endChapter: number;
-  description: string;
+export interface Series {
+  id: number;
+  title: string;
+  description?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Volume {
+  id: number;
   seriesId: number;
+  series?: Series;
+  volumeNumber: number;
+  title?: string;
+  description?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Chapter {
+  id: number;
+  volumeId: number;
+  volume?: Volume;
+  chapterNumber: number;
+  title?: string;
+  description?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Arc {
+  id: number;
+  title: string;
+  description?: string;
+  startChapter?: number;
+  endChapter?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Character {
+  id: number;
+  name: string;
+  description?: string;
+  profileImage?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Faction {
+  id: number;
+  name: string;
+  description?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Event {
+  id: number;
+  title: string;
+  description?: string;
+  chapterId?: number;
+  chapter?: Chapter;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Tag {
+  id: number;
+  name: string;
+  description?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Quote {
+  id: number;
+  characterId: number;
+  character?: Character;
+  content: string;
+  chapterId?: number;
+  chapter?: Chapter;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Guide {
+  id: number;
+  title: string;
+  content: string;
+  authorId: number;
+  author?: User;
+  tags?: Tag[];
+  createdAt: string;
+  updatedAt: string;
+  likes?: number;
+}
+
+export interface Media {
+  id: number;
+  title: string;
+  url: string;
+  type: 'fanart' | 'video';
+  characterId?: number;
+  character?: Character;
+  arcId?: number;
+  arc?: Arc;
+  submittedById: number;
+  submittedBy?: User;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Gamble {
+  id: number;
+  title: string;
+  description?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface GambleTeam {
+  id: number;
+  gambleId: number;
+  gamble?: Gamble;
+  name: string;
+  description?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface GambleRound {
+  id: number;
+  gambleId: number;
+  gamble?: Gamble;
+  roundNumber: number;
+  description?: string;
+  createdAt: string;
+  updatedAt: string;
 }
