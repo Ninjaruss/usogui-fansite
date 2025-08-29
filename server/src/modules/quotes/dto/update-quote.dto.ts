@@ -49,13 +49,4 @@ export class UpdateQuoteDto extends PartialType(CreateQuoteDto) {
     example: 1
   })
   characterId?: number;
-
-  @IsOptional()
-  @IsNumber()
-  @IsPositive()
-  @ApiPropertyOptional({ 
-    description: 'ID of the series this quote belongs to',
-    example: 1
-  })
-  seriesId?: number;
 }

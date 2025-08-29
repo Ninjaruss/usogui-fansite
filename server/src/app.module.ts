@@ -3,7 +3,6 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { getDatabaseConfig } from './config/database.config';
 import { validate } from './config/env.validation';
-import { SeriesModule } from './modules/series/series.module';
 import { ArcsModule } from './modules/arcs/arcs.module';
 import { CharactersModule } from './modules/characters/characters.module';
 import { ChaptersModule } from './modules/chapters/chapters.module';
@@ -48,7 +47,6 @@ import { Logger } from '@nestjs/common';
       inject: [ConfigService],
     }),
 
-    SeriesModule,
     ArcsModule,
     CharactersModule,
     ChaptersModule,

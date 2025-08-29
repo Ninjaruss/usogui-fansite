@@ -283,7 +283,7 @@ export class UsersService {
         'profileImage.character',
         'favoriteQuote', 
         'favoriteQuote.character', 
-        'favoriteQuote.series', 
+ 
         'favoriteGamble', 
         'favoriteGamble.chapter'
       ]
@@ -323,7 +323,7 @@ export class UsersService {
     for (const stat of stats) {
       const quote = await this.quoteRepo.findOne({
         where: { id: stat.quoteId },
-        relations: ['character', 'series']
+        relations: ['character']
       });
       
       if (quote) {

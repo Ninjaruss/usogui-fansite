@@ -5,13 +5,16 @@ import {
   TextField,
   DateField,
   Edit,
+  Create,
   Show,
   SimpleForm,
   TextInput,
   SimpleShowLayout,
   ReferenceField,
-  BooleanField,
-  BooleanInput
+  SelectInput,
+  NumberField,
+  ReferenceInput,
+  AutocompleteInput
 } from 'react-admin'
 
 export const GuideList = () => (
@@ -19,11 +22,15 @@ export const GuideList = () => (
     <Datagrid rowClick="show">
       <TextField source="id" />
       <TextField source="title" />
-      <ReferenceField source="authorId" reference="users">
+      <TextField source="description" />
+      <ReferenceField source="authorId" reference="users" label="Author">
         <TextField source="username" />
       </ReferenceField>
-      <BooleanField source="published" />
+      <TextField source="status" />
+      <NumberField source="viewCount" />
+      <NumberField source="likeCount" />
       <DateField source="createdAt" />
+      <DateField source="updatedAt" />
     </Datagrid>
   </List>
 )
@@ -33,11 +40,14 @@ export const GuideShow = () => (
     <SimpleShowLayout>
       <TextField source="id" />
       <TextField source="title" />
+      <TextField source="description" />
       <TextField source="content" />
-      <ReferenceField source="authorId" reference="users">
+      <ReferenceField source="authorId" reference="users" label="Author">
         <TextField source="username" />
       </ReferenceField>
-      <BooleanField source="published" />
+      <TextField source="status" />
+      <NumberField source="viewCount" />
+      <NumberField source="likeCount" />
       <DateField source="createdAt" />
       <DateField source="updatedAt" />
     </SimpleShowLayout>
@@ -48,8 +58,32 @@ export const GuideEdit = () => (
   <Edit>
     <SimpleForm>
       <TextInput source="title" required />
+      <TextInput source="description" multiline rows={3} required />
       <TextInput source="content" multiline rows={12} required />
-      <BooleanInput source="published" />
+      <ReferenceInput source="authorId" reference="users" label="Author">
+        <AutocompleteInput optionText="username" />
+      </ReferenceInput>
+      <SelectInput source="status" choices={[
+        { id: 'draft', name: 'Draft' },
+        { id: 'published', name: 'Published' }
+      ]} />
     </SimpleForm>
   </Edit>
+)
+
+export const GuideCreate = () => (
+  <Create>
+    <SimpleForm>
+      <TextInput source="title" required />
+      <TextInput source="description" multiline rows={3} required />
+      <TextInput source="content" multiline rows={12} required />
+      <ReferenceInput source="authorId" reference="users" label="Author">
+        <AutocompleteInput optionText="username" />
+      </ReferenceInput>
+      <SelectInput source="status" choices={[
+        { id: 'draft', name: 'Draft' },
+        { id: 'published', name: 'Published' }
+      ]} defaultValue="draft" />
+    </SimpleForm>
+  </Create>
 )

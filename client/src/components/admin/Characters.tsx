@@ -27,7 +27,7 @@ export const CharacterList = () => (
       <NumberField source="firstAppearanceChapter" label="First Chapter" />
       <ArrayField source="alternateNames">
         <SingleFieldList>
-          <ChipField source="name" size="small" />
+          <ChipField source="" size="small" />
         </SingleFieldList>
       </ArrayField>
     </Datagrid>
@@ -44,22 +44,22 @@ export const CharacterShow = () => (
       <NumberField source="firstAppearanceChapter" />
       <ArrayField source="alternateNames">
         <SingleFieldList>
-          <ChipField source="name" />
+          <ChipField source="" />
         </SingleFieldList>
       </ArrayField>
       <ArrayField source="notableRoles">
         <SingleFieldList>
-          <ChipField source="name" />
+          <ChipField source="" />
         </SingleFieldList>
       </ArrayField>
       <ArrayField source="notableGames">
         <SingleFieldList>
-          <ChipField source="name" />
+          <ChipField source="" />
         </SingleFieldList>
       </ArrayField>
       <ArrayField source="affiliations">
         <SingleFieldList>
-          <ChipField source="name" />
+          <ChipField source="" />
         </SingleFieldList>
       </ArrayField>
     </SimpleShowLayout>
@@ -72,7 +72,7 @@ export const CharacterEdit = () => (
       <TextInput source="name" required />
       <TextInput source="description" multiline rows={4} />
       <TextInput source="occupation" />
-      <NumberInput source="firstAppearanceChapter" />
+      <NumberInput source="firstAppearanceChapter" max={539} />
       <ArrayInput source="alternateNames">
         <SimpleFormIterator>
           <TextInput source="" label="Alternate Name" />
@@ -103,7 +103,7 @@ export const CharacterCreate = () => (
       <TextInput source="name" required />
       <TextInput source="description" multiline rows={4} />
       <TextInput source="occupation" />
-      <NumberInput source="firstAppearanceChapter" />
+      <NumberInput source="firstAppearanceChapter" max={539} />
       <ArrayInput source="alternateNames">
         <SimpleFormIterator>
           <TextInput source="" label="Alternate Name" />

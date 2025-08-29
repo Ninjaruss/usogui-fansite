@@ -1,10 +1,5 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'
 
-interface ApiResponse<T> {
-  data?: T
-  message?: string
-  error?: string
-}
 
 class ApiClient {
   private baseURL: string
@@ -48,8 +43,24 @@ class ApiClient {
     })
 
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ message: 'Network error' }))
-      throw new Error(error.message || `HTTP ${response.status}`)
+      let errorMessage: string
+      let errorDetails: any = null
+      
+      try {
+        const errorResponse = await response.json()
+        errorMessage = errorResponse.message || errorResponse.error || `HTTP ${response.status}: ${response.statusText}`
+        errorDetails = errorResponse
+      } catch {
+        errorMessage = `HTTP ${response.status}: ${response.statusText}`
+      }
+      
+      const error = new Error(errorMessage)
+      ;(error as any).status = response.status
+      ;(error as any).details = errorDetails
+      ;(error as any).url = url
+      ;(error as any).method = options.method || 'GET'
+      
+      throw error
     }
 
     return response.json()
@@ -69,6 +80,13 @@ class ApiClient {
   async put<T>(endpoint: string, data: any): Promise<T> {
     return this.request<T>(endpoint, {
       method: 'PUT',
+      body: JSON.stringify(data),
+    })
+  }
+
+  async patch<T>(endpoint: string, data: any): Promise<T> {
+    return this.request<T>(endpoint, {
+      method: 'PATCH',
       body: JSON.stringify(data),
     })
   }
@@ -138,7 +156,6 @@ class ApiClient {
     limit?: number
     name?: string
     arc?: string
-    series?: string
   }) {
     const searchParams = new URLSearchParams()
     if (params) {
@@ -165,7 +182,6 @@ class ApiClient {
     page?: number
     limit?: number
     name?: string
-    series?: string
   }) {
     const searchParams = new URLSearchParams()
     if (params) {
@@ -258,11 +274,16 @@ class ApiClient {
   async getGuides(params?: { page?: number; limit?: number; title?: string }) {
     const searchParams = new URLSearchParams()
     if (params) {
-      Object.entries(params).forEach(([key, value]) => {
-        if (value !== undefined) {
-          searchParams.append(key, value.toString())
-        }
-      })
+      // Map title to search parameter to match backend API
+      if (params.title) {
+        searchParams.append('search', params.title)
+      }
+      if (params.page) {
+        searchParams.append('page', params.page.toString())
+      }
+      if (params.limit) {
+        searchParams.append('limit', params.limit.toString())
+      }
     }
     const query = searchParams.toString()
     return this.get<{
@@ -270,11 +291,11 @@ class ApiClient {
       total: number
       page: number
       totalPages: number
-    }>(`/guides${query ? `?${query}` : ''}`)
+    }>(`/guides/public${query ? `?${query}` : ''}`)
   }
 
   async getGuide(id: number) {
-    return this.get<any>(`/guides/${id}`)
+    return this.get<any>(`/guides/public/${id}`)
   }
 
   async createGuide(data: {
@@ -294,11 +315,290 @@ class ApiClient {
     return this.post<any>('/media', data)
   }
 
+  async createMedia(data: {
+    url: string
+    type: 'image' | 'video' | 'audio'
+    description?: string
+    characterId?: number
+    arcId?: number
+    eventId?: number
+    status?: 'pending' | 'approved' | 'rejected'
+    rejectionReason?: string
+  }) {
+    return this.post<any>('/media', data)
+  }
+
   async updateProfile(data: {
     favoriteQuoteId?: number
     favoriteGambleId?: number
   }) {
-    return this.put<any>('/users/profile', data)
+    return this.patch<any>('/users/profile', data)
+  }
+
+  // Admin endpoints for missing resources
+  async getUsers(params?: {
+    page?: number
+    limit?: number
+    username?: string
+    email?: string
+    role?: string
+  }) {
+    const searchParams = new URLSearchParams()
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) {
+          searchParams.append(key, value.toString())
+        }
+      })
+    }
+    const query = searchParams.toString()
+    return this.get<{
+      data: any[]
+      total: number
+      page: number
+      totalPages: number
+    }>(`/users${query ? `?${query}` : ''}`)
+  }
+
+  async getUser(id: number) {
+    return this.get<any>(`/users/${id}`)
+  }
+
+  async updateUser(id: number, data: any) {
+    return this.put<any>(`/users/${id}`, data)
+  }
+
+  async deleteUser(id: number) {
+    return this.delete<any>(`/users/${id}`)
+  }
+
+  async getQuotes(params?: {
+    page?: number
+    limit?: number
+    search?: string
+    character?: string
+  }) {
+    const searchParams = new URLSearchParams()
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) {
+          searchParams.append(key, value.toString())
+        }
+      })
+    }
+    const query = searchParams.toString()
+    return this.get<{
+      data: any[]
+      total: number
+      page: number
+      totalPages: number
+    }>(`/quotes${query ? `?${query}` : ''}`)
+  }
+
+  async getQuote(id: number) {
+    return this.get<any>(`/quotes/${id}`)
+  }
+
+  async createQuote(data: any) {
+    return this.post<any>('/quotes', data)
+  }
+
+  async updateQuote(id: number, data: any) {
+    return this.patch<any>(`/quotes/${id}`, data)
+  }
+
+  async deleteQuote(id: number) {
+    return this.delete<any>(`/quotes/${id}`)
+  }
+
+  async getTags(params?: {
+    page?: number
+    limit?: number
+    name?: string
+  }) {
+    const searchParams = new URLSearchParams()
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) {
+          searchParams.append(key, value.toString())
+        }
+      })
+    }
+    const query = searchParams.toString()
+    return this.get<{
+      data: any[]
+      total: number
+      page: number
+      totalPages: number
+    }>(`/tags${query ? `?${query}` : ''}`)
+  }
+
+  async getTag(id: number) {
+    return this.get<any>(`/tags/${id}`)
+  }
+
+  async createTag(data: any) {
+    return this.post<any>('/tags', data)
+  }
+
+  async updateTag(id: number, data: any) {
+    return this.put<any>(`/tags/${id}`, data)
+  }
+
+  async deleteTag(id: number) {
+    return this.delete<any>(`/tags/${id}`)
+  }
+
+  async getFactions(params?: {
+    page?: number
+    limit?: number
+    name?: string
+  }) {
+    const searchParams = new URLSearchParams()
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) {
+          searchParams.append(key, value.toString())
+        }
+      })
+    }
+    const query = searchParams.toString()
+    return this.get<{
+      data: any[]
+      total: number
+      page: number
+      totalPages: number
+    }>(`/factions${query ? `?${query}` : ''}`)
+  }
+
+  async getFaction(id: number) {
+    return this.get<any>(`/factions/${id}`)
+  }
+
+  async createFaction(data: any) {
+    return this.post<any>('/factions', data)
+  }
+
+  async updateFaction(id: number, data: any) {
+    return this.put<any>(`/factions/${id}`, data)
+  }
+
+  async deleteFaction(id: number) {
+    return this.delete<any>(`/factions/${id}`)
+  }
+
+  async getAllMedia(params?: {
+    page?: number
+    limit?: number
+    status?: string
+    type?: string
+  }) {
+    const searchParams = new URLSearchParams()
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) {
+          searchParams.append(key, value.toString())
+        }
+      })
+    }
+    const query = searchParams.toString()
+    return this.get<{
+      data: any[]
+      total: number
+      page: number
+      totalPages: number
+    }>(`/media${query ? `?${query}` : ''}`)
+  }
+
+  async getMediaItem(id: number) {
+    return this.get<any>(`/media/${id}`)
+  }
+
+  async updateMedia(id: number, data: any) {
+    return this.put<any>(`/media/${id}`, data)
+  }
+
+  async deleteMedia(id: number) {
+    return this.delete<any>(`/media/${id}`)
+  }
+
+  async createArc(data: any) {
+    return this.post<any>('/arcs', data)
+  }
+
+  async updateArc(id: number, data: any) {
+    return this.put<any>(`/arcs/${id}`, data)
+  }
+
+  async deleteArc(id: number) {
+    return this.delete<any>(`/arcs/${id}`)
+  }
+
+  async createCharacter(data: any) {
+    return this.post<any>('/characters', data)
+  }
+
+  async updateCharacter(id: number, data: any) {
+    return this.put<any>(`/characters/${id}`, data)
+  }
+
+  async deleteCharacter(id: number) {
+    return this.delete<any>(`/characters/${id}`)
+  }
+
+  async createGamble(data: any) {
+    return this.post<any>('/gambles', data)
+  }
+
+  async updateGamble(id: number, data: any) {
+    return this.put<any>(`/gambles/${id}`, data)
+  }
+
+  async deleteGamble(id: number) {
+    return this.delete<any>(`/gambles/${id}`)
+  }
+
+  async createEvent(data: any) {
+    return this.post<any>('/events', data)
+  }
+
+  async updateEvent(id: number, data: any) {
+    return this.put<any>(`/events/${id}`, data)
+  }
+
+  async deleteEvent(id: number) {
+    return this.delete<any>(`/events/${id}`)
+  }
+
+  // Admin guide methods (authenticated)
+  async getGuidesAdmin(params?: { page?: number; limit?: number; search?: string; status?: string; authorId?: number; sortBy?: string; sortOrder?: string }) {
+    const searchParams = new URLSearchParams()
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) {
+          searchParams.append(key, value.toString())
+        }
+      })
+    }
+    const query = searchParams.toString()
+    return this.get<{
+      data: any[]
+      total: number
+      page: number
+      totalPages: number
+    }>(`/guides${query ? `?${query}` : ''}`)
+  }
+
+  async getGuideAdmin(id: number) {
+    return this.get<any>(`/guides/${id}`)
+  }
+
+  async updateGuide(id: number, data: any) {
+    return this.patch<any>(`/guides/${id}`, data)
+  }
+
+  async deleteGuide(id: number) {
+    return this.delete<any>(`/guides/${id}`)
   }
 }
 

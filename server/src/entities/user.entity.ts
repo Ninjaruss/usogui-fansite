@@ -66,7 +66,7 @@ export class User {
     example: 42,
     minimum: 0
   })
-  @Column({ type: 'int', default: 0 })
+  @Column({ type: 'int', default: 1 })
   userProgress: number;
 
   @ApiPropertyOptional({ 

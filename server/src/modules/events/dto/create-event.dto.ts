@@ -33,14 +33,7 @@ export class CreateEventDto {
   })
   type?: EventType;
 
-  @IsNumber()
-  @IsNotEmpty()
-  @Min(1)
-  @ApiProperty({ 
-    description: 'ID of the series this event belongs to',
-    example: 1
-  })
-  seriesId: number;
+  // series removed
 
   @IsNumber()
   @IsOptional()

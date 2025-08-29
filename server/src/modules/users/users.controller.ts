@@ -341,8 +341,9 @@ export class UsersController {
         userProgress: { 
           type: 'number', 
           example: 45, 
-          minimum: 0,
-          description: 'Highest chapter number the user has read'
+          minimum: 1,
+          maximum: 539,
+          description: 'Highest chapter number the user has read (1-539)'
         }
       }
     }
@@ -364,13 +365,8 @@ export class UsersController {
     @CurrentUser() user: User,
     @Body('userProgress', ParseIntPipe) userProgress: number
   ): Promise<{ message: string; userProgress: number }> {
-    if (userProgress < 0) {
-      throw new NotFoundException('User progress cannot be negative');
-    }
-    
-    // Only allow progress to move forward, not backward (to prevent accidental spoilers)
-    if (userProgress < user.userProgress) {
-      throw new NotFoundException('Cannot decrease reading progress. Contact support if you need to reset your progress.');
+    if (userProgress < 1 || userProgress > 539) {
+      throw new NotFoundException('User progress must be between 1 and 539');
     }
 
     await this.service.updateUserProgress(user.id, userProgress);

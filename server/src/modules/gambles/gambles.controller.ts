@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Body, Param, UseGuards, ParseIntPipe, ValidationPipe, Query } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards, ParseIntPipe, ValidationPipe, Query, NotFoundException } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBearerAuth, ApiBody, ApiQuery } from '@nestjs/swagger';
 import { GamblesService } from './gambles.service';
 import { CreateGambleDto } from './dto/create-gamble.dto';
+import { UpdateGambleDto } from './dto/update-gamble.dto';
 import { Gamble } from '../../entities/gamble.entity';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -94,7 +95,7 @@ export class GamblesController {
   name: 'chapterId',
   required: false,
   type: 'number',
-  description: 'Filter by chapter number (will match chapters with this number across series)',
+  description: 'Filter by chapter number (will match chapters with this number across collections)',
   example: 1
   })
   @ApiQuery({
@@ -243,7 +244,7 @@ export class GamblesController {
   })
   @ApiParam({
   name: 'chapterId',
-  description: 'Chapter number to find gambles for (matches chapters by number across series)',
+  description: 'Chapter number to find gambles for (matches chapters by number across collections)',
   type: Number
   })
   @ApiResponse({
@@ -272,5 +273,103 @@ export class GamblesController {
   })
   findByCharacter(@Param('characterId', ParseIntPipe) characterId: number): Promise<Gamble[]> {
     return this.gamblesService.findByCharacter(characterId);
+  }
+
+  @Get('team/:teamName')
+  @ApiOperation({
+    summary: 'Get gambles by team name',
+    description: 'Retrieve all gambles where a specific team participated'
+  })
+  @ApiParam({
+    name: 'teamName',
+    description: 'Name of the team to find gambles for',
+    type: String
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'List of gambles involving the team',
+    type: [Gamble]
+  })
+  findByTeam(@Param('teamName') teamName: string): Promise<Gamble[]> {
+    return this.gamblesService.findByTeam(teamName);
+  }
+
+  @Get(':id/teams')
+  @ApiOperation({
+    summary: 'Get teams for a gamble',
+    description: 'Retrieve all unique team names for a specific gamble'
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'Gamble ID',
+    type: Number
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'List of team names',
+    schema: {
+      type: 'array',
+      items: { type: 'string' },
+      example: ['Team Baku', 'Team Marco']
+    }
+  })
+  getTeamsForGamble(@Param('id', ParseIntPipe) id: number): Promise<string[]> {
+    return this.gamblesService.getTeamsForGamble(id);
+  }
+
+  @Put(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Update gamble',
+    description: 'Update an existing gamble (requires moderator or admin role)'
+  })
+  @ApiParam({ name: 'id', description: 'Gamble ID', example: 1 })
+  @ApiBody({ type: UpdateGambleDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Gamble updated successfully',
+    type: Gamble
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden - requires moderator or admin role' })
+  @ApiResponse({ status: 404, description: 'Gamble not found' })
+  @Roles(UserRole.MODERATOR, UserRole.ADMIN)
+  async update(@Param('id', ParseIntPipe) id: number, @Body(ValidationPipe) data: UpdateGambleDto): Promise<Gamble> {
+    const result = await this.gamblesService.update(id, data);
+    if (!result) {
+      throw new NotFoundException(`Gamble with id ${id} not found`);
+    }
+    return result;
+  }
+
+  @Delete(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Delete gamble',
+    description: 'Delete a gamble (requires moderator or admin role)'
+  })
+  @ApiParam({ name: 'id', description: 'Gamble ID', example: 1 })
+  @ApiResponse({
+    status: 200,
+    description: 'Gamble deleted successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        message: { type: 'string', example: 'Deleted successfully' }
+      }
+    }
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden - requires moderator or admin role' })
+  @ApiResponse({ status: 404, description: 'Gamble not found' })
+  @Roles(UserRole.MODERATOR, UserRole.ADMIN)
+  async remove(@Param('id', ParseIntPipe) id: number) {
+    const result = await this.gamblesService.remove(id);
+    if (!result || result.affected === 0) {
+      throw new NotFoundException(`Gamble with id ${id} not found`);
+    }
+    return { message: 'Deleted successfully' };
   }
 }

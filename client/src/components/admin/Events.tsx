@@ -11,17 +11,24 @@ import {
   SimpleShowLayout,
   NumberInput,
   NumberField,
-  SelectInput
+  SelectInput,
+  ReferenceField,
+  ReferenceInput,
+  AutocompleteInput
 } from 'react-admin'
 
 export const EventList = () => (
   <List>
     <Datagrid rowClick="show">
       <TextField source="id" />
-      <TextField source="name" />
-      <TextField source="eventType" />
-      <NumberField source="chapter" />
-      <TextField source="significance" />
+      <TextField source="title" />
+      <TextField source="type" />
+      <NumberField source="startChapter" />
+      <NumberField source="endChapter" />
+      <ReferenceField source="arcId" reference="arcs" label="Arc">
+        <TextField source="name" />
+      </ReferenceField>
+      <TextField source="description" />
     </Datagrid>
   </List>
 )
@@ -30,12 +37,15 @@ export const EventShow = () => (
   <Show>
     <SimpleShowLayout>
       <TextField source="id" />
-      <TextField source="name" />
+      <TextField source="title" />
       <TextField source="description" />
-      <TextField source="eventType" />
-      <NumberField source="chapter" />
-      <TextField source="significance" />
-      <TextField source="outcome" />
+      <TextField source="type" />
+      <NumberField source="startChapter" />
+      <NumberField source="endChapter" />
+      <NumberField source="spoilerChapter" />
+      <ReferenceField source="arcId" reference="arcs" label="Arc">
+        <TextField source="name" />
+      </ReferenceField>
     </SimpleShowLayout>
   </Show>
 )
@@ -43,27 +53,27 @@ export const EventShow = () => (
 export const EventEdit = () => (
   <Edit>
     <SimpleForm>
-      <TextInput source="name" required />
-      <TextInput source="description" multiline rows={4} />
+      <TextInput source="title" required />
+      <TextInput source="description" multiline rows={4} required />
       <SelectInput
-        source="eventType"
+        source="type"
         choices={[
-          { id: 'Gamble', name: 'Gamble' },
-          { id: 'Character Introduction', name: 'Character Introduction' },
-          { id: 'Plot Development', name: 'Plot Development' },
-          { id: 'Revelation', name: 'Revelation' },
+          { id: 'arc', name: 'Arc' },
+          { id: 'character_reveal', name: 'Character Reveal' },
+          { id: 'plot_twist', name: 'Plot Twist' },
+          { id: 'death', name: 'Death' },
+          { id: 'backstory', name: 'Backstory' },
+          { id: 'plot', name: 'Plot' },
+          { id: 'other', name: 'Other' },
         ]}
+        required
       />
-      <NumberInput source="chapter" />
-      <SelectInput
-        source="significance"
-        choices={[
-          { id: 'Major', name: 'Major' },
-          { id: 'Moderate', name: 'Moderate' },
-          { id: 'Minor', name: 'Minor' },
-        ]}
-      />
-      <TextInput source="outcome" multiline rows={3} />
+      <NumberInput source="startChapter" required max={539} />
+      <NumberInput source="endChapter" max={539} />
+      <NumberInput source="spoilerChapter" max={539} />
+      <ReferenceInput source="arcId" reference="arcs" label="Arc">
+        <AutocompleteInput optionText="name" />
+      </ReferenceInput>
     </SimpleForm>
   </Edit>
 )
@@ -71,27 +81,28 @@ export const EventEdit = () => (
 export const EventCreate = () => (
   <Create>
     <SimpleForm>
-      <TextInput source="name" required />
-      <TextInput source="description" multiline rows={4} />
+      <TextInput source="title" required />
+      <TextInput source="description" multiline rows={4} required />
       <SelectInput
-        source="eventType"
+        source="type"
         choices={[
-          { id: 'Gamble', name: 'Gamble' },
-          { id: 'Character Introduction', name: 'Character Introduction' },
-          { id: 'Plot Development', name: 'Plot Development' },
-          { id: 'Revelation', name: 'Revelation' },
+          { id: 'arc', name: 'Arc' },
+          { id: 'character_reveal', name: 'Character Reveal' },
+          { id: 'plot_twist', name: 'Plot Twist' },
+          { id: 'death', name: 'Death' },
+          { id: 'backstory', name: 'Backstory' },
+          { id: 'plot', name: 'Plot' },
+          { id: 'other', name: 'Other' },
         ]}
+        required
+        defaultValue="other"
       />
-      <NumberInput source="chapter" />
-      <SelectInput
-        source="significance"
-        choices={[
-          { id: 'Major', name: 'Major' },
-          { id: 'Moderate', name: 'Moderate' },
-          { id: 'Minor', name: 'Minor' },
-        ]}
-      />
-      <TextInput source="outcome" multiline rows={3} />
+      <NumberInput source="startChapter" required max={539} />
+      <NumberInput source="endChapter" max={539} />
+      <NumberInput source="spoilerChapter" max={539} />
+      <ReferenceInput source="arcId" reference="arcs" label="Arc">
+        <AutocompleteInput optionText="name" />
+      </ReferenceInput>
     </SimpleForm>
   </Create>
 )

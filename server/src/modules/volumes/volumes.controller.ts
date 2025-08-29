@@ -17,9 +17,8 @@ export class VolumesController {
   @Get()
   @ApiOperation({
     summary: 'Get all volumes',
-    description: 'Retrieve a paginated list of volumes with optional filtering by series and number'
+    description: 'Retrieve a paginated list of volumes with optional filtering by number'
   })
-  @ApiQuery({ name: 'series', required: false, description: 'Filter by series name' })
   @ApiQuery({ name: 'number', required: false, description: 'Filter by volume number' })
   @ApiQuery({ name: 'page', required: false, description: 'Page number (default: 1)' })
   @ApiQuery({ name: 'limit', required: false, description: 'Items per page (default: 20)' })
@@ -42,7 +41,6 @@ export class VolumesController {
     }
   })
   async findAll(
-    @Query('series') series?: string,
     @Query('number') number?: number,
     @Query('page') page?: number,
     @Query('limit') limit?: number,
@@ -51,7 +49,7 @@ export class VolumesController {
   ) {
   const pageNum = page || 1;
   const limitNum = limit || 20;
-  const result = await this.service.findAll({ series, number, page: pageNum, limit: limitNum, sort, order });
+  const result = await this.service.findAll({ number, page: pageNum, limit: limitNum, sort, order });
   // Return canonical paginated shape
   return result;
   }
@@ -76,13 +74,12 @@ export class VolumesController {
     return volume;
   }
 
-  @Get('chapter/:chapterNumber/series/:seriesId')
+  @Get('chapter/:chapterNumber')
   @ApiOperation({
     summary: 'Get volume by chapter number',
     description: 'Find which volume contains a specific chapter'
   })
   @ApiParam({ name: 'chapterNumber', description: 'Chapter number' })
-  @ApiParam({ name: 'seriesId', description: 'Series ID' })
   @ApiResponse({
     status: 200,
     description: 'Volume found',
@@ -93,10 +90,9 @@ export class VolumesController {
     description: 'Volume not found for this chapter'
   })
   async findByChapter(
-    @Param('chapterNumber') chapterNumber: string,
-    @Param('seriesId') seriesId: string
+    @Param('chapterNumber') chapterNumber: string
   ) {
-    const volume = await this.service.findByChapter(+chapterNumber, +seriesId);
+    const volume = await this.service.findByChapter(+chapterNumber);
     if (!volume) {
       throw new NotFoundException('Volume not found for this chapter');
     }

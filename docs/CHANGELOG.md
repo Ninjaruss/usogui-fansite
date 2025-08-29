@@ -1,11 +1,31 @@
 # Changelog and notes
 
+## 2025-08-29
+### Changes
+- Adjusting fields for admin pages to edit data
+- Fixed updating data of most fields; need more work on complex fields like gambles
+- Fixed views of gambles, events, and guides on the home page
+- Updated routes to use /api/* endpoint
+- Replaced foreign key settings on the frontend with selection from data tables
+- Approval/reject works for media approval queue (need to add rejected search to media)
+
+
+### Notes
+- There's been minor issues with ensuring code is consistent; primarily with trying to keep context concise. The "5-hour limit" for Claude Pro runs out very quickly when it comes to making sweeping changes. Clearing the context seems to help, but still feels limiting. For reference, I spent maybe 2 hours last night and little above 3 hours this morning before I hit each session's limits.
+- Fixing code tends to not fix the issue if there are missing endpoints or functions that are assumed. This is apparent for something like requesting a media approval queue as it sends a query to the backend with additional params that don't exist on the backend. 
+
+### TODO
+- Add recognition of existing characters in gambles, quotes, etc. any reference to a character; also for setting/changing user on data tables
+- Add hidden spoilers if user chapter progress does not meet chapter requirement for event and hide results for gambles
+
 ## 2025-08-28
 ### Changes
 - Reset everything to regenerate code from scratch with Claude 3.7
 
 ### Notes
 - After a long amount of frustrations with Gemini 2.5 and basic models for Github Copilot, I am trying out Claude Code. It seems to be just as good as using it as the model for Copilot so far. Definitely a lot better in terms of initial impressions as auth was immediately working from generated code. Still has mistakes, but this will actually solve the issues is what I noticed compared to other models. 
+- Looking over the code, it seems a good way to avoid issues is to clearly define the relationships in your data. A lot of bugs I am finding are from the LLM not realizing that it needs to expect a more complex object that a simple string or number.
+- 
 
 ## 2025-08-27
 ### Changes

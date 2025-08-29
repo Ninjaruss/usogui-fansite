@@ -44,7 +44,7 @@ A comprehensive Next.js frontend for the Usogui fansite with React Admin integra
 3. Set up environment variables:
    The `.env.local` file should contain:
    ```
-   NEXT_PUBLIC_API_URL=http://localhost:3001
+   NEXT_PUBLIC_API_URL=http://localhost:3001/api
    ```
 
 4. Run the development server:

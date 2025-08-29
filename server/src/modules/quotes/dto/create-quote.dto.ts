@@ -46,12 +46,4 @@ export class CreateQuoteDto {
     example: 1
   })
   characterId: number;
-
-  @IsNumber()
-  @IsPositive()
-  @ApiProperty({ 
-    description: 'ID of the series this quote belongs to',
-    example: 1
-  })
-  seriesId: number;
 }

@@ -40,10 +40,10 @@ export class TranslationsController {
     description: 'Retrieve all translations for a specific entity, or filter by language. Public endpoint but requires authentication for data consistency.'
   })
   @ApiParam({
-    name: 'entityType',
-    description: 'Type of entity to get translations for',
-    enum: ['series', 'chapter', 'character', 'arc', 'event', 'gamble', 'faction', 'tag'],
-    example: 'series'
+          name: 'entityType',
+          description: 'Type of entity to get translations for',
+          enum: ['chapter', 'character', 'arc', 'event', 'gamble', 'faction', 'tag'],
+          example: 'chapter'
   })
   @ApiParam({
     name: 'entityId',
@@ -129,10 +129,10 @@ export class TranslationsController {
     description: 'Create a new translation for an entity. Requires moderator or admin privileges. Each entity can have multiple translations in different languages.'
   })
   @ApiParam({
-    name: 'entityType',
-    description: 'Type of entity to create translation for',
-    enum: ['series', 'chapter', 'character', 'arc', 'event', 'gamble', 'faction', 'tag'],
-    example: 'series'
+          name: 'entityType',
+          description: 'Type of entity to create translation for',
+          enum: ['chapter', 'character', 'arc', 'event', 'gamble', 'faction', 'tag'],
+          example: 'chapter'
   })
   @ApiParam({
     name: 'entityId',
@@ -144,8 +144,8 @@ export class TranslationsController {
     type: CreateTranslationDto,
     description: 'Translation data. Fields available depend on the entity type.',
     examples: {
-      'series-translation': {
-        summary: 'Series translation example',
+          'chapter-translation': {
+            summary: 'Chapter translation example',
         value: {
           language: 'ja',
           name: 'ウソウギ',
@@ -242,8 +242,8 @@ export class TranslationsController {
   @ApiParam({
     name: 'entityType',
     description: 'Type of entity the translation belongs to',
-    enum: ['series', 'chapter', 'character', 'arc', 'event', 'gamble', 'faction', 'tag'],
-    example: 'series'
+    enum: ['chapter', 'character', 'arc', 'event', 'gamble', 'faction', 'tag'],
+    example: 'chapter'
   })
   @ApiParam({
     name: 'id',
@@ -279,28 +279,7 @@ export class TranslationsController {
       }
     }
   })
-  @ApiBadRequestResponse({ 
-    description: 'Invalid input data',
-    schema: {
-      example: {
-        statusCode: 400,
-        message: ['name should not be empty'],
-        error: 'Bad Request'
-      }
-    }
-  })
-  @ApiUnauthorizedResponse({ description: 'Authentication required' })
-  @ApiForbiddenResponse({ description: 'Insufficient permissions - moderator or admin role required' })
-  @ApiNotFoundResponse({ 
-    description: 'Translation not found',
-    schema: {
-      example: {
-        statusCode: 404,
-        message: 'Translation with id 1 not found',
-        error: 'Not Found'
-      }
-    }
-  })
+  @ApiBadRequestResponse({ description: 'Invalid input data' })
   async updateTranslation(
     @Param('entityType') entityType: TranslatableEntityType,
     @Param('id', ParseIntPipe) id: number,
@@ -322,8 +301,8 @@ export class TranslationsController {
   @ApiParam({
     name: 'entityType',
     description: 'Type of entity the translation belongs to',
-    enum: ['series', 'chapter', 'character', 'arc', 'event', 'gamble', 'faction', 'tag'],
-    example: 'series'
+    enum: ['chapter', 'character', 'arc', 'event', 'gamble', 'faction', 'tag'],
+    example: 'chapter'
   })
   @ApiParam({
     name: 'id',
@@ -426,7 +405,7 @@ export class TranslationsController {
         byEntityType: {
           type: 'object',
           properties: {
-            series: {
+            chapter: {
               type: 'object',
               properties: {
                 total: { type: 'number', example: 1 },

@@ -3,7 +3,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { TranslationsService } from './translations.service';
 import { TranslationsController } from './translations.controller';
 import {
-  SeriesTranslation,
   ChapterTranslation,
   CharacterTranslation,
   EventTranslation,
@@ -15,7 +14,6 @@ import {
 
 @Module({
   imports: [TypeOrmModule.forFeature([
-    SeriesTranslation,
     ChapterTranslation,
     CharacterTranslation,
     EventTranslation,

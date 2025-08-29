@@ -6,7 +6,6 @@ export * from './types';
 export { BaseTranslation } from './base-translation.entity';
 
 // Export translation entities
-export { SeriesTranslation } from './series-translation.entity';
 export { ChapterTranslation } from './chapter-translation.entity';
 export { CharacterTranslation } from './character-translation.entity';
 export { EventTranslation } from './event-translation.entity';

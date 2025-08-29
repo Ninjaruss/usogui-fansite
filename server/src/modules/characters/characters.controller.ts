@@ -15,11 +15,11 @@ export class CharactersController {
   @Get()
   @ApiOperation({
     summary: 'Get all characters',
-    description: 'Retrieve a paginated list of characters with optional filtering by name, arc, series, and description'
+  description: 'Retrieve a paginated list of characters with optional filtering by name, arc, and description'
   })
   @ApiQuery({ name: 'name', required: false, description: 'Filter by character name' })
   @ApiQuery({ name: 'arc', required: false, description: 'Filter by arc name' })
-  @ApiQuery({ name: 'series', required: false, description: 'Filter by series name' })
+  // series removed
   @ApiQuery({ name: 'description', required: false, description: 'Filter by description content' })
   @ApiQuery({ name: 'page', required: false, description: 'Page number (default: 1)' })
   @ApiQuery({ name: 'limit', required: false, description: 'Items per page (default: 20)' })
@@ -58,16 +58,15 @@ export class CharactersController {
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async getAll(
-    @Query('name') name?: string,
-    @Query('arc') arc?: string,
-    @Query('series') series?: string,
+  @Query('name') name?: string,
+  @Query('arc') arc?: string,
     @Query('description') description?: string,
     @Query('page') page = '1',
     @Query('limit') limit = '20',
     @Query('sort') sort?: string,
     @Query('order') order: 'ASC' | 'DESC' = 'ASC',
   ): Promise<{ data: Character[]; total: number; page: number; totalPages: number }> {
-    return this.service.findAll({ name, arc, series, description, page: parseInt(page), limit: parseInt(limit), sort, order });
+  return this.service.findAll({ name, arc, description, page: parseInt(page), limit: parseInt(limit), sort, order });
   }
 
   @Get(':id')
@@ -126,9 +125,9 @@ export class CharactersController {
         notableGames: { type: 'array', items: { type: 'string' }, example: ['Doubt', 'Ban'] },
         occupation: { type: 'string', example: 'Referee' },
         affiliations: { type: 'array', items: { type: 'string' }, example: ['Kakerou Company', 'L-file'] },
-        seriesId: { type: 'number', example: 1 }
+        // series removed
       },
-      required: ['name', 'seriesId']
+      required: ['name']
     }
   })
   @ApiResponse({

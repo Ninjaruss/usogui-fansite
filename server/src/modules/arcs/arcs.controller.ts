@@ -18,10 +18,10 @@ export class ArcsController {
   @Get()
   @ApiOperation({
     summary: 'Get all arcs',
-    description: 'Retrieve a paginated list of arcs with optional filtering by name, series, and description'
+  description: 'Retrieve a paginated list of arcs with optional filtering by name and description'
   })
   @ApiQuery({ name: 'name', required: false, description: 'Filter by arc name' })
-  @ApiQuery({ name: 'series', required: false, description: 'Filter by series name' })
+  // series removed
   @ApiQuery({ name: 'description', required: false, description: 'Filter by description content' })
   @ApiQuery({ name: 'page', required: false, description: 'Page number (default: 1)' })
   @ApiQuery({ name: 'limit', required: false, description: 'Items per page (default: 20)' })
@@ -56,15 +56,14 @@ export class ArcsController {
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async getAll(
-    @Query('name') name?: string,
-    @Query('series') series?: string,
-    @Query('description') description?: string,
+  @Query('name') name?: string,
+  @Query('description') description?: string,
     @Query('page') page = '1',
     @Query('limit') limit = '20',
     @Query('sort') sort?: string,
     @Query('order') order: 'ASC' | 'DESC' = 'ASC',
   ): Promise<{ data: Arc[]; total: number; page: number; totalPages: number }> {
-    return this.service.findAll({ name, series, description, page: parseInt(page), limit: parseInt(limit), sort, order });
+  return this.service.findAll({ name, description, page: parseInt(page), limit: parseInt(limit), sort, order });
   }
 
   @Get(':id')
@@ -117,13 +116,7 @@ export class ArcsController {
           number: { type: 'number', example: 150 },
           title: { type: 'string', example: 'The Tower Begins' },
           summary: { type: 'string', example: 'Introduction to the Tower of Karma tournament' },
-          series: {
-            type: 'object',
-            properties: {
-              id: { type: 'number', example: 1 },
-              name: { type: 'string', example: 'Usogui' }
-            }
-          },
+          // series removed from chapter response
           createdAt: { type: 'string', format: 'date-time' },
           updatedAt: { type: 'string', format: 'date-time' }
         }

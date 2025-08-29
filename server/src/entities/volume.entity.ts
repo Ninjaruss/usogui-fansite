@@ -1,17 +1,14 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, UpdateDateColumn, Index } from 'typeorm';
-import { Series } from './series.entity';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 @Entity()
-@Index(['series'])
-@Index(['number'])
 export class Volume {
   @ApiProperty({ description: 'Unique identifier of the volume' })
   @PrimaryGeneratedColumn()
   id: number;
 
   @ApiProperty({ 
-    description: 'Volume number in the series',
+  description: 'Volume number',
     example: 1
   })
   @Column()
@@ -43,19 +40,6 @@ export class Volume {
   })
   @Column({ type: 'text', nullable: true })
   description: string;
-
-  @ApiProperty({ 
-    description: 'Series this volume belongs to',
-    type: () => Series
-  })
-  @ManyToOne(() => Series, series => series.volumes, {
-    onDelete: 'CASCADE'
-  })
-  series: Series;
-
-  @ApiProperty({ description: 'ID of the series this volume belongs to' })
-  @Column()
-  seriesId: number;
 
   @ApiProperty({ description: 'When the volume was created' })
   @CreateDateColumn()

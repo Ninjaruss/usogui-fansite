@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Delete, Put, UseGuards, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, Put, Patch, UseGuards, Query } from '@nestjs/common';
 import { MediaService } from './media.service';
 import { CreateMediaDto } from './dto/create-media.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -304,6 +304,120 @@ export class MediaController {
     return this.mediaService.findOne(+id);
   }
 
+  @Put(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @ApiBearerAuth()
+  @Roles(UserRole.MODERATOR, UserRole.ADMIN)
+  @ApiOperation({ summary: 'Update media', description: 'Update a media item (requires moderator or admin role)' })
+  @ApiResponse({
+    status: 200,
+    description: 'Media updated successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        id: { type: 'number', example: 1 },
+        url: { type: 'string', example: 'https://www.youtube.com/watch?v=example' },
+        type: { type: 'string', example: 'video' },
+        description: { type: 'string', example: 'Updated description' },
+        status: { type: 'string', example: 'approved' },
+        character: {
+          type: 'object',
+          nullable: true,
+          properties: {
+            id: { type: 'number', example: 1 },
+            name: { type: 'string', example: 'Baku Madarame' }
+          }
+        },
+        submittedBy: {
+          type: 'object',
+          properties: {
+            id: { type: 'number', example: 1 },
+            username: { type: 'string', example: 'fan123' }
+          }
+        },
+        createdAt: { type: 'string', format: 'date-time' },
+        updatedAt: { type: 'string', format: 'date-time' }
+      }
+    }
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden - requires moderator or admin role' })
+  @ApiResponse({ status: 404, description: 'Media not found' })
+  @ApiParam({ name: 'id', description: 'Media ID', example: 1 })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        url: { type: 'string', example: 'https://www.youtube.com/watch?v=updated' },
+        type: { type: 'string', enum: ['image', 'video', 'audio'] },
+        description: { type: 'string', example: 'Updated description' },
+        characterId: { type: 'number', example: 1 },
+        status: { type: 'string', enum: ['pending', 'approved', 'rejected'] },
+        rejectionReason: { type: 'string', example: 'Reason for rejection' }
+      }
+    }
+  })
+  update(@Param('id') id: string, @Body() updateData: any) {
+    return this.mediaService.update(+id, updateData);
+  }
+
+  @Patch(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @ApiBearerAuth()
+  @Roles(UserRole.MODERATOR, UserRole.ADMIN)
+  @ApiOperation({ summary: 'Partially update media', description: 'Partially update a media item (requires moderator or admin role)' })
+  @ApiResponse({
+    status: 200,
+    description: 'Media updated successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        id: { type: 'number', example: 1 },
+        url: { type: 'string', example: 'https://www.youtube.com/watch?v=example' },
+        type: { type: 'string', example: 'video' },
+        description: { type: 'string', example: 'Updated description' },
+        status: { type: 'string', example: 'approved' },
+        character: {
+          type: 'object',
+          nullable: true,
+          properties: {
+            id: { type: 'number', example: 1 },
+            name: { type: 'string', example: 'Baku Madarame' }
+          }
+        },
+        submittedBy: {
+          type: 'object',
+          properties: {
+            id: { type: 'number', example: 1 },
+            username: { type: 'string', example: 'fan123' }
+          }
+        },
+        createdAt: { type: 'string', format: 'date-time' },
+        updatedAt: { type: 'string', format: 'date-time' }
+      }
+    }
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden - requires moderator or admin role' })
+  @ApiResponse({ status: 404, description: 'Media not found' })
+  @ApiParam({ name: 'id', description: 'Media ID', example: 1 })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        url: { type: 'string', example: 'https://www.youtube.com/watch?v=updated' },
+        type: { type: 'string', enum: ['image', 'video', 'audio'] },
+        description: { type: 'string', example: 'Updated description' },
+        characterId: { type: 'number', example: 1 },
+        status: { type: 'string', enum: ['pending', 'approved', 'rejected'] },
+        rejectionReason: { type: 'string', example: 'Reason for rejection' }
+      }
+    }
+  })
+  patchUpdate(@Param('id') id: string, @Body() updateData: any) {
+    return this.mediaService.update(+id, updateData);
+  }
+
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiBearerAuth()
@@ -426,5 +540,98 @@ export class MediaController {
   })
   rejectSubmission(@Param('id') id: string, @Body('reason') reason: string) {
     return this.mediaService.rejectSubmission(+id, reason);
+  }
+
+  @Post('bulk/approve')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @ApiBearerAuth()
+  @Roles(UserRole.MODERATOR, UserRole.ADMIN)
+  @ApiOperation({ 
+    summary: 'Bulk approve media submissions', 
+    description: 'Approve multiple pending media submissions at once (requires moderator or admin role)' 
+  })
+  @ApiBody({ 
+    schema: { 
+      type: 'object', 
+      properties: { 
+        ids: { 
+          type: 'array', 
+          items: { type: 'number' },
+          description: 'Array of media IDs to approve',
+          example: [1, 2, 3]
+        } 
+      },
+      required: ['ids']
+    } 
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Bulk approval completed',
+    schema: {
+      type: 'object',
+      properties: {
+        approved: { type: 'number', description: 'Number of items approved' },
+        failed: { type: 'number', description: 'Number of items that failed to approve' },
+        errors: { 
+          type: 'array', 
+          items: { type: 'string' },
+          description: 'Error messages for failed approvals'
+        }
+      }
+    }
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden - requires moderator or admin role' })
+  bulkApproveSubmissions(@Body('ids') ids: number[]) {
+    return this.mediaService.bulkApproveSubmissions(ids);
+  }
+
+  @Post('bulk/reject')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @ApiBearerAuth()
+  @Roles(UserRole.MODERATOR, UserRole.ADMIN)
+  @ApiOperation({ 
+    summary: 'Bulk reject media submissions', 
+    description: 'Reject multiple pending media submissions at once (requires moderator or admin role)' 
+  })
+  @ApiBody({ 
+    schema: { 
+      type: 'object', 
+      properties: { 
+        ids: { 
+          type: 'array', 
+          items: { type: 'number' },
+          description: 'Array of media IDs to reject',
+          example: [1, 2, 3]
+        },
+        reason: {
+          type: 'string',
+          description: 'Rejection reason to apply to all items',
+          example: 'Content does not meet quality standards'
+        }
+      },
+      required: ['ids', 'reason']
+    } 
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Bulk rejection completed',
+    schema: {
+      type: 'object',
+      properties: {
+        rejected: { type: 'number', description: 'Number of items rejected' },
+        failed: { type: 'number', description: 'Number of items that failed to reject' },
+        errors: { 
+          type: 'array', 
+          items: { type: 'string' },
+          description: 'Error messages for failed rejections'
+        }
+      }
+    }
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden - requires moderator or admin role' })
+  bulkRejectSubmissions(@Body() body: { ids: number[], reason: string }) {
+    return this.mediaService.bulkRejectSubmissions(body.ids, body.reason);
   }
 }

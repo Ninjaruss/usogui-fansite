@@ -8,7 +8,10 @@ import {
   Show,
   SimpleForm,
   TextInput,
-  SimpleShowLayout
+  SimpleShowLayout,
+  ReferenceInput,
+  AutocompleteInput,
+  NumberInput
 } from 'react-admin'
 
 export const QuoteList = () => (
@@ -16,8 +19,9 @@ export const QuoteList = () => (
     <Datagrid rowClick="show">
       <TextField source="id" />
       <TextField source="text" />
-      <TextField source="character" />
-      <TextField source="context" />
+      <TextField source="character.name" label="Character" />
+      <TextField source="chapterNumber" />
+      <TextField source="description" />
     </Datagrid>
   </List>
 )
@@ -27,8 +31,10 @@ export const QuoteShow = () => (
     <SimpleShowLayout>
       <TextField source="id" />
       <TextField source="text" />
-      <TextField source="character" />
-      <TextField source="context" />
+      <TextField source="character.name" label="Character" />
+      <TextField source="chapterNumber" />
+      <TextField source="description" />
+      <TextField source="pageNumber" />
     </SimpleShowLayout>
   </Show>
 )
@@ -37,8 +43,12 @@ export const QuoteEdit = () => (
   <Edit>
     <SimpleForm>
       <TextInput source="text" multiline rows={4} required />
-      <TextInput source="character" required />
-      <TextInput source="context" multiline rows={2} />
+      <ReferenceInput source="characterId" reference="characters" label="Character">
+        <AutocompleteInput optionText="name" isRequired />
+      </ReferenceInput>
+      <NumberInput source="chapterNumber" required label="Chapter Number" max={539} />
+      <TextInput source="description" multiline rows={2} label="Context/Description" />
+      <NumberInput source="pageNumber" label="Page Number" />
     </SimpleForm>
   </Edit>
 )
@@ -47,8 +57,12 @@ export const QuoteCreate = () => (
   <Create>
     <SimpleForm>
       <TextInput source="text" multiline rows={4} required />
-      <TextInput source="character" required />
-      <TextInput source="context" multiline rows={2} />
+      <ReferenceInput source="characterId" reference="characters" label="Character">
+        <AutocompleteInput optionText="name" isRequired />
+      </ReferenceInput>
+      <NumberInput source="chapterNumber" required label="Chapter Number" max={539} />
+      <TextInput source="description" multiline rows={2} label="Context/Description" />
+      <NumberInput source="pageNumber" label="Page Number" />
     </SimpleForm>
   </Create>
 )

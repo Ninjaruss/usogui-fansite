@@ -1,6 +1,5 @@
 import { Language } from './translation-types';
 import {
-  SeriesTranslation,
   ChapterTranslation,
   CharacterTranslation,
   EventTranslation,
@@ -14,7 +13,6 @@ export { Language };
 
 // List of valid entity types for translations
 export const TRANSLATABLE_ENTITY_TYPES = [
-  'series',
   'chapter',
   'character',
   'event',
@@ -28,7 +26,6 @@ export type TranslatableEntityType = typeof TRANSLATABLE_ENTITY_TYPES[number];
 
 // Union type of all translation entities
 export type TranslationEntity = 
-  | SeriesTranslation
   | ChapterTranslation
   | CharacterTranslation
   | EventTranslation

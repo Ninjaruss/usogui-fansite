@@ -5,18 +5,30 @@ import {
   TextField,
   Edit,
   Create,
+  Show,
   SimpleForm,
+  SimpleShowLayout,
   TextInput
 } from 'react-admin'
 
 export const TagList = () => (
   <List>
-    <Datagrid rowClick="edit">
+    <Datagrid rowClick="show">
       <TextField source="id" />
       <TextField source="name" />
       <TextField source="description" />
     </Datagrid>
   </List>
+)
+
+export const TagShow = () => (
+  <Show>
+    <SimpleShowLayout>
+      <TextField source="id" />
+      <TextField source="name" />
+      <TextField source="description" />
+    </SimpleShowLayout>
+  </Show>
 )
 
 export const TagEdit = () => (

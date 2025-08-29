@@ -98,7 +98,10 @@ export class MediaService {
   }
 
   async rejectSubmission(id: number, reason: string): Promise<Media> {
-    const media = await this.mediaRepo.findOne({ where: { id } });
+    const media = await this.mediaRepo.findOne({ 
+      where: { id },
+      relations: ['submittedBy']
+    });
     if (!media) {
       throw new NotFoundException(`Media with id ${id} not found`);
     }
@@ -108,11 +111,75 @@ export class MediaService {
     
     media.status = MediaStatus.REJECTED;
     media.rejectionReason = reason;
-    return await this.mediaRepo.save(media);
+    
+    const savedMedia = await this.mediaRepo.save(media);
+
+    // Skip email for test user  
+    if (!this.isTestUser(media.submittedBy.email)) {
+      await this.emailService.sendMediaRejectionNotification(
+        media.submittedBy.email,
+        media.description || 'your submission',
+        reason
+      );
+    }
+
+    return savedMedia;
+  }
+
+  async update(id: number, updateData: Partial<CreateMediaDto>): Promise<Media> {
+    const media = await this.mediaRepo.findOne({ 
+      where: { id },
+      relations: ['character', 'submittedBy']
+    });
+    if (!media) {
+      throw new NotFoundException(`Media with id ${id} not found`);
+    }
+
+    // Merge the update data
+    Object.assign(media, updateData);
+
+    // If character ID is provided, update the character relation
+    if (updateData.characterId !== undefined) {
+      media.character = updateData.characterId ? { id: updateData.characterId } as any : null;
+    }
+
+    return this.mediaRepo.save(media);
   }
 
   async remove(id: number): Promise<void> {
     await this.mediaRepo.delete(id);
+  }
+
+  async bulkApproveSubmissions(ids: number[]): Promise<{ approved: number; failed: number; errors: string[] }> {
+    const results = { approved: 0, failed: 0, errors: [] as string[] };
+
+    for (const id of ids) {
+      try {
+        await this.approveSubmission(id);
+        results.approved++;
+      } catch (error: any) {
+        results.failed++;
+        results.errors.push(`Failed to approve media ${id}: ${error.message || 'Unknown error'}`);
+      }
+    }
+
+    return results;
+  }
+
+  async bulkRejectSubmissions(ids: number[], reason: string): Promise<{ rejected: number; failed: number; errors: string[] }> {
+    const results = { rejected: 0, failed: 0, errors: [] as string[] };
+
+    for (const id of ids) {
+      try {
+        await this.rejectSubmission(id, reason);
+        results.rejected++;
+      } catch (error: any) {
+        results.failed++;
+        results.errors.push(`Failed to reject media ${id}: ${error.message || 'Unknown error'}`);
+      }
+    }
+
+    return results;
   }
 
   // PUBLIC METHODS - No authentication required

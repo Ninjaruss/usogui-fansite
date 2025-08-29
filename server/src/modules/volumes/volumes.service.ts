@@ -15,7 +15,6 @@ export class VolumesService {
    * Get all volumes with pagination and filtering
    */
   async findAll(filters: { 
-    series?: string; 
     number?: number;
     page?: number; 
     limit?: number; 
@@ -23,12 +22,7 @@ export class VolumesService {
     order?: 'ASC' | 'DESC' 
   }) {
     const { page = 1, limit = 20, sort, order = 'ASC' } = filters;
-    const query = this.repo.createQueryBuilder('volume')
-      .leftJoinAndSelect('volume.series', 'series');
-
-    if (filters.series) {
-      query.andWhere('LOWER(series.name) LIKE LOWER(:series)', { series: `%${filters.series}%` });
-    }
+  const query = this.repo.createQueryBuilder('volume');
     if (filters.number) {
       query.andWhere('volume.number = :number', { number: filters.number });
     }
@@ -53,10 +47,7 @@ export class VolumesService {
   }
 
   findOne(id: number) {
-    return this.repo.findOne({ 
-      where: { id }, 
-      relations: ['series'] 
-    });
+    return this.repo.findOne({ where: { id } });
   }
 
   async create(data: CreateVolumeDto) {
@@ -66,21 +57,12 @@ export class VolumesService {
       startChapter: data.startChapter,
       endChapter: data.endChapter,
       description: data.description,
-      seriesId: data.seriesId,
-      series: { id: data.seriesId } as any
     });
     return this.repo.save(volume);
   }
 
   update(id: number, data: UpdateVolumeDto) {
     const updateData: any = { ...data };
-    
-    // Handle the series reference if seriesId is provided
-    if (data.seriesId) {
-      updateData.series = { id: data.seriesId };
-      delete updateData.seriesId;
-    }
-    
     return this.repo.update(id, updateData);
   }
 
@@ -91,12 +73,10 @@ export class VolumesService {
   /**
    * Find volume by chapter number
    */
-  async findByChapter(chapterNumber: number, seriesId: number) {
+  async findByChapter(chapterNumber: number) {
     return this.repo.createQueryBuilder('volume')
-      .leftJoinAndSelect('volume.series', 'series')
       .where('volume.startChapter <= :chapterNumber', { chapterNumber })
       .andWhere('volume.endChapter >= :chapterNumber', { chapterNumber })
-      .andWhere('series.id = :seriesId', { seriesId })
       .getOne();
   }
 

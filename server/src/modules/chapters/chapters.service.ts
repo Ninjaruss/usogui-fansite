@@ -10,10 +10,9 @@ export class ChaptersService {
   /**
    * Pagination: page (default 1), limit (default 20)
    */
-  async findAll(filters: { title?: string; number?: string; arc?: string; series?: string; page?: number; limit?: number; sort?: string; order?: 'ASC' | 'DESC' }) {
+  async findAll(filters: { title?: string; number?: string; arc?: string; page?: number; limit?: number; sort?: string; order?: 'ASC' | 'DESC' }) {
     const { page = 1, limit = 20, sort, order = 'ASC' } = filters;
-    const query = this.repo.createQueryBuilder('chapter')
-      .leftJoinAndSelect('chapter.series', 'series');
+  const query = this.repo.createQueryBuilder('chapter');
 
     if (filters.title) {
       query.andWhere('LOWER(chapter.title) LIKE LOWER(:title)', { title: `%${filters.title}%` });
@@ -22,9 +21,7 @@ export class ChaptersService {
       query.andWhere('chapter.number = :number', { number: filters.number });
     }
   // arc filtering removed: Chapter entity does not define an 'arc' relation
-    if (filters.series) {
-      query.andWhere('LOWER(series.name) LIKE LOWER(:series)', { series: `%${filters.series}%` });
-    }
+  // series removed
 
     // Sorting: only allow certain fields for safety
     const allowedSort = ['id', 'title', 'number'];
@@ -50,7 +47,7 @@ export class ChaptersService {
   }
 
   findOne(id: number): Promise<Chapter | null> {
-    return this.repo.findOne({ where: { id }, relations: ['series'] });
+    return this.repo.findOne({ where: { id } });
   }
 
   create(data: Partial<Chapter>): Promise<Chapter> {

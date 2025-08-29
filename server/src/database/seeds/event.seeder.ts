@@ -1,8 +1,6 @@
 import { DataSource } from 'typeorm';
 import { Event, EventType } from '../../entities/event.entity';
-import { Series } from '../../entities/series.entity';
 import { Character } from '../../entities/character.entity';
-import { Chapter } from '../../entities/chapter.entity';
 import { Seeder } from './seeder.interface';
 
 export class EventSeeder implements Seeder {
@@ -10,25 +8,15 @@ export class EventSeeder implements Seeder {
 
   async run(): Promise<void> {
     const eventRepository = this.dataSource.getRepository(Event);
-    const seriesRepository = this.dataSource.getRepository(Series);
     const characterRepository = this.dataSource.getRepository(Character);
-
-    const series = await seriesRepository.findOne({
-      where: { name: 'Usogui' }
-    });
-
-    if (!series) {
-      console.log('Series not found. Please run SeriesSeeder first.');
-      return;
-    }
 
     // Get characters for event associations
     const baku = await characterRepository.findOne({
-      where: { name: 'Baku Madarame', series: { id: series.id } }
+      where: { name: 'Baku Madarame'}
     });
 
     const marco = await characterRepository.findOne({
-      where: { name: 'Marco Reiji', series: { id: series.id } }
+      where: { name: 'Marco Reiji'}
     });
 
     const events = [
@@ -44,7 +32,6 @@ export class EventSeeder implements Seeder {
         chapterReferences: [
           { chapterNumber: 1, context: "First appearance - Introduction to the lie eater" }
         ],
-        series: series,
         characters: baku ? [baku] : []
       },
       {
@@ -59,7 +46,6 @@ export class EventSeeder implements Seeder {
         chapterReferences: [
           { chapterNumber: 5, context: "Marco's introduction and first meeting with Baku" }
         ],
-        series: series,
         characters: baku && marco ? [baku, marco] : []
       },
       {
@@ -75,7 +61,6 @@ export class EventSeeder implements Seeder {
           { chapterNumber: 1, context: "First mention of Kakerou" },
           { chapterNumber: 3, context: "Detailed explanation of the organization" }
         ],
-        series: series,
         characters: []
       },
       {
@@ -91,7 +76,6 @@ export class EventSeeder implements Seeder {
           { chapterNumber: 1, context: "Introduction to the gambling event" },
           { chapterNumber: 10, context: "Conclusion of the first major gamble" }
         ],
-        series: series,
         characters: baku ? [baku] : []
       },
       {
@@ -106,7 +90,6 @@ export class EventSeeder implements Seeder {
         chapterReferences: [
           { chapterNumber: 1, context: "First demonstration of Baku's lie detection ability" }
         ],
-        series: series,
         characters: baku ? [baku] : []
       }
     ];
@@ -115,7 +98,6 @@ export class EventSeeder implements Seeder {
       const existingEvent = await eventRepository.findOne({
         where: { 
           title: eventData.title,
-          series: { id: series.id }
         }
       });
 

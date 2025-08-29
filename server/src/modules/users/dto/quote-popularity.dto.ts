@@ -3,7 +3,7 @@ import { Quote } from '../../../entities/quote.entity';
 
 export class QuotePopularityDto {
   @ApiProperty({ 
-    description: 'The quote object with character and series details',
+  description: 'The quote object with character details',
     type: () => Quote
   })
   quote: Quote;

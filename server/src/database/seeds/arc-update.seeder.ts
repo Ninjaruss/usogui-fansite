@@ -1,7 +1,6 @@
 import { DataSource } from 'typeorm';
 import { Arc } from '../../entities/arc.entity';
 import { Chapter } from '../../entities/chapter.entity';
-import { Series } from '../../entities/series.entity';
 import { Seeder } from './seeder.interface';
 
 export class ArcUpdateSeeder implements Seeder {
@@ -10,21 +9,9 @@ export class ArcUpdateSeeder implements Seeder {
   async run(): Promise<void> {
     const arcRepository = this.dataSource.getRepository(Arc);
     const chapterRepository = this.dataSource.getRepository(Chapter);
-    const seriesRepository = this.dataSource.getRepository(Series);
-
-    // Get the Usogui series
-    const series = await seriesRepository.findOne({
-      where: { name: 'Usogui' }
-    });
-
-    if (!series) {
-      console.log('Series not found. Skipping arc chapter updates.');
-      return;
-    }
 
     // Get chapters for arc boundaries
     const chapters = await chapterRepository.find({
-      where: { series: { id: series.id } },
       order: { number: 'ASC' }
     });
 
@@ -35,7 +22,7 @@ export class ArcUpdateSeeder implements Seeder {
 
     // Update Introduction Arc
     const introArc = await arcRepository.findOne({
-      where: { name: 'Introduction Arc', series: { id: series.id } }
+      where: { name: 'Introduction Arc' }
     });
 
     if (introArc) {
@@ -55,7 +42,7 @@ export class ArcUpdateSeeder implements Seeder {
 
     // Update Life or Death Game Arc  
     const gameArc = await arcRepository.findOne({
-      where: { name: 'Life or Death Game Arc', series: { id: series.id } }
+      where: { name: 'Life or Death Game Arc'}
     });
 
     if (gameArc && chapters.length > 1) {

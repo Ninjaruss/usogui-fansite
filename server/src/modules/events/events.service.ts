@@ -15,7 +15,6 @@ export class EventsService {
   async findAll(filters: { 
     title?: string; 
     arc?: string; 
-    series?: string; 
     description?: string; 
     type?: EventType;
     userProgress?: number;
@@ -28,7 +27,6 @@ export class EventsService {
     const { page = 1, limit = 20, sort, order = 'ASC' } = filters;
     const query = this.repo.createQueryBuilder('event')
       .leftJoinAndSelect('event.arc', 'arc')
-      .leftJoinAndSelect('event.series', 'series')
       .leftJoinAndSelect('event.characters', 'characters');
 
     if (filters.title) {
@@ -37,9 +35,7 @@ export class EventsService {
     if (filters.arc) {
       query.andWhere('LOWER(arc.name) LIKE LOWER(:arc)', { arc: `%${filters.arc}%` });
     }
-    if (filters.series) {
-      query.andWhere('LOWER(series.name) LIKE LOWER(:series)', { series: `%${filters.series}%` });
-    }
+  // series filter removed
     if (filters.description) {
       query.andWhere('LOWER(event.description) LIKE LOWER(:description)', { description: `%${filters.description}%` });
     }
@@ -80,11 +76,9 @@ export class EventsService {
     type?: EventType;
     isVerified?: boolean;
     arc?: string;
-    series?: string;
   }): Promise<Event[]> {
     const query = this.repo.createQueryBuilder('event')
       .leftJoinAndSelect('event.arc', 'arc')
-      .leftJoinAndSelect('event.series', 'series')
       .leftJoinAndSelect('event.characters', 'characters')
       .where('(event.spoilerChapter IS NULL OR event.spoilerChapter <= :userProgress)', 
         { userProgress });
@@ -98,9 +92,7 @@ export class EventsService {
     if (filters?.arc) {
       query.andWhere('LOWER(arc.name) LIKE LOWER(:arc)', { arc: `%${filters.arc}%` });
     }
-    if (filters?.series) {
-      query.andWhere('LOWER(series.name) LIKE LOWER(:series)', { series: `%${filters.series}%` });
-    }
+  // series filter intentionally removed
 
     query.orderBy('event.startChapter', 'ASC');
     return query.getMany();
@@ -122,7 +114,6 @@ export class EventsService {
   async findByType(type: EventType, userProgress?: number): Promise<Event[]> {
     const query = this.repo.createQueryBuilder('event')
       .leftJoinAndSelect('event.arc', 'arc')
-      .leftJoinAndSelect('event.series', 'series')
       .leftJoinAndSelect('event.characters', 'characters')
       .where('event.type = :type', { type });
 
@@ -138,10 +129,10 @@ export class EventsService {
   }
 
   findOne(id: number): Promise<Event | null> {
-    return this.repo.findOne({ 
-      where: { id }, 
-      relations: ['arc', 'characters', 'series', 'tags'] 
-    });
+      return this.repo.findOne({ 
+        where: { id }, 
+        relations: ['arc', 'characters', 'tags'] 
+      });
   }
 
   async create(data: CreateEventDto): Promise<Event> {
@@ -164,7 +155,6 @@ export class EventsService {
   async getEventsByChapter(chapterNumber: number, userProgress?: number): Promise<Event[]> {
     const query = this.repo.createQueryBuilder('event')
       .leftJoinAndSelect('event.arc', 'arc')
-      .leftJoinAndSelect('event.series', 'series')
       .leftJoinAndSelect('event.characters', 'characters')
       .where('event.startChapter <= :chapterNumber', { chapterNumber })
       .andWhere('(event.endChapter IS NULL OR event.endChapter >= :chapterNumber)', { chapterNumber });
@@ -186,7 +176,6 @@ export class EventsService {
   }): Promise<Event[]> {
     const query = this.repo.createQueryBuilder('event')
       .leftJoinAndSelect('event.arc', 'arc')
-      .leftJoinAndSelect('event.series', 'series')
       .leftJoinAndSelect('event.characters', 'characters')
       .where('event.title ILIKE :search OR event.description ILIKE :search', {
         search: `%${searchTerm}%`

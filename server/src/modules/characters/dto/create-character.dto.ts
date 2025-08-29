@@ -47,8 +47,5 @@ export class CreateCharacterDto {
   @IsOptional()
   notableRoles?: string[];
 
-  @ApiPropertyOptional({ description: 'Series ID the character belongs to' })
-  @IsNumber()
-  @IsOptional()
-  seriesId?: number;
+  // series removed
 }

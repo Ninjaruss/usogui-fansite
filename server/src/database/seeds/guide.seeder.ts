@@ -140,7 +140,7 @@ Remember: The house always has an edge, but understanding game theory helps you 
 
 ## The Death God of Gambling
 
-Baku Madarame, known as the "Death God," represents the pinnacle of gambling mastery in the Usogui universe. This analysis explores his methods, psychology, and evolution throughout the series.
+  Baku Madarame, known as the "Death God," represents the pinnacle of gambling mastery in the Usogui universe. This analysis explores his methods, psychology, and evolution throughout the story.
 
 ## Core Characteristics
 
@@ -173,7 +173,7 @@ His ability to get inside opponents' heads...
 ### Adaptive Gameplay
 How Baku modifies his approach based on the opponent...
 
-## Evolution Throughout the Series
+## Evolution Throughout the Story
 
 From his early appearances to the final arcs, Baku's character development shows...
 
@@ -198,7 +198,7 @@ Baku Madarame represents the idealized gambler—one who combines mathematical p
 
 ## What is Kakerou?
 
-Kakerou is the underground gambling organization that serves as the primary setting for most of Usogui's gambling battles. Understanding its rules and structure is essential for following the series.
+Kakerou is the underground gambling organization that serves as the primary setting for most of Usogui's gambling battles. Understanding its rules and structure is essential for following the story.
 
 ## Basic Structure
 
@@ -278,7 +278,7 @@ This guide will cover advanced bluffing techniques... (work in progress)
 
 ## Examples
 
-(Need to add specific examples from the series)
+(Need to add specific examples from the story)
 
 ## Conclusion
 

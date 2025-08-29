@@ -1,6 +1,5 @@
 import { DataSource } from 'typeorm';
 import { Seeder } from './seeder.interface';
-import { SeriesSeeder } from './series.seeder';
 import { UserSeeder } from './user.seeder';
 import { ChapterSeeder } from './chapter.seeder';
 import { CharacterSeeder } from './character.seeder';
@@ -27,7 +26,6 @@ export class MainSeeder {
     const seeders: Seeder[] = [
       // Core data - must be seeded first
       new UserSeeder(this.dataSource),       // Users for content attribution
-      new SeriesSeeder(this.dataSource),     // Series information
       
       // Content structure
       new ArcSeeder(this.dataSource),        // Story arcs with chapter ranges
@@ -67,7 +65,7 @@ export class MainSeeder {
       this.logger.log(chalk.green('✅ All seeders completed successfully!'));
       this.logger.log(chalk.blue('📊 Database has been populated with comprehensive test data including:'));
       this.logger.log(chalk.blue('   - User accounts (admin, moderator, regular users)'));
-      this.logger.log(chalk.blue('   - Complete Usogui series structure'));
+  this.logger.log(chalk.blue('   - Complete Usogui content structure'));
       this.logger.log(chalk.blue('   - Character profiles and relationships'));
       this.logger.log(chalk.blue('   - Story events and plot points'));
       this.logger.log(chalk.blue('   - Gambling events and tournaments'));

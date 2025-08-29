@@ -1,7 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, ManyToMany, JoinTable, Index, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 import { Arc } from './arc.entity';
 import { Character } from './character.entity';
-import { Series } from './series.entity';
 import { User } from './user.entity';
 import { Tag } from './tag.entity';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
@@ -23,7 +22,6 @@ export interface ChapterReference {
 }
 
 @Entity()
-@Index(['series'])
 @Index(['arc'])
 @Index(['startChapter', 'endChapter'])
 @Index(['title'])
@@ -121,9 +119,6 @@ export class Event {
   @ManyToMany(() => Character)
   @JoinTable()
   characters: Character[];
-
-  @ManyToOne(() => Series, series => series.id)
-  series: Series;
 
   @ManyToOne(() => User, user => user.submittedEvents, { nullable: true })
   createdBy: User;

@@ -21,11 +21,5 @@ export class CreateFactionDto {
   })
   description?: string;
 
-  @IsNumber()
-  @IsNotEmpty()
-  @ApiProperty({ 
-    description: 'ID of the series this faction belongs to',
-    example: 1
-  })
-  seriesId: number;
+
 }

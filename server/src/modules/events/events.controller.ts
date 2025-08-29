@@ -17,11 +17,10 @@ export class EventsController {
   @Get()
   @ApiOperation({
     summary: 'Get all events',
-    description: 'Retrieve a paginated list of events with optional filtering by title, arc, series, type, and spoiler protection'
+  description: 'Retrieve a paginated list of events with optional filtering by title, arc, type, and spoiler protection'
   })
   @ApiQuery({ name: 'title', required: false, description: 'Filter by event title' })
   @ApiQuery({ name: 'arc', required: false, description: 'Filter by arc name' })
-  @ApiQuery({ name: 'series', required: false, description: 'Filter by series name' })
   @ApiQuery({ name: 'description', required: false, description: 'Filter by description content' })
   @ApiQuery({ name: 'type', required: false, enum: EventType, description: 'Filter by event type' })
   @ApiQuery({ name: 'userProgress', required: false, description: 'User\'s reading progress - only shows safe events' })
@@ -61,7 +60,6 @@ export class EventsController {
   async getAll(
     @Query('title') title?: string,
     @Query('arc') arc?: string,
-    @Query('series') series?: string,
     @Query('description') description?: string,
     @Query('type') type?: EventType,
     @Query('userProgress', new ParseIntPipe({ optional: true })) userProgress?: number,
@@ -75,7 +73,6 @@ export class EventsController {
     return this.service.findAll({ 
       title, 
       arc, 
-      series, 
       description, 
       type,
       userProgress,
@@ -96,7 +93,6 @@ export class EventsController {
   @ApiQuery({ name: 'type', required: false, enum: EventType, description: 'Filter by event type' })
   @ApiQuery({ name: 'isVerified', required: false, description: 'Filter by verification status' })
   @ApiQuery({ name: 'arc', required: false, description: 'Filter by arc name' })
-  @ApiQuery({ name: 'series', required: false, description: 'Filter by series name' })
   @ApiResponse({ 
     status: 200, 
     description: 'Viewable events retrieved successfully',
@@ -107,10 +103,9 @@ export class EventsController {
     @Query('type') type?: EventType,
     @Query('isVerified') isVerifiedStr?: string,
     @Query('arc') arc?: string,
-    @Query('series') series?: string,
   ): Promise<Event[]> {
     const isVerified = isVerifiedStr !== undefined ? isVerifiedStr === 'true' : undefined;
-    return this.service.findViewableEvents(userProgress, { type, isVerified, arc, series });
+  return this.service.findViewableEvents(userProgress, { type, isVerified, arc });
   }
 
   @Post('check-viewable')

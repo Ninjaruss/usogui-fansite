@@ -1,6 +1,5 @@
 import { DataSource } from 'typeorm';
 import { Volume } from '../../entities/volume.entity';
-import { Series } from '../../entities/series.entity';
 import { Seeder } from './seeder.interface';
 
 export class VolumeSeeder implements Seeder {
@@ -8,17 +7,6 @@ export class VolumeSeeder implements Seeder {
 
   async run(): Promise<void> {
     const volumeRepository = this.dataSource.getRepository(Volume);
-    const seriesRepository = this.dataSource.getRepository(Series);
-
-    // Get the Usogui series
-    const series = await seriesRepository.findOne({
-      where: { name: 'Usogui' }
-    });
-
-    if (!series) {
-      console.log('Series not found. Please run SeriesSeeder first.');
-      return;
-    }
 
     const initialVolumes = [
       {
@@ -27,7 +15,6 @@ export class VolumeSeeder implements Seeder {
         description: 'Introduction to Baku Madarame and the underground gambling world',
         startChapter: 1,
         endChapter: 10,
-        series: { id: series.id } as Series
       },
       {
         number: 2,
@@ -35,7 +22,6 @@ export class VolumeSeeder implements Seeder {
         description: 'Baku faces his first serious challenge in the gambling underworld',
         startChapter: 11,
         endChapter: 20,
-        series: { id: series.id } as Series
       },
       // Add more volumes as needed
     ];
@@ -45,7 +31,6 @@ export class VolumeSeeder implements Seeder {
       const existingVolume = await volumeRepository.findOne({
         where: { 
           number: volumeData.number,
-          series: { id: series.id }
         }
       });
 
@@ -55,7 +40,6 @@ export class VolumeSeeder implements Seeder {
           description: volumeData.description,
           startChapter: volumeData.startChapter,
           endChapter: volumeData.endChapter,
-          series: volumeData.series
         });
         await volumeRepository.save(volume);
         console.log(`Created volume ${volumeData.number}: ${volumeData.title}`);

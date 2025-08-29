@@ -58,7 +58,7 @@ export class QuotesController {
   })
   @ApiResponse({ 
     status: 404, 
-    description: 'Character or Series not found' 
+    description: 'Character not found' 
   })
   create(
     @Body(ValidationPipe) createQuoteDto: CreateQuoteDto,
@@ -70,10 +70,9 @@ export class QuotesController {
   @Get()
   @ApiOperation({ 
     summary: 'Get all quotes with optional filtering',
-    description: 'Retrieve quotes with various filtering options including character, series, chapter range, and text search.'
+    description: 'Retrieve quotes with various filtering options including character, chapter range, and text search.'
   })
   @ApiQuery({ name: 'characterId', required: false, description: 'Filter by character ID' })
-  @ApiQuery({ name: 'seriesId', required: false, description: 'Filter by series ID' })
   @ApiQuery({ name: 'chapterNumber', required: false, description: 'Filter by specific chapter number' })
   @ApiQuery({ name: 'chapterStart', required: false, description: 'Filter by chapter range start' })
   @ApiQuery({ name: 'chapterEnd', required: false, description: 'Filter by chapter range end' })
@@ -100,7 +99,6 @@ export class QuotesController {
   })
   async findAll(
     @Query('characterId', new ParseIntPipe({ optional: true })) characterId?: number,
-    @Query('seriesId', new ParseIntPipe({ optional: true })) seriesId?: number,
     @Query('chapterNumber', new ParseIntPipe({ optional: true })) chapterNumber?: number,
     @Query('chapterStart', new ParseIntPipe({ optional: true })) chapterStart?: number,
     @Query('chapterEnd', new ParseIntPipe({ optional: true })) chapterEnd?: number,
@@ -113,7 +111,6 @@ export class QuotesController {
     
     return this.quotesService.findAll({
       characterId,
-      seriesId,
       chapterNumber,
       chapterRange,
       search,
@@ -126,10 +123,9 @@ export class QuotesController {
   @Get('random')
   @ApiOperation({ 
     summary: 'Get a random quote',
-    description: 'Retrieve a random quote with optional filtering by character, series, or chapter range.'
+    description: 'Retrieve a random quote with optional filtering by character or chapter range.'
   })
   @ApiQuery({ name: 'characterId', required: false, description: 'Filter by character ID' })
-  @ApiQuery({ name: 'seriesId', required: false, description: 'Filter by series ID' })
   @ApiQuery({ name: 'chapterStart', required: false, description: 'Filter by chapter range start' })
   @ApiQuery({ name: 'chapterEnd', required: false, description: 'Filter by chapter range end' })
   @ApiResponse({ 
@@ -143,7 +139,6 @@ export class QuotesController {
   })
   findRandom(
     @Query('characterId', new ParseIntPipe({ optional: true })) characterId?: number,
-    @Query('seriesId', new ParseIntPipe({ optional: true })) seriesId?: number,
     @Query('chapterStart', new ParseIntPipe({ optional: true })) chapterStart?: number,
     @Query('chapterEnd', new ParseIntPipe({ optional: true })) chapterEnd?: number,
   ): Promise<Quote> {
@@ -151,7 +146,6 @@ export class QuotesController {
     
     return this.quotesService.findRandom({
       characterId,
-      seriesId,
       chapterRange,
     });
   }
@@ -163,7 +157,6 @@ export class QuotesController {
   })
   @ApiQuery({ name: 'q', required: true, description: 'Search term' })
   @ApiQuery({ name: 'characterId', required: false, description: 'Filter by character ID' })
-  @ApiQuery({ name: 'seriesId', required: false, description: 'Filter by series ID' })
   @ApiQuery({ name: 'limit', required: false, description: 'Maximum number of results' })
   @ApiResponse({ 
     status: 200, 
@@ -177,12 +170,10 @@ export class QuotesController {
   searchQuotes(
     @Query('q') searchTerm: string,
     @Query('characterId', new ParseIntPipe({ optional: true })) characterId?: number,
-    @Query('seriesId', new ParseIntPipe({ optional: true })) seriesId?: number,
     @Query('limit', new ParseIntPipe({ optional: true })) limit?: number,
   ): Promise<Quote[]> {
     return this.quotesService.searchQuotes(searchTerm, {
       characterId,
-      seriesId,
       limit,
     });
   }
@@ -224,10 +215,9 @@ export class QuotesController {
   @Get('chapter/:chapterNumber')
   @ApiOperation({ 
     summary: 'Get quotes from a specific chapter',
-    description: 'Retrieve all quotes from a specific chapter, optionally filtered by series.'
+    description: 'Retrieve all quotes from a specific chapter.'
   })
   @ApiParam({ name: 'chapterNumber', description: 'Chapter number' })
-  @ApiQuery({ name: 'seriesId', required: false, description: 'Filter by series ID' })
   @ApiResponse({ 
     status: 200, 
     description: 'Chapter quotes retrieved successfully',
@@ -235,15 +225,14 @@ export class QuotesController {
   })
   getQuotesByChapter(
     @Param('chapterNumber', ParseIntPipe) chapterNumber: number,
-    @Query('seriesId', new ParseIntPipe({ optional: true })) seriesId?: number,
   ): Promise<Quote[]> {
-    return this.quotesService.getQuotesByChapter(chapterNumber, seriesId);
+    return this.quotesService.getQuotesByChapter(chapterNumber);
   }
 
   @Get(':id')
   @ApiOperation({ 
     summary: 'Get a quote by ID',
-    description: 'Retrieve a specific quote by its ID with related character, series, and submitter information.'
+    description: 'Retrieve a specific quote by its ID with related character and submitter information.'
   })
   @ApiParam({ name: 'id', description: 'Quote ID' })
   @ApiResponse({ 
@@ -287,7 +276,7 @@ export class QuotesController {
   })
   @ApiResponse({ 
     status: 404, 
-    description: 'Quote, Character, or Series not found' 
+    description: 'Quote or Character not found' 
   })
   update(
     @Param('id', ParseIntPipe) id: number,

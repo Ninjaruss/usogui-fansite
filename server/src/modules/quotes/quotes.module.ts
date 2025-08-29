@@ -4,11 +4,10 @@ import { QuotesService } from './quotes.service';
 import { QuotesController } from './quotes.controller';
 import { Quote } from '../../entities/quote.entity';
 import { Character } from '../../entities/character.entity';
-import { Series } from '../../entities/series.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Quote, Character, Series])
+    TypeOrmModule.forFeature([Quote, Character])
   ],
   controllers: [QuotesController],
   providers: [QuotesService],

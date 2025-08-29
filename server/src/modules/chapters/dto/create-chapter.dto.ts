@@ -21,10 +21,8 @@ export class CreateChapterDto {
   @ApiPropertyOptional({ description: 'Brief summary of the chapter\'s content' })
   summary?: string;
 
-  @IsNumber()
-  @ApiProperty({ description: 'ID of the series this chapter belongs to' })
-  seriesId: number;
-
+  // series removed
+  // (series concept removed)
   @IsNumber()
   @IsOptional()
   @ApiPropertyOptional({ description: 'ID of the arc this chapter belongs to' })

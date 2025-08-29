@@ -16,7 +16,7 @@ export class CreateArcDto {
   @IsNotEmpty()
   @Min(0)
   @ApiProperty({ 
-    description: 'Order of the arc in the series',
+  description: 'Order of the arc',
     default: 0,
     example: 1
   })
@@ -35,10 +35,10 @@ export class CreateArcDto {
   @IsNotEmpty()
   @Min(1)
   @ApiProperty({ 
-    description: 'ID of the series this arc belongs to',
+    description: 'ID of the related collection this arc belongs to',
     example: 1
   })
-  seriesId: number;
+  // (series concept removed)
 
   @IsNumber()
   @IsOptional()

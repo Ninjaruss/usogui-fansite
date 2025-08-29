@@ -16,12 +16,12 @@ export class ChaptersController {
 
   @ApiOperation({
     summary: 'Get all chapters with filtering and pagination',
-    description: 'Retrieves a paginated list of chapters with optional filtering by title, number, arc, or series.'
+  description: 'Retrieves a paginated list of chapters with optional filtering by title, number, or arc.'
   })
   @ApiQuery({ name: 'title', required: false, description: 'Filter by chapter title', example: 'The Beginning' })
   @ApiQuery({ name: 'number', required: false, description: 'Filter by chapter number', example: '1' })
   @ApiQuery({ name: 'arc', required: false, description: 'Filter by arc ID', example: '1' })
-  @ApiQuery({ name: 'series', required: false, description: 'Filter by series ID', example: '1' })
+  // series removed
   @ApiQuery({ name: 'page', required: false, description: 'Page number (default: 1)', example: 1 })
   @ApiQuery({ name: 'limit', required: false, description: 'Items per page (default: 20)', example: 20 })
   @ApiQuery({ name: 'sort', required: false, description: 'Sort field (number, title)', example: 'number' })
@@ -36,7 +36,7 @@ export class ChaptersController {
             number: 1,
             title: 'The Beginning of Fate',
             summary: 'Baku Madarame enters the world of high-stakes gambling.',
-            series: { id: 1, title: 'Usogui' },
+            // series removed
             arc: { id: 1, title: 'Protoporos Arc' },
             spoilers: [],
             createdAt: '2024-01-15T10:30:00Z',
@@ -57,13 +57,13 @@ export class ChaptersController {
     @Query('title') title?: string,
     @Query('number') number?: string,
     @Query('arc') arc?: string,
-    @Query('series') series?: string,
+  // series removed
     @Query('page') page = '1',
     @Query('limit') limit = '20',
     @Query('sort') sort?: string,
     @Query('order') order: 'ASC' | 'DESC' = 'ASC',
   ): Promise<{ data: Chapter[]; total: number; page: number; totalPages: number }> {
-    return this.service.findAll({ title, number, arc, series, page: parseInt(page), limit: parseInt(limit), sort, order });
+  return this.service.findAll({ title, number, arc, page: parseInt(page), limit: parseInt(limit), sort, order });
   }
 
   @Get(':id')

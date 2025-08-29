@@ -1,7 +1,6 @@
 import { DataSource } from 'typeorm';
 import { Faction } from '../../entities/faction.entity';
 import { Character } from '../../entities/character.entity';
-import { Series } from '../../entities/series.entity';
 import { Seeder } from './seeder.interface';
 
 export class FactionSeeder implements Seeder {
@@ -10,24 +9,14 @@ export class FactionSeeder implements Seeder {
   async run(): Promise<void> {
     const factionRepository = this.dataSource.getRepository(Faction);
     const characterRepository = this.dataSource.getRepository(Character);
-    const seriesRepository = this.dataSource.getRepository(Series);
-
-    const series = await seriesRepository.findOne({
-      where: { name: 'Usogui' }
-    });
-
-    if (!series) {
-      console.log('Series not found. Please run SeriesSeeder first.');
-      return;
-    }
 
     // Get characters for faction associations
     const baku = await characterRepository.findOne({
-      where: { name: 'Baku Madarame', series: { id: series.id } }
+      where: { name: 'Baku Madarame' }
     });
 
     const marco = await characterRepository.findOne({
-      where: { name: 'Marco Reiji', series: { id: series.id } }
+      where: { name: 'Marco Reiji' }
     });
 
     const factions = [

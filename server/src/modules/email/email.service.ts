@@ -110,4 +110,25 @@ export class EmailService {
       throw new BadRequestException('Failed to send media approval notification');
     }
   }
+
+  async sendMediaRejectionNotification(email: string, mediaTitle: string, reason: string) {
+    const content = `
+      <h1>Media Submission Update</h1>
+      <p>Unfortunately, your media submission "${mediaTitle}" could not be approved at this time.</p>
+      <p><strong>Reason:</strong> ${reason}</p>
+      <p>You can submit new content at any time. Thank you for your understanding.</p>
+    `;
+
+    try {
+      await this.resend.emails.send({
+        from: this.fromEmail,
+        to: email,
+        subject: 'Media Submission Update',
+        html: this.createEmailTemplate(content),
+      });
+    } catch (error) {
+      console.error('Failed to send media rejection notification:', error);
+      throw new BadRequestException('Failed to send media rejection notification');
+    }
+  }
 }

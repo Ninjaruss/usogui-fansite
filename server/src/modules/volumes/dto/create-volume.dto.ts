@@ -6,7 +6,7 @@ export class CreateVolumeDto {
   @IsNotEmpty()
   @Min(1)
   @ApiProperty({ 
-    description: 'Volume number in the series',
+  description: 'Volume number',
     example: 1
   })
   number: number;
@@ -47,12 +47,5 @@ export class CreateVolumeDto {
   })
   description?: string;
 
-  @IsNumber()
-  @IsNotEmpty()
-  @Min(1)
-  @ApiProperty({ 
-    description: 'ID of the series this volume belongs to',
-    example: 1
-  })
-  seriesId: number;
+  // (series concept removed)
 }

@@ -6,7 +6,7 @@ export class UpdateVolumeDto {
   @IsOptional()
   @Min(1)
   @ApiPropertyOptional({ 
-    description: 'Volume number in the series',
+  description: 'Volume number',
     example: 1
   })
   number?: number;
@@ -58,12 +58,5 @@ export class UpdateVolumeDto {
   })
   description?: string;
 
-  @IsNumber()
-  @IsOptional()
-  @Min(1)
-  @ApiPropertyOptional({ 
-    description: 'ID of the series this volume belongs to',
-    example: 1
-  })
-  seriesId?: number;
+  // related collection id removed
 }

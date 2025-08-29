@@ -21,13 +21,24 @@ import { motion } from 'motion/react'
 
 interface Event {
   id: number
-  name: string
+  title: string
   description: string
-  chapterNumber: number
-  arcName?: string
-  participants: string[]
-  outcomes: string[]
-  significance: string
+  startChapter: number
+  endChapter?: number
+  type: string
+  arc?: {
+    id: number
+    name: string
+  }
+  characters: Array<{
+    id: number
+    name: string
+  }>
+  pageNumbers?: number[]
+  chapterReferences?: Array<{
+    chapterNumber: number
+    context: string
+  }>
   createdAt: string
   updatedAt: string
 }
@@ -114,19 +125,19 @@ export default function EventDetailsPage() {
             <Zap size={48} color="#ff9800" />
           </Box>
           <Typography variant="h3" component="h1" gutterBottom>
-            {event.name}
+            {event.title}
           </Typography>
           <Box sx={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: 1, mb: 2 }}>
             <Chip
               icon={<Calendar size={16} />}
-              label={`Chapter ${event.chapterNumber}`}
+              label={event.endChapter ? `Chapters ${event.startChapter}-${event.endChapter}` : `Chapter ${event.startChapter}`}
               color="primary"
               variant="outlined"
             />
-            {event.arcName && (
+            {event.arc && (
               <Chip
                 icon={<BookOpen size={16} />}
-                label={event.arcName}
+                label={event.arc.name}
                 color="secondary"
                 variant="outlined"
               />
@@ -145,14 +156,18 @@ export default function EventDetailsPage() {
                   {event.description}
                 </Typography>
 
-                {event.significance && (
+                {event.chapterReferences && event.chapterReferences.length > 0 && (
                   <>
                     <Typography variant="h6" gutterBottom sx={{ mt: 3 }}>
-                      Significance
+                      Related Chapters
                     </Typography>
-                    <Typography variant="body1" sx={{ lineHeight: 1.7 }}>
-                      {event.significance}
-                    </Typography>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                      {event.chapterReferences.map((ref, index) => (
+                        <Typography key={index} variant="body2" sx={{ mb: 0.5 }}>
+                          <strong>Chapter {ref.chapterNumber}:</strong> {ref.context}
+                        </Typography>
+                      ))}
+                    </Box>
                   </>
                 )}
               </CardContent>
@@ -168,34 +183,48 @@ export default function EventDetailsPage() {
                 
                 <Box sx={{ mb: 3 }}>
                   <Typography variant="body2" color="text.secondary" gutterBottom>
-                    Chapter
+                    Chapters
                   </Typography>
                   <Typography variant="body1">
-                    {event.chapterNumber}
+                    {event.endChapter ? `${event.startChapter} - ${event.endChapter}` : event.startChapter}
                   </Typography>
                 </Box>
 
-                {event.arcName && (
+                {event.arc && (
                   <Box sx={{ mb: 3 }}>
                     <Typography variant="body2" color="text.secondary" gutterBottom>
                       Arc
                     </Typography>
                     <Typography variant="body1">
-                      {event.arcName}
+                      {event.arc.name}
                     </Typography>
                   </Box>
                 )}
 
-                {event.participants?.length > 0 && (
+                {event.type && (
                   <Box sx={{ mb: 3 }}>
                     <Typography variant="body2" color="text.secondary" gutterBottom>
-                      Participants
+                      Event Type
+                    </Typography>
+                    <Chip
+                      label={event.type.replace('_', ' ').toUpperCase()}
+                      size="small"
+                      color="secondary"
+                      variant="outlined"
+                    />
+                  </Box>
+                )}
+
+                {event.characters?.length > 0 && (
+                  <Box sx={{ mb: 3 }}>
+                    <Typography variant="body2" color="text.secondary" gutterBottom>
+                      Characters
                     </Typography>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                      {event.participants.map((participant, index) => (
+                      {event.characters.map((character) => (
                         <Chip
-                          key={index}
-                          label={participant}
+                          key={character.id}
+                          label={character.name}
                           size="small"
                           variant="outlined"
                           color="primary"
@@ -206,18 +235,14 @@ export default function EventDetailsPage() {
                   </Box>
                 )}
 
-                {event.outcomes?.length > 0 && (
+                {event.pageNumbers && event.pageNumbers.length > 0 && (
                   <Box>
                     <Typography variant="body2" color="text.secondary" gutterBottom>
-                      Outcomes
+                      Page References
                     </Typography>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                      {event.outcomes.map((outcome, index) => (
-                        <Typography key={index} variant="body2" sx={{ mb: 0.5 }}>
-                          • {outcome}
-                        </Typography>
-                      ))}
-                    </Box>
+                    <Typography variant="body2">
+                      Pages: {event.pageNumbers.join(', ')}
+                    </Typography>
                   </Box>
                 )}
               </CardContent>

@@ -14,7 +14,12 @@ import {
   ArrayInput,
   SimpleFormIterator,
   SimpleShowLayout,
-  SelectInput
+  SelectInput,
+  NumberInput,
+  ReferenceInput,
+  AutocompleteInput,
+  ReferenceArrayInput,
+  AutocompleteArrayInput
 } from 'react-admin'
 
 export const GambleList = () => (
@@ -22,9 +27,13 @@ export const GambleList = () => (
     <Datagrid rowClick="show">
       <TextField source="id" />
       <TextField source="name" />
-      <TextField source="difficulty" />
-      <TextField source="outcome" />
-      <ArrayField source="participants">
+      <TextField source="chapterId" label="Chapter" />
+      <ArrayField source="participants" label="Participants">
+        <SingleFieldList>
+          <ChipField source="character.name" size="small" />
+        </SingleFieldList>
+      </ArrayField>
+      <ArrayField source="observers" label="Observers">
         <SingleFieldList>
           <ChipField source="name" size="small" />
         </SingleFieldList>
@@ -38,21 +47,20 @@ export const GambleShow = () => (
     <SimpleShowLayout>
       <TextField source="id" />
       <TextField source="name" />
-      <TextField source="description" />
       <TextField source="rules" />
-      <TextField source="difficulty" />
-      <TextField source="outcome" />
-      <ArrayField source="participants">
+      <TextField source="winCondition" />
+      <TextField source="chapterId" label="Chapter" />
+      <ArrayField source="participants" label="Participants">
         <SingleFieldList>
-          <ChipField source="name" />
+          <ChipField source="character.name" />
         </SingleFieldList>
       </ArrayField>
-      <ArrayField source="winConditions">
+      <ArrayField source="rounds" label="Rounds">
         <SingleFieldList>
-          <ChipField source="name" />
+          <ChipField source="roundNumber" />
         </SingleFieldList>
       </ArrayField>
-      <ArrayField source="loseConditions">
+      <ArrayField source="observers" label="Observers">
         <SingleFieldList>
           <ChipField source="name" />
         </SingleFieldList>
@@ -65,32 +73,46 @@ export const GambleEdit = () => (
   <Edit>
     <SimpleForm>
       <TextInput source="name" required />
-      <TextInput source="description" multiline rows={4} />
-      <TextInput source="rules" multiline rows={6} />
-      <SelectInput
-        source="difficulty"
+      <TextInput source="rules" multiline rows={6} required />
+      <TextInput source="winCondition" multiline rows={3} />
+      <NumberInput source="chapterId" label="Chapter Number" required max={539} />
+      <SelectInput 
+        source="hasTeams" 
+        label="Type"
         choices={[
-          { id: 'Easy', name: 'Easy' },
-          { id: 'Medium', name: 'Medium' },
-          { id: 'Hard', name: 'Hard' },
+          { id: false, name: 'Individual' },
+          { id: true, name: 'Team-based' }
         ]}
       />
-      <TextInput source="outcome" multiline rows={3} />
-      <ArrayInput source="participants">
+      <ArrayInput source="participants" label="Participants">
         <SimpleFormIterator>
-          <TextInput source="" label="Participant" />
+          <ReferenceInput source="characterId" reference="characters" label="Character" required>
+            <AutocompleteInput optionText="name" />
+          </ReferenceInput>
+          <TextInput source="teamName" label="Team Name (optional)" />
+          <SelectInput 
+            source="isWinner" 
+            label="Winner?"
+            choices={[
+              { id: false, name: 'No' },
+              { id: true, name: 'Yes' }
+            ]}
+          />
+          <TextInput source="stake" label="What they're betting" />
         </SimpleFormIterator>
       </ArrayInput>
-      <ArrayInput source="winConditions">
+      <ArrayInput source="rounds" label="Rounds">
         <SimpleFormIterator>
-          <TextInput source="" label="Win Condition" />
+          <NumberInput source="roundNumber" label="Round Number" />
+          <TextInput source="outcome" label="What happened" multiline rows={2} required />
+          <TextInput source="winnerTeam" label="Winner Team" />
+          <TextInput source="reward" label="Reward" />
+          <TextInput source="penalty" label="Penalty" />
         </SimpleFormIterator>
       </ArrayInput>
-      <ArrayInput source="loseConditions">
-        <SimpleFormIterator>
-          <TextInput source="" label="Lose Condition" />
-        </SimpleFormIterator>
-      </ArrayInput>
+      <ReferenceArrayInput source="observers" reference="characters" label="Observers">
+        <AutocompleteArrayInput optionText="name" />
+      </ReferenceArrayInput>
     </SimpleForm>
   </Edit>
 )
@@ -99,32 +121,48 @@ export const GambleCreate = () => (
   <Create>
     <SimpleForm>
       <TextInput source="name" required />
-      <TextInput source="description" multiline rows={4} />
-      <TextInput source="rules" multiline rows={6} />
-      <SelectInput
-        source="difficulty"
+      <TextInput source="rules" multiline rows={6} required />
+      <TextInput source="winCondition" multiline rows={3} />
+      <NumberInput source="chapterId" label="Chapter Number" required max={539} />
+      <SelectInput 
+        source="hasTeams" 
+        label="Type"
         choices={[
-          { id: 'Easy', name: 'Easy' },
-          { id: 'Medium', name: 'Medium' },
-          { id: 'Hard', name: 'Hard' },
+          { id: false, name: 'Individual' },
+          { id: true, name: 'Team-based' }
         ]}
+        defaultValue={false}
       />
-      <TextInput source="outcome" multiline rows={3} />
-      <ArrayInput source="participants">
+      <ArrayInput source="participants" label="Participants">
         <SimpleFormIterator>
-          <TextInput source="" label="Participant" />
+          <ReferenceInput source="characterId" reference="characters" label="Character" required>
+            <AutocompleteInput optionText="name" />
+          </ReferenceInput>
+          <TextInput source="teamName" label="Team Name (optional)" />
+          <SelectInput 
+            source="isWinner" 
+            label="Winner?"
+            choices={[
+              { id: false, name: 'No' },
+              { id: true, name: 'Yes' }
+            ]}
+            defaultValue={false}
+          />
+          <TextInput source="stake" label="What they're betting" />
         </SimpleFormIterator>
       </ArrayInput>
-      <ArrayInput source="winConditions">
+      <ArrayInput source="rounds" label="Rounds">
         <SimpleFormIterator>
-          <TextInput source="" label="Win Condition" />
+          <NumberInput source="roundNumber" label="Round Number" />
+          <TextInput source="outcome" label="What happened" multiline rows={2} required />
+          <TextInput source="winnerTeam" label="Winner Team" />
+          <TextInput source="reward" label="Reward" />
+          <TextInput source="penalty" label="Penalty" />
         </SimpleFormIterator>
       </ArrayInput>
-      <ArrayInput source="loseConditions">
-        <SimpleFormIterator>
-          <TextInput source="" label="Lose Condition" />
-        </SimpleFormIterator>
-      </ArrayInput>
+      <ReferenceArrayInput source="observers" reference="characters" label="Observers">
+        <AutocompleteArrayInput optionText="name" />
+      </ReferenceArrayInput>
     </SimpleForm>
   </Create>
 )

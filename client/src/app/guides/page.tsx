@@ -77,6 +77,7 @@ export default function GuidesPage() {
   }
 
   const getContentPreview = (content: string, maxLength = 150) => {
+    if (!content) return 'No content available'
     if (content.length <= maxLength) return content
     return content.slice(0, maxLength).replace(/\s+\S*$/, '') + '...'
   }
@@ -182,10 +183,10 @@ export default function GuidesPage() {
                         
                         {guide.tags?.length > 0 && (
                           <Box sx={{ mb: 2 }}>
-                            {guide.tags.slice(0, 3).map((tag) => (
+                            {guide.tags.slice(0, 3).map((tag, index) => (
                               <Chip
-                                key={tag}
-                                label={tag}
+                                key={`${guide.id}-tag-${index}`}
+                                label={typeof tag === 'object' ? (tag as any)?.name || String(tag) : tag}
                                 size="small"
                                 variant="outlined"
                                 color="secondary"

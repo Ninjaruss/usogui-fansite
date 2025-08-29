@@ -15,17 +15,14 @@ export class ArcsService {
   /**
    * Pagination: page (default 1), limit (default 20)
    */
-  async findAll(filters: { name?: string; series?: string; description?: string; page?: number; limit?: number; sort?: string; order?: 'ASC' | 'DESC' }) {
+  async findAll(filters: { name?: string; description?: string; page?: number; limit?: number; sort?: string; order?: 'ASC' | 'DESC' }) {
     const { page = 1, limit = 20, sort, order = 'ASC' } = filters;
-    const query = this.repo.createQueryBuilder('arc')
-      .leftJoinAndSelect('arc.series', 'series');
+  const query = this.repo.createQueryBuilder('arc');
 
     if (filters.name) {
       query.andWhere('LOWER(arc.name) LIKE LOWER(:name)', { name: `%${filters.name}%` });
     }
-    if (filters.series) {
-      query.andWhere('LOWER(series.name) LIKE LOWER(:series)', { series: `%${filters.series}%` });
-    }
+  // series removed
     if (filters.description) {
       query.andWhere('LOWER(arc.description) LIKE LOWER(:description)', { description: `%${filters.description}%` });
     }
@@ -49,10 +46,7 @@ export class ArcsService {
   }
 
   findOne(id: number) {
-    return this.repo.findOne({ 
-      where: { id }, 
-      relations: ['series'] 
-    });
+    return this.repo.findOne({ where: { id } });
   }
 
   async create(data: CreateArcDto) {
@@ -60,7 +54,6 @@ export class ArcsService {
       name: data.name,
       order: data.order,
       description: data.description,
-      series: { id: data.seriesId } as any,
       startChapter: data.startChapter,
       endChapter: data.endChapter
     });
@@ -76,10 +69,7 @@ export class ArcsService {
   }
 
   async getChaptersInArc(arcId: number): Promise<Chapter[]> {
-    const arc = await this.repo.findOne({ 
-      where: { id: arcId }, 
-      relations: ['series'] 
-    });
+  const arc = await this.repo.findOne({ where: { id: arcId } });
     
     if (!arc) {
       throw new NotFoundException(`Arc with id ${arcId} not found`);
@@ -91,11 +81,9 @@ export class ArcsService {
     
     return this.chapterRepo.find({
       where: {
-        series: { id: arc.series.id },
         number: Between(arc.startChapter, arc.endChapter)
       },
-      order: { number: 'ASC' },
-      relations: ['series']
+      order: { number: 'ASC' }
     });
   }
 }

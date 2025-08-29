@@ -6,7 +6,6 @@ import { CreateQuoteDto } from './dto/create-quote.dto';
 import { UpdateQuoteDto } from './dto/update-quote.dto';
 import { User, UserRole } from '../../entities/user.entity';
 import { Character } from '../../entities/character.entity';
-import { Series } from '../../entities/series.entity';
 
 @Injectable()
 export class QuotesService {
@@ -15,8 +14,6 @@ export class QuotesService {
     private quotesRepository: Repository<Quote>,
     @InjectRepository(Character)
     private charactersRepository: Repository<Character>,
-    @InjectRepository(Series)
-    private seriesRepository: Repository<Series>,
   ) {}
 
   async create(createQuoteDto: CreateQuoteDto, user: User): Promise<Quote> {
@@ -28,18 +25,9 @@ export class QuotesService {
       throw new NotFoundException(`Character with ID ${createQuoteDto.characterId} not found`);
     }
 
-    // Verify series exists
-    const series = await this.seriesRepository.findOne({
-      where: { id: createQuoteDto.seriesId }
-    });
-    if (!series) {
-      throw new NotFoundException(`Series with ID ${createQuoteDto.seriesId} not found`);
-    }
-
     const quote = this.quotesRepository.create({
       ...createQuoteDto,
       character,
-      series,
       submittedBy: user,
     });
 
@@ -48,7 +36,6 @@ export class QuotesService {
 
   async findAll(options?: {
     characterId?: number;
-    seriesId?: number;
     chapterNumber?: number;
     chapterRange?: { start: number; end: number };
     search?: string;
@@ -58,16 +45,11 @@ export class QuotesService {
   }): Promise<{ data: Quote[]; total: number; page?: number; perPage?: number; totalPages?: number }> {
     const queryBuilder = this.quotesRepository.createQueryBuilder('quote')
       .leftJoinAndSelect('quote.character', 'character')
-      .leftJoinAndSelect('quote.series', 'series')
       .leftJoinAndSelect('quote.submittedBy', 'submittedBy')
       .orderBy('quote.createdAt', 'DESC');
 
     if (options?.characterId) {
       queryBuilder.andWhere('quote.characterId = :characterId', { characterId: options.characterId });
-    }
-
-    if (options?.seriesId) {
-      queryBuilder.andWhere('quote.seriesId = :seriesId', { seriesId: options.seriesId });
     }
 
     if (options?.chapterNumber) {
@@ -110,7 +92,7 @@ export class QuotesService {
   async findOne(id: number): Promise<Quote> {
     const quote = await this.quotesRepository.findOne({
       where: { id },
-      relations: ['character', 'series', 'submittedBy']
+      relations: ['character', 'submittedBy']
     });
 
     if (!quote) {
@@ -122,21 +104,15 @@ export class QuotesService {
 
   async findRandom(options?: {
     characterId?: number;
-    seriesId?: number;
     chapterRange?: { start: number; end: number };
   }): Promise<Quote> {
     const queryBuilder = this.quotesRepository.createQueryBuilder('quote')
       .leftJoinAndSelect('quote.character', 'character')
-      .leftJoinAndSelect('quote.series', 'series')
       .leftJoinAndSelect('quote.submittedBy', 'submittedBy')
       .orderBy('RANDOM()');
 
     if (options?.characterId) {
       queryBuilder.andWhere('quote.characterId = :characterId', { characterId: options.characterId });
-    }
-
-    if (options?.seriesId) {
-      queryBuilder.andWhere('quote.seriesId = :seriesId', { seriesId: options.seriesId });
     }
 
     if (options?.chapterRange) {
@@ -203,16 +179,6 @@ export class QuotesService {
       }
     }
 
-    // If changing series, verify it exists
-    if (updateQuoteDto.seriesId && updateQuoteDto.seriesId !== quote.series.id) {
-      const series = await this.seriesRepository.findOne({
-        where: { id: updateQuoteDto.seriesId }
-      });
-      if (!series) {
-        throw new NotFoundException(`Series with ID ${updateQuoteDto.seriesId} not found`);
-      }
-    }
-
     await this.quotesRepository.update(id, updateQuoteDto);
     return this.findOne(id);
   }
@@ -228,27 +194,20 @@ export class QuotesService {
     await this.quotesRepository.remove(quote);
   }
 
-  async getQuotesByChapter(chapterNumber: number, seriesId?: number): Promise<Quote[]> {
-    const whereCondition: any = { chapterNumber };
-    if (seriesId) {
-      whereCondition.seriesId = seriesId;
-    }
-
+  async getQuotesByChapter(chapterNumber: number): Promise<Quote[]> {
     return this.quotesRepository.find({
-      where: whereCondition,
-      relations: ['character', 'series', 'submittedBy'],
+      where: { chapterNumber },
+      relations: ['character', 'submittedBy'],
       order: { pageNumber: 'ASC', createdAt: 'ASC' }
     });
   }
 
   async searchQuotes(searchTerm: string, options?: {
     characterId?: number;
-    seriesId?: number;
     limit?: number;
   }): Promise<Quote[]> {
     const queryBuilder = this.quotesRepository.createQueryBuilder('quote')
       .leftJoinAndSelect('quote.character', 'character')
-      .leftJoinAndSelect('quote.series', 'series')
       .leftJoinAndSelect('quote.submittedBy', 'submittedBy')
       .where('quote.text ILIKE :search OR quote.description ILIKE :search', {
         search: `%${searchTerm}%`
@@ -257,10 +216,6 @@ export class QuotesService {
 
     if (options?.characterId) {
       queryBuilder.andWhere('quote.characterId = :characterId', { characterId: options.characterId });
-    }
-
-    if (options?.seriesId) {
-      queryBuilder.andWhere('quote.seriesId = :seriesId', { seriesId: options.seriesId });
     }
 
     if (options?.limit) {

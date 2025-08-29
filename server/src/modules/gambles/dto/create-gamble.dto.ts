@@ -1,27 +1,33 @@
-import { IsString, IsNumber, IsOptional, IsArray, ArrayMinSize } from 'class-validator';
+import { IsString, IsNumber, IsOptional, IsArray, ArrayMinSize, IsBoolean } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
-export class CreateGambleTeamDto {
+export class CreateGambleParticipantDto {
   @ApiProperty({
-    description: 'Name of the team or individual (e.g., "Kakerou" or "Baku\'s Side")',
-    example: 'Kakerou'
+    description: 'ID of the character participating',
+    example: 1
   })
-  @IsString()
-  name: string;
-
-  @ApiProperty({
-    description: 'IDs of characters in this team. For 1v1s, array will contain single character ID',
-    type: [Number],
-    example: [1, 2],
-    minimum: 1
-  })
-  @IsArray()
-  @ArrayMinSize(1)
-  memberIds: number[];
+  @IsNumber()
+  characterId: number;
 
   @ApiPropertyOptional({
-    description: 'What this team is betting/risking in the gamble',
-    example: '100 million yen, control of Kakerou, right hand'
+    description: 'Team name if this gamble uses teams (leave empty for 1v1s)',
+    example: 'Team Baku'
+  })
+  @IsOptional()
+  @IsString()
+  teamName?: string;
+
+  @ApiProperty({
+    description: 'Whether this character won the gamble',
+    default: false
+  })
+  @IsOptional()
+  @IsBoolean()
+  isWinner?: boolean;
+
+  @ApiPropertyOptional({
+    description: 'What this character/team is betting/risking in the gamble',
+    example: '100 million yen, right hand'
   })
   @IsOptional()
   @IsString()
@@ -38,12 +44,12 @@ export class CreateGambleRoundDto {
   roundNumber: number;
 
   @ApiPropertyOptional({
-    description: 'ID of the team that won this round. Omit for draws or unclear outcomes',
-    example: 1
+    description: 'Team name that won this round (for team-based gambles)',
+    example: 'Team Baku'
   })
   @IsOptional()
-  @IsNumber()
-  winnerTeamId?: number;
+  @IsString()
+  winnerTeam?: string;
 
   @ApiProperty({
     description: 'Detailed description of what happened in this round',
@@ -92,26 +98,36 @@ export class CreateGambleDto {
   @IsString()
   winCondition?: string;
 
+  @ApiPropertyOptional({
+    description: 'Whether this gamble uses teams (false for 1v1s)',
+    default: false
+  })
+  @IsOptional()
+  @IsBoolean()
+  hasTeams?: boolean;
+
   @ApiProperty({
-    description: 'Teams or individuals participating in the gamble. Minimum 2 teams required.',
-    type: [CreateGambleTeamDto],
+    description: 'Characters participating in the gamble. Minimum 2 participants required.',
+    type: [CreateGambleParticipantDto],
     minItems: 2,
     example: [
       {
-        name: "Baku's Side",
-        memberIds: [1],
+        characterId: 1,
+        teamName: "Team Baku",
+        isWinner: true,
         stake: "100 million yen"
       },
       {
-        name: "Marco's Side",
-        memberIds: [2],
+        characterId: 2,
+        teamName: "Team Marco", 
+        isWinner: false,
         stake: "Right hand"
       }
     ]
   })
   @IsArray()
   @ArrayMinSize(2)
-  teams: CreateGambleTeamDto[];
+  participants: CreateGambleParticipantDto[];
 
   @ApiPropertyOptional({
     description: 'Individual rounds for multi-round games. Omit for single-round games.',

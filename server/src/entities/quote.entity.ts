@@ -1,12 +1,10 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, UpdateDateColumn, Index } from 'typeorm';
 import { Character } from './character.entity';
-import { Series } from './series.entity';
 import { User } from './user.entity';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 @Entity()
 @Index(['character'])
-@Index(['series'])
 @Index(['chapterNumber'])
 @Index(['submittedBy'])
 export class Quote {
@@ -49,12 +47,6 @@ export class Quote {
   @ManyToOne(() => Character, character => character.quotes, { onDelete: 'CASCADE' })
   character: Character;
 
-  @ApiProperty({ 
-    description: 'Series this quote belongs to',
-    type: () => Series
-  })
-  @ManyToOne(() => Series, series => series.id, { onDelete: 'CASCADE' })
-  series: Series;
 
   @ApiPropertyOptional({ 
     description: 'User who submitted this quote',

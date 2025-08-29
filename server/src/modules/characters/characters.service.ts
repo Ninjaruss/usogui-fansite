@@ -10,18 +10,15 @@ export class CharactersService {
   /**
    * Pagination: page (default 1), limit (default 20)
    */
-  async findAll(filters: { name?: string; arc?: string; series?: string; description?: string; page?: number; limit?: number; sort?: string; order?: 'ASC' | 'DESC' }) {
+  async findAll(filters: { name?: string; arc?: string; description?: string; page?: number; limit?: number; sort?: string; order?: 'ASC' | 'DESC' }) {
     const { page = 1, limit = 20, sort, order = 'ASC' } = filters;
-    const query = this.repo.createQueryBuilder('character')
-      .leftJoinAndSelect('character.series', 'series');
+  const query = this.repo.createQueryBuilder('character');
 
     if (filters.name) {
       query.andWhere('LOWER(character.name) LIKE LOWER(:name)', { name: `%${filters.name}%` });
     }
   // `arc` relation does not exist on Character entity; skip arc filtering
-    if (filters.series) {
-      query.andWhere('LOWER(series.name) LIKE LOWER(:series)', { series: `%${filters.series}%` });
-    }
+  // series removed
     if (filters.description) {
       query.andWhere('LOWER(character.description) LIKE LOWER(:description)', { description: `%${filters.description}%` });
     }
@@ -45,7 +42,7 @@ export class CharactersService {
   }
 
   findOne(id: number): Promise<Character | null> {
-    return this.repo.findOne({ where: { id }, relations: ['series'] });
+    return this.repo.findOne({ where: { id } });
   }
 
   create(data: Partial<Character>): Promise<Character> {

@@ -15,6 +15,9 @@ async function bootstrap() {
   
   const app = await NestFactory.create(AppModule);
   
+  // Set global prefix
+  app.setGlobalPrefix('api');
+  
   // Security
   app.use(helmet());
   // Cookie parsing for refresh token cookie
@@ -77,8 +80,7 @@ async function bootstrap() {
     // Authentication & User Management
     .addTag('auth', 'Authentication - User registration, login, and verification')
     .addTag('users', 'User Management - User profiles, statistics, and account management')
-    // Core Content Management
-    .addTag('series', 'Series - Manga series information and metadata')
+  // Core Content Management
     .addTag('volumes', 'Volumes - Volume organization and chapter grouping')
     .addTag('chapters', 'Chapters - Individual chapter management')
     .addTag('arcs', 'Story Arcs - Narrative arc organization')

@@ -20,7 +20,6 @@ The application follows NestJS's modular architecture with feature-based modules
 Core Modules:
 - `auth` - Authentication and authorization (JWT, guards, decorators)
 - `users` - User management
-- `series` - Series/manga metadata
 - `chapters` - Chapter information
 - `arcs` - Story arc management
 - `characters` - Character information
@@ -87,10 +86,10 @@ yarn test:cov
 ```
 
 ### 3. Content Translation Pattern
-The application uses a specialized translation system:
-- Base entities (`series.entity.ts`, `chapter.entity.ts`, etc.) contain language-agnostic data
+-The application uses a specialized translation system:
+- Base entities (chapter, arc, character, etc.) contain language-agnostic data
 - Translation entities in `src/entities/translations/` store language-specific content
-- Follow the pattern in `series-translation.entity.ts` for new translatable content
+- Follow the pattern in existing translation entities for new translatable content
 - Translation module is for future Japanese language support, but default endpoints return English content
 - Each translated entity extends BaseTranslation and links to its parent entity through a foreign key relationship
 
@@ -169,12 +168,11 @@ if (guide.authorId !== currentUser.id &&
 
 ## Entity Relationships
 
-1. **Series**: Central entity containing metadata about the manga series
-2. **Chapters**: Belongs to a Series and optionally to an Arc
-3. **Characters**: Belongs to a Series, may be associated with multiple Factions
-4. **Arcs**: Belongs to a Series, contains multiple Chapters
-5. **Events**: Belongs to a Series, may reference Characters and Chapters
-6. **Factions**: Belongs to a Series, contains multiple Characters
+1. **Chapters**: Individual chapter records and metadata
+2. **Characters**: Character profiles and associations
+3. **Arcs**: Narrative arc organization, contains multiple Chapters
+4. **Events**: Story events and timeline references (may reference Chapters and Characters)
+5. **Factions**: Groups and organizations containing multiple Characters
 7. **Tags**: Many-to-many relationships with content entities
 8. **Gambles**: Complex entity specific to Usogui's gambling events
 9. **Guides**: User-generated content with likes, view tracking, and tagging

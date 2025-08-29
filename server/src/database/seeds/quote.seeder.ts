@@ -1,7 +1,6 @@
 import { DataSource } from 'typeorm';
 import { Quote } from '../../entities/quote.entity';
 import { Character } from '../../entities/character.entity';
-import { Series } from '../../entities/series.entity';
 import { User } from '../../entities/user.entity';
 import { Seeder } from './seeder.interface';
 
@@ -11,17 +10,7 @@ export class QuoteSeeder implements Seeder {
   async run(): Promise<void> {
     const quoteRepository = this.dataSource.getRepository(Quote);
     const characterRepository = this.dataSource.getRepository(Character);
-    const seriesRepository = this.dataSource.getRepository(Series);
     const userRepository = this.dataSource.getRepository(User);
-
-    const series = await seriesRepository.findOne({
-      where: { name: 'Usogui' }
-    });
-
-    if (!series) {
-      console.log('Series not found. Please run SeriesSeeder first.');
-      return;
-    }
 
     const adminUser = await userRepository.findOne({
       where: { username: 'admin' }
@@ -34,11 +23,11 @@ export class QuoteSeeder implements Seeder {
 
     // Get main characters
     const bakuCharacter = await characterRepository.findOne({
-      where: { name: 'Baku Madarame', series: { id: series.id } }
+      where: { name: 'Baku Madarame'}
     });
 
     const marcoCharacter = await characterRepository.findOne({
-      where: { name: 'Marco Reiji', series: { id: series.id } }
+      where: { name: 'Marco Reiji'}
     });
 
     if (!bakuCharacter || !marcoCharacter) {
@@ -50,10 +39,9 @@ export class QuoteSeeder implements Seeder {
       {
         text: 'The essence of gambling is not about winning or losing... it\'s about the thrill of the unknown.',
         chapterNumber: 1,
-        description: 'Baku\'s philosophy on gambling introduced early in the series',
+  description: 'Baku\'s philosophy on gambling introduced early in the story',
         pageNumber: 15,
         character: bakuCharacter,
-        series: series,
         submittedBy: adminUser,
       },
       {
@@ -62,7 +50,6 @@ export class QuoteSeeder implements Seeder {
         description: 'Baku explaining his perspective on deception',
         pageNumber: 22,
         character: bakuCharacter,
-        series: series,
         submittedBy: adminUser,
       },
       {
@@ -71,7 +58,6 @@ export class QuoteSeeder implements Seeder {
         description: 'Marco\'s cynical view on trust in gambling',
         pageNumber: 8,
         character: marcoCharacter,
-        series: series,
         submittedBy: adminUser,
       },
       {
@@ -80,7 +66,6 @@ export class QuoteSeeder implements Seeder {
         description: 'Baku revealing his deeper motivation for gambling',
         pageNumber: 34,
         character: bakuCharacter,
-        series: series,
         submittedBy: adminUser,
       },
       {
@@ -89,7 +74,6 @@ export class QuoteSeeder implements Seeder {
         description: 'Baku\'s warning about overconfidence',
         pageNumber: 19,
         character: bakuCharacter,
-        series: series,
         submittedBy: adminUser,
       },
       {
@@ -98,7 +82,6 @@ export class QuoteSeeder implements Seeder {
         description: 'Marco discussing the psychology of gambling',
         pageNumber: 41,
         character: marcoCharacter,
-        series: series,
         submittedBy: adminUser,
       },
       {
@@ -107,7 +90,6 @@ export class QuoteSeeder implements Seeder {
         description: 'Baku on the emotional aspects of high-stakes gambling',
         pageNumber: 27,
         character: bakuCharacter,
-        series: series,
         submittedBy: adminUser,
       },
       {
@@ -116,7 +98,6 @@ export class QuoteSeeder implements Seeder {
         description: 'Marco challenging conventional gambling wisdom',
         pageNumber: 12,
         character: marcoCharacter,
-        series: series,
         submittedBy: adminUser,
       },
       {
@@ -125,7 +106,6 @@ export class QuoteSeeder implements Seeder {
         description: 'Baku\'s unpredictable strategic approach',
         pageNumber: 35,
         character: bakuCharacter,
-        series: series,
         submittedBy: adminUser,
       },
       {
@@ -134,7 +114,6 @@ export class QuoteSeeder implements Seeder {
         description: 'Philosophical reflection during a tense gambling match',
         pageNumber: 45,
         character: bakuCharacter,
-        series: series,
         submittedBy: adminUser,
       },
       {
@@ -143,7 +122,6 @@ export class QuoteSeeder implements Seeder {
         description: 'Marco observing desperate opponents',
         pageNumber: 18,
         character: marcoCharacter,
-        series: series,
         submittedBy: adminUser,
       },
       {
@@ -152,7 +130,6 @@ export class QuoteSeeder implements Seeder {
         description: 'Baku\'s perspective on strategy over luck',
         pageNumber: 28,
         character: bakuCharacter,
-        series: series,
         submittedBy: adminUser,
       },
     ];
@@ -161,8 +138,7 @@ export class QuoteSeeder implements Seeder {
       const existingQuote = await quoteRepository.findOne({
         where: { 
           text: quoteData.text,
-          character: { id: quoteData.character.id },
-          series: { id: quoteData.series.id }
+          character: { id: quoteData.character.id }
         }
       });
 

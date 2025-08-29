@@ -19,17 +19,25 @@ import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { api } from '../../../lib/api'
 import { motion } from 'motion/react'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 
 interface Guide {
   id: number
   title: string
+  description: string
   content: string
-  tags: string[]
+  status: string
+  viewCount: number
+  likeCount: number
   author: {
     id: number
     username: string
   }
-  likes: number
+  tags: Array<{
+    id: number
+    name: string
+  }>
   createdAt: string
   updatedAt: string
 }
@@ -138,7 +146,7 @@ export default function GuideDetailsPage() {
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
                   <ThumbsUp size={16} />
                   <Typography variant="body2" color="text.secondary" sx={{ ml: 0.5 }}>
-                    {guide.likes || 0} likes
+                    {guide.likeCount || 0} likes
                   </Typography>
                 </Box>
               </Box>
@@ -147,8 +155,8 @@ export default function GuideDetailsPage() {
                 <Box sx={{ mb: 3 }}>
                   {guide.tags.map((tag) => (
                     <Chip
-                      key={tag}
-                      label={tag}
+                      key={tag.id}
+                      label={tag.name}
                       size="small"
                       variant="outlined"
                       color="secondary"
@@ -161,16 +169,76 @@ export default function GuideDetailsPage() {
 
             <Divider sx={{ mb: 4 }} />
 
-            <Box sx={{ '& p': { mb: 2 }, '& h1, & h2, & h3, & h4, & h5, & h6': { mt: 3, mb: 2 } }}>
-              <Typography 
-                variant="body1" 
-                sx={{ 
-                  lineHeight: 1.8,
-                  whiteSpace: 'pre-wrap'
-                }}
+            <Box sx={{ 
+              '& p': { mb: 2 }, 
+              '& h1, & h2, & h3, & h4, & h5, & h6': { mt: 3, mb: 2, fontWeight: 'bold' },
+              '& h1': { fontSize: '2.125rem' },
+              '& h2': { fontSize: '1.875rem' },
+              '& h3': { fontSize: '1.5rem' },
+              '& h4': { fontSize: '1.25rem' },
+              '& h5': { fontSize: '1.125rem' },
+              '& h6': { fontSize: '1rem' },
+              '& ul, & ol': { pl: 3, mb: 2 },
+              '& li': { mb: 0.5 },
+              '& blockquote': { 
+                borderLeft: '4px solid #dc004e', 
+                pl: 2, 
+                ml: 0, 
+                fontStyle: 'italic',
+                backgroundColor: 'rgba(220, 0, 78, 0.05)',
+                borderRadius: 1,
+                p: 2,
+                mb: 2
+              },
+              '& code': { 
+                backgroundColor: 'rgba(0, 0, 0, 0.1)', 
+                padding: '2px 4px', 
+                borderRadius: 1,
+                fontFamily: 'monospace'
+              },
+              '& pre': { 
+                backgroundColor: 'rgba(0, 0, 0, 0.1)', 
+                p: 2, 
+                borderRadius: 1, 
+                overflow: 'auto',
+                mb: 2,
+                '& code': {
+                  backgroundColor: 'transparent',
+                  padding: 0
+                }
+              },
+              '& table': {
+                width: '100%',
+                borderCollapse: 'collapse',
+                mb: 2,
+                '& th, & td': {
+                  border: '1px solid rgba(0, 0, 0, 0.12)',
+                  p: 1,
+                  textAlign: 'left'
+                },
+                '& th': {
+                  backgroundColor: 'rgba(0, 0, 0, 0.05)',
+                  fontWeight: 'bold'
+                }
+              },
+              '& hr': {
+                my: 3,
+                border: 'none',
+                borderTop: '1px solid rgba(0, 0, 0, 0.12)'
+              },
+              '& a': {
+                color: '#dc004e',
+                textDecoration: 'none',
+                '&:hover': {
+                  textDecoration: 'underline'
+                }
+              }
+            }}>
+              <ReactMarkdown 
+                remarkPlugins={[remarkGfm]}
               >
                 {guide.content}
-              </Typography>
+              </ReactMarkdown>
             </Box>
           </CardContent>
         </Card>

@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, ManyToOne, OneToMany, JoinTable, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 import { Character } from './character.entity';
-import { GambleTeam } from './gamble-team.entity';
+import { GambleCharacter } from './gamble-character.entity';
 import { GambleRound } from './gamble-round.entity';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
@@ -32,11 +32,11 @@ export class Gamble {
   winCondition?: string;
 
   @ApiPropertyOptional({ 
-    description: 'Teams participating in this gamble',
-    type: () => [GambleTeam]
+    description: 'Characters participating in this gamble',
+    type: () => [GambleCharacter]
   })
-  @OneToMany(() => GambleTeam, team => team.gamble, { cascade: true })
-  teams: GambleTeam[];
+  @OneToMany(() => GambleCharacter, participant => participant.gamble, { cascade: true, eager: true })
+  participants: GambleCharacter[];
 
   @ApiPropertyOptional({ 
     description: 'Rounds of this gamble',
@@ -59,6 +59,20 @@ export class Gamble {
   })
   @Column()
   chapterId: number;
+
+  @ApiPropertyOptional({ 
+    description: 'Whether this gamble uses teams (false for 1v1s)',
+    default: false
+  })
+  @Column({ default: false })
+  hasTeams: boolean;
+
+  @ApiPropertyOptional({ 
+    description: 'Winning team name if hasTeams is true',
+    example: 'Team Baku'
+  })
+  @Column({ nullable: true })
+  winnerTeam?: string;
 
   @CreateDateColumn()
   createdAt: Date;

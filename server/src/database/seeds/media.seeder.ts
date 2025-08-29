@@ -2,7 +2,6 @@ import { DataSource } from 'typeorm';
 import { Media, MediaType, MediaStatus } from '../../entities/media.entity';
 import { Character } from '../../entities/character.entity';
 import { User } from '../../entities/user.entity';
-import { Series } from '../../entities/series.entity';
 import { Seeder } from './seeder.interface';
 
 export class MediaSeeder implements Seeder {
@@ -12,16 +11,6 @@ export class MediaSeeder implements Seeder {
     const mediaRepository = this.dataSource.getRepository(Media);
     const characterRepository = this.dataSource.getRepository(Character);
     const userRepository = this.dataSource.getRepository(User);
-    const seriesRepository = this.dataSource.getRepository(Series);
-
-    const series = await seriesRepository.findOne({
-      where: { name: 'Usogui' }
-    });
-
-    if (!series) {
-      console.log('Series not found. Please run SeriesSeeder first.');
-      return;
-    }
 
     // Get a test user for media submissions
     const testUser = await userRepository.findOne({
@@ -35,11 +24,11 @@ export class MediaSeeder implements Seeder {
 
     // Get characters for media associations
     const baku = await characterRepository.findOne({
-      where: { name: 'Baku Madarame', series: { id: series.id } }
+      where: { name: 'Baku Madarame' }
     });
 
     const marco = await characterRepository.findOne({
-      where: { name: 'Marco Reiji', series: { id: series.id } }
+      where: { name: 'Marco Reiji' }
     });
 
     const mediaItems = [

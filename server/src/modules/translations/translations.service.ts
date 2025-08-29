@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { DeepPartial, Repository } from 'typeorm';
 import {
   Language,
-  SeriesTranslation,
   ChapterTranslation,
   CharacterTranslation,
   EventTranslation,
@@ -23,7 +22,6 @@ export class TranslationsService {
   private repositories: Record<TranslatableEntityType, Repository<TranslationEntity>>;
 
   private initRepositories(
-    seriesRepo: Repository<SeriesTranslation>,
     chapterRepo: Repository<ChapterTranslation>,
     characterRepo: Repository<CharacterTranslation>,
     eventRepo: Repository<EventTranslation>,
@@ -33,7 +31,6 @@ export class TranslationsService {
     gambleRepo: Repository<GambleTranslation>
   ) {
     this.repositories = {
-      series: seriesRepo,
       chapter: chapterRepo,
       character: characterRepo,
       event: eventRepo,
@@ -45,8 +42,6 @@ export class TranslationsService {
   }
 
   constructor(
-    @InjectRepository(SeriesTranslation)
-    seriesTranslationRepo: Repository<SeriesTranslation>,
     @InjectRepository(ChapterTranslation)
     chapterTranslationRepo: Repository<ChapterTranslation>,
     @InjectRepository(CharacterTranslation)
@@ -63,7 +58,6 @@ export class TranslationsService {
     gambleTranslationRepo: Repository<GambleTranslation>,
   ) {
     this.initRepositories(
-      seriesTranslationRepo,
       chapterTranslationRepo,
       characterTranslationRepo,
       eventTranslationRepo,

@@ -1,9 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, Index } from 'typeorm';
-import { Series } from './series.entity';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 @Entity()
-@Index(['series'])
 @Index(['name'])
 @Index(['order'])
 export class Arc {
@@ -21,7 +19,7 @@ export class Arc {
 
   // Canonical order for arcs
   @ApiProperty({ 
-    description: 'Order of the arc in the series',
+  description: 'Order of the arc',
     default: 0,
     example: 1
   })
@@ -34,13 +32,6 @@ export class Arc {
   })
   @Column({ type: 'text', nullable: true })
   description: string;
-
-  @ApiProperty({ description: 'Series this arc belongs to' })
-  @ManyToOne(() => Series, series => series.id, {
-    nullable: false,
-    onDelete: 'CASCADE'  // If series is deleted, delete all its arcs
-  })
-  series: Series;
 
   @ApiPropertyOptional({ 
     description: 'Chapter number where this arc starts',
