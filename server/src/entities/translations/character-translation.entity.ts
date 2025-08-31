@@ -5,29 +5,29 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 @Entity('character_translations')
 export class CharacterTranslation extends BaseTranslation {
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Character this translation belongs to',
-    type: () => Character
+    type: () => Character,
   })
   @ManyToOne(() => Character, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'character_id' })
   character: Character;
 
-  @ApiProperty({ 
-    description: 'ID of the character being translated'
+  @ApiProperty({
+    description: 'ID of the character being translated',
   })
   @Column({ name: 'character_id' })
   characterId: number;
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Translated name of the character',
-    example: 'ブラー (Bura)'
+    example: 'ブラー (Bura)',
   })
   @Column({ type: 'text' })
   name: string;
 
-  @ApiPropertyOptional({ 
-    description: 'Translated description of the character'
+  @ApiPropertyOptional({
+    description: 'Translated description of the character',
   })
   @Column({ type: 'text', nullable: true })
   description: string;

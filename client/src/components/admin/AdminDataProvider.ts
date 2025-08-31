@@ -2,7 +2,7 @@ import { DataProvider, HttpError } from 'react-admin'
 import { api } from '../../lib/api'
 
 // Function to clean update data by removing read-only fields and relationship objects
-function cleanUpdateData(resource: string, data: any): any {
+const cleanUpdateData = (resource: string, data: any): any => {
   const cleaned = { ...data }
   
   // Remove common read-only fields
@@ -10,10 +10,11 @@ function cleanUpdateData(resource: string, data: any): any {
   delete cleaned.createdAt
   delete cleaned.updatedAt
   
-  // Remove relationship objects/arrays that should be handled separately
-  // These are typically populated by joins and shouldn't be included in updates
+  // Remove relationship objects/arrays that shouldn't be sent in updates
   const relationshipFields = [
-    'events', 'characters', 'arcs', 'gambles', 'quotes', 'tags', 'factions',
+    'user', 'author', 'character', 'characters', 'chapter', 'chapters', 'arc', 'arcs',
+    'gamble', 'gambles', 'event', 'events', 'faction', 'factions', 'tag', 'tags',
+    'quote', 'quotes', 'volume', 'volumes', 'submittedBy', 'profileImage', 'likes',
     'users', 'chapters', 'volumes', 'teams', 'rounds', 'observers', 'members',
     'winner', 'media', 'guides'
   ]
@@ -88,7 +89,7 @@ function cleanUpdateData(resource: string, data: any): any {
   if (resource === 'guides') {
     // Keep only the fields that are allowed in the CreateGuideDto/UpdateGuideDto
     const allowedFields = [
-      'title', 'description', 'content', 'status', 'tagNames'
+      'title', 'description', 'content', 'status', 'tagNames', 'authorId'
     ]
     
     const guideCleaned: any = {}
@@ -101,7 +102,6 @@ function cleanUpdateData(resource: string, data: any): any {
     // Remove read-only fields that are auto-calculated by backend
     delete guideCleaned.viewCount
     delete guideCleaned.likeCount  
-    delete guideCleaned.authorId
     delete guideCleaned.author
     delete guideCleaned.likes
     
@@ -359,6 +359,12 @@ export const AdminDataProvider: DataProvider = {
       // Clean the update data by removing read-only and relationship fields
       const cleanedData = cleanUpdateData(resource, params.data)
       
+      if (resource === 'guides') {
+        console.log('=== GUIDE UPDATE DEBUG ===')
+        console.log('Original params.data:', params.data)
+        console.log('Cleaned data being sent:', cleanedData)
+      }
+      
       // Use PATCH for resources that support it, PUT for others
       const usePatch = ['quotes', 'guides', 'media'].includes(resource)
       const response = usePatch 
@@ -367,8 +373,22 @@ export const AdminDataProvider: DataProvider = {
       
       const data = response?.data ?? response
       
-      // For updates, always use the requested id as primary, then response data id as fallback
-      const item = { ...data, id: params.id }
+      if (resource === 'guides') {
+        console.log('Server response data:', data)
+      }
+      
+      // Ensure the returned item has proper id and includes all the updated data
+      const item = { 
+        ...data, 
+        id: data.id ?? params.id,
+        // For guides, ensure authorId is properly set if it was in the response
+        ...(resource === 'guides' && data.authorId && { authorId: data.authorId })
+      }
+      
+      if (resource === 'guides') {
+        console.log('Final item being returned to React Admin:', item)
+        console.log('=== END GUIDE UPDATE DEBUG ===')
+      }
       
       return { data: item as any }
     } catch (error: any) {

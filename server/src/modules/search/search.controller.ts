@@ -1,5 +1,19 @@
-import { Controller, Get, Query, ParseIntPipe, UseGuards } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiOkResponse, ApiBadRequestResponse, ApiQuery, ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
+import {
+  Controller,
+  Get,
+  Query,
+  ParseIntPipe,
+  UseGuards,
+} from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiOkResponse,
+  ApiBadRequestResponse,
+  ApiQuery,
+  ApiBearerAuth,
+  ApiResponse,
+} from '@nestjs/swagger';
 import { SearchService } from './search.service';
 import { SearchQueryDto, SearchType } from './dto/search-query.dto';
 import { SearchResultDto } from './dto/search-result.dto';
@@ -15,9 +29,10 @@ export class SearchController {
   constructor(private readonly searchService: SearchService) {}
 
   @Get()
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Search across all content types',
-    description: 'Perform text search across chapters, characters, events, and arcs with spoiler filtering based on user reading progress'
+    description:
+      'Perform text search across chapters, characters, events, and arcs with spoiler filtering based on user reading progress',
   })
   @ApiQuery({
     name: 'query',
@@ -33,7 +48,8 @@ export class SearchController {
   })
   @ApiQuery({
     name: 'userProgress',
-    description: 'User\'s reading progress (highest chapter read) for spoiler filtering',
+    description:
+      "User's reading progress (highest chapter read) for spoiler filtering",
     example: 15,
     required: false,
   })
@@ -58,25 +74,36 @@ export class SearchController {
             type: 'object',
             properties: {
               id: { type: 'number', example: 1 },
-              type: { type: 'string', example: 'character', enum: ['chapter', 'character', 'event', 'arc'] },
+              type: {
+                type: 'string',
+                example: 'character',
+                enum: ['chapter', 'character', 'event', 'arc'],
+              },
               title: { type: 'string', example: 'Baku Madarame' },
-              description: { type: 'string', example: 'A professional gambler known for taking on dangerous bets.' },
+              description: {
+                type: 'string',
+                example:
+                  'A professional gambler known for taking on dangerous bets.',
+              },
               score: { type: 'number', example: 1.0 },
               hasSpoilers: { type: 'boolean', example: false },
               slug: { type: 'string', example: 'character-1' },
               metadata: {
                 type: 'object',
-                example: { occupation: 'Professional Gambler', firstAppearanceChapter: 1 }
-              }
-            }
-          }
+                example: {
+                  occupation: 'Professional Gambler',
+                  firstAppearanceChapter: 1,
+                },
+              },
+            },
+          },
         },
-  total: { type: 'number', example: 42 },
-  page: { type: 'number', example: 1 },
-  perPage: { type: 'number', example: 20 },
-  totalPages: { type: 'number', example: 3 }
-      }
-    }
+        total: { type: 'number', example: 42 },
+        page: { type: 'number', example: 1 },
+        perPage: { type: 'number', example: 20 },
+        totalPages: { type: 'number', example: 3 },
+      },
+    },
   })
   @ApiBadRequestResponse({
     description: 'Invalid search parameters',
@@ -84,18 +111,19 @@ export class SearchController {
       example: {
         statusCode: 400,
         message: ['query should not be empty'],
-        error: 'Bad Request'
-      }
-    }
+        error: 'Bad Request',
+      },
+    },
   })
   async search(@Query() searchQuery: SearchQueryDto): Promise<SearchResultDto> {
     return this.searchService.search(searchQuery);
   }
 
   @Get('suggestions')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Get search suggestions',
-    description: 'Get autocomplete suggestions based on partial search input (minimum 2 characters)'
+    description:
+      'Get autocomplete suggestions based on partial search input (minimum 2 characters)',
   })
   @ApiQuery({
     name: 'q',
@@ -108,8 +136,8 @@ export class SearchController {
     schema: {
       type: 'array',
       items: { type: 'string' },
-      example: ['Baku Madarame', 'Bakudan Game']
-    }
+      example: ['Baku Madarame', 'Bakudan Game'],
+    },
   })
   @ApiBadRequestResponse({
     description: 'Query too short (minimum 2 characters)',
@@ -117,9 +145,9 @@ export class SearchController {
       example: {
         statusCode: 400,
         message: 'Query must be at least 2 characters long',
-        error: 'Bad Request'
-      }
-    }
+        error: 'Bad Request',
+      },
+    },
   })
   async getSuggestions(@Query('q') query: string): Promise<string[]> {
     if (!query || query.trim().length < 2) {
@@ -129,9 +157,10 @@ export class SearchController {
   }
 
   @Get('viewable/:userProgress')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Search content safe for user',
-    description: 'Search for content that is safe for the user to view based on their reading progress'
+    description:
+      'Search for content that is safe for the user to view based on their reading progress',
   })
   @ApiQuery({
     name: 'q',
@@ -171,9 +200,10 @@ export class SearchController {
   }
 
   @Get('content-types')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Get available content types with counts',
-    description: 'Get all searchable content types and their respective item counts'
+    description:
+      'Get all searchable content types and their respective item counts',
   })
   @ApiOkResponse({
     description: 'Content types with counts',
@@ -183,16 +213,16 @@ export class SearchController {
         type: 'object',
         properties: {
           type: { type: 'string', example: 'characters' },
-          count: { type: 'number', example: 150 }
-        }
+          count: { type: 'number', example: 150 },
+        },
       },
       example: [
         { type: 'chapters', count: 541 },
         { type: 'characters', count: 150 },
         { type: 'events', count: 89 },
-        { type: 'arcs', count: 12 }
-      ]
-    }
+        { type: 'arcs', count: 12 },
+      ],
+    },
   })
   async getContentTypes(): Promise<{ type: string; count: number }[]> {
     return this.searchService.getContentTypes();
@@ -201,9 +231,10 @@ export class SearchController {
   @Get('my-safe-search')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Search content safe for current user',
-    description: 'Search for content that is safe for the current user based on their reading progress (automatically uses user\'s progress)'
+    description:
+      "Search for content that is safe for the current user based on their reading progress (automatically uses user's progress)",
   })
   @ApiQuery({
     name: 'query',

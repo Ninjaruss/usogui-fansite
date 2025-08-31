@@ -1,4 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, JoinTable } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToMany,
+  JoinTable,
+} from 'typeorm';
 import { Character } from './character.entity';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
@@ -8,25 +14,25 @@ export class Faction {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Name of the faction',
-    example: 'IDEAL'
+    example: 'IDEAL',
   })
   @Column()
   name: string;
 
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     description: 'Detailed description of the faction',
-    example: 'A powerful organization that...'
+    example: 'A powerful organization that...',
   })
   @Column({ nullable: true })
   description: string;
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Characters that belong to this faction',
-    type: () => [Character]
+    type: () => [Character],
   })
-  @ManyToMany(() => Character, character => character.factions)
+  @ManyToMany(() => Character, (character) => character.factions)
   @JoinTable()
   characters: Character[];
 }

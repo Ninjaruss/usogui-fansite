@@ -7,22 +7,20 @@ import { UpdateVolumeDto } from './dto/update-volume.dto';
 
 @Injectable()
 export class VolumesService {
-  constructor(
-    @InjectRepository(Volume) private repo: Repository<Volume>
-  ) {}
+  constructor(@InjectRepository(Volume) private repo: Repository<Volume>) {}
 
   /**
    * Get all volumes with pagination and filtering
    */
-  async findAll(filters: { 
+  async findAll(filters: {
     number?: number;
-    page?: number; 
-    limit?: number; 
-    sort?: string; 
-    order?: 'ASC' | 'DESC' 
+    page?: number;
+    limit?: number;
+    sort?: string;
+    order?: 'ASC' | 'DESC';
   }) {
     const { page = 1, limit = 20, sort, order = 'ASC' } = filters;
-  const query = this.repo.createQueryBuilder('volume');
+    const query = this.repo.createQueryBuilder('volume');
     if (filters.number) {
       query.andWhere('volume.number = :number', { number: filters.number });
     }
@@ -74,7 +72,8 @@ export class VolumesService {
    * Find volume by chapter number
    */
   async findByChapter(chapterNumber: number) {
-    return this.repo.createQueryBuilder('volume')
+    return this.repo
+      .createQueryBuilder('volume')
       .where('volume.startChapter <= :chapterNumber', { chapterNumber })
       .andWhere('volume.endChapter >= :chapterNumber', { chapterNumber })
       .getOne();

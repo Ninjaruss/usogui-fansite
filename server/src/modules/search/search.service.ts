@@ -22,7 +22,13 @@ export class SearchService {
   ) {}
 
   async search(searchQuery: SearchQueryDto): Promise<SearchResultDto> {
-    const { query, type = SearchType.ALL, userProgress, page = 1, limit = 20 } = searchQuery;
+    const {
+      query,
+      type = SearchType.ALL,
+      userProgress,
+      page = 1,
+      limit = 20,
+    } = searchQuery;
     const offset = (page - 1) * limit;
 
     let results: SearchResultItemDto[] = [];
@@ -30,17 +36,31 @@ export class SearchService {
 
     switch (type) {
       case SearchType.CHAPTERS:
-        const chapterResults = await this.searchChapters(query, userProgress, offset, limit);
+        const chapterResults = await this.searchChapters(
+          query,
+          userProgress,
+          offset,
+          limit,
+        );
         results = chapterResults.results;
         total = chapterResults.total;
         break;
       case SearchType.CHARACTERS:
-        const characterResults = await this.searchCharacters(query, offset, limit);
+        const characterResults = await this.searchCharacters(
+          query,
+          offset,
+          limit,
+        );
         results = characterResults.results;
         total = characterResults.total;
         break;
       case SearchType.EVENTS:
-        const eventResults = await this.searchEvents(query, userProgress, offset, limit);
+        const eventResults = await this.searchEvents(
+          query,
+          userProgress,
+          offset,
+          limit,
+        );
         results = eventResults.results;
         total = eventResults.total;
         break;
@@ -51,7 +71,12 @@ export class SearchService {
         break;
       case SearchType.ALL:
       default:
-        const allResults = await this.searchAll(query, userProgress, offset, limit);
+        const allResults = await this.searchAll(
+          query,
+          userProgress,
+          offset,
+          limit,
+        );
         results = allResults.results;
         total = allResults.total;
         break;
@@ -71,15 +96,15 @@ export class SearchService {
   async getSuggestions(query: string): Promise<string[]> {
     // Simple implementation - you can enhance this with more sophisticated algorithms
     const suggestions: string[] = [];
-    
+
     // Get character name suggestions
     const characters = await this.characterRepository
       .createQueryBuilder('character')
       .where('character.name ILIKE :query', { query: `%${query}%` })
       .limit(5)
       .getMany();
-    
-    characters.forEach(char => {
+
+    characters.forEach((char) => {
       suggestions.push(char.name);
     });
 
@@ -87,12 +112,13 @@ export class SearchService {
   }
 
   async getContentTypes(): Promise<{ type: string; count: number }[]> {
-    const [chapterCount, characterCount, eventCount, arcCount] = await Promise.all([
-      this.chapterRepository.count(),
-      this.characterRepository.count(),
-      this.eventRepository.count(),
-      this.arcRepository.count(),
-    ]);
+    const [chapterCount, characterCount, eventCount, arcCount] =
+      await Promise.all([
+        this.chapterRepository.count(),
+        this.characterRepository.count(),
+        this.eventRepository.count(),
+        this.arcRepository.count(),
+      ]);
 
     return [
       { type: 'chapters', count: chapterCount },
@@ -102,17 +128,23 @@ export class SearchService {
     ];
   }
 
-  private async searchChapters(query: string, userProgress?: number, offset: number = 0, limit: number = 20) {
+  private async searchChapters(
+    query: string,
+    userProgress?: number,
+    offset: number = 0,
+    limit: number = 20,
+  ) {
     const queryBuilder = this.chapterRepository
       .createQueryBuilder('chapter')
-      .where(
-        'chapter.title ILIKE :query OR chapter.summary ILIKE :query',
-        { query: `%${query}%` }
-      );
+      .where('chapter.title ILIKE :query OR chapter.summary ILIKE :query', {
+        query: `%${query}%`,
+      });
 
     // Apply spoiler filtering based on user progress
     if (userProgress !== undefined) {
-      queryBuilder.andWhere('chapter.number <= :userProgress', { userProgress });
+      queryBuilder.andWhere('chapter.number <= :userProgress', {
+        userProgress,
+      });
     }
 
     const [chapters, total] = await queryBuilder
@@ -121,7 +153,7 @@ export class SearchService {
       .limit(limit)
       .getManyAndCount();
 
-    const results: SearchResultItemDto[] = chapters.map(chapter => ({
+    const results: SearchResultItemDto[] = chapters.map((chapter) => ({
       id: chapter.id,
       type: 'chapter',
       title: chapter.title || `Chapter ${chapter.number}`,
@@ -145,20 +177,20 @@ export class SearchService {
           to_tsvector('english', character.name) @@ plainto_tsquery('english', :query) OR
           to_tsvector('english', character.description) @@ plainto_tsquery('english', :query)
         )`,
-        { query }
+        { query },
       )
       .orderBy(
         `ts_rank(
           to_tsvector('english', character.name || ' ' || character.description),
           plainto_tsquery('english', :query)
         )`,
-        'DESC'
+        'DESC',
       )
       .offset(offset)
       .limit(limit)
       .getManyAndCount();
 
-    const results: SearchResultItemDto[] = characters.map(character => ({
+    const results: SearchResultItemDto[] = characters.map((character) => ({
       id: character.id,
       type: 'character',
       title: character.name || 'Unknown Character',
@@ -175,19 +207,23 @@ export class SearchService {
     return { results, total };
   }
 
-  private async searchEvents(query: string, userProgress?: number, offset: number = 0, limit: number = 20) {
+  private async searchEvents(
+    query: string,
+    userProgress?: number,
+    offset: number = 0,
+    limit: number = 20,
+  ) {
     const queryBuilder = this.eventRepository
       .createQueryBuilder('event')
-      .where(
-        'event.title ILIKE :query OR event.description ILIKE :query',
-        { query: `%${query}%` }
-      );
+      .where('event.title ILIKE :query OR event.description ILIKE :query', {
+        query: `%${query}%`,
+      });
 
     // Apply spoiler filtering based on user progress
     if (userProgress !== undefined) {
       queryBuilder.andWhere(
         '(event.spoilerChapter IS NULL OR event.spoilerChapter <= :userProgress)',
-        { userProgress }
+        { userProgress },
       );
     }
 
@@ -197,13 +233,15 @@ export class SearchService {
       .limit(limit)
       .getManyAndCount();
 
-    const results: SearchResultItemDto[] = events.map(event => ({
+    const results: SearchResultItemDto[] = events.map((event) => ({
       id: event.id,
       type: 'event',
       title: event.title || 'Unknown Event',
       description: event.description,
       score: 1.0,
-      hasSpoilers: userProgress ? !!(event.spoilerChapter && event.spoilerChapter > userProgress) : !!event.spoilerChapter,
+      hasSpoilers: userProgress
+        ? !!(event.spoilerChapter && event.spoilerChapter > userProgress)
+        : !!event.spoilerChapter,
       slug: `event-${event.id}`,
       metadata: {
         type: event.type,
@@ -222,20 +260,20 @@ export class SearchService {
           to_tsvector('english', arc.name) @@ plainto_tsquery('english', :query) OR
           to_tsvector('english', arc.description) @@ plainto_tsquery('english', :query)
         )`,
-        { query }
+        { query },
       )
       .orderBy(
         `ts_rank(
           to_tsvector('english', arc.name || ' ' || arc.description),
           plainto_tsquery('english', :query)
         )`,
-        'DESC'
+        'DESC',
       )
       .offset(offset)
       .limit(limit)
       .getManyAndCount();
 
-    const results: SearchResultItemDto[] = arcs.map(arc => ({
+    const results: SearchResultItemDto[] = arcs.map((arc) => ({
       id: arc.id,
       type: 'arc',
       title: arc.name || 'Unknown Arc',
@@ -253,16 +291,22 @@ export class SearchService {
     return { results, total };
   }
 
-  private async searchAll(query: string, userProgress?: number, offset: number = 0, limit: number = 20) {
+  private async searchAll(
+    query: string,
+    userProgress?: number,
+    offset: number = 0,
+    limit: number = 20,
+  ) {
     // Simple approach: get results from each type and combine them
     const resultsPerType = Math.ceil(limit / 4); // Distribute results across 4 types
-    
-    const [chapterResults, characterResults, eventResults, arcResults] = await Promise.all([
-      this.searchChapters(query, userProgress, 0, resultsPerType),
-      this.searchCharacters(query, 0, resultsPerType),
-      this.searchEvents(query, userProgress, 0, resultsPerType),
-      this.searchArcs(query, 0, resultsPerType),
-    ]);
+
+    const [chapterResults, characterResults, eventResults, arcResults] =
+      await Promise.all([
+        this.searchChapters(query, userProgress, 0, resultsPerType),
+        this.searchCharacters(query, 0, resultsPerType),
+        this.searchEvents(query, userProgress, 0, resultsPerType),
+        this.searchArcs(query, 0, resultsPerType),
+      ]);
 
     // Combine all results
     const allResults = [
@@ -274,7 +318,11 @@ export class SearchService {
 
     // Apply pagination to combined results
     const results = allResults.slice(offset, offset + limit);
-    const total = chapterResults.total + characterResults.total + eventResults.total + arcResults.total;
+    const total =
+      chapterResults.total +
+      characterResults.total +
+      eventResults.total +
+      arcResults.total;
 
     return { results, total };
   }

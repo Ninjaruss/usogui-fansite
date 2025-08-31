@@ -6,12 +6,12 @@ export const getDatabaseConfig = (configService: ConfigService) => {
   const nodeEnv = configService.get('NODE_ENV');
   const isDevelopment = nodeEnv === 'development';
   const isTest = nodeEnv === 'test';
-  
+
   // Define the logging levels
-  const loggingOptions: LoggerOptions = isDevelopment 
-    ? ["query", "error"] 
-    : ["error"];
-  
+  const loggingOptions: LoggerOptions = isDevelopment
+    ? ['query', 'error']
+    : ['error'];
+
   return {
     type: 'postgres' as const,
     host: configService.get('DATABASE_HOST'),
@@ -21,12 +21,20 @@ export const getDatabaseConfig = (configService: ConfigService) => {
     database: configService.get('DATABASE_NAME'),
     entities: [
       path.join(__dirname, '..', 'entities', '**', '*.entity.{ts,js}'),
-      path.join(__dirname, '..', 'entities', 'translations', '*.entity.{ts,js}')
+      path.join(
+        __dirname,
+        '..',
+        'entities',
+        'translations',
+        '*.entity.{ts,js}',
+      ),
     ],
     migrations: [path.join(__dirname, '..', 'migrations', '**', '*{.ts,.js}')],
     migrationsRun: configService.get('RUN_MIGRATIONS') === 'true',
     // Only enable synchronize in development or test environments
-    synchronize: (isDevelopment || isTest) && configService.get('ENABLE_SCHEMA_SYNC') === 'true',
+    synchronize:
+      (isDevelopment || isTest) &&
+      configService.get('ENABLE_SCHEMA_SYNC') === 'true',
     // Ensure schema sync is never run if migrations exist - additional safety
     migrationsTransactionMode: 'all' as const,
     ssl: nodeEnv === 'production',

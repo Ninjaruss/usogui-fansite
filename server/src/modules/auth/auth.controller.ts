@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Post, Request, UseGuards, Query, UnauthorizedException } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Request,
+  UseGuards,
+  Query,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
@@ -7,35 +16,51 @@ import { LoginDto } from './dto/login.dto';
 import { VerifyEmailDto } from './dto/verify-email.dto';
 import { PasswordResetRequestDto } from './dto/password-reset-request.dto';
 import { PasswordResetConfirmDto } from './dto/password-reset-confirm.dto';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiBody, ApiQuery, ApiOkResponse, ApiCreatedResponse, ApiBadRequestResponse, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiBody,
+  ApiQuery,
+  ApiOkResponse,
+  ApiCreatedResponse,
+  ApiBadRequestResponse,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
 
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly auth: AuthService) {}
 
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Register a new user account',
-    description: 'Creates a new user account and sends an email verification link. The user must verify their email before they can log in.'
+    description:
+      'Creates a new user account and sends an email verification link. The user must verify their email before they can log in.',
   })
-  @ApiCreatedResponse({ 
+  @ApiCreatedResponse({
     description: 'User successfully registered. Verification email sent.',
     schema: {
       example: {
-        message: 'User registered successfully. Please check your email to verify your account.',
-        userId: '123e4567-e89b-12d3-a456-426614174000'
-      }
-    }
+        message:
+          'User registered successfully. Please check your email to verify your account.',
+        userId: '123e4567-e89b-12d3-a456-426614174000',
+      },
+    },
   })
-  @ApiBadRequestResponse({ 
+  @ApiBadRequestResponse({
     description: 'Invalid input data or user already exists',
     schema: {
       example: {
         statusCode: 400,
-        message: ['Email must be a valid email', 'Password must be at least 8 characters long'],
-        error: 'Bad Request'
-      }
-    }
+        message: [
+          'Email must be a valid email',
+          'Password must be at least 8 characters long',
+        ],
+        error: 'Bad Request',
+      },
+    },
   })
   @Post('register')
   async register(@Body() dto: RegisterDto) {
@@ -44,7 +69,8 @@ export class AuthController {
 
   @ApiOperation({
     summary: 'Login with username and password',
-    description: 'Authenticates a user with username/email and password. Returns a JWT access token for subsequent authenticated requests.'
+    description:
+      'Authenticates a user with username/email and password. Returns a JWT access token for subsequent authenticated requests.',
   })
   @ApiOkResponse({
     description: 'Login successful. Returns access token and user information.',
@@ -56,10 +82,10 @@ export class AuthController {
           username: 'johndoe',
           email: 'john@example.com',
           role: 'user',
-          isEmailVerified: true
-        }
-      }
-    }
+          isEmailVerified: true,
+        },
+      },
+    },
   })
   @ApiUnauthorizedResponse({
     description: 'Invalid credentials or email not verified',
@@ -67,9 +93,9 @@ export class AuthController {
       example: {
         statusCode: 401,
         message: 'Invalid credentials',
-        error: 'Unauthorized'
-      }
-    }
+        error: 'Unauthorized',
+      },
+    },
   })
   @Post('login')
   @UseGuards(LocalAuthGuard)
@@ -119,8 +145,10 @@ export class AuthController {
         const refresh = req.cookies?.refreshToken;
         if (refresh) {
           try {
-            const u = await this.auth['usersService'].findByRefreshToken(refresh);
-            if (u && u.id) await this.auth['usersService'].clearRefreshToken(u.id);
+            const u =
+              await this.auth['usersService'].findByRefreshToken(refresh);
+            if (u && u.id)
+              await this.auth['usersService'].clearRefreshToken(u.id);
           } catch {
             // ignore lookup errors
           }
@@ -134,7 +162,8 @@ export class AuthController {
 
   @ApiOperation({
     summary: 'Get current user profile',
-    description: 'Returns the profile information of the currently authenticated user. Requires a valid JWT token in the Authorization header.'
+    description:
+      'Returns the profile information of the currently authenticated user. Requires a valid JWT token in the Authorization header.',
   })
   @ApiBearerAuth()
   @ApiOkResponse({
@@ -147,9 +176,9 @@ export class AuthController {
         role: 'user',
         isEmailVerified: true,
         createdAt: '2024-01-15T10:30:00Z',
-        updatedAt: '2024-01-15T10:30:00Z'
-      }
-    }
+        updatedAt: '2024-01-15T10:30:00Z',
+      },
+    },
   })
   @ApiUnauthorizedResponse({
     description: 'No valid JWT token provided',
@@ -157,35 +186,40 @@ export class AuthController {
       example: {
         statusCode: 401,
         message: 'Unauthorized',
-        error: 'Unauthorized'
-      }
-    }
+        error: 'Unauthorized',
+      },
+    },
   })
   @Get('me')
   @UseGuards(JwtAuthGuard)
   me(@Request() req) {
     // log a compact, parseable representation for debugging
-    try { console.log('/me request:', JSON.stringify(req.user)); } catch { /* ignore */ }
+    try {
+      console.log('/me request:', JSON.stringify(req.user));
+    } catch {
+      /* ignore */
+    }
     return req.user;
   }
 
   @ApiOperation({
     summary: 'Verify email address',
-    description: 'Verifies a user\'s email address using the token sent to their email during registration.'
+    description:
+      "Verifies a user's email address using the token sent to their email during registration.",
   })
   @ApiQuery({
     name: 'token',
     description: 'Email verification token received in the verification email',
-    example: 'abc123def456ghi789jkl012mno345pqr'
+    example: 'abc123def456ghi789jkl012mno345pqr',
   })
   @ApiOkResponse({
     description: 'Email verified successfully',
     schema: {
       example: {
         message: 'Email verified successfully',
-        userId: '123e4567-e89b-12d3-a456-426614174000'
-      }
-    }
+        userId: '123e4567-e89b-12d3-a456-426614174000',
+      },
+    },
   })
   @ApiBadRequestResponse({
     description: 'Invalid or expired verification token',
@@ -193,9 +227,9 @@ export class AuthController {
       example: {
         statusCode: 400,
         message: 'Invalid or expired verification token',
-        error: 'Bad Request'
-      }
-    }
+        error: 'Bad Request',
+      },
+    },
   })
   // --- Email verification ---
   @Get('verify-email')
@@ -205,15 +239,17 @@ export class AuthController {
 
   @ApiOperation({
     summary: 'Request password reset',
-    description: 'Sends a password reset email to the specified email address if a user account exists.'
+    description:
+      'Sends a password reset email to the specified email address if a user account exists.',
   })
   @ApiOkResponse({
     description: 'Password reset email sent (if email exists)',
     schema: {
       example: {
-        message: 'If an account with that email exists, a password reset link has been sent.'
-      }
-    }
+        message:
+          'If an account with that email exists, a password reset link has been sent.',
+      },
+    },
   })
   @ApiBadRequestResponse({
     description: 'Invalid email format',
@@ -221,9 +257,9 @@ export class AuthController {
       example: {
         statusCode: 400,
         message: ['Email must be a valid email'],
-        error: 'Bad Request'
-      }
-    }
+        error: 'Bad Request',
+      },
+    },
   })
   // --- Password reset request ---
   @Post('password-reset/request')
@@ -233,15 +269,16 @@ export class AuthController {
 
   @ApiOperation({
     summary: 'Confirm password reset',
-    description: 'Resets the user\'s password using the token received in the password reset email.'
+    description:
+      "Resets the user's password using the token received in the password reset email.",
   })
   @ApiOkResponse({
     description: 'Password reset successfully',
     schema: {
       example: {
-        message: 'Password reset successfully'
-      }
-    }
+        message: 'Password reset successfully',
+      },
+    },
   })
   @ApiBadRequestResponse({
     description: 'Invalid or expired reset token, or invalid password format',
@@ -249,9 +286,9 @@ export class AuthController {
       example: {
         statusCode: 400,
         message: 'Invalid or expired reset token',
-        error: 'Bad Request'
-      }
-    }
+        error: 'Bad Request',
+      },
+    },
   })
   // --- Password reset confirm ---
   @Post('password-reset/confirm')

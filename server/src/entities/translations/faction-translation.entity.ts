@@ -5,29 +5,29 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 @Entity('faction_translations')
 export class FactionTranslation extends BaseTranslation {
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Faction this translation belongs to',
-    type: () => Faction
+    type: () => Faction,
   })
   @ManyToOne(() => Faction, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'faction_id' })
   faction: Faction;
 
-  @ApiProperty({ 
-    description: 'ID of the faction being translated'
+  @ApiProperty({
+    description: 'ID of the faction being translated',
   })
   @Column({ name: 'faction_id' })
   factionId: number;
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Translated name of the faction',
-    example: 'アイディアル (IDEAL)'
+    example: 'アイディアル (IDEAL)',
   })
   @Column({ type: 'text' })
   name: string;
 
-  @ApiPropertyOptional({ 
-    description: 'Translated description of the faction'
+  @ApiPropertyOptional({
+    description: 'Translated description of the faction',
   })
   @Column({ type: 'text', nullable: true })
   description: string;

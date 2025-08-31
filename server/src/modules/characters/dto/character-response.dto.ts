@@ -7,66 +7,66 @@ export class CharacterResponseDto {
   @ApiProperty({ description: 'Unique identifier of the character' })
   id: number;
 
-  @ApiProperty({ description: 'Character\'s primary name' })
+  @ApiProperty({ description: "Character's primary name" })
   name: string;
 
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     description: 'Alternative names or aliases',
-    type: [String]
+    type: [String],
   })
   alternateNames?: string[];
 
   @ApiPropertyOptional({ description: 'Character description' })
   description?: string;
 
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     description: 'First appearance chapter number',
-    example: 1
+    example: 1,
   })
   firstAppearanceChapter?: number;
 
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     description: 'Notable roles or positions',
-    type: [String]
+    type: [String],
   })
   notableRoles?: string[];
 
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     description: 'Notable games participated in',
-    type: [String]
+    type: [String],
   })
   notableGames?: string[];
 
-  @ApiPropertyOptional({ description: 'Character\'s occupation' })
+  @ApiPropertyOptional({ description: "Character's occupation" })
   occupation?: string;
 
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     description: 'Other affiliations',
-    type: [String]
+    type: [String],
   })
   affiliations?: string[];
 
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     description: 'First major story arc',
-    type: () => Arc
+    type: () => Arc,
   })
   arc?: Arc;
 
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     description: 'Factions the character belongs to',
-    type: () => [Faction]
+    type: () => [Faction],
   })
   factions?: Faction[];
 
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     description: 'Media associated with the character',
-    type: () => [Media]
+    type: () => [Media],
   })
   media?: Media[];
 
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     description: 'Number of hidden spoilers',
-    example: 3
+    example: 3,
   })
   hiddenSpoilerCount?: number;
 }

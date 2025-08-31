@@ -5,27 +5,30 @@ export class UrlNormalizerService {
   normalizeYoutubeUrl(url: string): string {
     try {
       const parsedUrl = new URL(url);
-      
+
       // Handle youtu.be links
       if (parsedUrl.hostname === 'youtu.be') {
         const videoId = parsedUrl.pathname.slice(1);
         return `https://www.youtube.com/watch?v=${videoId}`;
       }
-      
+
       // Handle regular youtube.com links
-      if (parsedUrl.hostname === 'youtube.com' || parsedUrl.hostname === 'www.youtube.com') {
+      if (
+        parsedUrl.hostname === 'youtube.com' ||
+        parsedUrl.hostname === 'www.youtube.com'
+      ) {
         const videoId = parsedUrl.searchParams.get('v');
         if (videoId) {
           return `https://www.youtube.com/watch?v=${videoId}`;
         }
-        
+
         // Handle youtube.com/embed/ links
         if (parsedUrl.pathname.startsWith('/embed/')) {
           const videoId = parsedUrl.pathname.split('/')[2];
           return `https://www.youtube.com/watch?v=${videoId}`;
         }
       }
-      
+
       return url;
     } catch {
       return url;
@@ -47,7 +50,10 @@ export class UrlNormalizerService {
   normalizePixivUrl(url: string): string {
     try {
       const parsedUrl = new URL(url);
-      if (parsedUrl.hostname === 'www.pixiv.net' || parsedUrl.hostname === 'pixiv.net') {
+      if (
+        parsedUrl.hostname === 'www.pixiv.net' ||
+        parsedUrl.hostname === 'pixiv.net'
+      ) {
         // Ensure artwork URLs are in the standard format
         if (parsedUrl.pathname.includes('/artworks/')) {
           const artworkId = parsedUrl.pathname.split('/artworks/')[1];
@@ -76,7 +82,10 @@ export class UrlNormalizerService {
   normalizeInstagramUrl(url: string): string {
     try {
       const parsedUrl = new URL(url);
-      if (parsedUrl.hostname === 'instagram.com' || parsedUrl.hostname === 'www.instagram.com') {
+      if (
+        parsedUrl.hostname === 'instagram.com' ||
+        parsedUrl.hostname === 'www.instagram.com'
+      ) {
         // Ensure we're using www subdomain
         return url.replace('instagram.com', 'www.instagram.com');
       }
@@ -96,9 +105,9 @@ export class UrlNormalizerService {
           this.normalizeTwitterUrl,
           this.normalizePixivUrl,
           this.normalizeDeviantArtUrl,
-          this.normalizeInstagramUrl
+          this.normalizeInstagramUrl,
         ];
-        
+
         for (const normalizer of normalizers) {
           const normalized = normalizer(url);
           if (normalized !== url) return normalized;

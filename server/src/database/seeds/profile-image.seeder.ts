@@ -10,9 +10,15 @@ export class ProfileImageSeeder extends BaseSeeder {
     const characterRepo = queryRunner.manager.getRepository(Character);
 
     // Get characters for seeding
-    const baku = await characterRepo.findOne({ where: { name: 'Baku Madarame' } });
-    const marco = await characterRepo.findOne({ where: { name: 'Marco Reiji' } });
-    const kaji = await characterRepo.findOne({ where: { name: 'Kaji Takaomi' } });
+    const baku = await characterRepo.findOne({
+      where: { name: 'Baku Madarame' },
+    });
+    const marco = await characterRepo.findOne({
+      where: { name: 'Marco Reiji' },
+    });
+    const kaji = await characterRepo.findOne({
+      where: { name: 'Kaji Takaomi' },
+    });
 
     if (!baku || !marco || !kaji) {
       console.log('⚠️  Characters not found, skipping profile image seeding');
@@ -24,11 +30,12 @@ export class ProfileImageSeeder extends BaseSeeder {
       {
         displayName: 'Baku Madarame - Confident Smile',
         fileName: 'baku-confident-smile.webp',
-        description: 'Baku with his signature confident expression during a high-stakes gamble',
+        description:
+          'Baku with his signature confident expression during a high-stakes gamble',
         characterId: baku.id,
         isActive: true,
         sortOrder: 1,
-        tags: ['confident', 'smiling', 'formal']
+        tags: ['confident', 'smiling', 'formal'],
       },
       {
         displayName: 'Baku Madarame - Serious Focus',
@@ -37,7 +44,7 @@ export class ProfileImageSeeder extends BaseSeeder {
         characterId: baku.id,
         isActive: true,
         sortOrder: 2,
-        tags: ['serious', 'focused', 'thinking']
+        tags: ['serious', 'focused', 'thinking'],
       },
       {
         displayName: 'Baku Madarame - Victory Pose',
@@ -46,7 +53,7 @@ export class ProfileImageSeeder extends BaseSeeder {
         characterId: baku.id,
         isActive: true,
         sortOrder: 3,
-        tags: ['victory', 'celebration', 'happy']
+        tags: ['victory', 'celebration', 'happy'],
       },
 
       // Marco Reiji images
@@ -57,7 +64,7 @@ export class ProfileImageSeeder extends BaseSeeder {
         characterId: marco.id,
         isActive: true,
         sortOrder: 1,
-        tags: ['calm', 'composed', 'professional']
+        tags: ['calm', 'composed', 'professional'],
       },
       {
         displayName: 'Marco Reiji - Analytical Stare',
@@ -66,7 +73,7 @@ export class ProfileImageSeeder extends BaseSeeder {
         characterId: marco.id,
         isActive: true,
         sortOrder: 2,
-        tags: ['analytical', 'observant', 'focused']
+        tags: ['analytical', 'observant', 'focused'],
       },
 
       // Kaji Takaomi images
@@ -77,7 +84,7 @@ export class ProfileImageSeeder extends BaseSeeder {
         characterId: kaji.id,
         isActive: true,
         sortOrder: 1,
-        tags: ['determined', 'ready', 'action']
+        tags: ['determined', 'ready', 'action'],
       },
       {
         displayName: 'Kaji Takaomi - Friendly Smile',
@@ -86,16 +93,16 @@ export class ProfileImageSeeder extends BaseSeeder {
         characterId: kaji.id,
         isActive: true,
         sortOrder: 2,
-        tags: ['friendly', 'approachable', 'smiling']
-      }
+        tags: ['friendly', 'approachable', 'smiling'],
+      },
     ];
 
     for (const imageData of profileImages) {
       const exists = await profileImageRepo.findOne({
-        where: { 
+        where: {
           fileName: imageData.fileName,
-          characterId: imageData.characterId 
-        }
+          characterId: imageData.characterId,
+        },
       });
 
       if (!exists) {

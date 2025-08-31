@@ -26,9 +26,12 @@ export class GuideSeeder implements Seeder {
       { name: 'strategy', description: 'Strategic gameplay and analysis' },
       { name: 'poker', description: 'Poker-related content' },
       { name: 'psychology', description: 'Psychological aspects of gambling' },
-      { name: 'character-analysis', description: 'Character analysis and development' },
+      {
+        name: 'character-analysis',
+        description: 'Character analysis and development',
+      },
       { name: 'game-rules', description: 'Game rules and mechanics' },
-      { name: 'theory', description: 'Theoretical concepts and frameworks' }
+      { name: 'theory', description: 'Theoretical concepts and frameworks' },
     ];
 
     const savedTags: Tag[] = [];
@@ -45,7 +48,8 @@ export class GuideSeeder implements Seeder {
     const guideData = [
       {
         title: 'Mastering Poker Psychology in Usogui',
-        description: 'A comprehensive guide to understanding the psychological warfare that defines poker in the Usogui universe. Learn how Baku and other masters read their opponents.',
+        description:
+          'A comprehensive guide to understanding the psychological warfare that defines poker in the Usogui universe. Learn how Baku and other masters read their opponents.',
         content: `# Mastering Poker Psychology in Usogui
 
 ## Introduction
@@ -90,11 +94,12 @@ Sometimes the best strategy is to let opponents think they've read you correctly
 
 Mastering poker psychology requires years of practice and keen observation. Start with basic tell recognition and gradually develop your own unique style.`,
         status: GuideStatus.PUBLISHED,
-        tagNames: ['poker', 'psychology', 'strategy', 'advanced']
+        tagNames: ['poker', 'psychology', 'strategy', 'advanced'],
       },
       {
         title: 'Understanding Game Theory in Gambling',
-        description: 'An introduction to game theory principles and how they apply to various gambling scenarios in Usogui. Perfect for beginners looking to understand the mathematical foundations.',
+        description:
+          'An introduction to game theory principles and how they apply to various gambling scenarios in Usogui. Perfect for beginners looking to understand the mathematical foundations.',
         content: `# Understanding Game Theory in Gambling
 
 ## What is Game Theory?
@@ -131,11 +136,12 @@ Try calculating the expected value for these scenarios:
 
 Remember: The house always has an edge, but understanding game theory helps you minimize losses and maximize wins when you do have an advantage.`,
         status: GuideStatus.PUBLISHED,
-        tagNames: ['theory', 'game-rules', 'beginner', 'strategy']
+        tagNames: ['theory', 'game-rules', 'beginner', 'strategy'],
       },
       {
         title: 'Character Analysis: Baku Madarame',
-        description: 'A deep dive into the psychology and methods of Usogui\'s protagonist. Explore what makes Baku such a formidable gambler and strategist.',
+        description:
+          "A deep dive into the psychology and methods of Usogui's protagonist. Explore what makes Baku such a formidable gambler and strategist.",
         content: `# Character Analysis: Baku Madarame
 
 ## The Death God of Gambling
@@ -189,11 +195,12 @@ While we can't all be Baku, there are practical lessons:
 
 Baku Madarame represents the idealized gambler—one who combines mathematical precision with psychological insight and absolute fearlessness.`,
         status: GuideStatus.PUBLISHED,
-        tagNames: ['character-analysis', 'psychology', 'strategy', 'advanced']
+        tagNames: ['character-analysis', 'psychology', 'strategy', 'advanced'],
       },
       {
-        title: 'Beginner\'s Guide to Kakerou Rules',
-        description: 'Everything you need to know about the Kakerou organization and its unique gambling rules. A must-read for newcomers to the Usogui universe.',
+        title: "Beginner's Guide to Kakerou Rules",
+        description:
+          'Everything you need to know about the Kakerou organization and its unique gambling rules. A must-read for newcomers to the Usogui universe.',
         content: `# Beginner's Guide to Kakerou Rules
 
 ## What is Kakerou?
@@ -255,11 +262,12 @@ While Kakerou games are fictional, remember:
 
 This is entertainment, not a guide to real gambling!`,
         status: GuideStatus.PUBLISHED,
-        tagNames: ['beginner', 'game-rules', 'theory']
+        tagNames: ['beginner', 'game-rules', 'theory'],
       },
       {
         title: 'Draft: Advanced Bluffing Techniques',
-        description: 'Work in progress - exploring advanced bluffing strategies used by master gamblers. This guide is still being developed.',
+        description:
+          'Work in progress - exploring advanced bluffing strategies used by master gamblers. This guide is still being developed.',
         content: `# Advanced Bluffing Techniques (DRAFT)
 
 ## Introduction
@@ -284,8 +292,8 @@ This guide will cover advanced bluffing techniques... (work in progress)
 
 (Draft - needs completion)`,
         status: GuideStatus.DRAFT,
-        tagNames: ['strategy', 'poker', 'advanced']
-      }
+        tagNames: ['strategy', 'poker', 'advanced'],
+      },
     ];
 
     // Create guides
@@ -295,13 +303,13 @@ This guide will cover advanced bluffing techniques... (work in progress)
 
       // Check if guide already exists
       const existingGuide = await guideRepository.findOne({
-        where: { title: data.title }
+        where: { title: data.title },
       });
 
       if (!existingGuide) {
         // Get tags for this guide
-        const guideTags = savedTags.filter(tag => 
-          data.tagNames.includes(tag.name)
+        const guideTags = savedTags.filter((tag) =>
+          data.tagNames.includes(tag.name),
         );
 
         const guide = guideRepository.create({
@@ -312,36 +320,37 @@ This guide will cover advanced bluffing techniques... (work in progress)
           authorId: author.id,
           viewCount: Math.floor(Math.random() * 500) + 10, // Random view count
           likeCount: 0, // Will be set by likes
-          tags: guideTags
+          tags: guideTags,
         });
 
         const savedGuide = await guideRepository.save(guide);
 
         // Create some likes for published guides
         if (data.status === GuideStatus.PUBLISHED) {
-          const likeCount = Math.floor(Math.random() * Math.min(users.length, 15)) + 2;
+          const likeCount =
+            Math.floor(Math.random() * Math.min(users.length, 15)) + 2;
           const likingUsers = users
-            .filter(user => user.id !== author.id) // Don't let authors like their own guides
+            .filter((user) => user.id !== author.id) // Don't let authors like their own guides
             .sort(() => 0.5 - Math.random()) // Shuffle
             .slice(0, likeCount); // Take random subset
 
           for (const user of likingUsers) {
             const existingLike = await guideLikeRepository.findOne({
-              where: { guideId: savedGuide.id, userId: user.id }
+              where: { guideId: savedGuide.id, userId: user.id },
             });
 
             if (!existingLike) {
               const guideLike = guideLikeRepository.create({
                 guideId: savedGuide.id,
-                userId: user.id
+                userId: user.id,
               });
               await guideLikeRepository.save(guideLike);
             }
           }
 
           // Update like count
-          await guideRepository.update(savedGuide.id, { 
-            likeCount: likingUsers.length 
+          await guideRepository.update(savedGuide.id, {
+            likeCount: likingUsers.length,
           });
         }
 

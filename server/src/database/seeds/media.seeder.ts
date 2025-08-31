@@ -14,7 +14,7 @@ export class MediaSeeder implements Seeder {
 
     // Get a test user for media submissions
     const testUser = await userRepository.findOne({
-      where: { email: 'test@example.com' }
+      where: { email: 'test@example.com' },
     });
 
     if (!testUser) {
@@ -24,21 +24,22 @@ export class MediaSeeder implements Seeder {
 
     // Get characters for media associations
     const baku = await characterRepository.findOne({
-      where: { name: 'Baku Madarame' }
+      where: { name: 'Baku Madarame' },
     });
 
     const marco = await characterRepository.findOne({
-      where: { name: 'Marco Reiji' }
+      where: { name: 'Marco Reiji' },
     });
 
     const mediaItems = [
       {
         url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
         type: MediaType.VIDEO,
-        description: 'Fan-made AMV showcasing Baku\'s most intense gambling moments',
+        description:
+          "Fan-made AMV showcasing Baku's most intense gambling moments",
         character: baku || undefined,
         status: MediaStatus.APPROVED,
-        submittedBy: testUser
+        submittedBy: testUser,
       },
       {
         url: 'https://www.deviantart.com/example/art/baku-madarame-fanart-123456789',
@@ -46,15 +47,16 @@ export class MediaSeeder implements Seeder {
         description: 'Digital artwork of Baku Madarame in his iconic pose',
         character: baku || undefined,
         status: MediaStatus.APPROVED,
-        submittedBy: testUser
+        submittedBy: testUser,
       },
       {
         url: 'https://www.pixiv.net/en/artworks/123456789',
         type: MediaType.IMAGE,
-        description: 'Character illustration of Marco during the card tournament',
+        description:
+          'Character illustration of Marco during the card tournament',
         character: marco || undefined,
         status: MediaStatus.APPROVED,
-        submittedBy: testUser
+        submittedBy: testUser,
       },
       {
         url: 'https://twitter.com/example/status/123456789',
@@ -62,7 +64,7 @@ export class MediaSeeder implements Seeder {
         description: 'Sketch of Baku and Marco working together',
         character: baku || undefined,
         status: MediaStatus.PENDING,
-        submittedBy: testUser
+        submittedBy: testUser,
       },
       {
         url: 'https://www.instagram.com/p/example123/',
@@ -70,7 +72,7 @@ export class MediaSeeder implements Seeder {
         description: 'Cosplay photo of Baku Madarame costume',
         character: baku || undefined,
         status: MediaStatus.PENDING,
-        submittedBy: testUser
+        submittedBy: testUser,
       },
       {
         url: 'https://www.youtube.com/watch?v=example123',
@@ -78,13 +80,13 @@ export class MediaSeeder implements Seeder {
         description: 'Analysis video discussing Usogui gambling strategies',
         character: undefined,
         status: MediaStatus.APPROVED,
-        submittedBy: testUser
-      }
+        submittedBy: testUser,
+      },
     ];
 
     for (const mediaData of mediaItems) {
       const existingMedia = await mediaRepository.findOne({
-        where: { url: mediaData.url }
+        where: { url: mediaData.url },
       });
 
       if (!existingMedia) {

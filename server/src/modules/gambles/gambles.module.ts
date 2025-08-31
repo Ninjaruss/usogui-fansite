@@ -15,11 +15,11 @@ import { Chapter } from '../../entities/chapter.entity';
       GambleCharacter,
       GambleRound,
       Character,
-      Chapter
-    ])
+      Chapter,
+    ]),
   ],
   controllers: [GamblesController],
   providers: [GamblesService],
-  exports: [GamblesService]
+  exports: [GamblesService],
 })
 export class GamblesModule {}

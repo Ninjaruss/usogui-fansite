@@ -31,36 +31,37 @@ export class Guide {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Title of the guide',
-    example: 'Mastering Poker Strategy in Usogui'
+    example: 'Mastering Poker Strategy in Usogui',
   })
   @Column({ type: 'varchar', length: 200 })
   title: string;
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Brief description or summary of the guide',
-    example: 'A comprehensive guide to understanding poker strategies used in the manga'
+    example:
+      'A comprehensive guide to understanding poker strategies used in the manga',
   })
   @Column({ type: 'text' })
   description: string;
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Main content of the guide in markdown format',
-    example: '# Introduction\n\nThis guide covers...'
+    example: '# Introduction\n\nThis guide covers...',
   })
   @Column({ type: 'text' })
   content: string;
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Current status of the guide',
     enum: GuideStatus,
-    example: GuideStatus.PUBLISHED
+    example: GuideStatus.PUBLISHED,
   })
-  @Column({ 
-    type: 'enum', 
-    enum: GuideStatus, 
-    default: GuideStatus.DRAFT 
+  @Column({
+    type: 'enum',
+    enum: GuideStatus,
+    default: GuideStatus.DRAFT,
   })
   status: GuideStatus;
 
@@ -76,25 +77,28 @@ export class Guide {
   @Column()
   authorId: number;
 
-  @ApiProperty({ type: () => User, description: 'User who authored this guide' })
+  @ApiProperty({
+    type: () => User,
+    description: 'User who authored this guide',
+  })
   @ManyToOne(() => User, { eager: false })
   @JoinColumn({ name: 'authorId' })
   author: User;
 
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     type: () => [Tag],
-    description: 'Tags associated with this guide'
+    description: 'Tags associated with this guide',
   })
   @ManyToMany(() => Tag, { cascade: true })
   @JoinTable({
     name: 'guide_tags',
     joinColumn: { name: 'guideId', referencedColumnName: 'id' },
-    inverseJoinColumn: { name: 'tagId', referencedColumnName: 'id' }
+    inverseJoinColumn: { name: 'tagId', referencedColumnName: 'id' },
   })
   tags: Tag[];
 
   @ApiPropertyOptional({
-    description: 'Likes received by this guide'
+    description: 'Likes received by this guide',
   })
   @OneToMany('GuideLike', 'guide')
   likes: any[];

@@ -12,45 +12,54 @@ export class EventsService {
   /**
    * Find all events with filtering and spoiler protection
    */
-  async findAll(filters: { 
-    title?: string; 
-    arc?: string; 
-    description?: string; 
+  async findAll(filters: {
+    title?: string;
+    arc?: string;
+    description?: string;
     type?: EventType;
     userProgress?: number;
     isVerified?: boolean;
-    page?: number; 
-    limit?: number; 
-    sort?: string; 
-    order?: 'ASC' | 'DESC' 
+    page?: number;
+    limit?: number;
+    sort?: string;
+    order?: 'ASC' | 'DESC';
   }) {
     const { page = 1, limit = 20, sort, order = 'ASC' } = filters;
-    const query = this.repo.createQueryBuilder('event')
+    const query = this.repo
+      .createQueryBuilder('event')
       .leftJoinAndSelect('event.arc', 'arc')
       .leftJoinAndSelect('event.characters', 'characters');
 
     if (filters.title) {
-      query.andWhere('LOWER(event.title) LIKE LOWER(:title)', { title: `%${filters.title}%` });
+      query.andWhere('LOWER(event.title) LIKE LOWER(:title)', {
+        title: `%${filters.title}%`,
+      });
     }
     if (filters.arc) {
-      query.andWhere('LOWER(arc.name) LIKE LOWER(:arc)', { arc: `%${filters.arc}%` });
+      query.andWhere('LOWER(arc.name) LIKE LOWER(:arc)', {
+        arc: `%${filters.arc}%`,
+      });
     }
-  // series filter removed
+    // series filter removed
     if (filters.description) {
-      query.andWhere('LOWER(event.description) LIKE LOWER(:description)', { description: `%${filters.description}%` });
+      query.andWhere('LOWER(event.description) LIKE LOWER(:description)', {
+        description: `%${filters.description}%`,
+      });
     }
     if (filters.type) {
       query.andWhere('event.type = :type', { type: filters.type });
     }
     if (filters.isVerified !== undefined) {
-      query.andWhere('event.isVerified = :isVerified', { isVerified: filters.isVerified });
+      query.andWhere('event.isVerified = :isVerified', {
+        isVerified: filters.isVerified,
+      });
     }
 
     // Spoiler protection: only show events user can safely view
     if (filters.userProgress !== undefined) {
       query.andWhere(
         '(event.spoilerChapter IS NULL OR event.spoilerChapter <= :userProgress)',
-        { userProgress: filters.userProgress }
+        { userProgress: filters.userProgress },
       );
     }
 
@@ -72,47 +81,60 @@ export class EventsService {
     };
   }
 
-  async findViewableEvents(userProgress: number, filters?: {
-    type?: EventType;
-    isVerified?: boolean;
-    arc?: string;
-  }): Promise<Event[]> {
-    const query = this.repo.createQueryBuilder('event')
+  async findViewableEvents(
+    userProgress: number,
+    filters?: {
+      type?: EventType;
+      isVerified?: boolean;
+      arc?: string;
+    },
+  ): Promise<Event[]> {
+    const query = this.repo
+      .createQueryBuilder('event')
       .leftJoinAndSelect('event.arc', 'arc')
       .leftJoinAndSelect('event.characters', 'characters')
-      .where('(event.spoilerChapter IS NULL OR event.spoilerChapter <= :userProgress)', 
-        { userProgress });
+      .where(
+        '(event.spoilerChapter IS NULL OR event.spoilerChapter <= :userProgress)',
+        { userProgress },
+      );
 
     if (filters?.type) {
       query.andWhere('event.type = :type', { type: filters.type });
     }
     if (filters?.isVerified !== undefined) {
-      query.andWhere('event.isVerified = :isVerified', { isVerified: filters.isVerified });
+      query.andWhere('event.isVerified = :isVerified', {
+        isVerified: filters.isVerified,
+      });
     }
     if (filters?.arc) {
-      query.andWhere('LOWER(arc.name) LIKE LOWER(:arc)', { arc: `%${filters.arc}%` });
+      query.andWhere('LOWER(arc.name) LIKE LOWER(:arc)', {
+        arc: `%${filters.arc}%`,
+      });
     }
-  // series filter intentionally removed
+    // series filter intentionally removed
 
     query.orderBy('event.startChapter', 'ASC');
     return query.getMany();
   }
 
   async canViewEvent(eventId: number, userProgress: number): Promise<boolean> {
-    const event = await this.repo.findOne({ 
+    const event = await this.repo.findOne({
       where: { id: eventId },
-      select: ['spoilerChapter']
+      select: ['spoilerChapter'],
     });
-    
+
     if (!event) {
       throw new NotFoundException(`Event with ID ${eventId} not found`);
     }
 
-    return event.spoilerChapter === null || event.spoilerChapter <= userProgress;
+    return (
+      event.spoilerChapter === null || event.spoilerChapter <= userProgress
+    );
   }
 
   async findByType(type: EventType, userProgress?: number): Promise<Event[]> {
-    const query = this.repo.createQueryBuilder('event')
+    const query = this.repo
+      .createQueryBuilder('event')
       .leftJoinAndSelect('event.arc', 'arc')
       .leftJoinAndSelect('event.characters', 'characters')
       .where('event.type = :type', { type });
@@ -120,7 +142,7 @@ export class EventsService {
     if (userProgress !== undefined) {
       query.andWhere(
         '(event.spoilerChapter IS NULL OR event.spoilerChapter <= :userProgress)',
-        { userProgress }
+        { userProgress },
       );
     }
 
@@ -129,17 +151,17 @@ export class EventsService {
   }
 
   findOne(id: number): Promise<Event | null> {
-      return this.repo.findOne({ 
-        where: { id }, 
-        relations: ['arc', 'characters', 'tags'] 
-      });
+    return this.repo.findOne({
+      where: { id },
+      relations: ['arc', 'characters', 'tags'],
+    });
   }
 
   async create(data: CreateEventDto): Promise<Event> {
     const event = this.repo.create({
       ...data,
       type: data.type || EventType.OTHER,
-      isVerified: data.isVerified || false
+      isVerified: data.isVerified || false,
     });
     return this.repo.save(event);
   }
@@ -152,33 +174,44 @@ export class EventsService {
     return this.repo.delete(id);
   }
 
-  async getEventsByChapter(chapterNumber: number, userProgress?: number): Promise<Event[]> {
-    const query = this.repo.createQueryBuilder('event')
+  async getEventsByChapter(
+    chapterNumber: number,
+    userProgress?: number,
+  ): Promise<Event[]> {
+    const query = this.repo
+      .createQueryBuilder('event')
       .leftJoinAndSelect('event.arc', 'arc')
       .leftJoinAndSelect('event.characters', 'characters')
       .where('event.startChapter <= :chapterNumber', { chapterNumber })
-      .andWhere('(event.endChapter IS NULL OR event.endChapter >= :chapterNumber)', { chapterNumber });
+      .andWhere(
+        '(event.endChapter IS NULL OR event.endChapter >= :chapterNumber)',
+        { chapterNumber },
+      );
 
     if (userProgress !== undefined) {
       query.andWhere(
         '(event.spoilerChapter IS NULL OR event.spoilerChapter <= :userProgress)',
-        { userProgress }
+        { userProgress },
       );
     }
 
     return query.getMany();
   }
 
-  async searchEvents(searchTerm: string, options?: {
-    type?: EventType;
-    userProgress?: number;
-    limit?: number;
-  }): Promise<Event[]> {
-    const query = this.repo.createQueryBuilder('event')
+  async searchEvents(
+    searchTerm: string,
+    options?: {
+      type?: EventType;
+      userProgress?: number;
+      limit?: number;
+    },
+  ): Promise<Event[]> {
+    const query = this.repo
+      .createQueryBuilder('event')
       .leftJoinAndSelect('event.arc', 'arc')
       .leftJoinAndSelect('event.characters', 'characters')
       .where('event.title ILIKE :search OR event.description ILIKE :search', {
-        search: `%${searchTerm}%`
+        search: `%${searchTerm}%`,
       });
 
     if (options?.type) {
@@ -188,7 +221,7 @@ export class EventsService {
     if (options?.userProgress !== undefined) {
       query.andWhere(
         '(event.spoilerChapter IS NULL OR event.spoilerChapter <= :userProgress)',
-        { userProgress: options.userProgress }
+        { userProgress: options.userProgress },
       );
     }
 

@@ -29,8 +29,8 @@ export class GuideLike {
   @Column()
   userId: number;
 
-  @ApiProperty({ 
-    description: 'ID of the guide that was liked'
+  @ApiProperty({
+    description: 'ID of the guide that was liked',
   })
   @ManyToOne('Guide', { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'guideId' })

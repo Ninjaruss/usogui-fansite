@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Like, Between } from 'typeorm';
 import { Quote } from '../../entities/quote.entity';
@@ -19,10 +23,12 @@ export class QuotesService {
   async create(createQuoteDto: CreateQuoteDto, user: User): Promise<Quote> {
     // Verify character exists
     const character = await this.charactersRepository.findOne({
-      where: { id: createQuoteDto.characterId }
+      where: { id: createQuoteDto.characterId },
     });
     if (!character) {
-      throw new NotFoundException(`Character with ID ${createQuoteDto.characterId} not found`);
+      throw new NotFoundException(
+        `Character with ID ${createQuoteDto.characterId} not found`,
+      );
     }
 
     const quote = this.quotesRepository.create({
@@ -42,36 +48,49 @@ export class QuotesService {
     submittedById?: number;
     page?: number;
     limit?: number;
-  }): Promise<{ data: Quote[]; total: number; page?: number; perPage?: number; totalPages?: number }> {
-    const queryBuilder = this.quotesRepository.createQueryBuilder('quote')
+  }): Promise<{
+    data: Quote[];
+    total: number;
+    page?: number;
+    perPage?: number;
+    totalPages?: number;
+  }> {
+    const queryBuilder = this.quotesRepository
+      .createQueryBuilder('quote')
       .leftJoinAndSelect('quote.character', 'character')
       .leftJoinAndSelect('quote.submittedBy', 'submittedBy')
       .orderBy('quote.createdAt', 'DESC');
 
     if (options?.characterId) {
-      queryBuilder.andWhere('quote.characterId = :characterId', { characterId: options.characterId });
+      queryBuilder.andWhere('quote.characterId = :characterId', {
+        characterId: options.characterId,
+      });
     }
 
     if (options?.chapterNumber) {
-      queryBuilder.andWhere('quote.chapterNumber = :chapterNumber', { chapterNumber: options.chapterNumber });
+      queryBuilder.andWhere('quote.chapterNumber = :chapterNumber', {
+        chapterNumber: options.chapterNumber,
+      });
     }
 
     if (options?.chapterRange) {
       queryBuilder.andWhere('quote.chapterNumber BETWEEN :start AND :end', {
         start: options.chapterRange.start,
-        end: options.chapterRange.end
+        end: options.chapterRange.end,
       });
     }
 
     if (options?.search) {
       queryBuilder.andWhere(
         '(quote.text ILIKE :search OR quote.description ILIKE :search)',
-        { search: `%${options.search}%` }
+        { search: `%${options.search}%` },
       );
     }
 
     if (options?.submittedById) {
-      queryBuilder.andWhere('quote.submittedById = :submittedById', { submittedById: options.submittedById });
+      queryBuilder.andWhere('quote.submittedById = :submittedById', {
+        submittedById: options.submittedById,
+      });
     }
 
     const total = await queryBuilder.getCount();
@@ -81,18 +100,18 @@ export class QuotesService {
       queryBuilder.skip(skip).take(options.limit);
     }
 
-  const quotes = await queryBuilder.getMany();
-  const page = options?.page ?? 1;
-  const perPage = options?.limit ?? quotes.length;
-  const totalPages = perPage ? Math.ceil(total / perPage) : 1;
+    const quotes = await queryBuilder.getMany();
+    const page = options?.page ?? 1;
+    const perPage = options?.limit ?? quotes.length;
+    const totalPages = perPage ? Math.ceil(total / perPage) : 1;
 
-  return { data: quotes, total, page, perPage, totalPages };
+    return { data: quotes, total, page, perPage, totalPages };
   }
 
   async findOne(id: number): Promise<Quote> {
     const quote = await this.quotesRepository.findOne({
       where: { id },
-      relations: ['character', 'submittedBy']
+      relations: ['character', 'submittedBy'],
     });
 
     if (!quote) {
@@ -106,19 +125,22 @@ export class QuotesService {
     characterId?: number;
     chapterRange?: { start: number; end: number };
   }): Promise<Quote> {
-    const queryBuilder = this.quotesRepository.createQueryBuilder('quote')
+    const queryBuilder = this.quotesRepository
+      .createQueryBuilder('quote')
       .leftJoinAndSelect('quote.character', 'character')
       .leftJoinAndSelect('quote.submittedBy', 'submittedBy')
       .orderBy('RANDOM()');
 
     if (options?.characterId) {
-      queryBuilder.andWhere('quote.characterId = :characterId', { characterId: options.characterId });
+      queryBuilder.andWhere('quote.characterId = :characterId', {
+        characterId: options.characterId,
+      });
     }
 
     if (options?.chapterRange) {
       queryBuilder.andWhere('quote.chapterNumber BETWEEN :start AND :end', {
         start: options.chapterRange.start,
-        end: options.chapterRange.end
+        end: options.chapterRange.end,
       });
     }
 
@@ -138,7 +160,7 @@ export class QuotesService {
     lastQuoteChapter: number;
   }> {
     const character = await this.charactersRepository.findOne({
-      where: { id: characterId }
+      where: { id: characterId },
     });
 
     if (!character) {
@@ -148,10 +170,10 @@ export class QuotesService {
     const quotes = await this.quotesRepository.find({
       where: { character: { id: characterId } },
       select: ['chapterNumber'],
-      order: { chapterNumber: 'ASC' }
+      order: { chapterNumber: 'ASC' },
     });
 
-    const chaptersWithQuotes = [...new Set(quotes.map(q => q.chapterNumber))];
+    const chaptersWithQuotes = [...new Set(quotes.map((q) => q.chapterNumber))];
 
     return {
       totalQuotes: quotes.length,
@@ -161,21 +183,34 @@ export class QuotesService {
     };
   }
 
-  async update(id: number, updateQuoteDto: UpdateQuoteDto, user: User): Promise<Quote> {
+  async update(
+    id: number,
+    updateQuoteDto: UpdateQuoteDto,
+    user: User,
+  ): Promise<Quote> {
     const quote = await this.findOne(id);
 
     // Check if user can update this quote (only submitter, moderator, or admin)
-    if (quote.submittedBy.id !== user.id && user.role !== UserRole.MODERATOR && user.role !== UserRole.ADMIN) {
+    if (
+      quote.submittedBy.id !== user.id &&
+      user.role !== UserRole.MODERATOR &&
+      user.role !== UserRole.ADMIN
+    ) {
       throw new ForbiddenException('You can only update your own quotes');
     }
 
     // If changing character, verify it exists
-    if (updateQuoteDto.characterId && updateQuoteDto.characterId !== quote.character.id) {
+    if (
+      updateQuoteDto.characterId &&
+      updateQuoteDto.characterId !== quote.character.id
+    ) {
       const character = await this.charactersRepository.findOne({
-        where: { id: updateQuoteDto.characterId }
+        where: { id: updateQuoteDto.characterId },
       });
       if (!character) {
-        throw new NotFoundException(`Character with ID ${updateQuoteDto.characterId} not found`);
+        throw new NotFoundException(
+          `Character with ID ${updateQuoteDto.characterId} not found`,
+        );
       }
     }
 
@@ -187,7 +222,11 @@ export class QuotesService {
     const quote = await this.findOne(id);
 
     // Check if user can delete this quote (only submitter, moderator, or admin)
-    if (quote.submittedBy.id !== user.id && user.role !== UserRole.MODERATOR && user.role !== UserRole.ADMIN) {
+    if (
+      quote.submittedBy.id !== user.id &&
+      user.role !== UserRole.MODERATOR &&
+      user.role !== UserRole.ADMIN
+    ) {
       throw new ForbiddenException('You can only delete your own quotes');
     }
 
@@ -198,24 +237,30 @@ export class QuotesService {
     return this.quotesRepository.find({
       where: { chapterNumber },
       relations: ['character', 'submittedBy'],
-      order: { pageNumber: 'ASC', createdAt: 'ASC' }
+      order: { pageNumber: 'ASC', createdAt: 'ASC' },
     });
   }
 
-  async searchQuotes(searchTerm: string, options?: {
-    characterId?: number;
-    limit?: number;
-  }): Promise<Quote[]> {
-    const queryBuilder = this.quotesRepository.createQueryBuilder('quote')
+  async searchQuotes(
+    searchTerm: string,
+    options?: {
+      characterId?: number;
+      limit?: number;
+    },
+  ): Promise<Quote[]> {
+    const queryBuilder = this.quotesRepository
+      .createQueryBuilder('quote')
       .leftJoinAndSelect('quote.character', 'character')
       .leftJoinAndSelect('quote.submittedBy', 'submittedBy')
       .where('quote.text ILIKE :search OR quote.description ILIKE :search', {
-        search: `%${searchTerm}%`
+        search: `%${searchTerm}%`,
       })
       .orderBy('quote.createdAt', 'DESC');
 
     if (options?.characterId) {
-      queryBuilder.andWhere('quote.characterId = :characterId', { characterId: options.characterId });
+      queryBuilder.andWhere('quote.characterId = :characterId', {
+        characterId: options.characterId,
+      });
     }
 
     if (options?.limit) {
@@ -227,13 +272,13 @@ export class QuotesService {
 
   async bulkDeleteByCharacter(characterId: number): Promise<number> {
     const quotes = await this.quotesRepository.find({
-      where: { character: { id: characterId } }
+      where: { character: { id: characterId } },
     });
-    
+
     if (quotes.length > 0) {
       await this.quotesRepository.remove(quotes);
     }
-    
+
     return quotes.length;
   }
 }

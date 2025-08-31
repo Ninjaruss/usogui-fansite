@@ -31,7 +31,8 @@ export class SearchQueryDto {
   type?: SearchType = SearchType.ALL;
 
   @ApiProperty({
-    description: 'User\'s reading progress (highest chapter read) for spoiler filtering',
+    description:
+      "User's reading progress (highest chapter read) for spoiler filtering",
     example: 15,
     required: false,
     minimum: 0,

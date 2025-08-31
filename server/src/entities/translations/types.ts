@@ -19,21 +19,20 @@ export const TRANSLATABLE_ENTITY_TYPES = [
   'arc',
   'faction',
   'tag',
-  'gamble'
+  'gamble',
 ] as const;
 
-export type TranslatableEntityType = typeof TRANSLATABLE_ENTITY_TYPES[number];
+export type TranslatableEntityType = (typeof TRANSLATABLE_ENTITY_TYPES)[number];
 
 // Union type of all translation entities
-export type TranslationEntity = 
+export type TranslationEntity =
   | ChapterTranslation
   | CharacterTranslation
   | EventTranslation
   | ArcTranslation
   | FactionTranslation
   | TagTranslation
-  | GambleTranslation
-;
+  | GambleTranslation;
 
 // Base interface for translation fields
 export interface BaseTranslationFields {

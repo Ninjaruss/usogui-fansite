@@ -27,7 +27,6 @@ async function runSeed() {
     const seeder = new MainSeeder(dataSource);
     await seeder.run();
     console.log(chalk.green('✅ Database seeding completed successfully.'));
-
   } catch (error) {
     console.error(chalk.red('❌ Error during seeding:'));
     console.error(error);

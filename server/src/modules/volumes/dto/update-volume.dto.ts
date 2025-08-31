@@ -1,13 +1,21 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsNumber, IsOptional, MinLength, MaxLength, Min, IsUrl } from 'class-validator';
+import {
+  IsString,
+  IsNumber,
+  IsOptional,
+  MinLength,
+  MaxLength,
+  Min,
+  IsUrl,
+} from 'class-validator';
 
 export class UpdateVolumeDto {
   @IsNumber()
   @IsOptional()
   @Min(1)
-  @ApiPropertyOptional({ 
-  description: 'Volume number',
-    example: 1
+  @ApiPropertyOptional({
+    description: 'Volume number',
+    example: 1,
   })
   number?: number;
 
@@ -15,9 +23,9 @@ export class UpdateVolumeDto {
   @IsOptional()
   @MinLength(1)
   @MaxLength(200)
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     description: 'Title of the volume',
-    example: 'The Beginning'
+    example: 'The Beginning',
   })
   title?: string;
 
@@ -25,36 +33,36 @@ export class UpdateVolumeDto {
   @IsOptional()
   @IsUrl()
   @MaxLength(500)
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     description: 'URL to the volume cover image',
-    example: 'https://example.com/covers/volume1.jpg'
+    example: 'https://example.com/covers/volume1.jpg',
   })
   coverUrl?: string;
 
   @IsNumber()
   @IsOptional()
   @Min(1)
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     description: 'First chapter number included in this volume',
-    example: 1
+    example: 1,
   })
   startChapter?: number;
 
   @IsNumber()
   @IsOptional()
   @Min(1)
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     description: 'Last chapter number included in this volume',
-    example: 10
+    example: 10,
   })
   endChapter?: number;
 
   @IsString()
   @IsOptional()
   @MaxLength(5000)
-  @ApiPropertyOptional({ 
-    description: 'Brief description of the volume\'s content',
-    example: 'The first volume introducing the main characters and setting'
+  @ApiPropertyOptional({
+    description: "Brief description of the volume's content",
+    example: 'The first volume introducing the main characters and setting',
   })
   description?: string;
 

@@ -9,34 +9,36 @@ export class GambleCharacter {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'The gamble this character participated in',
-    type: () => Gamble
+    type: () => Gamble,
   })
-  @ManyToOne(() => Gamble, gamble => gamble.participants, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Gamble, (gamble) => gamble.participants, {
+    onDelete: 'CASCADE',
+  })
   gamble: Gamble;
 
   @ApiProperty({ description: 'The character who participated' })
   @ManyToOne(() => Character, { eager: true })
   character: Character;
 
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     description: 'Team name if this gamble uses teams',
-    example: 'Team Baku'
+    example: 'Team Baku',
   })
   @Column({ nullable: true })
   teamName?: string;
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Whether this character won the gamble',
-    default: false
+    default: false,
   })
   @Column({ default: false })
   isWinner: boolean;
 
   @ApiPropertyOptional({
     description: 'What this character/team staked in the gamble',
-    example: '100 million yen, right hand'
+    example: '100 million yen, right hand',
   })
   @Column({ nullable: true, type: 'text' })
   stake?: string;

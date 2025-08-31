@@ -23,25 +23,31 @@ import { Logger } from '@nestjs/common';
 
 @Module({
   imports: [
-    
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
       validate,
     }),
-    
+
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => {
         const dbConfig = getDatabaseConfig(configService);
-        
+
         // Add safeguards for production
-        if (configService.get('NODE_ENV') === 'production' && configService.get('ENABLE_SCHEMA_SYNC') === 'true') {
+        if (
+          configService.get('NODE_ENV') === 'production' &&
+          configService.get('ENABLE_SCHEMA_SYNC') === 'true'
+        ) {
           const logger = new Logger('DatabaseConfig');
-          logger.warn('WARNING: Schema synchronization is enabled in production environment!');
-          logger.warn('This can cause data loss. Consider disabling ENABLE_SCHEMA_SYNC in production.');
+          logger.warn(
+            'WARNING: Schema synchronization is enabled in production environment!',
+          );
+          logger.warn(
+            'This can cause data loss. Consider disabling ENABLE_SCHEMA_SYNC in production.',
+          );
         }
-        
+
         return dbConfig;
       },
       inject: [ConfigService],
@@ -52,11 +58,11 @@ import { Logger } from '@nestjs/common';
     ChaptersModule,
     EventsModule,
     FactionsModule,
-    TagsModule, 
+    TagsModule,
     VolumesModule,
     SearchModule,
 
-    UsersModule, 
+    UsersModule,
     AuthModule,
     TranslationsModule,
     GamblesModule,

@@ -20,12 +20,17 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
   async validate(payload: any): Promise<Partial<User>> {
     const user = await this.usersService.findOne(payload.sub);
-    // Optional: return only safe fields
+    // Return all safe fields including profile preferences
     return {
       id: user.id,
       username: user.username,
       email: user.email,
       role: user.role,
+      isEmailVerified: user.isEmailVerified,
+      userProgress: user.userProgress,
+      profileImageId: user.profileImageId,
+      favoriteQuoteId: user.favoriteQuoteId,
+      favoriteGambleId: user.favoriteGambleId,
     };
   }
 }

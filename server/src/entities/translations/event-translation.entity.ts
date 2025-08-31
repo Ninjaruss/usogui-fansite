@@ -5,9 +5,9 @@ import { ApiProperty } from '@nestjs/swagger';
 
 @Entity('event_translations')
 export class EventTranslation extends BaseTranslation {
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Event this translation belongs to',
-    type: () => Event
+    type: () => Event,
   })
   @ManyToOne(() => Event, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'event_id' })
@@ -17,15 +17,15 @@ export class EventTranslation extends BaseTranslation {
   @Column({ name: 'event_id' })
   eventId: number;
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Translated title of the event',
-    example: '17段の試練 (17 Steps Trial)'
+    example: '17段の試練 (17 Steps Trial)',
   })
   @Column({ type: 'text' })
   title: string;
 
-  @ApiProperty({ 
-    description: 'Translated description of the event'
+  @ApiProperty({
+    description: 'Translated description of the event',
   })
   @Column({ type: 'text' })
   description: string;

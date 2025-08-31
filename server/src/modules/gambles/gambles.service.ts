@@ -6,7 +6,11 @@ import { GambleCharacter } from '../../entities/gamble-character.entity';
 import { GambleRound } from '../../entities/gamble-round.entity';
 import { Character } from '../../entities/character.entity';
 import { Chapter } from '../../entities/chapter.entity';
-import { CreateGambleDto, CreateGambleParticipantDto, CreateGambleRoundDto } from './dto/create-gamble.dto';
+import {
+  CreateGambleDto,
+  CreateGambleParticipantDto,
+  CreateGambleRoundDto,
+} from './dto/create-gamble.dto';
 import { UpdateGambleDto } from './dto/update-gamble.dto';
 
 @Injectable()
@@ -38,12 +42,14 @@ export class GamblesService {
 
     // Create and link participants
     const participants = await Promise.all(
-      createGambleDto.participants.map(participantDto => this.createParticipant(participantDto, gamble))
+      createGambleDto.participants.map((participantDto) =>
+        this.createParticipant(participantDto, gamble),
+      ),
     );
     gamble.participants = participants;
 
     // Set winner team if provided
-    const winner = participants.find(p => p.isWinner);
+    const winner = participants.find((p) => p.isWinner);
     if (winner && gamble.hasTeams) {
       gamble.winnerTeam = winner.teamName;
     }
@@ -51,7 +57,9 @@ export class GamblesService {
     // Create and link rounds if provided
     if (createGambleDto.rounds) {
       const rounds = await Promise.all(
-        createGambleDto.rounds.map(roundDto => this.createRound(roundDto, gamble))
+        createGambleDto.rounds.map((roundDto) =>
+          this.createRound(roundDto, gamble),
+        ),
       );
       gamble.rounds = rounds;
     }
@@ -59,11 +67,13 @@ export class GamblesService {
     // Add observers if provided
     if (createGambleDto.observerIds?.length) {
       const observers = await Promise.all(
-        createGambleDto.observerIds.map(id => 
+        createGambleDto.observerIds.map((id) =>
           this.charactersRepository.findOneByOrFail({ id }).catch(() => {
-            throw new NotFoundException(`Observer character with ID ${id} not found`);
-          })
-        )
+            throw new NotFoundException(
+              `Observer character with ID ${id} not found`,
+            );
+          }),
+        ),
       );
       gamble.observers = observers;
     }
@@ -75,10 +85,17 @@ export class GamblesService {
     return this.findOne(gamble.id);
   }
 
-  private async createParticipant(participantDto: CreateGambleParticipantDto, gamble: Gamble): Promise<GambleCharacter> {
-    const character = await this.charactersRepository.findOneByOrFail({ id: participantDto.characterId }).catch(() => {
-      throw new NotFoundException(`Character with ID ${participantDto.characterId} not found`);
-    });
+  private async createParticipant(
+    participantDto: CreateGambleParticipantDto,
+    gamble: Gamble,
+  ): Promise<GambleCharacter> {
+    const character = await this.charactersRepository
+      .findOneByOrFail({ id: participantDto.characterId })
+      .catch(() => {
+        throw new NotFoundException(
+          `Character with ID ${participantDto.characterId} not found`,
+        );
+      });
 
     const participant = new GambleCharacter();
     participant.gamble = gamble;
@@ -90,7 +107,10 @@ export class GamblesService {
     return this.gambleCharactersRepository.save(participant);
   }
 
-  private async createRound(roundDto: CreateGambleRoundDto, gamble: Gamble): Promise<GambleRound> {
+  private async createRound(
+    roundDto: CreateGambleRoundDto,
+    gamble: Gamble,
+  ): Promise<GambleRound> {
     const round = new GambleRound();
     round.roundNumber = roundDto.roundNumber;
     round.outcome = roundDto.outcome;
@@ -102,13 +122,21 @@ export class GamblesService {
     return this.gambleRoundsRepository.save(round);
   }
 
-  async findAll(options: { page?: number; limit?: number } = {}): Promise<{ data: Gamble[]; total: number; page: number; perPage: number; totalPages: number }> {
+  async findAll(options: { page?: number; limit?: number } = {}): Promise<{
+    data: Gamble[];
+    total: number;
+    page: number;
+    perPage: number;
+    totalPages: number;
+  }> {
     const { page = 1, limit = 100 } = options;
-    const qb = this.gamblesRepository.createQueryBuilder('gamble')
+    const qb = this.gamblesRepository
+      .createQueryBuilder('gamble')
       .leftJoinAndSelect('gamble.participants', 'participants')
       .leftJoinAndSelect('participants.character', 'character')
       .leftJoinAndSelect('gamble.rounds', 'rounds')
       .leftJoinAndSelect('gamble.observers', 'observers')
+      .leftJoinAndSelect('gamble.chapter', 'chapter')
       .orderBy('gamble.createdAt', 'DESC');
 
     const skip = (page - 1) * limit;
@@ -116,17 +144,21 @@ export class GamblesService {
 
     const [data, total] = await qb.getManyAndCount();
     const totalPages = Math.max(1, Math.ceil(total / limit));
-    
-    const transformedData = data.map(gamble => this.transformGambleWithTeams(gamble));
+
+    const transformedData = data.map((gamble) =>
+      this.transformGambleWithTeams(gamble),
+    );
     return { data: transformedData, total, page, perPage: limit, totalPages };
   }
 
   async findOne(id: number): Promise<Gamble> {
-    const gamble = await this.gamblesRepository.createQueryBuilder('gamble')
+    const gamble = await this.gamblesRepository
+      .createQueryBuilder('gamble')
       .leftJoinAndSelect('gamble.participants', 'participants')
       .leftJoinAndSelect('participants.character', 'character')
       .leftJoinAndSelect('gamble.rounds', 'rounds')
       .leftJoinAndSelect('gamble.observers', 'observers')
+      .leftJoinAndSelect('gamble.chapter', 'chapter')
       .where('gamble.id = :id', { id })
       .getOne();
 
@@ -144,20 +176,20 @@ export class GamblesService {
 
     // Group participants by team
     const teamMap = new Map();
-    gamble.participants.forEach(participant => {
+    gamble.participants.forEach((participant) => {
       const teamName = participant.teamName || 'No Team';
       if (!teamMap.has(teamName)) {
         teamMap.set(teamName, {
           id: teamMap.size + 1,
           name: teamName,
           members: [],
-          isWinner: false
+          isWinner: false,
         });
       }
-      
+
       teamMap.get(teamName).members.push({
         id: participant.character.id,
-        name: participant.character.name
+        name: participant.character.name,
       });
 
       if (participant.isWinner) {
@@ -172,26 +204,32 @@ export class GamblesService {
   async findByChapter(chapterId: number): Promise<Gamble[]> {
     // Interpret the incoming number as a chapter number (not a relation id).
     // Find all chapters that have this chapter number (across collections) and match gambles by stored chapterId (which references chapter.id in DB).
-    const chapters = await this.chaptersRepository.find({ where: { number: chapterId } });
+    const chapters = await this.chaptersRepository.find({
+      where: { number: chapterId },
+    });
     if (!chapters.length) return [];
-    const chapterIds = chapters.map(c => c.id);
+    const chapterIds = chapters.map((c) => c.id);
 
-    return this.gamblesRepository.createQueryBuilder('gamble')
+    return this.gamblesRepository
+      .createQueryBuilder('gamble')
       .leftJoinAndSelect('gamble.participants', 'participants')
       .leftJoinAndSelect('participants.character', 'character')
       .leftJoinAndSelect('gamble.rounds', 'rounds')
       .leftJoinAndSelect('gamble.observers', 'observers')
+      .leftJoinAndSelect('gamble.chapter', 'chapter')
       .where('gamble.chapterId IN (:...chapterIds)', { chapterIds })
       .orderBy('gamble.createdAt', 'DESC')
       .getMany();
   }
 
   async findByCharacter(characterId: number): Promise<Gamble[]> {
-    return this.gamblesRepository.createQueryBuilder('gamble')
+    return this.gamblesRepository
+      .createQueryBuilder('gamble')
       .leftJoinAndSelect('gamble.participants', 'participants')
       .leftJoinAndSelect('participants.character', 'character')
       .leftJoinAndSelect('gamble.rounds', 'rounds')
       .leftJoinAndSelect('gamble.observers', 'observers')
+      .leftJoinAndSelect('gamble.chapter', 'chapter')
       .where('character.id = :characterId', { characterId })
       .orWhere('observers.id = :characterId', { characterId })
       .orderBy('gamble.createdAt', 'DESC')
@@ -199,12 +237,16 @@ export class GamblesService {
   }
 
   async findByTeam(teamName: string): Promise<Gamble[]> {
-    return this.gamblesRepository.createQueryBuilder('gamble')
+    return this.gamblesRepository
+      .createQueryBuilder('gamble')
       .leftJoinAndSelect('gamble.participants', 'participants')
       .leftJoinAndSelect('participants.character', 'character')
       .leftJoinAndSelect('gamble.rounds', 'rounds')
       .leftJoinAndSelect('gamble.observers', 'observers')
-      .where('participants.teamName ILIKE :teamName', { teamName: `%${teamName}%` })
+      .leftJoinAndSelect('gamble.chapter', 'chapter')
+      .where('participants.teamName ILIKE :teamName', {
+        teamName: `%${teamName}%`,
+      })
       .orderBy('gamble.createdAt', 'DESC')
       .getMany();
   }
@@ -216,8 +258,8 @@ export class GamblesService {
       .where('participant.gamble.id = :gambleId', { gambleId })
       .andWhere('participant.teamName IS NOT NULL')
       .getRawMany();
-    
-    return participants.map(p => p.teamName).filter(Boolean);
+
+    return participants.map((p) => p.teamName).filter(Boolean);
   }
 
   async search(options: {
@@ -228,13 +270,21 @@ export class GamblesService {
     characterId?: number;
     limit?: number;
     page?: number;
-  }): Promise<{ data: Gamble[]; total: number; page: number; perPage: number; totalPages: number }> {
+  }): Promise<{
+    data: Gamble[];
+    total: number;
+    page: number;
+    perPage: number;
+    totalPages: number;
+  }> {
     const { page = 1, limit = 100 } = options;
-    const query = this.gamblesRepository.createQueryBuilder('gamble')
+    const query = this.gamblesRepository
+      .createQueryBuilder('gamble')
       .leftJoinAndSelect('gamble.participants', 'participants')
       .leftJoinAndSelect('participants.character', 'character')
       .leftJoinAndSelect('gamble.rounds', 'rounds')
-      .leftJoinAndSelect('gamble.observers', 'observers');
+      .leftJoinAndSelect('gamble.observers', 'observers')
+      .leftJoinAndSelect('gamble.chapter', 'chapter');
 
     const conditions: string[] = [];
     const parameters: any = {};
@@ -245,7 +295,9 @@ export class GamblesService {
     }
 
     if (options.participantName) {
-      conditions.push('(character.name ILIKE :participantName OR observers.name ILIKE :participantName)');
+      conditions.push(
+        '(character.name ILIKE :participantName OR observers.name ILIKE :participantName)',
+      );
       parameters.participantName = `%${options.participantName}%`;
     }
 
@@ -256,15 +308,20 @@ export class GamblesService {
 
     if (options.chapterId) {
       // Treat options.chapterId as a chapter number. Resolve to chapter IDs before filtering.
-      const chapters = await this.chaptersRepository.find({ where: { number: options.chapterId } });
-      if (!chapters.length) return { data: [], total: 0, page: 1, perPage: limit, totalPages: 1 };
-      const chapterIds = chapters.map(c => c.id);
+      const chapters = await this.chaptersRepository.find({
+        where: { number: options.chapterId },
+      });
+      if (!chapters.length)
+        return { data: [], total: 0, page: 1, perPage: limit, totalPages: 1 };
+      const chapterIds = chapters.map((c) => c.id);
       conditions.push('gamble.chapterId IN (:...chapterIds)');
       parameters.chapterIds = chapterIds;
     }
 
     if (options.characterId) {
-      conditions.push('(character.id = :characterId OR observers.id = :characterId)');
+      conditions.push(
+        '(character.id = :characterId OR observers.id = :characterId)',
+      );
       parameters.characterId = options.characterId;
     }
 
@@ -280,7 +337,9 @@ export class GamblesService {
       .getManyAndCount();
 
     const totalPages = Math.max(1, Math.ceil(total / limit));
-    const transformedData = data.map(gamble => this.transformGambleWithTeams(gamble));
+    const transformedData = data.map((gamble) =>
+      this.transformGambleWithTeams(gamble),
+    );
     return { data: transformedData, total, page, perPage: limit, totalPages };
   }
 
@@ -303,16 +362,20 @@ export class GamblesService {
     if (updateGambleDto.participants) {
       // Remove existing participants
       await this.gambleCharactersRepository.delete({ gamble: { id } });
-      
+
       // Add new participants
       const participants = await Promise.all(
-        updateGambleDto.participants.map(participantDto => this.createParticipant(participantDto, existingGamble))
+        updateGambleDto.participants.map((participantDto) =>
+          this.createParticipant(participantDto, existingGamble),
+        ),
       );
 
       // Set winner team
-      const winner = participants.find(p => p.isWinner);
+      const winner = participants.find((p) => p.isWinner);
       if (winner && updateGambleDto.hasTeams) {
-        await this.gamblesRepository.update(id, { winnerTeam: winner.teamName });
+        await this.gamblesRepository.update(id, {
+          winnerTeam: winner.teamName,
+        });
       }
     }
 
@@ -320,23 +383,29 @@ export class GamblesService {
     if (updateGambleDto.rounds) {
       // Remove existing rounds
       await this.gambleRoundsRepository.delete({ gamble: { id } });
-      
+
       // Add new rounds
       await Promise.all(
-        updateGambleDto.rounds.map(roundDto => this.createRound(roundDto, existingGamble))
+        updateGambleDto.rounds.map((roundDto) =>
+          this.createRound(roundDto, existingGamble),
+        ),
       );
     }
 
     // Update observers if provided
     if (updateGambleDto.observerIds) {
       const observers = await Promise.all(
-        updateGambleDto.observerIds.map(observerId => 
-          this.charactersRepository.findOneByOrFail({ id: observerId }).catch(() => {
-            throw new NotFoundException(`Observer character with ID ${observerId} not found`);
-          })
-        )
+        updateGambleDto.observerIds.map((observerId) =>
+          this.charactersRepository
+            .findOneByOrFail({ id: observerId })
+            .catch(() => {
+              throw new NotFoundException(
+                `Observer character with ID ${observerId} not found`,
+              );
+            }),
+        ),
       );
-      
+
       const gamble = await this.gamblesRepository.findOneByOrFail({ id });
       gamble.observers = observers;
       await this.gamblesRepository.save(gamble);

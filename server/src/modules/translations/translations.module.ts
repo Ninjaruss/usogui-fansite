@@ -9,19 +9,21 @@ import {
   ArcTranslation,
   FactionTranslation,
   TagTranslation,
-  GambleTranslation
+  GambleTranslation,
 } from '../../entities/translations';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([
-    ChapterTranslation,
-    CharacterTranslation,
-    EventTranslation,
-    ArcTranslation,
-    FactionTranslation,
-    TagTranslation,
-    GambleTranslation
-  ])],
+  imports: [
+    TypeOrmModule.forFeature([
+      ChapterTranslation,
+      CharacterTranslation,
+      EventTranslation,
+      ArcTranslation,
+      FactionTranslation,
+      TagTranslation,
+      GambleTranslation,
+    ]),
+  ],
   providers: [TranslationsService],
   controllers: [TranslationsController],
   exports: [TranslationsService],

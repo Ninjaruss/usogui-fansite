@@ -137,6 +137,9 @@ class ApiClient {
       role: string
       isEmailVerified: boolean
       userProgress: number
+      profileImageId?: string
+      favoriteQuoteId?: number
+      favoriteGambleId?: number
     }>('/auth/me')
   }
 
@@ -329,10 +332,63 @@ class ApiClient {
   }
 
   async updateProfile(data: {
+    profileImageId?: string
     favoriteQuoteId?: number
     favoriteGambleId?: number
   }) {
     return this.patch<any>('/users/profile', data)
+  }
+
+  async updateUserProgress(userProgress: number) {
+    return this.put<{ message: string; userProgress: number }>('/users/profile/progress', { userProgress })
+  }
+
+  // Chapter methods
+  async getChapters(params?: {
+    title?: string
+    number?: number
+    page?: number
+    limit?: number
+    sort?: string
+    order?: 'ASC' | 'DESC'
+  }) {
+    const searchParams = new URLSearchParams()
+    if (params?.title) searchParams.append('title', params.title)
+    if (params?.number !== undefined) searchParams.append('number', params.number.toString())
+    if (params?.page) searchParams.append('page', params.page.toString())
+    if (params?.limit) searchParams.append('limit', params.limit.toString())
+    if (params?.sort) searchParams.append('sort', params.sort)
+    if (params?.order) searchParams.append('order', params.order)
+    
+    return this.get<{
+      data: Array<{
+        id: number
+        number: number
+        title: string | null
+        summary: string | null
+      }>
+      total: number
+      page: number
+      totalPages: number
+    }>(`/chapters?${searchParams.toString()}`)
+  }
+
+  async getChapter(id: number) {
+    return this.get<{
+      id: number
+      number: number
+      title: string | null
+      summary: string | null
+    }>(`/chapters/${id}`)
+  }
+
+  async getChapterByNumber(number: number) {
+    return this.get<{
+      id: number
+      number: number
+      title: string | null
+      summary: string | null
+    }>(`/chapters/by-number/${number}`)
   }
 
   // Admin endpoints for missing resources

@@ -1,5 +1,9 @@
 // media.service.ts
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Media, MediaStatus } from '../../entities/media.entity';
@@ -10,7 +14,7 @@ import { EmailService } from '../email/email.service';
 
 @Injectable()
 export class MediaService {
-  private readonly isTestUser = (email: string) => 
+  private readonly isTestUser = (email: string) =>
     email === 'testuser@example.com';
 
   constructor(
@@ -25,37 +29,44 @@ export class MediaService {
     const normalizedUrl = this.urlNormalizer.normalize(data.url, data.type);
 
     const media = this.mediaRepo.create({
-        url: normalizedUrl,
-        type: data.type,
-        description: data.description,
-        character: data.characterId ? { id: data.characterId } as any : null,
-        submittedBy: user,
-        status: MediaStatus.PENDING
+      url: normalizedUrl,
+      type: data.type,
+      description: data.description,
+      character: data.characterId ? ({ id: data.characterId } as any) : null,
+      submittedBy: user,
+      status: MediaStatus.PENDING,
     });
     return this.mediaRepo.save(media);
-    }
+  }
 
-
-  async findAll(filters: { page?: number; limit?: number } = {}): Promise<{ data: Media[]; total: number; page: number; perPage: number; totalPages: number }> {
+  async findAll(filters: { page?: number; limit?: number } = {}): Promise<{
+    data: Media[];
+    total: number;
+    page: number;
+    perPage: number;
+    totalPages: number;
+  }> {
     const { page = 1, limit = 20 } = filters;
-    const query = this.mediaRepo.createQueryBuilder('media')
+    const query = this.mediaRepo
+      .createQueryBuilder('media')
       .leftJoinAndSelect('media.character', 'character')
       .leftJoinAndSelect('media.submittedBy', 'submittedBy')
       .where('media.status = :status', { status: MediaStatus.APPROVED });
 
-    query.orderBy('media.createdAt', 'DESC')
+    query
+      .orderBy('media.createdAt', 'DESC')
       .skip((page - 1) * limit)
       .take(limit);
 
     const [data, total] = await query.getManyAndCount();
-  const totalPages = Math.ceil(total / limit);
-  return { data, total, page, perPage: limit, totalPages };
+    const totalPages = Math.ceil(total / limit);
+    return { data, total, page, perPage: limit, totalPages };
   }
 
   async findOne(id: number): Promise<Media | null> {
-    const media = await this.mediaRepo.findOne({ 
+    const media = await this.mediaRepo.findOne({
       where: { id },
-      relations: ['character', 'submittedBy']
+      relations: ['character', 'submittedBy'],
     });
     if (!media) {
       throw new NotFoundException(`Media with id ${id} not found`);
@@ -67,14 +78,14 @@ export class MediaService {
     return this.mediaRepo.find({
       where: { status: MediaStatus.PENDING },
       relations: ['character', 'submittedBy'],
-      order: { createdAt: 'ASC' }
+      order: { createdAt: 'ASC' },
     });
   }
 
   async approveSubmission(id: number): Promise<Media> {
-    const media = await this.mediaRepo.findOne({ 
+    const media = await this.mediaRepo.findOne({
       where: { id },
-      relations: ['submittedBy']
+      relations: ['submittedBy'],
     });
     if (!media) {
       throw new NotFoundException(`Media with id ${id} not found`);
@@ -82,7 +93,7 @@ export class MediaService {
     if (media.status !== MediaStatus.PENDING) {
       throw new BadRequestException('This submission is not in pending state');
     }
-    
+
     media.status = MediaStatus.APPROVED;
     const savedMedia = await this.mediaRepo.save(media);
 
@@ -90,7 +101,7 @@ export class MediaService {
     if (!this.isTestUser(media.submittedBy.email)) {
       await this.emailService.sendMediaApprovalNotification(
         media.submittedBy.email,
-        media.description || 'your submission'
+        media.description || 'your submission',
       );
     }
 
@@ -98,9 +109,9 @@ export class MediaService {
   }
 
   async rejectSubmission(id: number, reason: string): Promise<Media> {
-    const media = await this.mediaRepo.findOne({ 
+    const media = await this.mediaRepo.findOne({
       where: { id },
-      relations: ['submittedBy']
+      relations: ['submittedBy'],
     });
     if (!media) {
       throw new NotFoundException(`Media with id ${id} not found`);
@@ -108,28 +119,31 @@ export class MediaService {
     if (media.status !== MediaStatus.PENDING) {
       throw new BadRequestException('This submission is not in pending state');
     }
-    
+
     media.status = MediaStatus.REJECTED;
     media.rejectionReason = reason;
-    
+
     const savedMedia = await this.mediaRepo.save(media);
 
-    // Skip email for test user  
+    // Skip email for test user
     if (!this.isTestUser(media.submittedBy.email)) {
       await this.emailService.sendMediaRejectionNotification(
         media.submittedBy.email,
         media.description || 'your submission',
-        reason
+        reason,
       );
     }
 
     return savedMedia;
   }
 
-  async update(id: number, updateData: Partial<CreateMediaDto>): Promise<Media> {
-    const media = await this.mediaRepo.findOne({ 
+  async update(
+    id: number,
+    updateData: Partial<CreateMediaDto>,
+  ): Promise<Media> {
+    const media = await this.mediaRepo.findOne({
       where: { id },
-      relations: ['character', 'submittedBy']
+      relations: ['character', 'submittedBy'],
     });
     if (!media) {
       throw new NotFoundException(`Media with id ${id} not found`);
@@ -140,7 +154,9 @@ export class MediaService {
 
     // If character ID is provided, update the character relation
     if (updateData.characterId !== undefined) {
-      media.character = updateData.characterId ? { id: updateData.characterId } as any : null;
+      media.character = updateData.characterId
+        ? ({ id: updateData.characterId } as any)
+        : null;
     }
 
     return this.mediaRepo.save(media);
@@ -150,7 +166,9 @@ export class MediaService {
     await this.mediaRepo.delete(id);
   }
 
-  async bulkApproveSubmissions(ids: number[]): Promise<{ approved: number; failed: number; errors: string[] }> {
+  async bulkApproveSubmissions(
+    ids: number[],
+  ): Promise<{ approved: number; failed: number; errors: string[] }> {
     const results = { approved: 0, failed: 0, errors: [] as string[] };
 
     for (const id of ids) {
@@ -159,14 +177,19 @@ export class MediaService {
         results.approved++;
       } catch (error: any) {
         results.failed++;
-        results.errors.push(`Failed to approve media ${id}: ${error.message || 'Unknown error'}`);
+        results.errors.push(
+          `Failed to approve media ${id}: ${error.message || 'Unknown error'}`,
+        );
       }
     }
 
     return results;
   }
 
-  async bulkRejectSubmissions(ids: number[], reason: string): Promise<{ rejected: number; failed: number; errors: string[] }> {
+  async bulkRejectSubmissions(
+    ids: number[],
+    reason: string,
+  ): Promise<{ rejected: number; failed: number; errors: string[] }> {
     const results = { rejected: 0, failed: 0, errors: [] as string[] };
 
     for (const id of ids) {
@@ -175,7 +198,9 @@ export class MediaService {
         results.rejected++;
       } catch (error: any) {
         results.failed++;
-        results.errors.push(`Failed to reject media ${id}: ${error.message || 'Unknown error'}`);
+        results.errors.push(
+          `Failed to reject media ${id}: ${error.message || 'Unknown error'}`,
+        );
       }
     }
 
@@ -184,37 +209,43 @@ export class MediaService {
 
   // PUBLIC METHODS - No authentication required
 
-  async findAllPublic(filters: { 
-    type?: string; 
-    characterId?: number; 
-    page?: number; 
-    limit?: number; 
-  } = {}) {
+  async findAllPublic(
+    filters: {
+      type?: string;
+      characterId?: number;
+      page?: number;
+      limit?: number;
+    } = {},
+  ) {
     const { page = 1, limit = 20 } = filters;
-    const query = this.mediaRepo.createQueryBuilder('media')
+    const query = this.mediaRepo
+      .createQueryBuilder('media')
       .leftJoinAndSelect('media.character', 'character')
       .leftJoinAndSelect('media.submittedBy', 'submittedBy')
       .where('media.status = :status', { status: MediaStatus.APPROVED })
       .select([
         'media.id',
-        'media.url', 
+        'media.url',
         'media.type',
         'media.description',
         'media.createdAt',
         'character.id',
         'character.name',
         'submittedBy.id',
-        'submittedBy.username'
+        'submittedBy.username',
       ]);
 
     if (filters.type) {
       query.andWhere('media.type = :type', { type: filters.type });
     }
     if (filters.characterId) {
-      query.andWhere('character.id = :characterId', { characterId: filters.characterId });
+      query.andWhere('character.id = :characterId', {
+        characterId: filters.characterId,
+      });
     }
 
-    query.orderBy('media.createdAt', 'DESC')
+    query
+      .orderBy('media.createdAt', 'DESC')
       .skip((page - 1) * limit)
       .take(limit);
 
@@ -230,9 +261,9 @@ export class MediaService {
 
   async findOnePublic(id: number): Promise<Media | null> {
     return this.mediaRepo.findOne({
-      where: { 
+      where: {
         id,
-        status: MediaStatus.APPROVED 
+        status: MediaStatus.APPROVED,
       },
       relations: ['character', 'submittedBy'],
       select: {
@@ -243,13 +274,13 @@ export class MediaService {
         createdAt: true,
         character: {
           id: true,
-          name: true
+          name: true,
         },
         submittedBy: {
           id: true,
-          username: true
-        }
-      }
+          username: true,
+        },
+      },
     });
   }
 }

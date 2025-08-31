@@ -9,7 +9,7 @@ export class EmailService {
 
   constructor(private configService: ConfigService) {
     const apiKey = this.configService.get('RESEND_API_KEY');
-    
+
     if (!apiKey) {
       throw new BadRequestException('Resend API key not configured');
     }
@@ -42,7 +42,8 @@ export class EmailService {
   }
 
   async sendEmailVerification(email: string, token: string) {
-    const frontendUrl = this.configService.get('FRONTEND_URL') || 'http://localhost:3000';
+    const frontendUrl =
+      this.configService.get('FRONTEND_URL') || 'http://localhost:3000';
     const verificationLink = `${frontendUrl}/verify-email?token=${token}`;
 
     const content = `
@@ -67,7 +68,8 @@ export class EmailService {
   }
 
   async sendPasswordReset(email: string, token: string) {
-    const frontendUrl = this.configService.get('FRONTEND_URL') || 'http://localhost:3000';
+    const frontendUrl =
+      this.configService.get('FRONTEND_URL') || 'http://localhost:3000';
     const resetLink = `${frontendUrl}/reset-password?token=${token}`;
 
     const content = `
@@ -107,11 +109,17 @@ export class EmailService {
       });
     } catch (error) {
       console.error('Failed to send media approval notification:', error);
-      throw new BadRequestException('Failed to send media approval notification');
+      throw new BadRequestException(
+        'Failed to send media approval notification',
+      );
     }
   }
 
-  async sendMediaRejectionNotification(email: string, mediaTitle: string, reason: string) {
+  async sendMediaRejectionNotification(
+    email: string,
+    mediaTitle: string,
+    reason: string,
+  ) {
     const content = `
       <h1>Media Submission Update</h1>
       <p>Unfortunately, your media submission "${mediaTitle}" could not be approved at this time.</p>
@@ -128,7 +136,9 @@ export class EmailService {
       });
     } catch (error) {
       console.error('Failed to send media rejection notification:', error);
-      throw new BadRequestException('Failed to send media rejection notification');
+      throw new BadRequestException(
+        'Failed to send media rejection notification',
+      );
     }
   }
 }

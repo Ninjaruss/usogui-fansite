@@ -12,16 +12,16 @@ export class GambleRound {
   @Column()
   roundNumber: number;
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'The gamble this round belongs to',
-    type: () => Gamble
+    type: () => Gamble,
   })
-  @ManyToOne(() => Gamble, gamble => gamble.rounds, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Gamble, (gamble) => gamble.rounds, { onDelete: 'CASCADE' })
   gamble: Gamble;
 
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     description: 'Team name that won this round (for team-based gambles)',
-    example: 'Team Baku'
+    example: 'Team Baku',
   })
   @Column({ nullable: true })
   winnerTeam?: string;

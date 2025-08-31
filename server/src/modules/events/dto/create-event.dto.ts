@@ -1,5 +1,18 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsNumber, IsOptional, IsArray, IsNotEmpty, MinLength, MaxLength, Min, ArrayMaxSize, ValidateIf, IsEnum, IsBoolean } from 'class-validator';
+import {
+  IsString,
+  IsNumber,
+  IsOptional,
+  IsArray,
+  IsNotEmpty,
+  MinLength,
+  MaxLength,
+  Min,
+  ArrayMaxSize,
+  ValidateIf,
+  IsEnum,
+  IsBoolean,
+} from 'class-validator';
 import { EventType, ChapterReference } from '../../../entities/event.entity';
 
 export class CreateEventDto {
@@ -7,9 +20,9 @@ export class CreateEventDto {
   @IsNotEmpty()
   @MinLength(3)
   @MaxLength(200)
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Event title',
-    example: 'The 17 Steps Tournament'
+    example: 'The 17 Steps Tournament',
   })
   title: string;
 
@@ -17,9 +30,10 @@ export class CreateEventDto {
   @IsNotEmpty()
   @MinLength(10)
   @MaxLength(5000)
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Event description',
-    example: 'A high-stakes tournament where participants must climb 17 steps...'
+    example:
+      'A high-stakes tournament where participants must climb 17 steps...',
   })
   description: string;
 
@@ -29,7 +43,7 @@ export class CreateEventDto {
     description: 'Type of event',
     enum: EventType,
     default: EventType.OTHER,
-    example: EventType.ARC
+    example: EventType.ARC,
   })
   type?: EventType;
 
@@ -38,9 +52,9 @@ export class CreateEventDto {
   @IsNumber()
   @IsOptional()
   @Min(1)
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     description: 'ID of the arc this event belongs to',
-    example: 1
+    example: 1,
   })
   arcId?: number;
 
@@ -48,38 +62,39 @@ export class CreateEventDto {
   @IsNumber({}, { each: true })
   @IsOptional()
   @ArrayMaxSize(100)
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     description: 'IDs of chapters where this event occurs',
     type: [Number],
-    example: [45, 46, 47]
+    example: [45, 46, 47],
   })
   chapterIds?: number[];
 
   @IsNumber()
   @IsNotEmpty()
   @Min(1)
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Chapter number where the event starts',
-    example: 45
+    example: 45,
   })
   startChapter: number;
 
   @IsNumber()
   @IsOptional()
-  @ValidateIf(o => o.endChapter && o.endChapter >= o.startChapter)
+  @ValidateIf((o) => o.endChapter && o.endChapter >= o.startChapter)
   @Min(1)
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     description: 'Chapter number where the event ends',
-    example: 52
+    example: 52,
   })
   endChapter?: number;
 
   @IsNumber()
   @IsOptional()
   @Min(1)
-  @ApiPropertyOptional({ 
-    description: 'Chapter number the user should have read before seeing this event (spoiler protection)',
-    example: 44
+  @ApiPropertyOptional({
+    description:
+      'Chapter number the user should have read before seeing this event (spoiler protection)',
+    example: 44,
   })
   spoilerChapter?: number;
 
@@ -87,29 +102,30 @@ export class CreateEventDto {
   @IsNumber({}, { each: true })
   @IsOptional()
   @ArrayMaxSize(50)
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     description: 'Page numbers where this event occurs or is referenced',
     type: [Number],
-    example: [15, 22, 35]
+    example: [15, 22, 35],
   })
   pageNumbers?: number[];
 
   @IsOptional()
-  @ApiPropertyOptional({ 
-    description: 'List of chapter references with context for additional reading',
+  @ApiPropertyOptional({
+    description:
+      'List of chapter references with context for additional reading',
     type: 'array',
     example: [
-      { chapterNumber: 10, context: "Page 8 - Character background revealed" },
-      { chapterNumber: 12, context: "Final scene - Important foreshadowing" }
-    ]
+      { chapterNumber: 10, context: 'Page 8 - Character background revealed' },
+      { chapterNumber: 12, context: 'Final scene - Important foreshadowing' },
+    ],
   })
   chapterReferences?: ChapterReference[];
 
   @IsBoolean()
   @IsOptional()
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     description: 'Whether this event has been verified by moderators',
-    example: false
+    example: false,
   })
   isVerified?: boolean;
 }

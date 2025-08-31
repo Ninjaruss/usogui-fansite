@@ -14,7 +14,8 @@ import {
   SelectInput,
   NumberField,
   ReferenceInput,
-  AutocompleteInput
+  AutocompleteInput,
+  usePermissions
 } from 'react-admin'
 
 export const GuideList = () => (
@@ -54,22 +55,33 @@ export const GuideShow = () => (
   </Show>
 )
 
-export const GuideEdit = () => (
-  <Edit>
-    <SimpleForm>
-      <TextInput source="title" required />
-      <TextInput source="description" multiline rows={3} required />
-      <TextInput source="content" multiline rows={12} required />
-      <ReferenceInput source="authorId" reference="users" label="Author">
-        <AutocompleteInput optionText="username" />
-      </ReferenceInput>
-      <SelectInput source="status" choices={[
-        { id: 'draft', name: 'Draft' },
-        { id: 'published', name: 'Published' }
-      ]} />
-    </SimpleForm>
-  </Edit>
-)
+export const GuideEdit = () => {
+  const { permissions } = usePermissions()
+  
+  return (
+    <Edit>
+      <SimpleForm>
+        <TextInput source="title" required />
+        <TextInput source="description" multiline rows={3} required />
+        <TextInput source="content" multiline rows={12} required />
+        <ReferenceInput 
+          source="authorId" 
+          reference="users" 
+          label="Author"
+        >
+          <AutocompleteInput 
+            optionText="username" 
+            disabled={permissions !== 'admin' && permissions !== 'moderator'}
+          />
+        </ReferenceInput>
+        <SelectInput source="status" choices={[
+          { id: 'draft', name: 'Draft' },
+          { id: 'published', name: 'Published' }
+        ]} />
+      </SimpleForm>
+    </Edit>
+  )
+}
 
 export const GuideCreate = () => (
   <Create>

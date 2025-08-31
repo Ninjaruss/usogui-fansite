@@ -12,14 +12,16 @@ export class VolumeSeeder implements Seeder {
       {
         number: 1,
         title: 'The Lie Eater',
-        description: 'Introduction to Baku Madarame and the underground gambling world',
+        description:
+          'Introduction to Baku Madarame and the underground gambling world',
         startChapter: 1,
         endChapter: 10,
       },
       {
         number: 2,
         title: 'The First Gamble',
-        description: 'Baku faces his first serious challenge in the gambling underworld',
+        description:
+          'Baku faces his first serious challenge in the gambling underworld',
         startChapter: 11,
         endChapter: 20,
       },
@@ -29,9 +31,9 @@ export class VolumeSeeder implements Seeder {
     // Create volumes
     for (const volumeData of initialVolumes) {
       const existingVolume = await volumeRepository.findOne({
-        where: { 
+        where: {
           number: volumeData.number,
-        }
+        },
       });
 
       if (!existingVolume) {

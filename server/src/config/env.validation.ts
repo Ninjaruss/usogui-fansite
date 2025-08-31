@@ -1,5 +1,13 @@
 import { plainToClass } from 'class-transformer';
-import { IsString, IsNumber, validateSync, IsIn, IsUrl, IsBoolean, IsOptional } from 'class-validator';
+import {
+  IsString,
+  IsNumber,
+  validateSync,
+  IsIn,
+  IsUrl,
+  IsBoolean,
+  IsOptional,
+} from 'class-validator';
 
 class EnvironmentVariables {
   @IsString()
@@ -39,15 +47,15 @@ class EnvironmentVariables {
     require_protocol: process.env.NODE_ENV === 'production',
     require_host: true,
     require_valid_protocol: true,
-    protocols: ['http', 'https']
+    protocols: ['http', 'https'],
   })
   FRONTEND_URL: string;
-  
+
   @IsString()
   @IsOptional()
   @IsIn(['true', 'false'])
   RUN_MIGRATIONS?: string;
-  
+
   @IsString()
   @IsOptional()
   @IsIn(['true', 'false'])

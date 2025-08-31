@@ -7,7 +7,7 @@ export class TranslationQueryDto {
     description: 'Language to filter translations by',
     enum: Language,
     required: false,
-    example: Language.JA
+    example: Language.JA,
   })
   @IsEnum(Language)
   language?: Language;

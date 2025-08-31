@@ -21,66 +21,67 @@ export class ProfileImage {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Display name for the profile image',
-    example: 'Baku Madarame - Confident Smile'
+    example: 'Baku Madarame - Confident Smile',
   })
   @Column({ type: 'varchar' })
   displayName: string;
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'File name/path of the image',
-    example: 'baku-madarame-confident-v2.webp'
+    example: 'baku-madarame-confident-v2.webp',
   })
   @Column({ type: 'varchar' })
   fileName: string;
 
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     description: 'Optional description of the image/pose',
-    example: 'Baku with his signature confident expression during a high-stakes gamble'
+    example:
+      'Baku with his signature confident expression during a high-stakes gamble',
   })
   @Column({ type: 'text', nullable: true })
   description: string | null;
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Character this image represents',
-    example: 1
+    example: 1,
   })
   @Column({ type: 'int' })
   characterId: number;
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Whether this image is currently available for selection',
-    example: true
+    example: true,
   })
   @Column({ type: 'boolean', default: true })
   isActive: boolean;
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Display order for sorting images',
-    example: 1
+    example: 1,
   })
   @Column({ type: 'int', default: 0 })
   sortOrder: number;
 
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     description: 'Tags for categorizing images (e.g., expressions, outfits)',
-    example: ['confident', 'smiling', 'formal']
+    example: ['confident', 'smiling', 'formal'],
   })
   @Column({ type: 'simple-array', nullable: true })
   tags: string[] | null;
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Character this image represents',
-    type: () => Character
+    type: () => Character,
   })
   @ManyToOne(() => Character, { nullable: false })
   @JoinColumn({ name: 'characterId' })
   character: Character;
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Users who have selected this as their profile image',
-    type: () => [User]
+    type: () => [User],
   })
   @OneToMany(() => User, (user) => user.profileImage)
   users: User[];

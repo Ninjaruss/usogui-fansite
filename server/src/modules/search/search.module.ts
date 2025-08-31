@@ -8,14 +8,7 @@ import { Event } from '../../entities/event.entity';
 import { Arc } from '../../entities/arc.entity';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([
-      Chapter,
-      Character,
-      Event,
-      Arc,
-    ]),
-  ],
+  imports: [TypeOrmModule.forFeature([Chapter, Character, Event, Arc])],
   controllers: [SearchController],
   providers: [SearchService],
   exports: [SearchService],

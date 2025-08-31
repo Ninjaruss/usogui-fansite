@@ -29,16 +29,16 @@ export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Username for login',
-    example: 'usogui_fan'
+    example: 'usogui_fan',
   })
   @Column({ type: 'varchar', unique: true })
   username: string;
 
-  @ApiProperty({ 
-    description: 'User\'s email address',
-    example: 'user@example.com'
+  @ApiProperty({
+    description: "User's email address",
+    example: 'user@example.com',
   })
   @Column({ type: 'varchar', unique: true })
   email: string;
@@ -61,54 +61,56 @@ export class User {
   @Column({ type: 'enum', enum: UserRole, default: UserRole.USER })
   role: UserRole;
 
-  @ApiPropertyOptional({ 
-    description: 'User\'s reading progress (highest chapter number read)',
+  @ApiPropertyOptional({
+    description: "User's reading progress (highest chapter number read)",
     example: 42,
-    minimum: 0
+    minimum: 0,
   })
   @Column({ type: 'int', default: 1 })
   userProgress: number;
 
-  @ApiPropertyOptional({ 
-    description: 'ID of the user\'s profile image',
-    example: 'uuid-here'
+  @ApiPropertyOptional({
+    description: "ID of the user's profile image",
+    example: 'uuid-here',
   })
   @Column({ type: 'uuid', nullable: true })
   profileImageId: string | null;
 
-  @ApiPropertyOptional({ 
-    description: 'ID of the user\'s favorite quote',
-    example: 1
+  @ApiPropertyOptional({
+    description: "ID of the user's favorite quote",
+    example: 1,
   })
   @Column({ type: 'int', nullable: true })
   favoriteQuoteId: number | null;
 
-  @ApiPropertyOptional({ 
-    description: 'ID of the user\'s favorite gamble',
-    example: 1
+  @ApiPropertyOptional({
+    description: "ID of the user's favorite gamble",
+    example: 1,
   })
   @Column({ type: 'int', nullable: true })
   favoriteGambleId: number | null;
 
-  @ApiPropertyOptional({ 
-    description: 'User\'s profile image object',
-    type: () => ProfileImage
+  @ApiPropertyOptional({
+    description: "User's profile image object",
+    type: () => ProfileImage,
   })
-  @ManyToOne(() => ProfileImage, (profileImage) => profileImage.users, { nullable: true })
+  @ManyToOne(() => ProfileImage, (profileImage) => profileImage.users, {
+    nullable: true,
+  })
   @JoinColumn({ name: 'profileImageId' })
   profileImage: ProfileImage | null;
 
-  @ApiPropertyOptional({ 
-    description: 'User\'s favorite quote object',
-    type: () => Quote
+  @ApiPropertyOptional({
+    description: "User's favorite quote object",
+    type: () => Quote,
   })
   @ManyToOne(() => Quote, { nullable: true })
   @JoinColumn({ name: 'favoriteQuoteId' })
   favoriteQuote: Quote | null;
 
-  @ApiPropertyOptional({ 
-    description: 'User\'s favorite gamble object',
-    type: () => Gamble
+  @ApiPropertyOptional({
+    description: "User's favorite gamble object",
+    type: () => Gamble,
   })
   @ManyToOne(() => Gamble, { nullable: true })
   @JoinColumn({ name: 'favoriteGambleId' })

@@ -1,5 +1,23 @@
-import { Controller, Get, Param, Post, Body, Put, Delete, Query, UseGuards } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiQuery, ApiParam, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  Controller,
+  Get,
+  Param,
+  Post,
+  Body,
+  Put,
+  Delete,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiQuery,
+  ApiParam,
+  ApiBody,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { FactionsService } from './factions.service';
 import { Faction } from '../../entities/faction.entity';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -17,23 +35,35 @@ export class FactionsController {
   @Get()
   @ApiOperation({
     summary: 'Get all factions',
-    description: 'Retrieve all factions with optional sorting'
+    description: 'Retrieve all factions with optional sorting',
   })
-  @ApiQuery({ name: 'sort', required: false, description: 'Field to sort by (id, name)' })
-  @ApiQuery({ name: 'order', required: false, enum: ['ASC', 'DESC'], description: 'Sort order (default: ASC)' })
-        @ApiResponse({
-          status: 200,
-          description: 'List of factions',
-          schema: {
-            type: 'object',
-            properties: {
-        data: { type: 'array', items: { $ref: '#/components/schemas/Faction' } },
+  @ApiQuery({
+    name: 'sort',
+    required: false,
+    description: 'Field to sort by (id, name)',
+  })
+  @ApiQuery({
+    name: 'order',
+    required: false,
+    enum: ['ASC', 'DESC'],
+    description: 'Sort order (default: ASC)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'List of factions',
+    schema: {
+      type: 'object',
+      properties: {
+        data: {
+          type: 'array',
+          items: { $ref: '#/components/schemas/Faction' },
+        },
         total: { type: 'number' },
         page: { type: 'number' },
         perPage: { type: 'number' },
-        totalPages: { type: 'number' }
-            }
-          }
+        totalPages: { type: 'number' },
+      },
+    },
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async getAll(
@@ -44,16 +74,27 @@ export class FactionsController {
   ) {
     const pageNum = parseInt(page) || 1;
     const limitNum = parseInt(limit) || 1000;
-    const result = await this.service.findAll({ sort, order, page: pageNum, limit: limitNum });
+    const result = await this.service.findAll({
+      sort,
+      order,
+      page: pageNum,
+      limit: limitNum,
+    });
 
-  // Canonical top-level paginated response
-  return { data: result.data, total: result.total, page: result.page, perPage: limitNum, totalPages: result.totalPages };
+    // Canonical top-level paginated response
+    return {
+      data: result.data,
+      total: result.total,
+      page: result.page,
+      perPage: limitNum,
+      totalPages: result.totalPages,
+    };
   }
 
   @Get(':id')
   @ApiOperation({
     summary: 'Get faction by ID',
-    description: 'Retrieve a specific faction by its unique identifier'
+    description: 'Retrieve a specific faction by its unique identifier',
   })
   @ApiParam({ name: 'id', description: 'Faction ID', example: 1 })
   @ApiResponse({
@@ -64,11 +105,15 @@ export class FactionsController {
       properties: {
         id: { type: 'number', example: 1 },
         name: { type: 'string', example: 'Kakerou' },
-        description: { type: 'string', example: 'The underground gambling organization that governs illegal gambling' },
+        description: {
+          type: 'string',
+          example:
+            'The underground gambling organization that governs illegal gambling',
+        },
         createdAt: { type: 'string', format: 'date-time' },
-        updatedAt: { type: 'string', format: 'date-time' }
-      }
-    }
+        updatedAt: { type: 'string', format: 'date-time' },
+      },
+    },
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Faction not found' })
@@ -81,7 +126,7 @@ export class FactionsController {
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Create a new faction',
-    description: 'Create a new faction (requires moderator or admin role)'
+    description: 'Create a new faction (requires moderator or admin role)',
   })
   @ApiBody({ type: CreateFactionDto })
   @ApiResponse({
@@ -92,14 +137,20 @@ export class FactionsController {
       properties: {
         id: { type: 'number', example: 2 },
         name: { type: 'string', example: 'Ideal' },
-        description: { type: 'string', example: 'A rival organization seeking to overthrow Kakerou' },
+        description: {
+          type: 'string',
+          example: 'A rival organization seeking to overthrow Kakerou',
+        },
         createdAt: { type: 'string', format: 'date-time' },
-        updatedAt: { type: 'string', format: 'date-time' }
-      }
-    }
+        updatedAt: { type: 'string', format: 'date-time' },
+      },
+    },
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 403, description: 'Forbidden - requires moderator or admin role' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - requires moderator or admin role',
+  })
   @Roles(UserRole.MODERATOR, UserRole.ADMIN)
   create(@Body() data: CreateFactionDto): Promise<Faction> {
     return this.service.create(data);
@@ -110,7 +161,8 @@ export class FactionsController {
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Update faction',
-    description: 'Update an existing faction (requires moderator or admin role)'
+    description:
+      'Update an existing faction (requires moderator or admin role)',
   })
   @ApiParam({ name: 'id', description: 'Faction ID', example: 1 })
   @ApiBody({ type: UpdateFactionDto })
@@ -122,14 +174,21 @@ export class FactionsController {
       properties: {
         id: { type: 'number', example: 1 },
         name: { type: 'string', example: 'Kakerou' },
-        description: { type: 'string', example: 'Updated description of the underground gambling organization' },
+        description: {
+          type: 'string',
+          example:
+            'Updated description of the underground gambling organization',
+        },
         createdAt: { type: 'string', format: 'date-time' },
-        updatedAt: { type: 'string', format: 'date-time' }
-      }
-    }
+        updatedAt: { type: 'string', format: 'date-time' },
+      },
+    },
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 403, description: 'Forbidden - requires moderator or admin role' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - requires moderator or admin role',
+  })
   @ApiResponse({ status: 404, description: 'Faction not found' })
   @Roles(UserRole.MODERATOR, UserRole.ADMIN)
   update(@Param('id') id: number, @Body() data: UpdateFactionDto) {
@@ -141,7 +200,7 @@ export class FactionsController {
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Delete faction',
-    description: 'Delete a faction (requires moderator or admin role)'
+    description: 'Delete a faction (requires moderator or admin role)',
   })
   @ApiParam({ name: 'id', description: 'Faction ID', example: 1 })
   @ApiResponse({
@@ -150,12 +209,15 @@ export class FactionsController {
     schema: {
       type: 'object',
       properties: {
-        message: { type: 'string', example: 'Faction deleted successfully' }
-      }
-    }
+        message: { type: 'string', example: 'Faction deleted successfully' },
+      },
+    },
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 403, description: 'Forbidden - requires moderator or admin role' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - requires moderator or admin role',
+  })
   @ApiResponse({ status: 404, description: 'Faction not found' })
   @Roles(UserRole.MODERATOR, UserRole.ADMIN)
   remove(@Param('id') id: number) {

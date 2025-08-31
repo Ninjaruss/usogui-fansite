@@ -2,15 +2,15 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Gamble } from '../../../entities/gamble.entity';
 
 export class GamblePopularityDto {
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'The gamble object with chapter details',
-    type: () => Gamble
+    type: () => Gamble,
   })
   gamble: Gamble;
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Number of users who selected this gamble as their favorite',
-    example: 3
+    example: 3,
   })
   userCount: number;
 }

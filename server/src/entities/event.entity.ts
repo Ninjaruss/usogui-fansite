@@ -1,4 +1,16 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, ManyToMany, JoinTable, Index, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  OneToMany,
+  ManyToMany,
+  JoinTable,
+  JoinColumn,
+  Index,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { Arc } from './arc.entity';
 import { Character } from './character.entity';
 import { User } from './user.entity';
@@ -12,13 +24,13 @@ export enum EventType {
   DEATH = 'death',
   BACKSTORY = 'backstory',
   PLOT = 'plot',
-  OTHER = 'other'
+  OTHER = 'other',
 }
 
 // Interface for chapter references with context
 export interface ChapterReference {
   chapterNumber: number;
-  context: string;  // e.g., "Page 15 - Character introduction" or "Final scene - Important dialogue"
+  context: string; // e.g., "Page 15 - Character introduction" or "Final scene - Important dialogue"
 }
 
 @Entity()
@@ -33,16 +45,17 @@ export class Event {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Title of the event',
-    example: 'The 17 Steps Tournament'
+    example: 'The 17 Steps Tournament',
   })
   @Column({ length: 200 })
   title: string;
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Detailed description of the event',
-    example: 'A high-stakes tournament where participants must climb 17 steps...'
+    example:
+      'A high-stakes tournament where participants must climb 17 steps...',
   })
   @Column({ type: 'text', nullable: false })
   description: string;
@@ -51,79 +64,89 @@ export class Event {
     description: 'Type of event',
     enum: EventType,
     default: EventType.OTHER,
-    example: EventType.ARC
+    example: EventType.ARC,
   })
   @Column({
     type: 'enum',
     enum: EventType,
-    default: EventType.OTHER
+    default: EventType.OTHER,
   })
   type: EventType;
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Chapter where the event starts',
-    example: 45
+    example: 45,
   })
   @Column()
   startChapter: number;
 
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     description: 'Chapter where the event ends',
-    example: 52
+    example: 52,
   })
   @Column({ nullable: true })
   endChapter: number;
 
-  @ApiPropertyOptional({ 
-    description: 'Chapter number the user should have read before seeing this event (spoiler protection)',
-    example: 44
+  @ApiPropertyOptional({
+    description:
+      'Chapter number the user should have read before seeing this event (spoiler protection)',
+    example: 44,
   })
   @Column({ nullable: true })
   spoilerChapter: number;
 
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     description: 'Page numbers where this event occurs or is referenced',
-    example: [15, 22, 35]
+    example: [15, 22, 35],
   })
   @Column('json', { nullable: true })
   pageNumbers: number[];
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Whether this event has been verified by moderators',
-    example: true
+    example: true,
   })
   @Column({ default: false })
   isVerified: boolean;
 
-  @ApiPropertyOptional({ 
-    description: 'List of chapter references with context for additional reading',
+  @ApiPropertyOptional({
+    description:
+      'List of chapter references with context for additional reading',
     example: [
-      { chapterNumber: 10, context: "Page 8 - Character background revealed" },
-      { chapterNumber: 12, context: "Final scene - Important foreshadowing" }
-    ]
+      { chapterNumber: 10, context: 'Page 8 - Character background revealed' },
+      { chapterNumber: 12, context: 'Final scene - Important foreshadowing' },
+    ],
   })
   @Column('json', { nullable: true })
   chapterReferences: ChapterReference[];
 
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     description: 'Story arc this event belongs to',
-    type: () => Arc
+    type: () => Arc,
   })
   @ManyToOne(() => Arc, { nullable: true })
+  @JoinColumn({ name: 'arcId' })
   arc: Arc;
 
-  @ApiProperty({ 
+  @ApiPropertyOptional({
+    description: 'ID of the arc this event belongs to',
+    example: 1,
+  })
+  @Column({ nullable: true })
+  arcId: number;
+
+  @ApiProperty({
     description: 'Characters involved in this event',
-    type: () => [Character]
+    type: () => [Character],
   })
   @ManyToMany(() => Character)
   @JoinTable()
   characters: Character[];
 
-  @ManyToOne(() => User, user => user.submittedEvents, { nullable: true })
+  @ManyToOne(() => User, (user) => user.submittedEvents, { nullable: true })
   createdBy: User;
 
-  @ManyToMany(() => Tag, tag => tag.events)
+  @ManyToMany(() => Tag, (tag) => tag.events)
   tags: Tag[];
 
   @ApiProperty({ description: 'When this event was created' })

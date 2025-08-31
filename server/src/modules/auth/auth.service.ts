@@ -8,7 +8,7 @@ import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
-  private readonly isTestUser = (email: string) => 
+  private readonly isTestUser = (email: string) =>
     email === 'testuser@example.com';
 
   constructor(
@@ -51,34 +51,54 @@ export class AuthService {
     return {
       access_token,
       refresh_token: refreshToken,
-      user: { id: user.id, username: user.username, email: user.email, role: user.role },
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+      },
     };
   }
 
   // Refresh access token using a stored refresh token
   async refreshAccessToken(refreshToken: string) {
-    if (!refreshToken) throw new UnauthorizedException('No refresh token provided');
+    if (!refreshToken)
+      throw new UnauthorizedException('No refresh token provided');
     const user = await this.usersService.findByRefreshToken(refreshToken);
     if (!user) throw new UnauthorizedException('Invalid refresh token');
     const access_token = this.signToken(user);
-    return { access_token, user: { id: user.id, username: user.username, email: user.email, role: user.role } };
+    return {
+      access_token,
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+      },
+    };
   }
 
   // --- Registration ---
   async register(data: { username: string; email: string; password: string }) {
     const user = await this.usersService.create(data);
-    const token = await this.usersService.generateEmailVerificationToken(user.id);
+    const token = await this.usersService.generateEmailVerificationToken(
+      user.id,
+    );
 
     // For test user, return token directly instead of sending email
     if (this.isTestUser(data.email)) {
-      return { 
-        message: 'Registration successful. Test user - use this token to verify email.',
-        token 
+      return {
+        message:
+          'Registration successful. Test user - use this token to verify email.',
+        token,
       };
     }
 
     await this.emailService.sendEmailVerification(data.email, token);
-    return { message: 'Registration successful. Please check your email to verify your account.' };
+    return {
+      message:
+        'Registration successful. Please check your email to verify your account.',
+    };
   }
 
   // --- Verify email ---
@@ -93,14 +113,18 @@ export class AuthService {
 
     // For test user, return token directly instead of sending email
     if (this.isTestUser(email)) {
-      return { 
-        message: 'Password reset request received. Test user - use this token to reset password.',
-        token 
+      return {
+        message:
+          'Password reset request received. Test user - use this token to reset password.',
+        token,
       };
     }
 
     await this.emailService.sendPasswordReset(email, token);
-    return { message: 'If an account exists with this email, a password reset link has been sent.' };
+    return {
+      message:
+        'If an account exists with this email, a password reset link has been sent.',
+    };
   }
 
   async resetPassword(token: string, newPassword: string) {

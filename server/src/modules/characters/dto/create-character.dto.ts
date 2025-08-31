@@ -1,10 +1,21 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsNumber, IsArray, IsOptional, IsNotEmpty, MinLength, MaxLength, Min, ArrayMaxSize, ArrayMinSize } from 'class-validator';
+import {
+  IsString,
+  IsNumber,
+  IsArray,
+  IsOptional,
+  IsNotEmpty,
+  MinLength,
+  MaxLength,
+  Min,
+  ArrayMaxSize,
+  ArrayMinSize,
+} from 'class-validator';
 
 export class CreateCharacterDto {
-  @ApiProperty({ 
-    description: 'Character\'s primary name',
-    example: 'Baku Madarame'
+  @ApiProperty({
+    description: "Character's primary name",
+    example: 'Baku Madarame',
   })
   @IsString()
   @IsNotEmpty()
@@ -12,9 +23,9 @@ export class CreateCharacterDto {
   @MaxLength(100)
   name: string;
 
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     description: 'Alternative names or aliases',
-    example: ['The Emperor', 'Death God']
+    example: ['The Emperor', 'Death God'],
   })
   @IsArray()
   @IsString({ each: true })
@@ -23,25 +34,25 @@ export class CreateCharacterDto {
   @MaxLength(100, { each: true })
   alternateNames?: string[];
 
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     description: 'Character description',
-    example: 'A professional gambler known for taking on dangerous bets.'
+    example: 'A professional gambler known for taking on dangerous bets.',
   })
   @IsString()
   @IsOptional()
   @MaxLength(5000) // Reasonable limit for description
   description?: string;
 
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     description: 'First chapter appearance number',
-    example: 1
+    example: 1,
   })
   @IsNumber()
   @IsOptional()
   @Min(1)
   firstAppearanceChapter?: number;
 
-  @ApiPropertyOptional({ description: 'Character\'s roles' })
+  @ApiPropertyOptional({ description: "Character's roles" })
   @IsArray()
   @IsString({ each: true })
   @IsOptional()

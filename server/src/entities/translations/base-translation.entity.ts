@@ -1,4 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { Language } from './translation-types';
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -8,29 +14,29 @@ export abstract class BaseTranslation {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Language of the translation',
     enum: Language,
     default: Language.EN,
-    example: Language.EN
+    example: Language.EN,
   })
   @Column({
     type: 'enum',
     enum: Language,
-    default: Language.EN
+    default: Language.EN,
   })
   language: Language;
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Creation timestamp',
-    type: Date 
+    type: Date,
   })
   @CreateDateColumn()
   createdAt: Date;
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Last update timestamp',
-    type: Date
+    type: Date,
   })
   @UpdateDateColumn()
   updatedAt: Date;

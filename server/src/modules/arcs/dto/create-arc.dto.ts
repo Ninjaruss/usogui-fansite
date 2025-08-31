@@ -1,60 +1,68 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsNumber, IsOptional, IsNotEmpty, MinLength, MaxLength, Min } from 'class-validator';
+import {
+  IsString,
+  IsNumber,
+  IsOptional,
+  IsNotEmpty,
+  MinLength,
+  MaxLength,
+  Min,
+} from 'class-validator';
 
 export class CreateArcDto {
   @IsString()
   @IsNotEmpty()
   @MinLength(3)
   @MaxLength(100)
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Name of the story arc',
-    example: '17 Steps Tournament Arc'
+    example: '17 Steps Tournament Arc',
   })
   name: string;
 
   @IsNumber()
   @IsNotEmpty()
   @Min(0)
-  @ApiProperty({ 
-  description: 'Order of the arc',
+  @ApiProperty({
+    description: 'Order of the arc',
     default: 0,
-    example: 1
+    example: 1,
   })
   order: number;
 
   @IsString()
   @IsOptional()
   @MaxLength(5000)
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     description: 'Description of the arc',
-    example: 'A high-stakes tournament arc where participants must climb 17 steps...'
+    example:
+      'A high-stakes tournament arc where participants must climb 17 steps...',
   })
   description?: string;
 
   @IsNumber()
   @IsNotEmpty()
   @Min(1)
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'ID of the related collection this arc belongs to',
-    example: 1
+    example: 1,
   })
   // (series concept removed)
-
   @IsNumber()
   @IsOptional()
   @Min(1)
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     description: 'Chapter number where this arc starts',
-    example: 1
+    example: 1,
   })
   startChapter?: number;
 
   @IsNumber()
   @IsOptional()
   @Min(1)
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     description: 'Chapter number where this arc ends',
-    example: 10
+    example: 10,
   })
   endChapter?: number;
 }

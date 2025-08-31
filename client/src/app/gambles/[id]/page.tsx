@@ -26,6 +26,12 @@ interface Gamble {
   rules: string
   winCondition?: string
   chapterId: number
+  chapter?: {
+    id: number
+    number: number
+    title: string | null
+    summary: string | null
+  }
   hasTeams: boolean
   teams?: Array<{
     id: number
@@ -148,7 +154,10 @@ export default function GambleDetailsPage() {
           </Typography>
           <Box sx={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: 1, mb: 2 }}>
             <Chip
-              label={`Chapter ${gamble.chapterId}`}
+              label={gamble.chapter 
+                ? `Chapter ${gamble.chapter.number}${gamble.chapter.title ? `: ${gamble.chapter.title}` : ''}`
+                : `Chapter ${gamble.chapterId}`
+              }
               color="primary"
               variant="outlined"
             />
@@ -239,8 +248,16 @@ export default function GambleDetailsPage() {
                     Chapter
                   </Typography>
                   <Typography variant="body1">
-                    {gamble.chapterId}
+                    {gamble.chapter 
+                      ? `${gamble.chapter.number}${gamble.chapter.title ? ` - ${gamble.chapter.title}` : ''}`
+                      : gamble.chapterId
+                    }
                   </Typography>
+                  {gamble.chapter?.summary && (
+                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1, fontStyle: 'italic' }}>
+                      {gamble.chapter.summary}
+                    </Typography>
+                  )}
                 </Box>
 
                 {gamble.hasTeams && gamble.teams && gamble.teams.length > 0 && (

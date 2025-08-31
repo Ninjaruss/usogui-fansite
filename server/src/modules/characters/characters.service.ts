@@ -5,22 +5,36 @@ import { Character } from '../../entities/character.entity';
 
 @Injectable()
 export class CharactersService {
-  constructor(@InjectRepository(Character) private repo: Repository<Character>) {}
+  constructor(
+    @InjectRepository(Character) private repo: Repository<Character>,
+  ) {}
 
   /**
    * Pagination: page (default 1), limit (default 20)
    */
-  async findAll(filters: { name?: string; arc?: string; description?: string; page?: number; limit?: number; sort?: string; order?: 'ASC' | 'DESC' }) {
+  async findAll(filters: {
+    name?: string;
+    arc?: string;
+    description?: string;
+    page?: number;
+    limit?: number;
+    sort?: string;
+    order?: 'ASC' | 'DESC';
+  }) {
     const { page = 1, limit = 20, sort, order = 'ASC' } = filters;
-  const query = this.repo.createQueryBuilder('character');
+    const query = this.repo.createQueryBuilder('character');
 
     if (filters.name) {
-      query.andWhere('LOWER(character.name) LIKE LOWER(:name)', { name: `%${filters.name}%` });
+      query.andWhere('LOWER(character.name) LIKE LOWER(:name)', {
+        name: `%${filters.name}%`,
+      });
     }
-  // `arc` relation does not exist on Character entity; skip arc filtering
-  // series removed
+    // `arc` relation does not exist on Character entity; skip arc filtering
+    // series removed
     if (filters.description) {
-      query.andWhere('LOWER(character.description) LIKE LOWER(:description)', { description: `%${filters.description}%` });
+      query.andWhere('LOWER(character.description) LIKE LOWER(:description)', {
+        description: `%${filters.description}%`,
+      });
     }
 
     // Sorting: only allow certain fields for safety

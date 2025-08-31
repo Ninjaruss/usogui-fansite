@@ -1,18 +1,27 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, Index } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  CreateDateColumn,
+  Index,
+  JoinColumn,
+} from 'typeorm';
 import { Character } from './character.entity';
 import { User } from './user.entity';
+import { Event } from './event.entity';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export enum MediaType {
   IMAGE = 'image',
   VIDEO = 'video',
-  AUDIO = 'audio'
+  AUDIO = 'audio',
 }
 
 export enum MediaStatus {
   PENDING = 'pending',
   APPROVED = 'approved',
-  REJECTED = 'rejected'
+  REJECTED = 'rejected',
 }
 
 @Entity()
@@ -23,47 +32,73 @@ export class Media {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ApiProperty({ 
-    description: 'URL of the media content. Videos must be from YouTube, images must be from DeviantArt, Pixiv, Twitter, or Instagram',
-    example: 'https://www.youtube.com/watch?v=example'
+  @ApiProperty({
+    description:
+      'URL of the media content. Videos must be from YouTube, images must be from DeviantArt, Pixiv, Twitter, or Instagram',
+    example: 'https://www.youtube.com/watch?v=example',
   })
   @Column({ length: 2000 })
   url: string;
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Type of media content',
     enum: MediaType,
-    example: MediaType.VIDEO
+    example: MediaType.VIDEO,
   })
   @Column({ type: 'enum', enum: MediaType })
   type: MediaType;
 
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     description: 'Description of the media content',
-    example: 'Character illustration from Chapter 45'
+    example: 'Character illustration from Chapter 45',
   })
   @Column({ nullable: true, length: 500 })
   description: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Character this media belongs to',
-    type: () => Character
+    type: () => Character,
   })
-  @ManyToOne(() => Character, character => character.media, { onDelete: 'CASCADE', nullable: true })
+  @ManyToOne(() => Character, (character) => character.media, {
+    onDelete: 'CASCADE',
+    nullable: true,
+  })
+  @JoinColumn({ name: 'characterId' })
   character: Character;
-  
 
-  @ApiProperty({ 
+  @ApiPropertyOptional({
+    description: 'ID of the character this media belongs to',
+    example: 1,
+  })
+  @Column({ nullable: true })
+  characterId: number;
+
+  @ApiPropertyOptional({
+    description: 'Event this media belongs to',
+    type: () => Event,
+  })
+  @ManyToOne(() => Event, { nullable: true })
+  @JoinColumn({ name: 'eventId' })
+  event: Event;
+
+  @ApiPropertyOptional({
+    description: 'ID of the event this media belongs to',
+    example: 1,
+  })
+  @Column({ nullable: true })
+  eventId: number;
+
+  @ApiProperty({
     description: 'Current status of the media',
     enum: MediaStatus,
-    default: MediaStatus.PENDING
+    default: MediaStatus.PENDING,
   })
   @Column({ type: 'enum', enum: MediaStatus, default: MediaStatus.PENDING })
   status: MediaStatus;
 
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     description: 'Reason for rejection if the media was rejected',
-    example: 'Image contains inappropriate content'
+    example: 'Image contains inappropriate content',
   })
   @Column({ nullable: true, length: 500 })
   rejectionReason: string;
@@ -74,7 +109,7 @@ export class Media {
 
   @ApiProperty({
     description: 'User who submitted this media',
-    type: () => User
+    type: () => User,
   })
   @ManyToOne(() => User, { nullable: false })
   submittedBy: User;

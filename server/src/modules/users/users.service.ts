@@ -1,4 +1,9 @@
-import { Injectable, ConflictException, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  ConflictException,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
@@ -16,14 +21,25 @@ export class UsersService {
     @InjectRepository(User) private readonly repo: Repository<User>,
     @InjectRepository(Quote) private readonly quoteRepo: Repository<Quote>,
     @InjectRepository(Gamble) private readonly gambleRepo: Repository<Gamble>,
-    @InjectRepository(ProfileImage) private readonly profileImageRepo: Repository<ProfileImage>,
+    @InjectRepository(ProfileImage)
+    private readonly profileImageRepo: Repository<ProfileImage>,
   ) {}
 
   // --- Find methods ---
-  async findAll(filters: { page?: number; limit?: number } = {}): Promise<{ data: User[]; total: number; page: number; perPage: number; totalPages: number }> {
+  async findAll(filters: { page?: number; limit?: number } = {}): Promise<{
+    data: User[];
+    total: number;
+    page: number;
+    perPage: number;
+    totalPages: number;
+  }> {
     const { page = 1, limit = 1000 } = filters;
     const skip = (page - 1) * limit;
-    const [data, total] = await this.repo.createQueryBuilder('user').skip(skip).take(limit).getManyAndCount();
+    const [data, total] = await this.repo
+      .createQueryBuilder('user')
+      .skip(skip)
+      .take(limit)
+      .getManyAndCount();
     const totalPages = Math.max(1, Math.ceil(total / limit));
     return { data, total, page, perPage: limit, totalPages };
   }
@@ -42,14 +58,19 @@ export class UsersService {
       .groupBy('user.role')
       .getRawMany();
 
-    const totalUsers = stats.reduce((acc, curr) => acc + parseInt(curr.count), 0);
-    const verifiedUsers = await this.repo.count({ where: { isEmailVerified: true } });
+    const totalUsers = stats.reduce(
+      (acc, curr) => acc + parseInt(curr.count),
+      0,
+    );
+    const verifiedUsers = await this.repo.count({
+      where: { isEmailVerified: true },
+    });
 
     return {
       totalUsers,
       verifiedUsers,
       roleDistribution: stats,
-      registrationsByMonth: await this.getRegistrationsByMonth()
+      registrationsByMonth: await this.getRegistrationsByMonth(),
     };
   }
 
@@ -76,12 +97,12 @@ export class UsersService {
         email: user.email,
         role: user.role,
         isEmailVerified: user.isEmailVerified,
-        createdAt: user.createdAt
+        createdAt: user.createdAt,
       },
       mediaActivity: {
         total: mediaStats.reduce((acc, curr) => acc + parseInt(curr.count), 0),
-        byStatus: mediaStats
-      }
+        byStatus: mediaStats,
+      },
     };
   }
 
@@ -113,7 +134,11 @@ export class UsersService {
   }
 
   // --- Create user ---
-  async create(data: { username: string; email: string; password: string }): Promise<User> {
+  async create(data: {
+    username: string;
+    email: string;
+    password: string;
+  }): Promise<User> {
     const existingUsername = await this.findByUsername(data.username);
     if (existingUsername) throw new ConflictException('Username already taken');
 
@@ -165,7 +190,7 @@ export class UsersService {
 
     const token = randomBytes(32).toString('hex');
     user.passwordResetToken = token;
-    
+
     // Set expiration to 1 hour from now
     const expiresDate = new Date();
     expiresDate.setHours(expiresDate.getHours() + 1);
@@ -177,7 +202,11 @@ export class UsersService {
 
   async resetPassword(token: string, newPassword: string): Promise<void> {
     const user = await this.findByPasswordResetToken(token);
-    if (!user || !user.passwordResetExpires || user.passwordResetExpires < new Date()) {
+    if (
+      !user ||
+      !user.passwordResetExpires ||
+      user.passwordResetExpires < new Date()
+    ) {
       throw new BadRequestException('Invalid or expired token');
     }
 
@@ -221,7 +250,10 @@ export class UsersService {
   }
 
   // --- Profile customization methods ---
-  async updateProfile(userId: number, updateProfileDto: UpdateProfileDto): Promise<User> {
+  async updateProfile(
+    userId: number,
+    updateProfileDto: UpdateProfileDto,
+  ): Promise<User> {
     const user = await this.findOne(userId);
 
     // Validate and update profile image if provided
@@ -229,11 +261,13 @@ export class UsersService {
       if (updateProfileDto.profileImageId === null) {
         user.profileImageId = null;
       } else {
-        const profileImage = await this.profileImageRepo.findOne({ 
-          where: { id: updateProfileDto.profileImageId, isActive: true } 
+        const profileImage = await this.profileImageRepo.findOne({
+          where: { id: updateProfileDto.profileImageId, isActive: true },
         });
         if (!profileImage) {
-          throw new NotFoundException(`Profile image with id ${updateProfileDto.profileImageId} not found or is inactive`);
+          throw new NotFoundException(
+            `Profile image with id ${updateProfileDto.profileImageId} not found or is inactive`,
+          );
         }
         user.profileImageId = updateProfileDto.profileImageId;
       }
@@ -244,9 +278,13 @@ export class UsersService {
       if (updateProfileDto.favoriteQuoteId === null) {
         user.favoriteQuoteId = null;
       } else {
-        const quote = await this.quoteRepo.findOne({ where: { id: updateProfileDto.favoriteQuoteId } });
+        const quote = await this.quoteRepo.findOne({
+          where: { id: updateProfileDto.favoriteQuoteId },
+        });
         if (!quote) {
-          throw new NotFoundException(`Quote with id ${updateProfileDto.favoriteQuoteId} not found`);
+          throw new NotFoundException(
+            `Quote with id ${updateProfileDto.favoriteQuoteId} not found`,
+          );
         }
         user.favoriteQuoteId = updateProfileDto.favoriteQuoteId;
       }
@@ -257,9 +295,13 @@ export class UsersService {
       if (updateProfileDto.favoriteGambleId === null) {
         user.favoriteGambleId = null;
       } else {
-        const gamble = await this.gambleRepo.findOne({ where: { id: updateProfileDto.favoriteGambleId } });
+        const gamble = await this.gambleRepo.findOne({
+          where: { id: updateProfileDto.favoriteGambleId },
+        });
         if (!gamble) {
-          throw new NotFoundException(`Gamble with id ${updateProfileDto.favoriteGambleId} not found`);
+          throw new NotFoundException(
+            `Gamble with id ${updateProfileDto.favoriteGambleId} not found`,
+          );
         }
         user.favoriteGambleId = updateProfileDto.favoriteGambleId;
       }
@@ -269,7 +311,10 @@ export class UsersService {
     return this.getUserProfile(userId);
   }
 
-  async updateUserProgress(userId: number, userProgress: number): Promise<void> {
+  async updateUserProgress(
+    userId: number,
+    userProgress: number,
+  ): Promise<void> {
     const user = await this.findOne(userId);
     user.userProgress = userProgress;
     await this.repo.save(user);
@@ -279,14 +324,14 @@ export class UsersService {
     const user = await this.repo.findOne({
       where: { id: userId },
       relations: [
-        'profileImage', 
+        'profileImage',
         'profileImage.character',
-        'favoriteQuote', 
-        'favoriteQuote.character', 
- 
-        'favoriteGamble', 
-        'favoriteGamble.chapter'
-      ]
+        'favoriteQuote',
+        'favoriteQuote.character',
+
+        'favoriteGamble',
+        'favoriteGamble.chapter',
+      ],
     });
 
     if (!user) {
@@ -300,15 +345,17 @@ export class UsersService {
     return this.profileImageRepo.find({
       where: { isActive: true },
       relations: ['character'],
-      order: { 
-        characterId: 'ASC', 
+      order: {
+        characterId: 'ASC',
         sortOrder: 'ASC',
-        displayName: 'ASC'
-      }
+        displayName: 'ASC',
+      },
     });
   }
 
-  async getQuotePopularityStats(): Promise<Array<{ quote: Quote; userCount: number }>> {
+  async getQuotePopularityStats(): Promise<
+    Array<{ quote: Quote; userCount: number }>
+  > {
     const stats = await this.repo
       .createQueryBuilder('user')
       .select('user.favoriteQuoteId', 'quoteId')
@@ -323,13 +370,13 @@ export class UsersService {
     for (const stat of stats) {
       const quote = await this.quoteRepo.findOne({
         where: { id: stat.quoteId },
-        relations: ['character']
+        relations: ['character'],
       });
-      
+
       if (quote) {
         result.push({
           quote,
-          userCount: parseInt(stat.userCount)
+          userCount: parseInt(stat.userCount),
         });
       }
     }
@@ -337,7 +384,9 @@ export class UsersService {
     return result;
   }
 
-  async getGamblePopularityStats(): Promise<Array<{ gamble: Gamble; userCount: number }>> {
+  async getGamblePopularityStats(): Promise<
+    Array<{ gamble: Gamble; userCount: number }>
+  > {
     const stats = await this.repo
       .createQueryBuilder('user')
       .select('user.favoriteGambleId', 'gambleId')
@@ -352,13 +401,13 @@ export class UsersService {
     for (const stat of stats) {
       const gamble = await this.gambleRepo.findOne({
         where: { id: stat.gambleId },
-        relations: ['chapter']
+        relations: ['chapter'],
       });
-      
+
       if (gamble) {
         result.push({
           gamble,
-          userCount: parseInt(stat.userCount)
+          userCount: parseInt(stat.userCount),
         });
       }
     }
@@ -384,18 +433,21 @@ export class UsersService {
       .orderBy('userCount', 'DESC')
       .getRawMany();
 
-    const imageStatsWithDetails: Array<{ profileImage: ProfileImage; userCount: number }> = [];
+    const imageStatsWithDetails: Array<{
+      profileImage: ProfileImage;
+      userCount: number;
+    }> = [];
 
     for (const stat of profileImageStats) {
       const profileImage = await this.profileImageRepo.findOne({
         where: { id: stat.profileImageId },
-        relations: ['character']
+        relations: ['character'],
       });
-      
+
       if (profileImage) {
         imageStatsWithDetails.push({
           profileImage,
-          userCount: parseInt(stat.userCount)
+          userCount: parseInt(stat.userCount),
         });
       }
     }
@@ -405,12 +457,12 @@ export class UsersService {
       .createQueryBuilder('user')
       .where('user.profileImageId IS NOT NULL')
       .getCount();
-      
+
     const totalWithFavoriteQuote = await this.repo
       .createQueryBuilder('user')
       .where('user.favoriteQuoteId IS NOT NULL')
       .getCount();
-      
+
     const totalWithFavoriteGamble = await this.repo
       .createQueryBuilder('user')
       .where('user.favoriteGambleId IS NOT NULL')
@@ -421,8 +473,8 @@ export class UsersService {
       totalUsersWithCustomization: {
         profileImage: totalWithProfileImage,
         favoriteQuote: totalWithFavoriteQuote,
-        favoriteGamble: totalWithFavoriteGamble
-      }
+        favoriteGamble: totalWithFavoriteGamble,
+      },
     };
   }
 

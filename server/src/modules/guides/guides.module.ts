@@ -5,9 +5,10 @@ import { GuidesController } from './guides.controller';
 import { Guide } from '../../entities/guide.entity';
 import { GuideLike } from '../../entities/guide-like.entity';
 import { Tag } from '../../entities/tag.entity';
+import { User } from '../../entities/user.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Guide, GuideLike, Tag])],
+  imports: [TypeOrmModule.forFeature([Guide, GuideLike, Tag, User])],
   controllers: [GuidesController],
   providers: [GuidesService],
   exports: [GuidesService],

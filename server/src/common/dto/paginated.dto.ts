@@ -10,4 +10,3 @@ export class PaginatedDto<T = any> {
   totalPages: number;
   links?: { next?: string; prev?: string };
 }
-

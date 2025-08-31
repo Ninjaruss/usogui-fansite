@@ -2,49 +2,49 @@ import { ApiProperty } from '@nestjs/swagger';
 import { ProfileImage } from '../../../entities/profile-image.entity';
 
 export class ProfileImageStatsDto {
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Profile image details',
-    type: () => ProfileImage
+    type: () => ProfileImage,
   })
   profileImage: ProfileImage;
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Number of users using this profile image',
-    example: 10
+    example: 10,
   })
   userCount: number;
 }
 
 export class CustomizationTotalsDto {
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Total users with custom profile images',
-    example: 25
+    example: 25,
   })
   profileImage: number;
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Total users with favorite quotes set',
-    example: 18
+    example: 18,
   })
   favoriteQuote: number;
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Total users with favorite gambles set',
-    example: 12
+    example: 12,
   })
   favoriteGamble: number;
 }
 
 export class ProfileCustomizationStatsDto {
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Statistics for profile image usage',
-    type: [ProfileImageStatsDto]
+    type: [ProfileImageStatsDto],
   })
   profileImageStats: ProfileImageStatsDto[];
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Total counts for each type of customization',
-    type: CustomizationTotalsDto
+    type: CustomizationTotalsDto,
   })
   totalUsersWithCustomization: CustomizationTotalsDto;
 }

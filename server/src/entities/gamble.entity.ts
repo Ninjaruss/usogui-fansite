@@ -1,5 +1,17 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, ManyToOne, OneToMany, JoinTable, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToMany,
+  ManyToOne,
+  OneToMany,
+  JoinTable,
+  JoinColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { Character } from './character.entity';
+import { Chapter } from './chapter.entity';
 import { GambleCharacter } from './gamble-character.entity';
 import { GambleRound } from './gamble-round.entity';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
@@ -10,66 +22,80 @@ export class Gamble {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Name of the gamble',
-    example: 'Protoporos'
+    example: 'Protoporos',
   })
   @Column()
   name: string;
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Rules of the gamble',
-    example: 'Two players take turns removing stones from a pile...'
+    example: 'Two players take turns removing stones from a pile...',
   })
   @Column({ type: 'text' })
   rules: string;
 
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     description: 'Condition for winning the gamble',
-    example: 'The player who removes the last stone loses'
+    example: 'The player who removes the last stone loses',
   })
   @Column({ type: 'text', nullable: true })
   winCondition?: string;
 
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     description: 'Characters participating in this gamble',
-    type: () => [GambleCharacter]
+    type: () => [GambleCharacter],
   })
-  @OneToMany(() => GambleCharacter, participant => participant.gamble, { cascade: true, eager: true })
+  @OneToMany(() => GambleCharacter, (participant) => participant.gamble, {
+    cascade: true,
+    eager: true,
+  })
   participants: GambleCharacter[];
 
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     description: 'Rounds of this gamble',
-    type: () => [GambleRound]
+    type: () => [GambleRound],
   })
-  @OneToMany(() => GambleRound, round => round.gamble, { cascade: true, nullable: true })
+  @OneToMany(() => GambleRound, (round) => round.gamble, {
+    cascade: true,
+    nullable: true,
+  })
   rounds?: GambleRound[];
 
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     description: 'Characters observing this gamble',
-    type: () => [Character]
+    type: () => [Character],
   })
   @ManyToMany(() => Character)
   @JoinTable({ name: 'gamble_observers' })
   observers: Character[];
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Chapter number where this gamble takes place',
-    example: 45
+    example: 45,
   })
   @Column()
   chapterId: number;
 
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
+    description: 'Chapter where this gamble takes place',
+    type: () => Chapter,
+  })
+  @ManyToOne(() => Chapter, { nullable: true })
+  @JoinColumn({ name: 'chapterId' })
+  chapter?: Chapter;
+
+  @ApiPropertyOptional({
     description: 'Whether this gamble uses teams (false for 1v1s)',
-    default: false
+    default: false,
   })
   @Column({ default: false })
   hasTeams: boolean;
 
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     description: 'Winning team name if hasTeams is true',
-    example: 'Team Baku'
+    example: 'Team Baku',
   })
   @Column({ nullable: true })
   winnerTeam?: string;

@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, FindOptionsWhere, Like, In } from 'typeorm';
 import { Guide, GuideStatus } from '../../entities/guide.entity';
@@ -18,11 +23,13 @@ export class GuidesService {
     private readonly guideLikeRepository: Repository<GuideLike>,
     @InjectRepository(Tag)
     private readonly tagRepository: Repository<Tag>,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
   ) {}
 
   async create(createGuideDto: CreateGuideDto, author: User): Promise<Guide> {
     const { tagNames, ...guideData } = createGuideDto;
-    
+
     // Create the guide first
     const guide = this.guideRepository.create({
       ...guideData,
@@ -39,7 +46,13 @@ export class GuidesService {
     return await this.guideRepository.save(guide);
   }
 
-  async findAll(query: GuideQueryDto): Promise<{ data: Guide[], total: number, page: number, perPage: number, totalPages: number }> {
+  async findAll(query: GuideQueryDto): Promise<{
+    data: Guide[];
+    total: number;
+    page: number;
+    perPage: number;
+    totalPages: number;
+  }> {
     const {
       search,
       status,
@@ -48,15 +61,16 @@ export class GuidesService {
       sortBy = 'createdAt',
       sortOrder = 'DESC',
       page = 1,
-      limit = 20
+      limit = 20,
     } = query;
 
-    const queryBuilder = this.guideRepository.createQueryBuilder('guide')
+    const queryBuilder = this.guideRepository
+      .createQueryBuilder('guide')
       .leftJoinAndSelect('guide.author', 'author')
       .leftJoinAndSelect('guide.tags', 'tags')
       .select([
-  'guide.id',
-  'guide.authorId',
+        'guide.id',
+        'guide.authorId',
         'guide.title',
         'guide.description',
         'guide.status',
@@ -67,14 +81,14 @@ export class GuidesService {
         'author.id',
         'author.username',
         'tags.id',
-        'tags.name'
+        'tags.name',
       ]);
 
     // Apply filters
     if (search) {
       queryBuilder.andWhere(
         '(guide.title ILIKE :search OR guide.description ILIKE :search)',
-        { search: `%${search}%` }
+        { search: `%${search}%` },
       );
     }
 
@@ -91,9 +105,15 @@ export class GuidesService {
     }
 
     // Apply sorting
-    const validSortFields = ['createdAt', 'updatedAt', 'viewCount', 'likeCount', 'title'];
+    const validSortFields = [
+      'createdAt',
+      'updatedAt',
+      'viewCount',
+      'likeCount',
+      'title',
+    ];
     if (validSortFields.includes(sortBy)) {
-      queryBuilder.orderBy(`guide.${sortBy}`, sortOrder as 'ASC' | 'DESC');
+      queryBuilder.orderBy(`guide.${sortBy}`, sortOrder);
     } else {
       queryBuilder.orderBy('guide.createdAt', 'DESC');
     }
@@ -103,12 +123,18 @@ export class GuidesService {
     queryBuilder.skip(skip).take(limit);
 
     const [data, total] = await queryBuilder.getManyAndCount();
-  const totalPages = Math.ceil(total / limit);
+    const totalPages = Math.ceil(total / limit);
 
-  return { data, total, page, perPage: limit, totalPages };
+    return { data, total, page, perPage: limit, totalPages };
   }
 
-  async findPublished(query: GuideQueryDto): Promise<{ data: Guide[], total: number, page: number, perPage: number, totalPages: number }> {
+  async findPublished(query: GuideQueryDto): Promise<{
+    data: Guide[];
+    total: number;
+    page: number;
+    perPage: number;
+    totalPages: number;
+  }> {
     return this.findAll({ ...query, status: GuideStatus.PUBLISHED });
   }
 
@@ -124,7 +150,12 @@ export class GuidesService {
 
     // Check if user can view this guide
     if (guide.status === GuideStatus.DRAFT) {
-      if (!currentUser || (currentUser.id !== guide.authorId && currentUser.role !== UserRole.ADMIN && currentUser.role !== UserRole.MODERATOR)) {
+      if (
+        !currentUser ||
+        (currentUser.id !== guide.authorId &&
+          currentUser.role !== UserRole.ADMIN &&
+          currentUser.role !== UserRole.MODERATOR)
+      ) {
         throw new NotFoundException('Guide not found');
       }
     }
@@ -137,8 +168,8 @@ export class GuidesService {
       where: { id, status: GuideStatus.PUBLISHED },
       relations: ['author', 'tags'],
       select: {
-  id: true,
-  authorId: true,
+        id: true,
+        authorId: true,
         title: true,
         description: true,
         content: true,
@@ -148,13 +179,13 @@ export class GuidesService {
         updatedAt: true,
         author: {
           id: true,
-          username: true
+          username: true,
         },
         tags: {
           id: true,
-          name: true
-        }
-      }
+          name: true,
+        },
+      },
     });
 
     if (!guide) {
@@ -164,15 +195,40 @@ export class GuidesService {
     return guide;
   }
 
-  async update(id: number, updateGuideDto: UpdateGuideDto, currentUser: User): Promise<Guide> {
+  async update(
+    id: number,
+    updateGuideDto: UpdateGuideDto,
+    currentUser: User,
+  ): Promise<Guide> {
     const guide = await this.findOne(id, currentUser);
 
     // Check if user can edit this guide
-    if (guide.authorId !== currentUser.id && currentUser.role !== UserRole.ADMIN && currentUser.role !== UserRole.MODERATOR) {
+    if (
+      guide.authorId !== currentUser.id &&
+      currentUser.role !== UserRole.ADMIN &&
+      currentUser.role !== UserRole.MODERATOR
+    ) {
       throw new ForbiddenException('You can only edit your own guides');
     }
 
-    const { tagNames, ...guideData } = updateGuideDto;
+    const { tagNames, authorId, ...guideData } = updateGuideDto;
+
+    // Check if authorId is being changed (admin only)
+    if (authorId !== undefined && authorId !== guide.authorId) {
+      if (currentUser.role !== UserRole.ADMIN) {
+        throw new ForbiddenException('Only admins can change guide ownership');
+      }
+
+      // Verify the new author exists
+      const newAuthor = await this.userRepository.findOne({
+        where: { id: authorId },
+      });
+      if (!newAuthor) {
+        throw new NotFoundException('New author not found');
+      }
+
+      guide.authorId = authorId;
+    }
 
     // Update basic fields
     Object.assign(guide, guideData);
@@ -187,14 +243,30 @@ export class GuidesService {
       }
     }
 
-    return await this.guideRepository.save(guide);
+    const savedGuide = await this.guideRepository.save(guide);
+
+    // Fetch the updated guide with all relations to ensure React Admin gets complete data
+    const updatedGuide = await this.guideRepository.findOne({
+      where: { id: savedGuide.id },
+      relations: ['author', 'tags', 'likes'],
+    });
+
+    if (!updatedGuide) {
+      throw new NotFoundException('Guide not found after update');
+    }
+
+    return updatedGuide;
   }
 
   async remove(id: number, currentUser: User): Promise<void> {
     const guide = await this.findOne(id, currentUser);
 
     // Check if user can delete this guide
-    if (guide.authorId !== currentUser.id && currentUser.role !== UserRole.ADMIN && currentUser.role !== UserRole.MODERATOR) {
+    if (
+      guide.authorId !== currentUser.id &&
+      currentUser.role !== UserRole.ADMIN &&
+      currentUser.role !== UserRole.MODERATOR
+    ) {
       throw new ForbiddenException('You can only delete your own guides');
     }
 
@@ -205,9 +277,12 @@ export class GuidesService {
     await this.guideRepository.increment({ id }, 'viewCount', 1);
   }
 
-  async toggleLike(id: number, user: User): Promise<{ liked: boolean, likeCount: number }> {
-    const guide = await this.guideRepository.findOne({ 
-      where: { id, status: GuideStatus.PUBLISHED } 
+  async toggleLike(
+    id: number,
+    user: User,
+  ): Promise<{ liked: boolean; likeCount: number }> {
+    const guide = await this.guideRepository.findOne({
+      where: { id, status: GuideStatus.PUBLISHED },
     });
 
     if (!guide) {
@@ -216,35 +291,51 @@ export class GuidesService {
 
     // Check if user already liked this guide
     const existingLike = await this.guideLikeRepository.findOne({
-      where: { guideId: id, userId: user.id }
+      where: { guideId: id, userId: user.id },
     });
 
     if (existingLike) {
       // Unlike
       await this.guideLikeRepository.remove(existingLike);
       await this.guideRepository.decrement({ id }, 'likeCount', 1);
-      
-      const updatedGuide = await this.guideRepository.findOne({ where: { id } });
+
+      const updatedGuide = await this.guideRepository.findOne({
+        where: { id },
+      });
       return { liked: false, likeCount: updatedGuide?.likeCount || 0 };
     } else {
       // Like
       const guideLike = this.guideLikeRepository.create({
         guideId: id,
-        userId: user.id
+        userId: user.id,
       });
       await this.guideLikeRepository.save(guideLike);
       await this.guideRepository.increment({ id }, 'likeCount', 1);
-      
-      const updatedGuide = await this.guideRepository.findOne({ where: { id } });
+
+      const updatedGuide = await this.guideRepository.findOne({
+        where: { id },
+      });
       return { liked: true, likeCount: updatedGuide?.likeCount || 1 };
     }
   }
 
-  async getUserLikedGuides(userId: number, query: GuideQueryDto): Promise<{ data: Guide[], total: number, page: number, perPage: number, totalPages: number }> {
+  async getUserLikedGuides(
+    userId: number,
+    query: GuideQueryDto,
+  ): Promise<{
+    data: Guide[];
+    total: number;
+    page: number;
+    perPage: number;
+    totalPages: number;
+  }> {
     const { page = 1, limit = 20 } = query;
 
-    const queryBuilder = this.guideRepository.createQueryBuilder('guide')
-      .innerJoin('guide.likes', 'guideLike', 'guideLike.userId = :userId', { userId })
+    const queryBuilder = this.guideRepository
+      .createQueryBuilder('guide')
+      .innerJoin('guide.likes', 'guideLike', 'guideLike.userId = :userId', {
+        userId,
+      })
       .leftJoinAndSelect('guide.author', 'author')
       .leftJoinAndSelect('guide.tags', 'tags')
       .where('guide.status = :status', { status: GuideStatus.PUBLISHED })
@@ -256,7 +347,7 @@ export class GuidesService {
     const [data, total] = await queryBuilder.getManyAndCount();
     const totalPages = Math.ceil(total / limit);
 
-  return { data, total, page, perPage: limit, totalPages };
+    return { data, total, page, perPage: limit, totalPages };
   }
 
   private async findOrCreateTags(tagNames: string[]): Promise<Tag[]> {
@@ -264,12 +355,15 @@ export class GuidesService {
 
     for (const tagName of tagNames) {
       let tag = await this.tagRepository.findOne({ where: { name: tagName } });
-      
+
       if (!tag) {
-        tag = this.tagRepository.create({ name: tagName, description: `Auto-created tag: ${tagName}` });
+        tag = this.tagRepository.create({
+          name: tagName,
+          description: `Auto-created tag: ${tagName}`,
+        });
         tag = await this.tagRepository.save(tag);
       }
-      
+
       tags.push(tag);
     }
 

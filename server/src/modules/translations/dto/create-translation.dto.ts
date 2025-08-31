@@ -1,12 +1,18 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum, IsOptional, IsString, IsNotEmpty, MaxLength } from 'class-validator';
+import {
+  IsEnum,
+  IsOptional,
+  IsString,
+  IsNotEmpty,
+  MaxLength,
+} from 'class-validator';
 import { Language } from '../../../entities/translations/translation-types';
 
 export class CreateTranslationDto {
   @ApiProperty({
     description: 'Language of the translation',
     enum: Language,
-    example: Language.JA
+    example: Language.JA,
   })
   @IsEnum(Language)
   language: Language;
@@ -14,7 +20,7 @@ export class CreateTranslationDto {
   @ApiPropertyOptional({
     description: 'Translated name/title',
     example: 'ウソウギ',
-    maxLength: 255
+    maxLength: 255,
   })
   @IsOptional()
   @IsString()
@@ -24,7 +30,7 @@ export class CreateTranslationDto {
 
   @ApiPropertyOptional({
     description: 'Translated description',
-    example: '賭博の世界で生きる嘘喰いの物語'
+    example: '賭博の世界で生きる嘘喰いの物語',
   })
   @IsOptional()
   @IsString()
@@ -33,7 +39,7 @@ export class CreateTranslationDto {
   @ApiPropertyOptional({
     description: 'Translated title (for chapters, arcs, etc.)',
     example: '第一話: 嘘と真実',
-    maxLength: 500
+    maxLength: 500,
   })
   @IsOptional()
   @IsString()
@@ -43,7 +49,7 @@ export class CreateTranslationDto {
   @ApiPropertyOptional({
     description: 'Translated subtitle',
     example: '運命の賭け',
-    maxLength: 255
+    maxLength: 255,
   })
   @IsOptional()
   @IsString()
@@ -52,7 +58,7 @@ export class CreateTranslationDto {
 
   @ApiPropertyOptional({
     description: 'Translated summary',
-    example: 'バクが新たな挑戦者と対峙する'
+    example: 'バクが新たな挑戦者と対峙する',
   })
   @IsOptional()
   @IsString()
@@ -60,7 +66,7 @@ export class CreateTranslationDto {
 
   @ApiPropertyOptional({
     description: 'Translated rules or game mechanics',
-    example: '石を取り除くゲーム。最後の石を取った者が負け。'
+    example: '石を取り除くゲーム。最後の石を取った者が負け。',
   })
   @IsOptional()
   @IsString()
@@ -68,7 +74,7 @@ export class CreateTranslationDto {
 
   @ApiPropertyOptional({
     description: 'Translated win condition',
-    example: '相手よりも多くのポイントを獲得する'
+    example: '相手よりも多くのポイントを獲得する',
   })
   @IsOptional()
   @IsString()
@@ -77,7 +83,7 @@ export class CreateTranslationDto {
   @ApiPropertyOptional({
     description: 'Translated role or position',
     example: '主人公',
-    maxLength: 100
+    maxLength: 100,
   })
   @IsOptional()
   @IsString()
@@ -86,7 +92,7 @@ export class CreateTranslationDto {
 
   @ApiPropertyOptional({
     description: 'Translated significance or importance',
-    example: '物語の中心人物'
+    example: '物語の中心人物',
   })
   @IsOptional()
   @IsString()
@@ -95,7 +101,7 @@ export class CreateTranslationDto {
   @ApiPropertyOptional({
     description: 'Translated type or category',
     example: 'アクション',
-    maxLength: 100
+    maxLength: 100,
   })
   @IsOptional()
   @IsString()
@@ -104,7 +110,7 @@ export class CreateTranslationDto {
 
   @ApiPropertyOptional({
     description: 'Translated content or text',
-    example: '「嘘を見抜くのが俺の仕事だ」'
+    example: '「嘘を見抜くのが俺の仕事だ」',
   })
   @IsOptional()
   @IsString()

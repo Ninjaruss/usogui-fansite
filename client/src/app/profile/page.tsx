@@ -27,19 +27,78 @@ export default function ProfilePage() {
   const { user, refreshUser } = useAuth()
   const [selectedQuote, setSelectedQuote] = useState<number | null>(null)
   const [selectedGamble, setSelectedGamble] = useState<number | null>(null)
+  const [selectedProfileImage, setSelectedProfileImage] = useState<string | null>(null)
+  const [selectedChapter, setSelectedChapter] = useState<number>(1)
+  const [currentChapterInfo, setCurrentChapterInfo] = useState<{
+    id: number
+    number: number
+    title: string | null
+    summary: string | null
+  } | null>(null)
+  const [quotes, setQuotes] = useState<Array<{ id: number; text: string; character: string }>>([])
+  const [gambles, setGambles] = useState<Array<{ id: number; name: string; description?: string }>>([])
   const [loading, setLoading] = useState(false)
+  const [progressLoading, setProgressLoading] = useState(false)
+  const [dataLoading, setDataLoading] = useState(true)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // In a real implementation, you'd fetch quotes and gambles from the API
-        // For now, we'll set defaults
+        setDataLoading(true)
+        setError('')
+        
+        // Set user selections
         setSelectedQuote(user?.favoriteQuoteId || null)
         setSelectedGamble(user?.favoriteGambleId || null)
+        setSelectedProfileImage(user?.profileImageId || null)
+        setSelectedChapter(user?.userProgress || 1)
+
+        // Fetch quotes and gambles from API
+        const [quotesResponse, gamblesResponse] = await Promise.all([
+          api.getQuotes({ limit: 100 }),
+          api.getGambles({ limit: 100 })
+        ])
+
+        // Format quotes for display
+        const formattedQuotes = quotesResponse.data.map((quote: any) => ({
+          id: quote.id,
+          text: quote.text,
+          character: quote.character?.name || 'Unknown'
+        }))
+        
+        // Format gambles for display
+        const formattedGambles = gamblesResponse.data.map((gamble: any) => ({
+          id: gamble.id,
+          name: gamble.name,
+          description: gamble.description
+        }))
+
+        setQuotes(formattedQuotes)
+        setGambles(formattedGambles)
+
+        // Fetch current chapter information
+        if (user?.userProgress) {
+          try {
+            const chapterInfo = await api.getChapterByNumber(user.userProgress)
+            setCurrentChapterInfo(chapterInfo)
+          } catch (error) {
+            console.error('Failed to fetch chapter info:', error)
+            // Set fallback info
+            setCurrentChapterInfo({
+              id: 0,
+              number: user.userProgress,
+              title: null,
+              summary: null
+            })
+          }
+        }
       } catch (error) {
         console.error('Failed to fetch profile data:', error)
+        setError('Failed to load profile data. Some features may not work properly.')
+      } finally {
+        setDataLoading(false)
       }
     }
 
@@ -55,6 +114,7 @@ export default function ProfilePage() {
 
     try {
       await api.updateProfile({
+        profileImageId: selectedProfileImage || undefined,
         favoriteQuoteId: selectedQuote || undefined,
         favoriteGambleId: selectedGamble || undefined,
       })
@@ -65,6 +125,32 @@ export default function ProfilePage() {
       setError(error instanceof Error ? error.message : 'Failed to update profile')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleUpdateProgress = async () => {
+    setProgressLoading(true)
+    setError('')
+    setSuccess('')
+
+    try {
+      await api.updateUserProgress(selectedChapter)
+      await refreshUser()
+      setSuccess('Reading progress updated successfully!')
+      
+      // Update chapter info after progress change
+      if (selectedChapter) {
+        try {
+          const chapterInfo = await api.getChapterByNumber(selectedChapter)
+          setCurrentChapterInfo(chapterInfo)
+        } catch (error) {
+          console.error('Failed to fetch updated chapter info:', error)
+        }
+      }
+    } catch (error: unknown) {
+      setError(error instanceof Error ? error.message : 'Failed to update reading progress')
+    } finally {
+      setProgressLoading(false)
     }
   }
 
@@ -159,7 +245,7 @@ export default function ProfilePage() {
                   />
                 </Box>
 
-                <Box sx={{ mb: 2 }}>
+                <Box>
                   <Typography variant="body2" color="text.secondary">
                     Role
                   </Typography>
@@ -169,18 +255,6 @@ export default function ProfilePage() {
                     variant="outlined"
                     icon={user.role === 'admin' || user.role === 'moderator' ? <Crown size={16} /> : undefined}
                   />
-                </Box>
-
-                <Box>
-                  <Typography variant="body2" color="text.secondary">
-                    Reading Progress
-                  </Typography>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
-                    <BookOpen size={16} color="#1976d2" style={{ marginRight: 8 }} />
-                    <Typography variant="h6" color="primary">
-                      Chapter {user.userProgress}
-                    </Typography>
-                  </Box>
                 </Box>
               </CardContent>
             </Card>
@@ -197,7 +271,7 @@ export default function ProfilePage() {
                 </Box>
 
                 <Box sx={{ mb: 3 }}>
-                  <FormControl fullWidth>
+                  <FormControl fullWidth disabled={dataLoading}>
                     <InputLabel>Favorite Quote</InputLabel>
                     <Select
                       value={selectedQuote || ''}
@@ -207,19 +281,17 @@ export default function ProfilePage() {
                       <MenuItem value="">
                         <em>None</em>
                       </MenuItem>
-                      {/* In a real implementation, these would be loaded from the API */}
-                      <MenuItem value={1}>
-                        &ldquo;The only way to truly win is to not play at all.&rdquo; - Baku Madarame
-                      </MenuItem>
-                      <MenuItem value={2}>
-                        &ldquo;In gambling, the house always wins... except when it doesn&apos;t.&rdquo; - Souichi Kiruma
-                      </MenuItem>
+                      {quotes.map((quote) => (
+                        <MenuItem key={quote.id} value={quote.id}>
+                          &ldquo;{quote.text}&rdquo; - {quote.character}
+                        </MenuItem>
+                      ))}
                     </Select>
                   </FormControl>
                 </Box>
 
                 <Box sx={{ mb: 3 }}>
-                  <FormControl fullWidth>
+                  <FormControl fullWidth disabled={dataLoading}>
                     <InputLabel>Favorite Gamble</InputLabel>
                     <Select
                       value={selectedGamble || ''}
@@ -229,11 +301,11 @@ export default function ProfilePage() {
                       <MenuItem value="">
                         <em>None</em>
                       </MenuItem>
-                      {/* In a real implementation, these would be loaded from the API */}
-                      <MenuItem value={1}>17 Steps</MenuItem>
-                      <MenuItem value={2}>One-Card Poker</MenuItem>
-                      <MenuItem value={3}>Doubt</MenuItem>
-                      <MenuItem value={4}>Air Poker</MenuItem>
+                      {gambles.map((gamble) => (
+                        <MenuItem key={gamble.id} value={gamble.id}>
+                          {gamble.name}
+                        </MenuItem>
+                      ))}
                     </Select>
                   </FormControl>
                 </Box>
@@ -242,11 +314,101 @@ export default function ProfilePage() {
                   variant="contained"
                   startIcon={loading ? <CircularProgress size={20} /> : <Save size={20} />}
                   onClick={handleSaveProfile}
-                  disabled={loading}
+                  disabled={loading || dataLoading}
                   fullWidth
                   size="large"
                 >
-                  {loading ? 'Saving...' : 'Save Preferences'}
+                  {loading ? 'Saving...' : dataLoading ? 'Loading...' : 'Save Preferences'}
+                </Button>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          <Grid item xs={12}>
+            <Card className="gambling-card">
+              <CardContent>
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+                  <BookOpen size={24} />
+                  <Typography variant="h5" sx={{ ml: 1 }}>
+                    Reading Progress
+                  </Typography>
+                </Box>
+
+                <Grid container spacing={3} sx={{ mb: 4 }}>
+                  <Grid item xs={12} sm={4}>
+                    <Box sx={{ textAlign: 'center', p: 2, backgroundColor: 'action.hover', borderRadius: 2 }}>
+                      <Typography variant="h3" color="primary" gutterBottom>
+                        {user.userProgress}
+                      </Typography>
+                      <Typography variant="body1" color="text.secondary" sx={{ mb: 1 }}>
+                        Current Chapter
+                      </Typography>
+                      {currentChapterInfo?.title && (
+                        <Typography variant="body2" color="text.secondary" sx={{ 
+                          fontStyle: 'italic',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical'
+                        }}>
+                          &ldquo;{currentChapterInfo.title}&rdquo;
+                        </Typography>
+                      )}
+                    </Box>
+                  </Grid>
+                  <Grid item xs={12} sm={4}>
+                    <Box sx={{ textAlign: 'center', p: 2, backgroundColor: 'action.hover', borderRadius: 2 }}>
+                      <Typography variant="h3" color="secondary" gutterBottom>
+                        {Math.round((user.userProgress / 539) * 100)}%
+                      </Typography>
+                      <Typography variant="body1" color="text.secondary">
+                        Progress Complete
+                      </Typography>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={12} sm={4}>
+                    <Box sx={{ textAlign: 'center', p: 2, backgroundColor: 'action.hover', borderRadius: 2 }}>
+                      <Typography variant="h3" color="warning.main" gutterBottom>
+                        {539 - user.userProgress}
+                      </Typography>
+                      <Typography variant="body1" color="text.secondary">
+                        Chapters Remaining
+                      </Typography>
+                    </Box>
+                  </Grid>
+                </Grid>
+
+                <Box sx={{ mb: 3 }}>
+                  <FormControl fullWidth disabled={dataLoading || progressLoading}>
+                    <InputLabel>Update Current Chapter</InputLabel>
+                    <Select
+                      value={selectedChapter}
+                      label="Update Current Chapter"
+                      onChange={(e) => setSelectedChapter(e.target.value as number)}
+                    >
+                      {Array.from({ length: 539 }, (_, i) => i + 1).map((chapter) => (
+                        <MenuItem key={chapter} value={chapter}>
+                          Chapter {chapter}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                  <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                    Select the highest chapter number you have read (1-539)
+                  </Typography>
+                </Box>
+
+                <Button
+                  variant="contained"
+                  startIcon={progressLoading ? <CircularProgress size={20} /> : <BookOpen size={20} />}
+                  onClick={handleUpdateProgress}
+                  disabled={progressLoading || dataLoading}
+                  fullWidth
+                  size="large"
+                  color="secondary"
+                >
+                  {progressLoading ? 'Updating...' : dataLoading ? 'Loading...' : 'Update Reading Progress'}
                 </Button>
               </CardContent>
             </Card>
@@ -286,11 +448,11 @@ export default function ProfilePage() {
                 </Grid>
                 <Grid item xs={6} sm={3}>
                   <Box sx={{ textAlign: 'center' }}>
-                    <Typography variant="h4" color="warning.main">
-                      {user.userProgress}
+                    <Typography variant="h4" color="info.main">
+                      0
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      Chapters Read
+                      Comments Made
                     </Typography>
                   </Box>
                 </Grid>

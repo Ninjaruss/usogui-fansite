@@ -12,7 +12,7 @@ export class ArcUpdateSeeder implements Seeder {
 
     // Get chapters for arc boundaries
     const chapters = await chapterRepository.find({
-      order: { number: 'ASC' }
+      order: { number: 'ASC' },
     });
 
     if (chapters.length === 0) {
@@ -22,17 +22,21 @@ export class ArcUpdateSeeder implements Seeder {
 
     // Update Introduction Arc
     const introArc = await arcRepository.findOne({
-      where: { name: 'Introduction Arc' }
+      where: { name: 'Introduction Arc' },
     });
 
     if (introArc) {
       const startChapterNumber = 1;
       const endChapterNumber = 3;
-      
+
       // Verify chapters exist
-      const startChapterExists = chapters.find(c => c.number === startChapterNumber);
-      const endChapterExists = chapters.find(c => c.number === endChapterNumber);
-      
+      const startChapterExists = chapters.find(
+        (c) => c.number === startChapterNumber,
+      );
+      const endChapterExists = chapters.find(
+        (c) => c.number === endChapterNumber,
+      );
+
       if (startChapterExists && endChapterExists) {
         introArc.startChapter = startChapterNumber;
         introArc.endChapter = endChapterNumber;
@@ -40,19 +44,24 @@ export class ArcUpdateSeeder implements Seeder {
       }
     }
 
-    // Update Life or Death Game Arc  
+    // Update Life or Death Game Arc
     const gameArc = await arcRepository.findOne({
-      where: { name: 'Life or Death Game Arc'}
+      where: { name: 'Life or Death Game Arc' },
     });
 
     if (gameArc && chapters.length > 1) {
       const startChapterNumber = 4; // Fourth chapter
-      const endChapterNumber = chapters.length > 9 ? 10 : chapters[chapters.length - 1].number;
-      
+      const endChapterNumber =
+        chapters.length > 9 ? 10 : chapters[chapters.length - 1].number;
+
       // Verify chapters exist
-      const startChapterExists = chapters.find(c => c.number === startChapterNumber);
-      const endChapterExists = chapters.find(c => c.number === endChapterNumber);
-      
+      const startChapterExists = chapters.find(
+        (c) => c.number === startChapterNumber,
+      );
+      const endChapterExists = chapters.find(
+        (c) => c.number === endChapterNumber,
+      );
+
       if (startChapterExists && endChapterExists) {
         gameArc.startChapter = startChapterNumber;
         gameArc.endChapter = endChapterNumber;

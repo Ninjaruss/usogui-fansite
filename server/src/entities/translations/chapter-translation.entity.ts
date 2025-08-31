@@ -5,9 +5,9 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 @Entity('chapter_translations')
 export class ChapterTranslation extends BaseTranslation {
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Chapter this translation belongs to',
-    type: () => Chapter
+    type: () => Chapter,
   })
   @ManyToOne(() => Chapter, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'chapter_id' })
@@ -17,15 +17,15 @@ export class ChapterTranslation extends BaseTranslation {
   @Column({ name: 'chapter_id' })
   chapterId: number;
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Translated title of the chapter',
-    example: '賭博師の条件 (Conditions of a Gambler)'
+    example: '賭博師の条件 (Conditions of a Gambler)',
   })
   @Column({ type: 'text' })
   title: string;
 
-  @ApiPropertyOptional({ 
-    description: 'Translated summary of the chapter'
+  @ApiPropertyOptional({
+    description: 'Translated summary of the chapter',
   })
   @Column({ type: 'text', nullable: true })
   summary: string;

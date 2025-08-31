@@ -10,6 +10,7 @@ interface User {
   role: string
   isEmailVerified: boolean
   userProgress: number
+  profileImageId?: string
   favoriteQuoteId?: number
   favoriteGambleId?: number
 }

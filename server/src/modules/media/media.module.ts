@@ -8,10 +8,7 @@ import { EmailModule } from '../email/email.module';
 import { UrlNormalizerService } from './services/url-normalizer.service';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([Media]),
-    EmailModule,
-  ],
+  imports: [TypeOrmModule.forFeature([Media]), EmailModule],
   providers: [MediaService, UrlNormalizerService],
   controllers: [MediaController],
   exports: [MediaService],

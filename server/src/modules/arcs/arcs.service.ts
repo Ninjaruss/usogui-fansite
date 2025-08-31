@@ -9,22 +9,33 @@ import { CreateArcDto } from './dto/create-arc.dto';
 export class ArcsService {
   constructor(
     @InjectRepository(Arc) private repo: Repository<Arc>,
-    @InjectRepository(Chapter) private chapterRepo: Repository<Chapter>
+    @InjectRepository(Chapter) private chapterRepo: Repository<Chapter>,
   ) {}
 
   /**
    * Pagination: page (default 1), limit (default 20)
    */
-  async findAll(filters: { name?: string; description?: string; page?: number; limit?: number; sort?: string; order?: 'ASC' | 'DESC' }) {
+  async findAll(filters: {
+    name?: string;
+    description?: string;
+    page?: number;
+    limit?: number;
+    sort?: string;
+    order?: 'ASC' | 'DESC';
+  }) {
     const { page = 1, limit = 20, sort, order = 'ASC' } = filters;
-  const query = this.repo.createQueryBuilder('arc');
+    const query = this.repo.createQueryBuilder('arc');
 
     if (filters.name) {
-      query.andWhere('LOWER(arc.name) LIKE LOWER(:name)', { name: `%${filters.name}%` });
+      query.andWhere('LOWER(arc.name) LIKE LOWER(:name)', {
+        name: `%${filters.name}%`,
+      });
     }
-  // series removed
+    // series removed
     if (filters.description) {
-      query.andWhere('LOWER(arc.description) LIKE LOWER(:description)', { description: `%${filters.description}%` });
+      query.andWhere('LOWER(arc.description) LIKE LOWER(:description)', {
+        description: `%${filters.description}%`,
+      });
     }
 
     // Sorting: only allow certain fields for safety
@@ -55,7 +66,7 @@ export class ArcsService {
       order: data.order,
       description: data.description,
       startChapter: data.startChapter,
-      endChapter: data.endChapter
+      endChapter: data.endChapter,
     });
     return this.repo.save(arc);
   }
@@ -69,8 +80,8 @@ export class ArcsService {
   }
 
   async getChaptersInArc(arcId: number): Promise<Chapter[]> {
-  const arc = await this.repo.findOne({ where: { id: arcId } });
-    
+    const arc = await this.repo.findOne({ where: { id: arcId } });
+
     if (!arc) {
       throw new NotFoundException(`Arc with id ${arcId} not found`);
     }
@@ -78,12 +89,12 @@ export class ArcsService {
     if (!arc.startChapter || !arc.endChapter) {
       return [];
     }
-    
+
     return this.chapterRepo.find({
       where: {
-        number: Between(arc.startChapter, arc.endChapter)
+        number: Between(arc.startChapter, arc.endChapter),
       },
-      order: { number: 'ASC' }
+      order: { number: 'ASC' },
     });
   }
 }

@@ -18,10 +18,10 @@ export const AppDataSource = new DataSource({
   database: configService.get('DATABASE_NAME'),
   entities: [
     path.join(__dirname, 'entities', '**', '*.entity.{ts,js}'),
-    path.join(__dirname, 'entities', 'translations', '*.entity.{ts,js}')
+    path.join(__dirname, 'entities', 'translations', '*.entity.{ts,js}'),
   ],
   migrations: [path.join(__dirname, 'migrations', '**', '*{.ts,.js}')],
   migrationsTransactionMode: 'all',
   synchronize: false, // Don't enable synchronize in direct data source
-  logging: ["error"]
+  logging: ['error'],
 });

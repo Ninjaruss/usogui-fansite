@@ -7,22 +7,22 @@ export class Chapter {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ApiProperty({ 
-  description: 'Chapter number',
-    example: 1
+  @ApiProperty({
+    description: 'Chapter number',
+    example: 1,
   })
   @Column()
   number: number;
 
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     description: 'Title of the chapter',
-    example: 'The Beginning of Fate'
+    example: 'The Beginning of Fate',
   })
   @Column({ nullable: true, length: 200 })
   title: string;
 
-  @ApiPropertyOptional({ 
-    description: 'Brief summary of the chapter\'s content'
+  @ApiPropertyOptional({
+    description: "Brief summary of the chapter's content",
   })
   @Column({ type: 'text', nullable: true })
   summary: string;

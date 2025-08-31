@@ -12,30 +12,37 @@ import { TransformResponseInterceptor } from './common/interceptors/transform-re
 async function bootstrap() {
   // Perform database safety checks before starting the application
   await performDatabaseSafetyChecks();
-  
+
   const app = await NestFactory.create(AppModule);
-  
+
   // Set global prefix
   app.setGlobalPrefix('api');
-  
+
   // Security
   app.use(helmet());
   // Cookie parsing for refresh token cookie
   app.use(cookieParser());
   app.enableCors({
-    origin: process.env.NODE_ENV === 'production'
-      ? ['https://your-frontend-domain.com']
-      : 'http://localhost:3000',
+    origin:
+      process.env.NODE_ENV === 'production'
+        ? ['https://your-frontend-domain.com']
+        : 'http://localhost:3000',
     credentials: true,
     // Ensure X-Total-Count is readable by browser clients (used for react-admin pagination)
     exposedHeaders: ['X-Total-Count'],
   });
-  
+
   // Rate limiting
   // Allow overriding via environment variables. Defaults increased to reduce accidental blocking during development.
-  const RATE_LIMIT_WINDOW_MS = process.env.RATE_LIMIT_WINDOW_MS ? Number(process.env.RATE_LIMIT_WINDOW_MS) : 15 * 60 * 1000; // default 15 minutes
-  const RATE_LIMIT_MAX = process.env.RATE_LIMIT_MAX ? Number(process.env.RATE_LIMIT_MAX) : 1000; // default 1000 requests per window
-  console.log(`Rate limiter: windowMs=${RATE_LIMIT_WINDOW_MS}, max=${RATE_LIMIT_MAX}`);
+  const RATE_LIMIT_WINDOW_MS = process.env.RATE_LIMIT_WINDOW_MS
+    ? Number(process.env.RATE_LIMIT_WINDOW_MS)
+    : 15 * 60 * 1000; // default 15 minutes
+  const RATE_LIMIT_MAX = process.env.RATE_LIMIT_MAX
+    ? Number(process.env.RATE_LIMIT_MAX)
+    : 1000; // default 1000 requests per window
+  console.log(
+    `Rate limiter: windowMs=${RATE_LIMIT_WINDOW_MS}, max=${RATE_LIMIT_MAX}`,
+  );
 
   app.use(
     rateLimit({
@@ -47,24 +54,35 @@ async function bootstrap() {
 
   // Special rate limit for auth routes
   // Special rate limit for auth routes (keep strict defaults to protect against brute force)
-  const AUTH_RATE_LIMIT_WINDOW_MS = process.env.AUTH_RATE_LIMIT_WINDOW_MS ? Number(process.env.AUTH_RATE_LIMIT_WINDOW_MS) : 60 * 60 * 1000; // 1 hour
+  const AUTH_RATE_LIMIT_WINDOW_MS = process.env.AUTH_RATE_LIMIT_WINDOW_MS
+    ? Number(process.env.AUTH_RATE_LIMIT_WINDOW_MS)
+    : 60 * 60 * 1000; // 1 hour
   // Keep strict limits in production, but relax for local development to avoid accidental blocks while testing.
   const AUTH_RATE_LIMIT_MAX = process.env.AUTH_RATE_LIMIT_MAX
     ? Number(process.env.AUTH_RATE_LIMIT_MAX)
-    : (process.env.NODE_ENV === 'production' ? 50 : 1000);
-  console.log(`Auth rate limiter: windowMs=${AUTH_RATE_LIMIT_WINDOW_MS}, max=${AUTH_RATE_LIMIT_MAX}`);
-  app.use('/auth', rateLimit({
-    windowMs: AUTH_RATE_LIMIT_WINDOW_MS,
-    max: AUTH_RATE_LIMIT_MAX,
-    message: 'Too many login attempts, please try again later',
-  }));
+    : process.env.NODE_ENV === 'production'
+      ? 50
+      : 1000;
+  console.log(
+    `Auth rate limiter: windowMs=${AUTH_RATE_LIMIT_WINDOW_MS}, max=${AUTH_RATE_LIMIT_MAX}`,
+  );
+  app.use(
+    '/auth',
+    rateLimit({
+      windowMs: AUTH_RATE_LIMIT_WINDOW_MS,
+      max: AUTH_RATE_LIMIT_MAX,
+      message: 'Too many login attempts, please try again later',
+    }),
+  );
 
   // Global validation pipe
-  app.useGlobalPipes(new ValidationPipe({
-    transform: true,
-    whitelist: true,
-    forbidNonWhitelisted: true,
-  }));
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transform: true,
+      whitelist: true,
+      forbidNonWhitelisted: true,
+    }),
+  );
 
   // Global exception filter
   app.useGlobalFilters(new GlobalExceptionFilter());
@@ -74,13 +92,21 @@ async function bootstrap() {
   // API Documentation
   const config = new DocumentBuilder()
     .setTitle('Usogui Fansite API')
-    .setDescription('Comprehensive API for managing Usogui manga content, user interactions, and community features')
+    .setDescription(
+      'Comprehensive API for managing Usogui manga content, user interactions, and community features',
+    )
     .setVersion('1.0')
     .addBearerAuth()
     // Authentication & User Management
-    .addTag('auth', 'Authentication - User registration, login, and verification')
-    .addTag('users', 'User Management - User profiles, statistics, and account management')
-  // Core Content Management
+    .addTag(
+      'auth',
+      'Authentication - User registration, login, and verification',
+    )
+    .addTag(
+      'users',
+      'User Management - User profiles, statistics, and account management',
+    )
+    // Core Content Management
     .addTag('volumes', 'Volumes - Volume organization and chapter grouping')
     .addTag('chapters', 'Chapters - Individual chapter management')
     .addTag('arcs', 'Story Arcs - Narrative arc organization')
@@ -91,12 +117,18 @@ async function bootstrap() {
     .addTag('quotes', 'Quotes - Character quotes and memorable lines')
     // Interactive Content
     .addTag('gambles', 'Gambles - Gambling events and game management')
-    .addTag('guides', 'Guides - User-generated tutorials, strategies, and educational content')
+    .addTag(
+      'guides',
+      'Guides - User-generated tutorials, strategies, and educational content',
+    )
     .addTag('media', 'Media - Community fanart, videos, and submissions')
     // Content Organization
     .addTag('tags', 'Tags - Content categorization and tagging system')
     .addTag('translations', 'Translations - Multi-language content support')
-    .addTag('search', 'Search - Text search across all content with spoiler protection')
+    .addTag(
+      'search',
+      'Search - Text search across all content with spoiler protection',
+    )
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
@@ -122,6 +154,8 @@ async function bootstrap() {
 
   const port = process.env.PORT || 3001;
   await app.listen(port);
-  console.log(`Server running on http://localhost:${port} in ${process.env.NODE_ENV} mode`);
+  console.log(
+    `Server running on http://localhost:${port} in ${process.env.NODE_ENV} mode`,
+  );
 }
 bootstrap();

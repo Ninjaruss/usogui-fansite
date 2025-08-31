@@ -1,4 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 @Entity()
@@ -7,36 +13,36 @@ export class Volume {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ApiProperty({ 
-  description: 'Volume number',
-    example: 1
+  @ApiProperty({
+    description: 'Volume number',
+    example: 1,
   })
   @Column()
   number: number;
 
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     description: 'URL to the volume cover image',
-    example: 'https://example.com/covers/volume1.jpg'
+    example: 'https://example.com/covers/volume1.jpg',
   })
   @Column({ nullable: true, length: 500 })
   coverUrl: string;
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'First chapter number included in this volume',
-    example: 1
+    example: 1,
   })
   @Column()
   startChapter: number;
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Last chapter number included in this volume',
-    example: 10
+    example: 10,
   })
   @Column()
   endChapter: number;
 
-  @ApiPropertyOptional({ 
-    description: 'Brief description of the volume\'s content'
+  @ApiPropertyOptional({
+    description: "Brief description of the volume's content",
   })
   @Column({ type: 'text', nullable: true })
   description: string;

@@ -4,63 +4,64 @@ import { Type } from 'class-transformer';
 import { GuideStatus } from '../../../entities/guide.entity';
 
 export class GuideQueryDto {
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     description: 'Search guides by title or description',
-    example: 'poker strategy'
+    example: 'poker strategy',
   })
   @IsOptional()
   @IsString()
   search?: string;
 
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     description: 'Filter guides by status',
     enum: GuideStatus,
-    example: GuideStatus.PUBLISHED
+    example: GuideStatus.PUBLISHED,
   })
   @IsOptional()
   @IsEnum(GuideStatus)
   status?: GuideStatus;
 
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     description: 'Filter guides by author ID',
-    example: 1
+    example: 1,
   })
   @IsOptional()
   @Type(() => Number)
   @IsNumber()
   authorId?: number;
 
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     description: 'Filter guides by tag name',
-    example: 'poker'
+    example: 'poker',
   })
   @IsOptional()
   @IsString()
   tag?: string;
 
-  @ApiPropertyOptional({ 
-    description: 'Sort by field (createdAt, updatedAt, viewCount, likeCount, title)',
+  @ApiPropertyOptional({
+    description:
+      'Sort by field (createdAt, updatedAt, viewCount, likeCount, title)',
     example: 'likeCount',
-    default: 'createdAt'
+    default: 'createdAt',
   })
   @IsOptional()
   @IsString()
   sortBy?: string;
 
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     description: 'Sort order (ASC or DESC)',
     example: 'DESC',
-    default: 'DESC'
+    default: 'DESC',
   })
   @IsOptional()
   @IsString()
   sortOrder?: 'ASC' | 'DESC';
 
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     description: 'Page number for pagination',
     example: 1,
     minimum: 1,
-    default: 1
+    default: 1,
   })
   @IsOptional()
   @Type(() => Number)
@@ -68,11 +69,11 @@ export class GuideQueryDto {
   @Min(1)
   page?: number;
 
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     description: 'Number of items per page',
     example: 20,
     minimum: 1,
-    default: 20
+    default: 20,
   })
   @IsOptional()
   @Type(() => Number)
