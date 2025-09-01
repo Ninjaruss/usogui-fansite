@@ -63,6 +63,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const response = await api.login(username, password)
       setUser(response.user)
+      // Force a page reload to ensure all data is refreshed with new auth state
+      window.location.reload()
     } catch (error) {
       console.error('Login failed:', error)
       throw error
@@ -76,6 +78,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.error('Logout failed:', error)
     } finally {
       setUser(null)
+      // Redirect to home page after logout
+      window.location.href = '/'
     }
   }
 

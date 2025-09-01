@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Media, MediaStatus } from '../../entities/media.entity';
+import { Media, MediaStatus, MediaType } from '../../entities/media.entity';
 import { User } from '../../entities/user.entity';
 import { CreateMediaDto } from './dto/create-media.dto';
 import { UrlNormalizerService } from './services/url-normalizer.service';
@@ -36,6 +36,50 @@ export class MediaService {
       submittedBy: user,
       status: MediaStatus.PENDING,
     });
+    return this.mediaRepo.save(media);
+  }
+
+  async createUpload(
+    data: {
+      type: MediaType;
+      description?: string;
+      characterId?: number;
+      arcId?: number;
+      eventId?: number;
+    },
+    file: Buffer,
+    originalFileName: string,
+    contentType: string,
+    user: User,
+    b2Service: any, // BackblazeB2Service - will import properly later
+  ): Promise<Media> {
+    // Generate a unique filename
+    const timestamp = Date.now();
+    const fileExtension = originalFileName.split('.').pop();
+    const uniqueFileName = `${timestamp}_${originalFileName}`;
+
+    // Upload to B2
+    const uploadResult = await b2Service.uploadFile(
+      file,
+      uniqueFileName,
+      contentType,
+      'media'
+    );
+
+    const media = this.mediaRepo.create({
+      url: uploadResult.url,
+      fileName: uploadResult.fileName,
+      b2FileId: uploadResult.fileId,
+      isUploaded: true,
+      type: data.type,
+      description: data.description,
+      character: data.characterId ? ({ id: data.characterId } as any) : null,
+      arc: data.arcId ? ({ id: data.arcId } as any) : null,
+      event: data.eventId ? ({ id: data.eventId } as any) : null,
+      submittedBy: user,
+      status: MediaStatus.APPROVED, // Auto-approve uploads by moderators/admins
+    });
+
     return this.mediaRepo.save(media);
   }
 
@@ -184,7 +228,22 @@ export class MediaService {
     return this.mediaRepo.save(media);
   }
 
-  async remove(id: number): Promise<void> {
+  async remove(id: number, b2Service?: any): Promise<void> {
+    // Get the media record first to check if it's an uploaded file
+    const media = await this.mediaRepo.findOne({
+      where: { id },
+    });
+
+    if (media && media.isUploaded && media.fileName && b2Service) {
+      // Delete from B2 storage
+      try {
+        await b2Service.deleteFile(media.fileName);
+      } catch (error) {
+        console.warn(`Failed to delete file from B2: ${media.fileName}`, error);
+        // Continue with database deletion even if B2 deletion fails
+      }
+    }
+
     await this.mediaRepo.delete(id);
   }
 

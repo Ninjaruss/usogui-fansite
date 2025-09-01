@@ -11,6 +11,7 @@ import {
   ParseIntPipe,
   HttpCode,
   HttpStatus,
+  BadRequestException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -850,5 +851,154 @@ export class GuidesController {
   })
   async toggleLike(@Param('id') id: number, @CurrentUser() user: User) {
     return this.guidesService.toggleLike(id, user);
+  }
+
+  // MODERATOR/ADMIN ENDPOINTS
+
+  @Get('pending')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.MODERATOR)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Get pending guides for moderation',
+    description: 'Retrieves guides awaiting approval. Only accessible to moderators and admins.',
+  })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    description: 'Page number (default: 1)',
+    example: 1,
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    description: 'Items per page (default: 20)',
+    example: 20,
+  })
+  @ApiOkResponse({
+    description: 'Pending guides retrieved successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        data: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              id: { type: 'number', example: 5 },
+              title: { type: 'string', example: 'New Guide Awaiting Approval' },
+              description: { type: 'string', example: 'This guide needs review...' },
+              status: { type: 'string', enum: ['pending'], example: 'pending' },
+              author: {
+                type: 'object',
+                properties: {
+                  id: { type: 'number', example: 2 },
+                  username: { type: 'string', example: 'user123' },
+                },
+              },
+              createdAt: { type: 'string', format: 'date-time' },
+            },
+          },
+        },
+        total: { type: 'number', example: 3 },
+        page: { type: 'number', example: 1 },
+        totalPages: { type: 'number', example: 1 },
+      },
+    },
+  })
+  getPendingGuides(@Query() query: GuideQueryDto) {
+    return this.guidesService.getPendingGuides(query);
+  }
+
+  @Post(':id/approve')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.MODERATOR)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Approve a pending guide',
+    description: 'Approves a guide and makes it publicly visible. Only accessible to moderators and admins.',
+  })
+  @ApiParam({ name: 'id', description: 'Guide ID', example: 1 })
+  @ApiOkResponse({
+    description: 'Guide approved successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        id: { type: 'number', example: 1 },
+        title: { type: 'string', example: 'Approved Guide Title' },
+        status: { type: 'string', enum: ['published'], example: 'published' },
+        rejectionReason: { type: 'null', example: null },
+        createdAt: { type: 'string', format: 'date-time' },
+        updatedAt: { type: 'string', format: 'date-time' },
+      },
+    },
+  })
+  @ApiForbiddenResponse({
+    description: 'Only moderators and admins can approve guides',
+  })
+  @ApiNotFoundResponse({
+    description: 'Guide not found',
+  })
+  @ApiBadRequestResponse({
+    description: 'Only pending guides can be approved',
+  })
+  async approveGuide(@Param('id', ParseIntPipe) id: number, @CurrentUser() user: User) {
+    return this.guidesService.approve(id, user);
+  }
+
+  @Post(':id/reject')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.MODERATOR)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Reject a pending guide',
+    description: 'Rejects a guide with a reason. Only accessible to moderators and admins.',
+  })
+  @ApiParam({ name: 'id', description: 'Guide ID', example: 1 })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        rejectionReason: {
+          type: 'string',
+          example: 'Guide content does not meet quality standards',
+          maxLength: 500,
+        },
+      },
+      required: ['rejectionReason'],
+    },
+  })
+  @ApiOkResponse({
+    description: 'Guide rejected successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        id: { type: 'number', example: 1 },
+        title: { type: 'string', example: 'Rejected Guide Title' },
+        status: { type: 'string', enum: ['rejected'], example: 'rejected' },
+        rejectionReason: { type: 'string', example: 'Guide content does not meet quality standards' },
+        createdAt: { type: 'string', format: 'date-time' },
+        updatedAt: { type: 'string', format: 'date-time' },
+      },
+    },
+  })
+  @ApiForbiddenResponse({
+    description: 'Only moderators and admins can reject guides',
+  })
+  @ApiNotFoundResponse({
+    description: 'Guide not found',
+  })
+  @ApiBadRequestResponse({
+    description: 'Only pending guides can be rejected',
+  })
+  async rejectGuide(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('rejectionReason') rejectionReason: string,
+    @CurrentUser() user: User,
+  ) {
+    if (!rejectionReason || rejectionReason.trim().length === 0) {
+      throw new BadRequestException('Rejection reason is required');
+    }
+    return this.guidesService.reject(id, rejectionReason, user);
   }
 }

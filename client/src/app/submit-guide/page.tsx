@@ -20,7 +20,7 @@ import { api } from '../../lib/api'
 import { motion } from 'motion/react'
 
 export default function SubmitGuidePage() {
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useAuth()
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -69,7 +69,7 @@ export default function SubmitGuidePage() {
         content: formData.content,
         tags: formData.tags
       })
-      setSuccess('Guide submitted successfully! It will be reviewed by moderators before being published.')
+      setSuccess('Guide submitted successfully! It is now pending moderator approval and will be reviewed before being published.')
       setFormData({
         title: '',
         description: '',
@@ -88,6 +88,16 @@ export default function SubmitGuidePage() {
       event.preventDefault()
       addTag()
     }
+  }
+
+  if (authLoading) {
+    return (
+      <Container maxWidth="md" sx={{ py: 8 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+          <CircularProgress size={50} />
+        </Box>
+      </Container>
+    )
   }
 
   if (!user) {

@@ -15,11 +15,19 @@ import {
   Pagination,
   CircularProgress,
   Alert,
-  Chip
+  Chip,
+  CardMedia,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  IconButton,
+  Snackbar
 } from '@mui/material'
-import { Search, BookOpen, Eye } from 'lucide-react'
+import { Search, BookOpen, Eye, Edit, Upload, X } from 'lucide-react'
 import Link from 'next/link'
 import { api } from '../../lib/api'
+import { useAuth } from '../../providers/AuthProvider'
 import { motion } from 'motion/react'
 
 interface Arc {
@@ -30,9 +38,12 @@ interface Arc {
   endChapter: number
   createdAt: string
   updatedAt: string
+  imageFileName?: string
+  imageDisplayName?: string
 }
 
 export default function ArcsPage() {
+  const { user } = useAuth()
   const [arcs, setArcs] = useState<Arc[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -40,6 +51,17 @@ export default function ArcsPage() {
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [total, setTotal] = useState(0)
+  
+  // Image upload state
+  const [imageDialogOpen, setImageDialogOpen] = useState(false)
+  const [selectedArc, setSelectedArc] = useState<Arc | null>(null)
+  const [imageDisplayName, setImageDisplayName] = useState('')
+  const [uploading, setUploading] = useState(false)
+  const [snackbarOpen, setSnackbarOpen] = useState(false)
+  const [snackbarMessage, setSnackbarMessage] = useState('')
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+
+  const isModeratorOrAdmin = user?.role === 'moderator' || user?.role === 'admin'
 
   const fetchArcs = async (page = 1, search = '') => {
     setLoading(true)
@@ -73,6 +95,81 @@ export default function ArcsPage() {
 
   const getChapterCount = (arc: Arc) => {
     return arc.endChapter - arc.startChapter + 1
+  }
+
+  const handleEditImage = (arc: Arc) => {
+    setSelectedArc(arc)
+    setImageDisplayName(arc.imageDisplayName || '')
+    setImageDialogOpen(true)
+  }
+
+  const handleCloseImageDialog = () => {
+    setImageDialogOpen(false)
+    setSelectedArc(null)
+    setImageDisplayName('')
+    setSelectedFile(null)
+  }
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (file) {
+      // Validate file type
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+      if (!allowedTypes.includes(file.type)) {
+        setSnackbarMessage('Please select a valid image file (JPEG, PNG, WebP, or GIF)')
+        setSnackbarOpen(true)
+        return
+      }
+
+      // Validate file size (10MB limit)
+      const maxSize = 10 * 1024 * 1024
+      if (file.size > maxSize) {
+        setSnackbarMessage('File size must be less than 10MB')
+        setSnackbarOpen(true)
+        return
+      }
+
+      setSelectedFile(file)
+    }
+  }
+
+  const handleUploadImage = async () => {
+    if (!selectedArc || !selectedFile) return
+
+    setUploading(true)
+    try {
+      await api.uploadArcImage(selectedArc.id, selectedFile, imageDisplayName.trim() || undefined)
+      
+      await fetchArcs(currentPage, searchQuery)
+      setSnackbarMessage('Arc image uploaded successfully!')
+      setSnackbarOpen(true)
+      handleCloseImageDialog()
+    } catch (error: unknown) {
+      setSnackbarMessage(error instanceof Error ? error.message : 'Failed to upload image')
+      setSnackbarOpen(true)
+    } finally {
+      setUploading(false)
+    }
+  }
+
+
+  const handleRemoveImage = async () => {
+    if (!selectedArc) return
+
+    setUploading(true)
+    try {
+      await api.removeArcImage(selectedArc.id)
+      
+      await fetchArcs(currentPage, searchQuery)
+      setSnackbarMessage('Arc image removed successfully!')
+      setSnackbarOpen(true)
+      handleCloseImageDialog()
+    } catch (error: unknown) {
+      setSnackbarMessage(error instanceof Error ? error.message : 'Failed to remove image')
+      setSnackbarOpen(true)
+    } finally {
+      setUploading(false)
+    }
   }
 
   return (
@@ -146,6 +243,35 @@ export default function ArcsPage() {
                         '&:hover': { transform: 'translateY(-4px)' }
                       }}
                     >
+                      <Box sx={{ position: 'relative' }}>
+                        {arc.imageFileName && (
+                          <CardMedia
+                            component="img"
+                            height="200"
+                            image={`/api/media/arc/${arc.imageFileName}`}
+                            alt={arc.imageDisplayName || arc.name}
+                            sx={{ objectFit: 'cover' }}
+                          />
+                        )}
+                        {isModeratorOrAdmin && (
+                          <IconButton
+                            onClick={() => handleEditImage(arc)}
+                            sx={{
+                              position: 'absolute',
+                              top: 8,
+                              right: 8,
+                              backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                              color: 'white',
+                              '&:hover': {
+                                backgroundColor: 'rgba(0, 0, 0, 0.9)',
+                              },
+                            }}
+                            size="small"
+                          >
+                            <Edit size={16} />
+                          </IconButton>
+                        )}
+                      </Box>
                       <CardContent sx={{ flexGrow: 1 }}>
                         <Typography variant="h6" component="h2" gutterBottom>
                           {arc.name}
@@ -211,6 +337,122 @@ export default function ArcsPage() {
             )}
           </>
         )}
+
+        {/* Image Edit Dialog */}
+        <Dialog open={imageDialogOpen} onClose={handleCloseImageDialog} maxWidth="sm" fullWidth>
+          <DialogTitle>
+            Edit Image for {selectedArc?.name}
+            <IconButton
+              onClick={handleCloseImageDialog}
+              sx={{
+                position: 'absolute',
+                right: 8,
+                top: 8,
+                color: (theme) => theme.palette.grey[500],
+              }}
+            >
+              <X />
+            </IconButton>
+          </DialogTitle>
+          <DialogContent>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              Upload a new image file to replace the current image:
+            </Typography>
+
+            {/* File Upload Section */}
+            <Box sx={{ mb: 3, p: 2, border: '1px dashed', borderColor: 'grey.300', borderRadius: 1 }}>
+              <Typography variant="h6" gutterBottom>
+                Upload New Image
+              </Typography>
+              <input
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                style={{ display: 'none' }}
+                id="arc-image-upload"
+                type="file"
+                onChange={handleFileSelect}
+              />
+              <label htmlFor="arc-image-upload">
+                <Button
+                  variant="outlined"
+                  component="span"
+                  fullWidth
+                  sx={{ mb: 2 }}
+                  startIcon={<Upload />}
+                  disabled={uploading}
+                >
+                  Select Image File
+                </Button>
+              </label>
+              {selectedFile && (
+                <Box>
+                  <Typography variant="body2" color="primary">
+                    Selected: {selectedFile.name} ({Math.round(selectedFile.size / 1024)} KB)
+                  </Typography>
+                </Box>
+              )}
+              <Typography variant="caption" color="text.secondary">
+                Supported: JPEG, PNG, WebP, GIF • Max size: 10MB
+              </Typography>
+            </Box>
+
+
+            <TextField
+              fullWidth
+              label="Display Name (Optional)"
+              placeholder="e.g., Official Cover Art"
+              value={imageDisplayName}
+              onChange={(e) => setImageDisplayName(e.target.value)}
+              margin="normal"
+              helperText="Optional descriptive name for the image"
+            />
+            
+            {selectedArc?.imageFileName && (
+              <Box sx={{ mt: 2, textAlign: 'center' }}>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                  Current Image:
+                </Typography>
+                <img
+                  src={`/api/media/arc/${selectedArc.imageFileName}`}
+                  alt={selectedArc.imageDisplayName || selectedArc.name}
+                  style={{ maxWidth: '200px', maxHeight: '200px', objectFit: 'cover' }}
+                />
+              </Box>
+            )}
+          </DialogContent>
+          <DialogActions>
+            {selectedArc?.imageFileName && (
+              <Button
+                onClick={handleRemoveImage}
+                color="error"
+                disabled={uploading}
+                startIcon={<X />}
+              >
+                Remove Image
+              </Button>
+            )}
+            <Button onClick={handleCloseImageDialog} disabled={uploading}>
+              Cancel
+            </Button>
+            {selectedFile && (
+              <Button
+                onClick={handleUploadImage}
+                variant="contained"
+                disabled={uploading}
+                startIcon={uploading ? <CircularProgress size={16} /> : <Upload />}
+              >
+                {uploading ? 'Uploading...' : 'Upload Image'}
+              </Button>
+            )}
+          </DialogActions>
+        </Dialog>
+
+        {/* Success/Error Snackbar */}
+        <Snackbar
+          open={snackbarOpen}
+          autoHideDuration={6000}
+          onClose={() => setSnackbarOpen(false)}
+          message={snackbarMessage}
+        />
       </motion.div>
     </Container>
   )

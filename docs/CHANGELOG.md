@@ -4,9 +4,16 @@
 ### Changes
 - Show titles for events in events page
 - Added likes to guides
-
+- Update admin dashboard to show accurate number of data entries
+- Guides workflow for approval/reject added along with filtering for guide status
+- Applied auth protection and loading for authenticated pages
+- Adding backblaze b2 service for uploading character/arc image (admin/moderator only) (needs cdn/domain)
 
 ### Notes
+- It seems there have been changes or fluctuations to Claude code this recent week (no official announcement, was looking through reddit lol). May have been the cause for code to be weaker in quality.
+
+### TODO
+- Add hiding spoilers for events, gamble results, 
 
 
 ## 2025-08-30
@@ -24,10 +31,6 @@
 - There's been minor issues with ensuring code is consistent; primarily with trying to keep context concise. The "5-hour limit" for Claude Pro runs out very quickly when it comes to making sweeping changes. Clearing the context seems to help, but still feels limiting. For reference, I spent maybe 2 hours last night and little above 3 hours this morning before I hit each session's limits.
 - Fixing code tends to not fix the issue if there are missing endpoints or functions that are assumed. This is apparent for something like requesting a media approval queue as it sends a query to the backend with additional params that don't exist on the backend. 
 - Added Serena MCP to improve Claude code. So far, it has saved a bit more on the usage limit and seems to be more understanding of the code. I need to look into adjusting Serena because it is clear Claude misses a bit of the memories it store. Not sure if this is a config issue. Despite this, I will look into more MCP implementations as adding Serena has improved the quality of the responses overall while not costing additional usage.
-
-### TODO
-- Add hidden spoilers if user chapter progress does not meet chapter requirement for event and hide winner result for gambles
-- Update admin dashboard to show accurate number of data entries
 
 ## 2025-08-28
 ### Changes

@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Character } from '../../entities/character.entity';
+import { UpdateCharacterImageDto } from './dto/update-character-image.dto';
 
 @Injectable()
 export class CharactersService {
@@ -70,5 +71,60 @@ export class CharactersService {
 
   remove(id: number) {
     return this.repo.delete(id);
+  }
+
+  async updateImage(id: number, imageData: UpdateCharacterImageDto): Promise<Character> {
+    const character = await this.repo.findOne({ where: { id } });
+    if (!character) {
+      throw new NotFoundException(`Character with id ${id} not found`);
+    }
+
+    const updateData: Partial<Character> = {};
+    if (imageData.imageFileName !== undefined) {
+      updateData.imageFileName = imageData.imageFileName;
+    }
+    if (imageData.imageDisplayName !== undefined) {
+      updateData.imageDisplayName = imageData.imageDisplayName || null;
+    }
+
+    // Only update if we have data to update
+    if (Object.keys(updateData).length > 0) {
+      await this.repo
+        .createQueryBuilder()
+        .update(Character)
+        .set(updateData)
+        .where("id = :id", { id })
+        .execute();
+    }
+
+    const updatedCharacter = await this.repo.findOne({ where: { id } });
+    if (!updatedCharacter) {
+      throw new NotFoundException(`Character with id ${id} not found after update`);
+    }
+    return updatedCharacter;
+  }
+
+  async removeImage(id: number): Promise<Character> {
+    const character = await this.repo.findOne({ where: { id } });
+    if (!character) {
+      throw new NotFoundException(`Character with id ${id} not found`);
+    }
+
+    // Use query builder to ensure proper update
+    await this.repo
+      .createQueryBuilder()
+      .update(Character)
+      .set({
+        imageFileName: null,
+        imageDisplayName: null,
+      })
+      .where("id = :id", { id })
+      .execute();
+
+    const updatedCharacter = await this.repo.findOne({ where: { id } });
+    if (!updatedCharacter) {
+      throw new NotFoundException(`Character with id ${id} not found after update`);
+    }
+    return updatedCharacter;
   }
 }

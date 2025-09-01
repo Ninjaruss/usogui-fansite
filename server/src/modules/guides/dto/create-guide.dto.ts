@@ -48,10 +48,10 @@ export class CreateGuideDto {
   content: string;
 
   @ApiPropertyOptional({
-    description: 'Status of the guide',
+    description: 'Status of the guide (defaults to pending for approval)',
     enum: GuideStatus,
-    example: GuideStatus.PUBLISHED,
-    default: GuideStatus.DRAFT,
+    example: GuideStatus.PENDING,
+    default: GuideStatus.PENDING,
   })
   @IsEnum(GuideStatus)
   @IsOptional()

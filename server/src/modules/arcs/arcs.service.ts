@@ -4,6 +4,7 @@ import { Repository, Between } from 'typeorm';
 import { Arc } from '../../entities/arc.entity';
 import { Chapter } from '../../entities/chapter.entity';
 import { CreateArcDto } from './dto/create-arc.dto';
+import { UpdateArcImageDto } from './dto/update-arc-image.dto';
 
 @Injectable()
 export class ArcsService {
@@ -96,5 +97,60 @@ export class ArcsService {
       },
       order: { number: 'ASC' },
     });
+  }
+
+  async updateImage(id: number, imageData: UpdateArcImageDto): Promise<Arc> {
+    const arc = await this.repo.findOne({ where: { id } });
+    if (!arc) {
+      throw new NotFoundException(`Arc with id ${id} not found`);
+    }
+
+    const updateData: Partial<Arc> = {};
+    if (imageData.imageFileName !== undefined) {
+      updateData.imageFileName = imageData.imageFileName;
+    }
+    if (imageData.imageDisplayName !== undefined) {
+      updateData.imageDisplayName = imageData.imageDisplayName || null;
+    }
+
+    // Only update if we have data to update
+    if (Object.keys(updateData).length > 0) {
+      await this.repo
+        .createQueryBuilder()
+        .update(Arc)
+        .set(updateData)
+        .where("id = :id", { id })
+        .execute();
+    }
+
+    const updatedArc = await this.repo.findOne({ where: { id } });
+    if (!updatedArc) {
+      throw new NotFoundException(`Arc with id ${id} not found after update`);
+    }
+    return updatedArc;
+  }
+
+  async removeImage(id: number): Promise<Arc> {
+    const arc = await this.repo.findOne({ where: { id } });
+    if (!arc) {
+      throw new NotFoundException(`Arc with id ${id} not found`);
+    }
+
+    // Use query builder to ensure proper update
+    await this.repo
+      .createQueryBuilder()
+      .update(Arc)
+      .set({
+        imageFileName: null,
+        imageDisplayName: null,
+      })
+      .where("id = :id", { id })
+      .execute();
+
+    const updatedArc = await this.repo.findOne({ where: { id } });
+    if (!updatedArc) {
+      throw new NotFoundException(`Arc with id ${id} not found after update`);
+    }
+    return updatedArc;
   }
 }

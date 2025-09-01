@@ -30,11 +30,11 @@ export class GuidesService {
   async create(createGuideDto: CreateGuideDto, author: User): Promise<Guide> {
     const { tagNames, ...guideData } = createGuideDto;
 
-    // Create the guide first
+    // Create the guide first - set to PENDING for moderator approval
     const guide = this.guideRepository.create({
       ...guideData,
       authorId: author.id,
-      status: guideData.status || GuideStatus.DRAFT,
+      status: guideData.status || GuideStatus.PENDING,
     });
 
     // Handle tags if provided
@@ -362,6 +362,98 @@ export class GuidesService {
     }
 
     await this.guideRepository.remove(guide);
+  }
+
+  async approve(id: number, moderator: User): Promise<Guide> {
+    // Only admins and moderators can approve guides
+    if (moderator.role !== UserRole.ADMIN && moderator.role !== UserRole.MODERATOR) {
+      throw new ForbiddenException('Only moderators and admins can approve guides');
+    }
+
+    const guide = await this.guideRepository.findOne({
+      where: { id },
+      relations: ['author', 'tags'],
+    });
+
+    if (!guide) {
+      throw new NotFoundException('Guide not found');
+    }
+
+    if (guide.status !== GuideStatus.PENDING) {
+      throw new BadRequestException('Only pending guides can be approved');
+    }
+
+    guide.status = GuideStatus.PUBLISHED;
+    guide.rejectionReason = null; // Clear any previous rejection reason
+
+    return await this.guideRepository.save(guide);
+  }
+
+  async reject(id: number, rejectionReason: string, moderator: User): Promise<Guide> {
+    // Only admins and moderators can reject guides
+    if (moderator.role !== UserRole.ADMIN && moderator.role !== UserRole.MODERATOR) {
+      throw new ForbiddenException('Only moderators and admins can reject guides');
+    }
+
+    const guide = await this.guideRepository.findOne({
+      where: { id },
+      relations: ['author', 'tags'],
+    });
+
+    if (!guide) {
+      throw new NotFoundException('Guide not found');
+    }
+
+    if (guide.status !== GuideStatus.PENDING) {
+      throw new BadRequestException('Only pending guides can be rejected');
+    }
+
+    guide.status = GuideStatus.REJECTED;
+    guide.rejectionReason = rejectionReason;
+
+    return await this.guideRepository.save(guide);
+  }
+
+  async getPendingGuides(query: GuideQueryDto): Promise<{
+    data: Guide[];
+    total: number;
+    page: number;
+    perPage: number;
+    totalPages: number;
+  }> {
+    const {
+      sortBy = 'createdAt',
+      sortOrder = 'ASC',
+      page = 1,
+      limit = 20,
+    } = query;
+
+    const queryBuilder = this.guideRepository
+      .createQueryBuilder('guide')
+      .leftJoinAndSelect('guide.author', 'author')
+      .leftJoinAndSelect('guide.tags', 'tags')
+      .where('guide.status = :status', { status: GuideStatus.PENDING });
+
+    // Apply sorting
+    const validSortFields = [
+      'createdAt',
+      'updatedAt',
+      'title',
+    ];
+    if (validSortFields.includes(sortBy)) {
+      queryBuilder.orderBy(`guide.${sortBy}`, sortOrder);
+    } else {
+      queryBuilder.orderBy('guide.createdAt', 'ASC');
+    }
+
+    // Apply pagination
+    const skip = (page - 1) * limit;
+    queryBuilder.skip(skip).take(limit);
+
+    const [data, total] = await queryBuilder.getManyAndCount();
+    const totalPages = Math.ceil(total / limit);
+
+    return { data, total, page, perPage: limit, totalPages };
   }
 
   async incrementViewCount(id: number): Promise<void> {

@@ -9,7 +9,11 @@ import {
   NotFoundException,
   Query,
   UseGuards,
+  UseInterceptors,
+  UploadedFile,
+  BadRequestException,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import {
   ApiTags,
   ApiOperation,
@@ -18,6 +22,7 @@ import {
   ApiParam,
   ApiBody,
   ApiBearerAuth,
+  ApiConsumes,
 } from '@nestjs/swagger';
 import { CharactersService } from './characters.service';
 import { Character } from '../../entities/character.entity';
@@ -25,11 +30,16 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from '../../entities/user.entity';
+import { UpdateCharacterImageDto } from './dto/update-character-image.dto';
+import { BackblazeB2Service } from '../../services/backblaze-b2.service';
 
 @ApiTags('characters')
 @Controller('characters')
 export class CharactersController {
-  constructor(private readonly service: CharactersService) {}
+  constructor(
+    private readonly service: CharactersService,
+    private readonly b2Service: BackblazeB2Service,
+  ) {}
 
   @Get()
   @ApiOperation({
@@ -392,5 +402,176 @@ export class CharactersController {
       throw new NotFoundException(`Character with id ${id} not found`);
     }
     return { message: 'Deleted successfully' };
+  }
+
+  @Put(':id/image')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Update character image',
+    description: 'Update character image (moderators/admins only, automatically approved)',
+  })
+  @ApiParam({ name: 'id', description: 'Character ID', example: 1 })
+  @ApiBody({
+    description: 'Character image data',
+    type: UpdateCharacterImageDto,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Character image updated successfully',
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden - moderator/admin role required' })
+  @ApiResponse({ status: 404, description: 'Character not found' })
+  @Roles(UserRole.MODERATOR, UserRole.ADMIN)
+  updateImage(@Param('id') id: number, @Body() imageData: UpdateCharacterImageDto) {
+    return this.service.updateImage(id, imageData);
+  }
+
+  @Post(':id/upload-image')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Upload character image',
+    description: 'Upload image file for character (moderators/admins only, automatically approved)',
+  })
+  @ApiParam({ name: 'id', description: 'Character ID', example: 1 })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    description: 'Character image file and optional display name',
+    type: 'multipart/form-data',
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+          description: 'Image file (JPEG, PNG, WebP, GIF)',
+        },
+        imageDisplayName: {
+          type: 'string',
+          description: 'Optional display name for the image',
+        },
+      },
+      required: ['file'],
+    },
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Character image uploaded successfully',
+  })
+  @ApiResponse({ status: 400, description: 'Bad request - invalid file or missing file' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden - moderator/admin role required' })
+  @ApiResponse({ status: 404, description: 'Character not found' })
+  @Roles(UserRole.MODERATOR, UserRole.ADMIN)
+  async uploadCharacterImage(
+    @Param('id') id: number,
+    @UploadedFile() file: Express.Multer.File,
+    @Body() data: { imageDisplayName?: string },
+  ) {
+    if (!file) {
+      throw new BadRequestException('File is required');
+    }
+
+    // Validate file type
+    const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    if (!allowedMimeTypes.includes(file.mimetype)) {
+      throw new BadRequestException('Only image files (JPEG, PNG, WebP, GIF) are allowed');
+    }
+
+    // Get existing character to check for old image
+    const existingCharacter = await this.service.findOne(id);
+    if (!existingCharacter) {
+      throw new NotFoundException(`Character with id ${id} not found`);
+    }
+
+    // Generate unique filename with character prefix
+    const timestamp = Date.now();
+    const fileExtension = file.originalname.split('.').pop();
+    const uniqueFileName = `character_${id}_${timestamp}.${fileExtension}`;
+
+    // Upload new file to B2
+    const uploadResult = await this.b2Service.uploadFile(
+      file.buffer,
+      uniqueFileName,
+      file.mimetype,
+      'characters'
+    );
+
+    // Delete old image if it exists
+    if (existingCharacter.imageFileName) {
+      try {
+        // Extract filename from URL if it's a full URL, otherwise use as-is
+        let oldFileName = existingCharacter.imageFileName;
+        if (oldFileName.includes('/')) {
+          const urlParts = oldFileName.split('/');
+          oldFileName = urlParts[urlParts.length - 1];
+          // If it includes the folder path, keep it
+          if (urlParts.length > 1 && urlParts[urlParts.length - 2] === 'characters') {
+            oldFileName = `characters/${oldFileName}`;
+          }
+        }
+        await this.b2Service.deleteFile(oldFileName);
+      } catch (error) {
+        // Log the error but don't fail the upload
+        console.error('Failed to delete old character image:', error);
+      }
+    }
+
+    // Update character with the full image URL
+    const imageData = {
+      imageFileName: uploadResult.url, // Store the full URL
+      imageDisplayName: data.imageDisplayName,
+    };
+
+    return this.service.updateImage(id, imageData);
+  }
+
+  @Delete(':id/image')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Remove character image',
+    description: 'Remove image from character (moderators/admins only)',
+  })
+  @ApiParam({ name: 'id', description: 'Character ID', example: 1 })
+  @ApiResponse({
+    status: 200,
+    description: 'Character image removed successfully',
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden - moderator/admin role required' })
+  @ApiResponse({ status: 404, description: 'Character not found' })
+  @Roles(UserRole.MODERATOR, UserRole.ADMIN)
+  async removeImage(@Param('id') id: number) {
+    // Get existing character to check for image
+    const existingCharacter = await this.service.findOne(id);
+    if (!existingCharacter) {
+      throw new NotFoundException(`Character with id ${id} not found`);
+    }
+
+    // Delete the image file from B2 if it exists
+    if (existingCharacter.imageFileName) {
+      try {
+        // Extract filename from URL if it's a full URL, otherwise use as-is
+        let fileName = existingCharacter.imageFileName;
+        if (fileName.includes('/')) {
+          const urlParts = fileName.split('/');
+          fileName = urlParts[urlParts.length - 1];
+          // If it includes the folder path, keep it
+          if (urlParts.length > 1 && urlParts[urlParts.length - 2] === 'characters') {
+            fileName = `characters/${fileName}`;
+          }
+        }
+        await this.b2Service.deleteFile(fileName);
+      } catch (error) {
+        // Log the error but don't fail the removal
+        console.error('Failed to delete character image file:', error);
+      }
+    }
+
+    return this.service.removeImage(id);
   }
 }

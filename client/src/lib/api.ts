@@ -29,8 +29,12 @@ class ApiClient {
   ): Promise<T> {
     const url = `${this.baseURL}${endpoint}`
     const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
       ...(typeof options.headers === 'object' && options.headers ? options.headers as Record<string, string> : {}),
+    }
+
+    // Only set Content-Type if body is not FormData
+    if (!(options.body instanceof FormData)) {
+      headers['Content-Type'] = 'application/json'
     }
 
     if (this.token) {
@@ -343,6 +347,50 @@ class ApiClient {
     return this.post<any>('/media', data)
   }
 
+  async uploadMedia(file: File, data: {
+    type: 'image' | 'video' | 'audio'
+    description?: string
+    characterId?: number
+    arcId?: number
+    eventId?: number
+  }) {
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('type', data.type)
+    if (data.description) formData.append('description', data.description)
+    if (data.characterId) formData.append('characterId', data.characterId.toString())
+    if (data.arcId) formData.append('arcId', data.arcId.toString())
+    if (data.eventId) formData.append('eventId', data.eventId.toString())
+
+    return this.request<any>('/media/upload', {
+      method: 'POST',
+      body: formData,
+      // Don't set Content-Type header - let browser set it with boundary
+    })
+  }
+
+  async uploadCharacterImage(characterId: number, file: File, imageDisplayName?: string) {
+    const formData = new FormData()
+    formData.append('file', file)
+    if (imageDisplayName) formData.append('imageDisplayName', imageDisplayName)
+
+    return this.request<any>(`/characters/${characterId}/upload-image`, {
+      method: 'POST',
+      body: formData,
+    })
+  }
+
+  async uploadArcImage(arcId: number, file: File, imageDisplayName?: string) {
+    const formData = new FormData()
+    formData.append('file', file)
+    if (imageDisplayName) formData.append('imageDisplayName', imageDisplayName)
+
+    return this.request<any>(`/arcs/${arcId}/upload-image`, {
+      method: 'POST',
+      body: formData,
+    })
+  }
+
   async updateProfile(data: {
     profileImageId?: string
     favoriteQuoteId?: number
@@ -602,6 +650,17 @@ class ApiClient {
     return this.delete<any>(`/arcs/${id}`)
   }
 
+  async updateArcImage(id: number, data: {
+    imageFileName: string
+    imageDisplayName?: string
+  }) {
+    return this.put<any>(`/arcs/${id}/image`, data)
+  }
+
+  async removeArcImage(id: number) {
+    return this.delete<any>(`/arcs/${id}/image`)
+  }
+
   async createCharacter(data: any) {
     return this.post<any>('/characters', data)
   }
@@ -612,6 +671,17 @@ class ApiClient {
 
   async deleteCharacter(id: number) {
     return this.delete<any>(`/characters/${id}`)
+  }
+
+  async updateCharacterImage(id: number, data: {
+    imageFileName: string
+    imageDisplayName?: string
+  }) {
+    return this.put<any>(`/characters/${id}/image`, data)
+  }
+
+  async removeCharacterImage(id: number) {
+    return this.delete<any>(`/characters/${id}/image`)
   }
 
   async createGamble(data: any) {
@@ -667,6 +737,33 @@ class ApiClient {
 
   async deleteGuide(id: number) {
     return this.delete<any>(`/guides/${id}`)
+  }
+
+  // Guide approval methods (admin/moderator)
+  async getPendingGuides(params?: { page?: number; limit?: number }) {
+    const searchParams = new URLSearchParams()
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) {
+          searchParams.append(key, value.toString())
+        }
+      })
+    }
+    const query = searchParams.toString()
+    return this.get<{
+      data: any[]
+      total: number
+      page: number
+      totalPages: number
+    }>(`/guides/pending${query ? `?${query}` : ''}`)
+  }
+
+  async approveGuide(id: number) {
+    return this.post<any>(`/guides/${id}/approve`, {})
+  }
+
+  async rejectGuide(id: number, rejectionReason: string) {
+    return this.post<any>(`/guides/${id}/reject`, { rejectionReason })
   }
 }
 

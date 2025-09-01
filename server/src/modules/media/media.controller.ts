@@ -9,9 +9,15 @@ import {
   Patch,
   UseGuards,
   Query,
+  UseInterceptors,
+  UploadedFile,
+  BadRequestException,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { MediaService } from './media.service';
 import { CreateMediaDto } from './dto/create-media.dto';
+import { UploadMediaDto } from './dto/upload-media.dto';
+import { BackblazeB2Service } from '../../services/backblaze-b2.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -25,12 +31,16 @@ import {
   ApiParam,
   ApiBody,
   ApiQuery,
+  ApiConsumes,
 } from '@nestjs/swagger';
 
 @ApiTags('media')
 @Controller('media')
 export class MediaController {
-  constructor(private readonly mediaService: MediaService) {}
+  constructor(
+    private readonly mediaService: MediaService,
+    private readonly b2Service: BackblazeB2Service,
+  ) {}
 
   // PUBLIC ENDPOINTS - No authentication required
 
@@ -235,6 +245,115 @@ export class MediaController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   create(@Body() createMediaDto: CreateMediaDto, @CurrentUser() user: User) {
     return this.mediaService.create(createMediaDto, user);
+  }
+
+  @Post('upload')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.MODERATOR, UserRole.ADMIN)
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiConsumes('multipart/form-data')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Upload media file (moderators/admins only)',
+    description:
+      'Upload image files directly to Backblaze B2 storage. Automatically approved for moderators and admins. Only image files are allowed.',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+          description: 'Image file to upload (JPEG, PNG, WebP, GIF)',
+        },
+        type: {
+          type: 'string',
+          enum: ['image', 'video', 'audio'],
+          description: 'Type of media content (currently only image supported for uploads)',
+        },
+        description: {
+          type: 'string',
+          description: 'Description of the media content',
+          maxLength: 500,
+        },
+        characterId: {
+          type: 'number',
+          description: 'ID of the character this media belongs to',
+        },
+        arcId: {
+          type: 'number',
+          description: 'ID of the arc this media belongs to',
+        },
+        eventId: {
+          type: 'number',
+          description: 'ID of the event this media belongs to',
+        },
+      },
+      required: ['file', 'type'],
+    },
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Media uploaded successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        id: { type: 'number', example: 1 },
+        url: { type: 'string', example: 'https://your-custom-domain.com/media/123456_character.jpg' },
+        fileName: { type: 'string', example: 'media/123456_character.jpg' },
+        isUploaded: { type: 'boolean', example: true },
+        type: { type: 'string', example: 'image' },
+        description: { type: 'string', example: 'Character portrait' },
+        status: { type: 'string', example: 'approved' },
+        createdAt: { type: 'string', format: 'date-time' },
+        submittedBy: {
+          type: 'object',
+          properties: {
+            id: { type: 'number', example: 1 },
+            username: { type: 'string', example: 'moderator' },
+          },
+        },
+      },
+    },
+  })
+  @ApiResponse({ status: 400, description: 'Bad request - invalid file or data' })
+  @ApiResponse({ status: 403, description: 'Forbidden - requires moderator or admin role' })
+  @ApiResponse({ status: 413, description: 'File too large - max 10MB' })
+  async uploadMedia(
+    @UploadedFile() file: Express.Multer.File,
+    @Body() uploadData: UploadMediaDto,
+    @CurrentUser() user: User,
+  ) {
+    if (!file) {
+      throw new BadRequestException('File is required');
+    }
+
+    // Only allow image uploads for now
+    if (uploadData.type !== 'image') {
+      throw new BadRequestException('Only image uploads are supported');
+    }
+
+    // Validate file type
+    const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    if (!allowedMimeTypes.includes(file.mimetype)) {
+      throw new BadRequestException('Only image files (JPEG, PNG, WebP, GIF) are allowed');
+    }
+
+    return this.mediaService.createUpload(
+      {
+        type: uploadData.type,
+        description: uploadData.description,
+        characterId: uploadData.characterId,
+        arcId: uploadData.arcId,
+        eventId: uploadData.eventId,
+      },
+      file.buffer,
+      file.originalname,
+      file.mimetype,
+      user,
+      this.b2Service,
+    );
   }
 
   @Get()
@@ -616,7 +735,7 @@ export class MediaController {
   @ApiResponse({ status: 404, description: 'Media not found' })
   @ApiParam({ name: 'id', description: 'Media ID', example: 1 })
   remove(@Param('id') id: string) {
-    return this.mediaService.remove(+id);
+    return this.mediaService.remove(+id, this.b2Service);
   }
 
   @Put(':id/approve')

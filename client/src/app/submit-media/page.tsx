@@ -15,12 +15,16 @@ import {
   MenuItem,
   Alert,
   CircularProgress,
-  Grid
+  Grid,
+  Tabs,
+  Tab,
+  Divider
 } from '@mui/material'
 import { Upload, Link as LinkIcon, Image, Video } from 'lucide-react'
 import { useAuth } from '../../providers/AuthProvider'
 import { api } from '../../lib/api'
 import { motion } from 'motion/react'
+import MediaUploadForm from '../../components/MediaUploadForm'
 
 interface Character {
   id: number
@@ -33,7 +37,7 @@ interface Arc {
 }
 
 export default function SubmitMediaPage() {
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useAuth()
   const [formData, setFormData] = useState({
     url: '',
     characterId: null as number | null,
@@ -45,6 +49,7 @@ export default function SubmitMediaPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [activeTab, setActiveTab] = useState(0)
   // const [urlPreview, setUrlPreview] = useState('')
 
   useEffect(() => {
@@ -102,6 +107,27 @@ export default function SubmitMediaPage() {
       setLoading(false)
     }
   }
+  const handleUpload = async (file: File, uploadData: {
+    type: 'image' | 'video' | 'audio'
+    description?: string
+    characterId?: number
+    arcId?: number
+    eventId?: number
+  }) => {
+    setError('')
+    setSuccess('')
+    setLoading(true)
+
+    try {
+      await api.uploadMedia(file, uploadData)
+      setSuccess('Media uploaded successfully! It has been automatically approved.')
+    } catch (error: unknown) {
+      setError(error instanceof Error ? error.message : 'Failed to upload media')
+      throw error // Re-throw to handle in the upload form
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const getMediaType = (url: string) => {
     if (url.includes('youtube.com') || url.includes('youtu.be')) {
@@ -115,6 +141,16 @@ export default function SubmitMediaPage() {
       return 'image'
     }
     return 'link'
+  }
+
+  if (authLoading) {
+    return (
+      <Container maxWidth="md" sx={{ py: 8 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+          <CircularProgress size={50} />
+        </Box>
+      </Container>
+    )
   }
 
   if (!user) {
@@ -160,100 +196,134 @@ export default function SubmitMediaPage() {
 
         <Card className="gambling-card">
           <CardContent>
-            <form onSubmit={handleSubmit}>
-              <Grid container spacing={3}>
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    label="Media URL"
-                    placeholder="https://..."
-                    value={formData.url}
-                    onChange={(e) => handleInputChange('url', e.target.value)}
-                    required
-                    helperText="Link to fanart, video, or other media (YouTube, Twitter, DeviantArt, direct image links, etc.)"
-                    InputProps={{
-                      startAdornment: (
-                        <Box sx={{ mr: 1, display: 'flex', alignItems: 'center' }}>
-                          {getMediaType(formData.url) === 'video' ? (
-                            <Video size={20} />
-                          ) : getMediaType(formData.url) === 'image' ? (
-                            <Image size={20} />
-                          ) : (
-                            <LinkIcon size={20} />
-                          )}
-                        </Box>
-                      )
-                    }}
-                  />
-                </Grid>
+            {/* Show tabs for moderators/admins */}
+            {(user.role === 'moderator' || user.role === 'admin') && (
+              <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
+                <Tabs value={activeTab} onChange={(_, newValue) => setActiveTab(newValue)}>
+                  <Tab label="Submit URL" />
+                  <Tab label="Upload File" />
+                </Tabs>
+              </Box>
+            )}
 
-                <Grid item xs={12} sm={6}>
-                  <FormControl fullWidth>
-                    <InputLabel>Related Character (Optional)</InputLabel>
-                    <Select
-                      value={formData.characterId || ''}
-                      label="Related Character (Optional)"
-                      onChange={(e) => handleInputChange('characterId', e.target.value || null)}
-                    >
-                      <MenuItem value="">
-                        <em>None</em>
-                      </MenuItem>
-                      {characters.map((character) => (
-                        <MenuItem key={character.id} value={character.id}>
-                          {character.name}
+            {/* URL Submission Form */}
+            {activeTab === 0 && (
+              <form onSubmit={handleSubmit}>
+                <Grid container spacing={3}>
+                  <Grid item xs={12}>
+                    <TextField
+                      fullWidth
+                      label="Media URL"
+                      placeholder="https://..."
+                      value={formData.url}
+                      onChange={(e) => handleInputChange('url', e.target.value)}
+                      required
+                      helperText="Link to fanart, video, or other media (YouTube, Twitter, DeviantArt, direct image links, etc.)"
+                      InputProps={{
+                        startAdornment: (
+                          <Box sx={{ mr: 1, display: 'flex', alignItems: 'center' }}>
+                            {getMediaType(formData.url) === 'video' ? (
+                              <Video size={20} />
+                            ) : getMediaType(formData.url) === 'image' ? (
+                              <Image size={20} />
+                            ) : (
+                              <LinkIcon size={20} />
+                            )}
+                          </Box>
+                        )
+                      }}
+                    />
+                  </Grid>
+
+                  <Grid item xs={12} sm={6}>
+                    <FormControl fullWidth>
+                      <InputLabel>Related Character (Optional)</InputLabel>
+                      <Select
+                        value={formData.characterId || ''}
+                        label="Related Character (Optional)"
+                        onChange={(e) => handleInputChange('characterId', e.target.value || null)}
+                      >
+                        <MenuItem value="">
+                          <em>None</em>
                         </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Grid>
+                        {characters.map((character) => (
+                          <MenuItem key={character.id} value={character.id}>
+                            {character.name}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Grid>
 
-                <Grid item xs={12} sm={6}>
-                  <FormControl fullWidth>
-                    <InputLabel>Related Arc (Optional)</InputLabel>
-                    <Select
-                      value={formData.arcId || ''}
-                      label="Related Arc (Optional)"
-                      onChange={(e) => handleInputChange('arcId', e.target.value || null)}
-                    >
-                      <MenuItem value="">
-                        <em>None</em>
-                      </MenuItem>
-                      {arcs.map((arc) => (
-                        <MenuItem key={arc.id} value={arc.id}>
-                          {arc.name}
+                  <Grid item xs={12} sm={6}>
+                    <FormControl fullWidth>
+                      <InputLabel>Related Arc (Optional)</InputLabel>
+                      <Select
+                        value={formData.arcId || ''}
+                        label="Related Arc (Optional)"
+                        onChange={(e) => handleInputChange('arcId', e.target.value || null)}
+                      >
+                        <MenuItem value="">
+                          <em>None</em>
                         </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Grid>
+                        {arcs.map((arc) => (
+                          <MenuItem key={arc.id} value={arc.id}>
+                            {arc.name}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Grid>
 
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    multiline
-                    rows={4}
-                    label="Description"
-                    placeholder="Describe this media, credit the artist if known, or provide context..."
-                    value={formData.description}
-                    onChange={(e) => handleInputChange('description', e.target.value)}
-                    helperText="Please provide credit to the original artist if known"
-                  />
-                </Grid>
+                  <Grid item xs={12}>
+                    <TextField
+                      fullWidth
+                      multiline
+                      rows={4}
+                      label="Description"
+                      placeholder="Describe this media, credit the artist if known, or provide context..."
+                      value={formData.description}
+                      onChange={(e) => handleInputChange('description', e.target.value)}
+                      helperText="Please provide credit to the original artist if known"
+                    />
+                  </Grid>
 
-                <Grid item xs={12}>
-                  <Button
-                    type="submit"
-                    variant="contained"
-                    size="large"
-                    fullWidth
-                    disabled={loading || !formData.url}
-                    startIcon={loading ? <CircularProgress size={20} /> : <Upload size={20} />}
-                  >
-                    {loading ? 'Submitting...' : 'Submit Media'}
-                  </Button>
+                  <Grid item xs={12}>
+                    <Button
+                      type="submit"
+                      variant="contained"
+                      size="large"
+                      fullWidth
+                      disabled={loading || !formData.url}
+                      startIcon={loading ? <CircularProgress size={20} /> : <Upload size={20} />}
+                    >
+                      {loading ? 'Submitting...' : 'Submit Media'}
+                    </Button>
+                  </Grid>
                 </Grid>
-              </Grid>
-            </form>
+              </form>
+            )}
+
+            {/* File Upload Form (Moderators/Admins only) */}
+            {activeTab === 1 && (user.role === 'moderator' || user.role === 'admin') && (
+              <Box>
+                <Alert severity="info" sx={{ mb: 3 }}>
+                  <Typography variant="body2">
+                    <strong>Direct Upload (Moderators/Admins)</strong>
+                    <br />• Files are automatically approved
+                    <br />• Uploaded to Backblaze B2 storage
+                    <br />• Supports JPEG, PNG, WebP, GIF (max 10MB)
+                  </Typography>
+                </Alert>
+                <MediaUploadForm
+                  onUpload={handleUpload}
+                  characters={characters}
+                  arcs={arcs}
+                  loading={loading}
+                  error={error}
+                />
+              </Box>
+            )}
           </CardContent>
         </Card>
 

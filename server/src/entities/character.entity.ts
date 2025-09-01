@@ -22,7 +22,7 @@ export class Character {
     description: "Character's primary name",
     example: 'Baku Madarame',
   })
-  @Column({ length: 100 })
+  @Column({ type: 'varchar', length: 100 })
   name: string;
 
   @ApiPropertyOptional({
@@ -31,21 +31,21 @@ export class Character {
     example: ['The Emperor', 'Death God'],
   })
   @Column({ type: 'simple-array', nullable: true })
-  alternateNames: string[];
+  alternateNames: string[] | null;
 
   @ApiPropertyOptional({
     description: 'Character description',
     example: 'A professional gambler known for taking on dangerous bets.',
   })
   @Column({ type: 'text', nullable: true })
-  description: string;
+  description: string | null;
 
   @ApiPropertyOptional({
     description: 'Chapter number where the character first appears',
     example: 1,
   })
-  @Column({ nullable: true })
-  firstAppearanceChapter: number;
+  @Column({ type: 'int', nullable: true })
+  firstAppearanceChapter: number | null;
 
   @ApiPropertyOptional({
     description: 'Notable roles or positions',
@@ -53,7 +53,7 @@ export class Character {
     example: ['Kakerou Company CEO', 'Professional Gambler'],
   })
   @Column({ type: 'simple-array', nullable: true })
-  notableRoles: string[];
+  notableRoles: string[] | null;
 
   @ApiPropertyOptional({
     description: 'Notable games participated in',
@@ -61,14 +61,14 @@ export class Character {
     example: ['17 Steps', 'One-Card Poker'],
   })
   @Column({ type: 'simple-array', nullable: true })
-  notableGames: string[];
+  notableGames: string[] | null;
 
   @ApiPropertyOptional({
     description: "Character's occupation or profession",
     example: 'Professional Gambler',
   })
-  @Column({ nullable: true })
-  occupation: string;
+  @Column({ type: 'varchar', nullable: true })
+  occupation: string | null;
 
   @ApiPropertyOptional({
     description:
@@ -77,7 +77,7 @@ export class Character {
     example: ['Kakerou Company', 'Tournament Committee'],
   })
   @Column({ type: 'simple-array', nullable: true })
-  affiliations: string[];
+  affiliations: string[] | null;
 
   @ApiPropertyOptional({
     description: 'Media associated with the character',
@@ -88,6 +88,20 @@ export class Character {
     cascade: true,
   })
   media: Media[];
+
+  @ApiPropertyOptional({
+    description: 'Main character image/portrait filename',
+    example: 'baku-madarame-portrait.webp',
+  })
+  @Column({ type: 'varchar', nullable: true, length: 500 })
+  imageFileName: string | null;
+
+  @ApiPropertyOptional({
+    description: 'Display name for the character image',
+    example: 'Baku Madarame - Official Portrait',
+  })
+  @Column({ type: 'varchar', nullable: true, length: 200 })
+  imageDisplayName: string | null;
 
   @ApiPropertyOptional({
     description: 'Factions the character belongs to',

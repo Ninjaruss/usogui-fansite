@@ -17,7 +17,9 @@ import { Tag } from './tag.entity';
 
 export enum GuideStatus {
   DRAFT = 'draft',
+  PENDING = 'pending',
   PUBLISHED = 'published',
+  REJECTED = 'rejected',
 }
 
 @Entity()
@@ -72,6 +74,13 @@ export class Guide {
   @ApiProperty({ description: 'Number of likes this guide has received' })
   @Column({ type: 'int', default: 0 })
   likeCount: number;
+
+  @ApiPropertyOptional({
+    description: 'Reason for rejection if the guide was rejected',
+    example: 'Guide content does not meet quality standards',
+  })
+  @Column({ type: 'varchar', nullable: true, length: 500 })
+  rejectionReason: string | null;
 
   @ApiProperty({ description: 'ID of the user who authored this guide' })
   @Column()

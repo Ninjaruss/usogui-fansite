@@ -10,6 +10,7 @@ import {
 import { Character } from './character.entity';
 import { User } from './user.entity';
 import { Event } from './event.entity';
+import { Arc } from './arc.entity';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export enum MediaType {
@@ -25,20 +26,41 @@ export enum MediaStatus {
 }
 
 @Entity()
-@Index(['url'], { unique: true })
+@Index(['url'], { unique: false }) // Remove unique constraint as we'll have both URLs and filenames
 @Index(['submittedBy'])
 export class Media {
   @ApiProperty({ description: 'Unique identifier of the media' })
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description:
-      'URL of the media content. Videos must be from YouTube, images must be from DeviantArt, Pixiv, Twitter, or Instagram',
+      'URL of the media content. For external submissions: Videos must be from YouTube, images must be from DeviantArt, Pixiv, Twitter, or Instagram. For uploads: this will be the full URL to the uploaded file.',
     example: 'https://www.youtube.com/watch?v=example',
   })
-  @Column({ length: 2000 })
+  @Column({ type: 'varchar', length: 2000, nullable: true })
   url: string;
+
+  @ApiPropertyOptional({
+    description: 'Original filename for uploaded files. Null for external URLs.',
+    example: 'character-portrait.jpg',
+  })
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  fileName: string;
+
+  @ApiPropertyOptional({
+    description: 'Backblaze B2 file ID for uploaded files. Null for external URLs.',
+    example: '4_z27c88f1d182b150646ff0b16_f200ec6f9c314f68a_d20230101_m120000_c000_v0001_t0005',
+  })
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  b2FileId: string;
+
+  @ApiPropertyOptional({
+    description: 'Whether this media was uploaded directly (true) or submitted as external URL (false)',
+    default: false,
+  })
+  @Column({ type: 'boolean', default: false })
+  isUploaded: boolean;
 
   @ApiProperty({
     description: 'Type of media content',
@@ -52,7 +74,7 @@ export class Media {
     description: 'Description of the media content',
     example: 'Character illustration from Chapter 45',
   })
-  @Column({ nullable: true, length: 500 })
+  @Column({ type: 'varchar', nullable: true, length: 500 })
   description: string;
 
   @ApiPropertyOptional({
@@ -70,8 +92,23 @@ export class Media {
     description: 'ID of the character this media belongs to',
     example: 1,
   })
-  @Column({ nullable: true })
+  @Column({ type: 'int', nullable: true })
   characterId: number;
+
+  @ApiPropertyOptional({
+    description: 'Arc this media belongs to',
+    type: () => Arc,
+  })
+  @ManyToOne(() => Arc, { nullable: true })
+  @JoinColumn({ name: 'arcId' })
+  arc: Arc;
+
+  @ApiPropertyOptional({
+    description: 'ID of the arc this media belongs to',
+    example: 1,
+  })
+  @Column({ type: 'int', nullable: true })
+  arcId: number;
 
   @ApiPropertyOptional({
     description: 'Event this media belongs to',
@@ -85,7 +122,7 @@ export class Media {
     description: 'ID of the event this media belongs to',
     example: 1,
   })
-  @Column({ nullable: true })
+  @Column({ type: 'int', nullable: true })
   eventId: number;
 
   @ApiProperty({
@@ -100,7 +137,7 @@ export class Media {
     description: 'Reason for rejection if the media was rejected',
     example: 'Image contains inappropriate content',
   })
-  @Column({ nullable: true, length: 500 })
+  @Column({ type: 'varchar', nullable: true, length: 500 })
   rejectionReason: string;
 
   @ApiProperty({ description: 'When this media was created' })

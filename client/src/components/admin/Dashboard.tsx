@@ -24,14 +24,14 @@ const StatCard = ({ title, count, icon: Icon, color }: any) => (
 export const Dashboard = () => {
   const { permissions } = usePermissions()
   
-  const { data: characters } = useGetList('characters', { pagination: { page: 1, perPage: 1 } })
-  const { data: arcs } = useGetList('arcs', { pagination: { page: 1, perPage: 1 } })
-  const { data: gambles } = useGetList('gambles', { pagination: { page: 1, perPage: 1 } })
-  const { data: events } = useGetList('events', { pagination: { page: 1, perPage: 1 } })
-  const { data: guides } = useGetList('guides', { pagination: { page: 1, perPage: 1 } })
-  const { data: media } = useGetList('media', { pagination: { page: 1, perPage: 1 } })
-  const { data: quotes } = useGetList('quotes', { pagination: { page: 1, perPage: 1 } })
-  const { data: users } = useGetList('users', { pagination: { page: 1, perPage: 1 } })
+  const { total: charactersCount } = useGetList('characters', { pagination: { page: 1, perPage: 1 } })
+  const { total: arcsCount } = useGetList('arcs', { pagination: { page: 1, perPage: 1 } })
+  const { total: gamblesCount } = useGetList('gambles', { pagination: { page: 1, perPage: 1 } })
+  const { total: eventsCount } = useGetList('events', { pagination: { page: 1, perPage: 1 } })
+  const { total: guidesCount } = useGetList('guides', { pagination: { page: 1, perPage: 1 } })
+  const { total: mediaCount } = useGetList('media', { pagination: { page: 1, perPage: 1 } })
+  const { total: quotesCount } = useGetList('quotes', { pagination: { page: 1, perPage: 1 } })
+  const { total: usersCount } = useGetList('users', { pagination: { page: 1, perPage: 1 } })
 
   return (
     <Box sx={{ p: 3 }}>
@@ -46,7 +46,7 @@ export const Dashboard = () => {
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
             title="Characters"
-            count={characters?.length}
+            count={charactersCount}
             icon={Users}
             color="#1976d2"
           />
@@ -54,7 +54,7 @@ export const Dashboard = () => {
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
             title="Story Arcs"
-            count={arcs?.length}
+            count={arcsCount}
             icon={BookOpen}
             color="#dc004e"
           />
@@ -62,7 +62,7 @@ export const Dashboard = () => {
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
             title="Gambles"
-            count={gambles?.length}
+            count={gamblesCount}
             icon={Crown}
             color="#d32f2f"
           />
@@ -70,7 +70,7 @@ export const Dashboard = () => {
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
             title="Events"
-            count={events?.length}
+            count={eventsCount}
             icon={Zap}
             color="#f57c00"
           />
@@ -78,7 +78,7 @@ export const Dashboard = () => {
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
             title="Community Guides"
-            count={guides?.length}
+            count={guidesCount}
             icon={FileText}
             color="#388e3c"
           />
@@ -86,7 +86,7 @@ export const Dashboard = () => {
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
             title="Media Submissions"
-            count={media?.length}
+            count={mediaCount}
             icon={Image}
             color="#7b1fa2"
           />
@@ -94,7 +94,7 @@ export const Dashboard = () => {
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
             title="Quotes"
-            count={quotes?.length}
+            count={quotesCount}
             icon={Quote}
             color="#00796b"
           />
@@ -103,7 +103,7 @@ export const Dashboard = () => {
           <Grid item xs={12} sm={6} md={3}>
             <StatCard
               title="Users"
-              count={users?.length}
+              count={usersCount}
               icon={Shield}
               color="#5d4037"
             />

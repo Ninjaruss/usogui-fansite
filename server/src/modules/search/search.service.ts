@@ -204,7 +204,7 @@ export class SearchService {
       id: character.id,
       type: 'character',
       title: character.name || 'Unknown Character',
-      description: character.description,
+      description: character.description ?? undefined,
       score: 1.0,
       hasSpoilers: false, // Characters don't have spoiler flags typically
       slug: `character-${character.id}`, // Generate slug from ID
@@ -287,7 +287,7 @@ export class SearchService {
       id: arc.id,
       type: 'arc',
       title: arc.name || 'Unknown Arc',
-      description: arc.description,
+      description: arc.description ?? undefined,
       score: 1.0,
       hasSpoilers: false, // Arcs don't typically have spoiler flags
       slug: `arc-${arc.id}`, // Generate slug from ID

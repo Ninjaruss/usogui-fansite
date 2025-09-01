@@ -24,7 +24,7 @@ import { api } from '../../lib/api'
 import { motion } from 'motion/react'
 
 export default function ProfilePage() {
-  const { user, refreshUser } = useAuth()
+  const { user, refreshUser, loading: authLoading } = useAuth()
   const [selectedQuote, setSelectedQuote] = useState<number | null>(null)
   const [selectedGamble, setSelectedGamble] = useState<number | null>(null)
   const [selectedProfileImage, setSelectedProfileImage] = useState<string | null>(null)
@@ -104,6 +104,9 @@ export default function ProfilePage() {
 
     if (user) {
       fetchData()
+    } else {
+      // Reset loading state when no user is available
+      setDataLoading(false)
     }
   }, [user])
 
@@ -152,6 +155,16 @@ export default function ProfilePage() {
     } finally {
       setProgressLoading(false)
     }
+  }
+
+  if (authLoading) {
+    return (
+      <Container maxWidth="lg" sx={{ py: 8 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+          <CircularProgress size={50} />
+        </Box>
+      </Container>
+    )
   }
 
   if (!user) {
@@ -270,6 +283,41 @@ export default function ProfilePage() {
                   </Typography>
                 </Box>
 
+                {/* Current Favorites Display */}
+                {(user.favoriteQuoteId || user.favoriteGambleId) && (
+                  <Box sx={{ mb: 3, p: 2, backgroundColor: 'action.hover', borderRadius: 2 }}>
+                    <Typography variant="h6" gutterBottom>
+                      Current Favorites
+                    </Typography>
+                    {user.favoriteQuoteId && (
+                      <Box sx={{ mb: 2 }}>
+                        <Typography variant="body2" color="text.secondary">
+                          Favorite Quote
+                        </Typography>
+                        <Typography variant="body1">
+                          {(() => {
+                            const quote = quotes.find(q => q.id === user.favoriteQuoteId)
+                            return quote ? `"${quote.text}" - ${quote.character}` : 'Loading...'
+                          })()}
+                        </Typography>
+                      </Box>
+                    )}
+                    {user.favoriteGambleId && (
+                      <Box>
+                        <Typography variant="body2" color="text.secondary">
+                          Favorite Gamble
+                        </Typography>
+                        <Typography variant="body1">
+                          {(() => {
+                            const gamble = gambles.find(g => g.id === user.favoriteGambleId)
+                            return gamble ? gamble.name : 'Loading...'
+                          })()}
+                        </Typography>
+                      </Box>
+                    )}
+                  </Box>
+                )}
+
                 <Box sx={{ mb: 3 }}>
                   <FormControl fullWidth disabled={dataLoading}>
                     <InputLabel>Favorite Quote</InputLabel>
@@ -360,7 +408,7 @@ export default function ProfilePage() {
                   <Grid item xs={12} sm={4}>
                     <Box sx={{ textAlign: 'center', p: 2, backgroundColor: 'action.hover', borderRadius: 2 }}>
                       <Typography variant="h3" color="secondary" gutterBottom>
-                        {Math.round((user.userProgress / 539) * 100)}%
+                        {Math.round(((user.userProgress || 0) / 539) * 100)}%
                       </Typography>
                       <Typography variant="body1" color="text.secondary">
                         Progress Complete
@@ -370,7 +418,7 @@ export default function ProfilePage() {
                   <Grid item xs={12} sm={4}>
                     <Box sx={{ textAlign: 'center', p: 2, backgroundColor: 'action.hover', borderRadius: 2 }}>
                       <Typography variant="h3" color="warning.main" gutterBottom>
-                        {539 - user.userProgress}
+                        {539 - (user.userProgress || 0)}
                       </Typography>
                       <Typography variant="body1" color="text.secondary">
                         Chapters Remaining
