@@ -47,6 +47,7 @@ export default function SubmitMediaPage() {
   const [characters, setCharacters] = useState<Character[]>([])
   const [arcs, setArcs] = useState<Arc[]>([])
   const [loading, setLoading] = useState(false)
+  const [dataLoading, setDataLoading] = useState(true)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [activeTab, setActiveTab] = useState(0)
@@ -55,6 +56,7 @@ export default function SubmitMediaPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setDataLoading(true)
         const [charactersResponse, arcsResponse] = await Promise.all([
           api.getCharacters({ limit: 100 }),
           api.getArcs({ limit: 100 })
@@ -63,6 +65,8 @@ export default function SubmitMediaPage() {
         setArcs(arcsResponse.data)
       } catch (error) {
         console.error('Failed to fetch data:', error)
+      } finally {
+        setDataLoading(false)
       }
     }
 
@@ -236,7 +240,7 @@ export default function SubmitMediaPage() {
                   </Grid>
 
                   <Grid item xs={12} sm={6}>
-                    <FormControl fullWidth>
+                    <FormControl fullWidth disabled={dataLoading}>
                       <InputLabel>Related Character (Optional)</InputLabel>
                       <Select
                         value={formData.characterId || ''}
@@ -246,17 +250,23 @@ export default function SubmitMediaPage() {
                         <MenuItem value="">
                           <em>None</em>
                         </MenuItem>
-                        {characters.map((character) => (
-                          <MenuItem key={character.id} value={character.id}>
-                            {character.name}
+                        {dataLoading ? (
+                          <MenuItem value="" disabled>
+                            Loading characters...
                           </MenuItem>
-                        ))}
+                        ) : (
+                          characters.map((character) => (
+                            <MenuItem key={character.id} value={character.id}>
+                              {character.name}
+                            </MenuItem>
+                          ))
+                        )}
                       </Select>
                     </FormControl>
                   </Grid>
 
                   <Grid item xs={12} sm={6}>
-                    <FormControl fullWidth>
+                    <FormControl fullWidth disabled={dataLoading}>
                       <InputLabel>Related Arc (Optional)</InputLabel>
                       <Select
                         value={formData.arcId || ''}
@@ -266,11 +276,17 @@ export default function SubmitMediaPage() {
                         <MenuItem value="">
                           <em>None</em>
                         </MenuItem>
-                        {arcs.map((arc) => (
-                          <MenuItem key={arc.id} value={arc.id}>
-                            {arc.name}
+                        {dataLoading ? (
+                          <MenuItem value="" disabled>
+                            Loading arcs...
                           </MenuItem>
-                        ))}
+                        ) : (
+                          arcs.map((arc) => (
+                            <MenuItem key={arc.id} value={arc.id}>
+                              {arc.name}
+                            </MenuItem>
+                          ))
+                        )}
                       </Select>
                     </FormControl>
                   </Grid>
@@ -320,6 +336,7 @@ export default function SubmitMediaPage() {
                   characters={characters}
                   arcs={arcs}
                   loading={loading}
+                  dataLoading={dataLoading}
                   error={error}
                 />
               </Box>

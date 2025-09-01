@@ -33,6 +33,8 @@ export class MediaService {
       type: data.type,
       description: data.description,
       character: data.characterId ? ({ id: data.characterId } as any) : null,
+      arc: data.arcId ? ({ id: data.arcId } as any) : null,
+      event: data.eventId ? ({ id: data.eventId } as any) : null,
       submittedBy: user,
       status: MediaStatus.PENDING,
     });
@@ -102,6 +104,7 @@ export class MediaService {
     const query = this.mediaRepo
       .createQueryBuilder('media')
       .leftJoinAndSelect('media.character', 'character')
+      .leftJoinAndSelect('media.arc', 'arc')
       .leftJoinAndSelect('media.submittedBy', 'submittedBy');
 
     // Only filter by approved status if no status filter is provided
@@ -132,7 +135,7 @@ export class MediaService {
   async findOne(id: number): Promise<Media | null> {
     const media = await this.mediaRepo.findOne({
       where: { id },
-      relations: ['character', 'submittedBy'],
+      relations: ['character', 'arc', 'submittedBy'],
     });
     if (!media) {
       throw new NotFoundException(`Media with id ${id} not found`);
@@ -143,7 +146,7 @@ export class MediaService {
   async findPending(): Promise<Media[]> {
     return this.mediaRepo.find({
       where: { status: MediaStatus.PENDING },
-      relations: ['character', 'submittedBy'],
+      relations: ['character', 'arc', 'submittedBy'],
       order: { createdAt: 'ASC' },
     });
   }
@@ -209,7 +212,7 @@ export class MediaService {
   ): Promise<Media> {
     const media = await this.mediaRepo.findOne({
       where: { id },
-      relations: ['character', 'submittedBy'],
+      relations: ['character', 'arc', 'submittedBy'],
     });
     if (!media) {
       throw new NotFoundException(`Media with id ${id} not found`);
@@ -222,6 +225,13 @@ export class MediaService {
     if (updateData.characterId !== undefined) {
       media.character = updateData.characterId
         ? ({ id: updateData.characterId } as any)
+        : null;
+    }
+
+    // If arc ID is provided, update the arc relation
+    if ('arcId' in updateData) {
+      media.arc = updateData.arcId
+        ? ({ id: updateData.arcId } as any)
         : null;
     }
 
@@ -302,6 +312,7 @@ export class MediaService {
     const query = this.mediaRepo
       .createQueryBuilder('media')
       .leftJoinAndSelect('media.character', 'character')
+      .leftJoinAndSelect('media.arc', 'arc')
       .leftJoinAndSelect('media.submittedBy', 'submittedBy')
       .where('media.status = :status', { status: MediaStatus.APPROVED })
       .select([
@@ -312,6 +323,8 @@ export class MediaService {
         'media.createdAt',
         'character.id',
         'character.name',
+        'arc.id',
+        'arc.name',
         'submittedBy.id',
         'submittedBy.username',
       ]);
@@ -346,7 +359,7 @@ export class MediaService {
         id,
         status: MediaStatus.APPROVED,
       },
-      relations: ['character', 'submittedBy'],
+      relations: ['character', 'arc', 'submittedBy'],
       select: {
         id: true,
         url: true,
@@ -354,6 +367,10 @@ export class MediaService {
         description: true,
         createdAt: true,
         character: {
+          id: true,
+          name: true,
+        },
+        arc: {
           id: true,
           name: true,
         },

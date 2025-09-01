@@ -25,8 +25,7 @@ export class EventSeeder implements Seeder {
         description:
           'The first appearance of Baku Madarame, showing his uncanny ability to detect lies and his gambling prowess.',
         type: EventType.CHARACTER_REVEAL,
-        startChapter: 1,
-        endChapter: 1,
+        chapterNumber: 1,
         spoilerChapter: 1,
         pageNumbers: [1, 2, 3],
         isVerified: true,
@@ -43,8 +42,7 @@ export class EventSeeder implements Seeder {
         description:
           'Baku encounters Marco Reiji, who becomes one of his closest allies in the gambling world.',
         type: EventType.CHARACTER_REVEAL,
-        startChapter: 5,
-        endChapter: 5,
+        chapterNumber: 5,
         spoilerChapter: 5,
         pageNumbers: [12, 15, 18],
         isVerified: true,
@@ -61,8 +59,7 @@ export class EventSeeder implements Seeder {
         description:
           'The mysterious organization Kakerou is introduced, revealing the underground world of high-stakes gambling.',
         type: EventType.PLOT,
-        startChapter: 1,
-        endChapter: 3,
+        chapterNumber: 1,
         spoilerChapter: 1,
         pageNumbers: [20, 25, 30],
         isVerified: true,
@@ -80,8 +77,7 @@ export class EventSeeder implements Seeder {
         description:
           'Baku participates in his first major gambling event, establishing his reputation in the underground scene.',
         type: EventType.ARC,
-        startChapter: 1,
-        endChapter: 10,
+        chapterNumber: 1,
         spoilerChapter: 1,
         pageNumbers: [5, 8, 12, 20],
         isVerified: true,
@@ -99,8 +95,7 @@ export class EventSeeder implements Seeder {
         description:
           "Baku's supernatural ability to detect lies is first demonstrated, showcasing what makes him unique.",
         type: EventType.CHARACTER_REVEAL,
-        startChapter: 1,
-        endChapter: 1,
+        chapterNumber: 1,
         spoilerChapter: 1,
         pageNumbers: [8, 10],
         isVerified: true,

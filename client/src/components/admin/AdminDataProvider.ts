@@ -2,7 +2,7 @@ import { DataProvider, HttpError } from 'react-admin'
 import { api } from '../../lib/api'
 
 // Function to clean update data by removing read-only fields and relationship objects
-const cleanUpdateData = (resource: string, data: any): any => {
+const cleanUpdateData = (resource: string, data: Record<string, unknown>): Record<string, unknown> => {
   const cleaned = { ...data }
   
   // Remove common read-only fields
@@ -28,11 +28,11 @@ const cleanUpdateData = (resource: string, data: any): any => {
     // Keep only the fields that are allowed in the CreateEventDto/UpdateEventDto
     const allowedFields = [
       'title', 'description', 'type', 'arcId', 'chapterIds', 
-      'startChapter', 'endChapter', 'spoilerChapter', 'pageNumbers',
+      'chapterNumber', 'spoilerChapter', 'pageNumbers',
       'chapterReferences', 'isVerified'
     ]
     
-    const eventCleaned: any = {}
+    const eventCleaned: Record<string, unknown> = {}
     allowedFields.forEach(field => {
       if (cleaned[field] !== undefined) {
         eventCleaned[field] = cleaned[field]
@@ -47,7 +47,7 @@ const cleanUpdateData = (resource: string, data: any): any => {
       'name', 'rules', 'winCondition', 'chapterId', 'hasTeams', 'participants', 'rounds', 'observerIds'
     ]
     
-    const gambleCleaned: any = {}
+    const gambleCleaned: Record<string, unknown> = {}
     allowedFields.forEach(field => {
       if (cleaned[field] !== undefined) {
         gambleCleaned[field] = cleaned[field]
@@ -56,7 +56,7 @@ const cleanUpdateData = (resource: string, data: any): any => {
     
     // Transform participants from admin form format to DTO format
     if (gambleCleaned.participants && Array.isArray(gambleCleaned.participants)) {
-      gambleCleaned.participants = gambleCleaned.participants.map((p: any) => ({
+      gambleCleaned.participants = gambleCleaned.participants.map((p: Record<string, unknown>) => ({
         characterId: p.characterId,
         teamName: p.teamName || undefined,
         isWinner: p.isWinner || false,
@@ -66,7 +66,7 @@ const cleanUpdateData = (resource: string, data: any): any => {
     
     // Transform rounds from admin form format to DTO format
     if (gambleCleaned.rounds && Array.isArray(gambleCleaned.rounds)) {
-      gambleCleaned.rounds = gambleCleaned.rounds.map((r: any) => ({
+      gambleCleaned.rounds = gambleCleaned.rounds.map((r: Record<string, unknown>) => ({
         roundNumber: r.roundNumber,
         outcome: r.outcome,
         winnerTeam: r.winnerTeam || undefined,
@@ -77,10 +77,18 @@ const cleanUpdateData = (resource: string, data: any): any => {
     
     // Transform observers from admin form format to DTO format
     if (gambleCleaned.observers && Array.isArray(gambleCleaned.observers)) {
-      gambleCleaned.observerIds = gambleCleaned.observers.map((o: any) => 
-        typeof o === 'object' ? o.id : o
+      gambleCleaned.observerIds = gambleCleaned.observers.map((o: unknown) => 
+        typeof o === 'object' && o !== null ? (o as Record<string, unknown>).id : o
       )
       delete gambleCleaned.observers
+    }
+    
+    // Handle observerIds directly if provided (new format)
+    if (gambleCleaned.observerIds && Array.isArray(gambleCleaned.observerIds)) {
+      // Ensure all values are properly extracted IDs
+      gambleCleaned.observerIds = gambleCleaned.observerIds.map((o: unknown) => 
+        typeof o === 'object' && o !== null ? (o as Record<string, unknown>).id : o
+      ).filter(id => id !== null && id !== undefined)
     }
     
     return gambleCleaned
@@ -92,7 +100,7 @@ const cleanUpdateData = (resource: string, data: any): any => {
       'title', 'description', 'content', 'status', 'tagNames', 'authorId'
     ]
     
-    const guideCleaned: any = {}
+    const guideCleaned: Record<string, unknown> = {}
     allowedFields.forEach(field => {
       if (cleaned[field] !== undefined) {
         guideCleaned[field] = cleaned[field]
@@ -111,10 +119,10 @@ const cleanUpdateData = (resource: string, data: any): any => {
   if (resource === 'media') {
     // Keep only the fields that are allowed in the media DTOs
     const allowedFields = [
-      'url', 'type', 'description', 'characterId', 'status', 'rejectionReason'
+      'url', 'type', 'description', 'characterId', 'arcId', 'eventId', 'status', 'rejectionReason'
     ]
     
-    const mediaCleaned: any = {}
+    const mediaCleaned: Record<string, unknown> = {}
     allowedFields.forEach(field => {
       if (cleaned[field] !== undefined) {
         mediaCleaned[field] = cleaned[field]
@@ -124,6 +132,8 @@ const cleanUpdateData = (resource: string, data: any): any => {
     // Remove read-only fields that are auto-populated
     delete mediaCleaned.submittedBy
     delete mediaCleaned.character
+    delete mediaCleaned.arc
+    delete mediaCleaned.event
     
     return mediaCleaned
   }
@@ -134,7 +144,7 @@ const cleanUpdateData = (resource: string, data: any): any => {
       'text', 'chapterNumber', 'description', 'pageNumber', 'characterId'
     ]
     
-    const quoteCleaned: any = {}
+    const quoteCleaned: Record<string, unknown> = {}
     allowedFields.forEach(field => {
       if (cleaned[field] !== undefined) {
         quoteCleaned[field] = cleaned[field]
@@ -146,8 +156,8 @@ const cleanUpdateData = (resource: string, data: any): any => {
     delete quoteCleaned.submittedBy
     
     // If character object exists but characterId doesn't, extract characterId
-    if (data.character && data.character.id && !quoteCleaned.characterId) {
-      quoteCleaned.characterId = data.character.id
+    if (data.character && (data.character as Record<string, unknown>).id && !quoteCleaned.characterId) {
+      quoteCleaned.characterId = (data.character as Record<string, unknown>).id
     }
     
     return quoteCleaned
@@ -164,17 +174,18 @@ export const AdminDataProvider: DataProvider = {
     // Special handling for media-approval resource
     if (resource === 'media-approval') {
       try {
-        const response = await api.get<any>('/media/pending')
-        const items = Array.isArray(response) ? response : (response?.data || [])
+        const response = await api.get<unknown>('/media/pending')
+        const items = Array.isArray(response) ? response : (response as Record<string, unknown>)?.data || []
         
         return {
-          data: items.map((item: any) => ({ ...item, id: item.id })),
-          total: items.length,
+          data: (items as any[]).map((item: any) => ({ ...item, id: item.id })),
+          total: (items as any[]).length,
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error('Error in getList for media-approval:', error)
-        const status = error.status || (error.name === 'TypeError' ? 500 : 400)
-        const message = error.message || 'Failed to fetch pending media items'
+        const err = error as { status?: number; name?: string; message?: string }
+        const status = err.status || (err.name === 'TypeError' ? 500 : 400)
+        const message = err.message || 'Failed to fetch pending media items'
         throw new HttpError(message, status, error)
       }
     }
@@ -197,21 +208,22 @@ export const AdminDataProvider: DataProvider = {
     // Users and other resources don't support sorting
 
     try {
-      const response = await api.get<any>(`/${resource}?${new URLSearchParams(query).toString()}`)
+      const response = await api.get<unknown>(`/${resource}?${new URLSearchParams(query).toString()}`)
       
       // Handle different response structures
-      const responseData = response?.data ?? response
-      const items = Array.isArray(responseData) ? responseData : (responseData?.data || [])
-      const total = response?.total ?? responseData?.total ?? items.length
+      const responseData = (response as Record<string, unknown>)?.data ?? response
+      const items = Array.isArray(responseData) ? responseData : (responseData as Record<string, unknown>)?.data || []
+      const total = (response as Record<string, unknown>)?.total ?? (responseData as Record<string, unknown>)?.total ?? (items as Record<string, unknown>[]).length
       
       return {
-        data: items.map((item: any) => ({ ...item, id: item.id })),
-        total,
+        data: (items as any[]).map((item: any) => ({ ...item, id: item.id })),
+        total: total as number,
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(`Error in getList for ${resource}:`, error)
-      const status = error.status || (error.name === 'TypeError' ? 500 : 400)
-      const message = error.message || 'Failed to fetch items'
+      const err = error as { status?: number; name?: string; message?: string }
+      const status = err.status || (err.name === 'TypeError' ? 500 : 400)
+      const message = err.message || 'Failed to fetch items'
       throw new HttpError(message, status, error)
     }
   },
@@ -220,45 +232,47 @@ export const AdminDataProvider: DataProvider = {
     // Special handling for media-approval resource
     if (resource === 'media-approval') {
       try {
-        const response = await api.get<any>(`/media/${params.id}`)
-        const data = response?.data ?? response
+        const response = await api.get<unknown>(`/media/${params.id}`)
+        const data = (response as Record<string, unknown>)?.data ?? response
         
         if (!data) {
           throw new HttpError('No data returned from server', 404)
         }
         
-        const item = { ...data, id: data.id ?? params.id }
+        const item = { ...(data as Record<string, unknown>), id: (data as Record<string, unknown>).id ?? params.id }
         return { data: item as any }
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error('Error in getOne for media-approval:', error)
+        const err = error as { status?: number; name?: string; message?: string }
         throw new HttpError(
-          error.message || 'Failed to fetch media item',
-          error.status || (error.name === 'TypeError' ? 500 : 404),
+          err.message || 'Failed to fetch media item',
+          err.status || (err.name === 'TypeError' ? 500 : 404),
           error
         )
       }
     }
     
     try {
-      const response = await api.get<any>(`/${resource}/${params.id}`)
+      const response = await api.get<unknown>(`/${resource}/${params.id}`)
       
       // Handle different response structures
       // For single item endpoints, response might be the item directly or wrapped in data
-      const data = response?.data ?? response
+      const data = (response as Record<string, unknown>)?.data ?? response
       
       if (!data) {
         throw new HttpError('No data returned from server', 404)
       }
       
       // Ensure the item has an id, using the requested id as fallback
-      const item = { ...data, id: data.id ?? params.id }
+      const item = { ...(data as Record<string, unknown>), id: (data as Record<string, unknown>).id ?? params.id }
       
       return { data: item as any }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(`Error in getOne for ${resource}:`, error)
+      const err = error as { status?: number; name?: string; message?: string }
       throw new HttpError(
-        error.message || 'Failed to fetch item',
-        error.status || (error.name === 'TypeError' ? 500 : 404),
+        err.message || 'Failed to fetch item',
+        err.status || (err.name === 'TypeError' ? 500 : 404),
         error
       )
     }
@@ -267,19 +281,20 @@ export const AdminDataProvider: DataProvider = {
   getMany: async (resource, params) => {
     try {
       const responses = await Promise.all(
-        params.ids.map((id) => api.get<any>(`/${resource}/${id}`))
+        params.ids.map((id) => api.get<unknown>(`/${resource}/${id}`))
       )
       
       const data = responses.map((response, index) => {
-        const item = response?.data ?? response
-        return item ? { ...item, id: item.id ?? params.ids[index] } : null
+        const item = (response as Record<string, unknown>)?.data ?? response
+        return item ? { ...(item as Record<string, unknown>), id: (item as Record<string, unknown>).id ?? params.ids[index] } : null
       }).filter(Boolean) // Remove any null entries
       
       return { data: data as any[] }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(`Error in getMany for ${resource}:`, error)
-      const status = error.status || (error.name === 'TypeError' ? 500 : 400)
-      const message = error.message || 'Failed to fetch items'
+      const err = error as { status?: number; name?: string; message?: string }
+      const status = err.status || (err.name === 'TypeError' ? 500 : 400)
+      const message = err.message || 'Failed to fetch items'
       throw new HttpError(message, status, error)
     }
   },
@@ -307,21 +322,22 @@ export const AdminDataProvider: DataProvider = {
     // Users and other resources don't support sorting
 
     try {
-      const response = await api.get<any>(`/${resource}?${new URLSearchParams(query).toString()}`)
+      const response = await api.get<unknown>(`/${resource}?${new URLSearchParams(query).toString()}`)
       
       // Handle different response structures
-      const responseData = response?.data ?? response
-      const items = Array.isArray(responseData) ? responseData : (responseData?.data || [])
-      const total = response?.total ?? responseData?.total ?? items.length
+      const responseData = (response as Record<string, unknown>)?.data ?? response
+      const items = Array.isArray(responseData) ? responseData : (responseData as Record<string, unknown>)?.data || []
+      const total = (response as Record<string, unknown>)?.total ?? (responseData as Record<string, unknown>)?.total ?? (items as Record<string, unknown>[]).length
       
       return {
-        data: items.map((item: any) => ({ ...item, id: item.id })),
-        total,
+        data: (items as any[]).map((item: any) => ({ ...item, id: item.id })),
+        total: total as number,
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(`Error in getManyReference for ${resource}:`, error)
-      const status = error.status || (error.name === 'TypeError' ? 500 : 400)
-      const message = error.message || 'Failed to fetch referenced items'
+      const err = error as { status?: number; name?: string; message?: string }
+      const status = err.status || (err.name === 'TypeError' ? 500 : 400)
+      const message = err.message || 'Failed to fetch referenced items'
       throw new HttpError(message, status, error)
     }
   },
@@ -330,26 +346,27 @@ export const AdminDataProvider: DataProvider = {
     try {
       // Clean the create data by removing read-only and relationship fields
       const cleanedData = cleanUpdateData(resource, params.data)
-      const response = await api.post<any>(`/${resource}`, cleanedData)
+      const response = await api.post<unknown>(`/${resource}`, cleanedData)
       
-      const data = response?.data ?? response
+      const data = (response as Record<string, unknown>)?.data ?? response
       
       if (!data) {
         throw new HttpError('No data returned from server', 500)
       }
       
       // Ensure created item has an id
-      const item = { ...data, id: data.id }
+      const item = { ...(data as Record<string, unknown>), id: (data as Record<string, unknown>).id }
       
       if (!item.id) {
         throw new HttpError('Created item missing required id field', 500)
       }
       
       return { data: item as any }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(`Error in create for ${resource}:`, error)
-      const status = error.status || (error.name === 'TypeError' ? 500 : 400)
-      const message = error.message || 'Failed to create item'
+      const err = error as { status?: number; name?: string; message?: string }
+      const status = err.status || (err.name === 'TypeError' ? 500 : 400)
+      const message = err.message || 'Failed to create item'
       throw new HttpError(message, status, error)
     }
   },
@@ -368,10 +385,10 @@ export const AdminDataProvider: DataProvider = {
       // Use PATCH for resources that support it, PUT for others
       const usePatch = ['quotes', 'guides', 'media'].includes(resource)
       const response = usePatch 
-        ? await api.patch<any>(`/${resource}/${params.id}`, cleanedData)
-        : await api.put<any>(`/${resource}/${params.id}`, cleanedData)
+        ? await api.patch<unknown>(`/${resource}/${params.id}`, cleanedData)
+        : await api.put<unknown>(`/${resource}/${params.id}`, cleanedData)
       
-      const data = response?.data ?? response
+      const data = (response as Record<string, unknown>)?.data ?? response
       
       if (resource === 'guides') {
         console.log('Server response data:', data)
@@ -379,10 +396,13 @@ export const AdminDataProvider: DataProvider = {
       
       // Ensure the returned item has proper id and includes all the updated data
       const item = { 
-        ...data, 
-        id: data.id ?? params.id,
-        // For guides, ensure authorId is properly set if it was in the response
-        ...(resource === 'guides' && data.authorId && { authorId: data.authorId })
+        ...(data as any), 
+        id: (data as any).id ?? params.id,
+      }
+      
+      // For guides, ensure authorId is properly set if it was in the response
+      if (resource === 'guides' && (data as any).authorId) {
+        item.authorId = (data as any).authorId
       }
       
       if (resource === 'guides') {
@@ -391,16 +411,17 @@ export const AdminDataProvider: DataProvider = {
       }
       
       return { data: item as any }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(`Error in update for ${resource}:`, error)
-      const status = error.status || (error.name === 'TypeError' ? 500 : 400)
-      const message = error.message || 'Failed to update item'
+      const err = error as { status?: number; name?: string; message?: string }
+      const status = err.status || (err.name === 'TypeError' ? 500 : 400)
+      const message = err.message || 'Failed to update item'
       
-      if (error.status === 404) {
+      if (err.status === 404) {
         throw new HttpError(`${resource} not found`, 404, error)
       }
-      if (error.status === 401 || error.status === 403) {
-        throw new HttpError('Authentication required or insufficient permissions', error.status, error)
+      if (err.status === 401 || err.status === 403) {
+        throw new HttpError('Authentication required or insufficient permissions', err.status, error)
       }
       
       throw new HttpError(message, status, error)
@@ -422,10 +443,11 @@ export const AdminDataProvider: DataProvider = {
         )
       )
       return { data: params.ids }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(`Error in updateMany for ${resource}:`, error)
-      const status = error.status || (error.name === 'TypeError' ? 500 : 400)
-      const message = error.message || 'Failed to update items'
+      const err = error as { status?: number; name?: string; message?: string }
+      const status = err.status || (err.name === 'TypeError' ? 500 : 400)
+      const message = err.message || 'Failed to update items'
       throw new HttpError(message, status, error)
     }
   },
@@ -434,10 +456,11 @@ export const AdminDataProvider: DataProvider = {
     try {
       await api.delete(`/${resource}/${params.id}`)
       return { data: params.previousData as any }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(`Error in delete for ${resource}:`, error)
-      const status = error.status || (error.name === 'TypeError' ? 500 : 400)
-      const message = error.message || 'Failed to delete item'
+      const err = error as { status?: number; name?: string; message?: string }
+      const status = err.status || (err.name === 'TypeError' ? 500 : 400)
+      const message = err.message || 'Failed to delete item'
       throw new HttpError(message, status, error)
     }
   },
@@ -448,10 +471,11 @@ export const AdminDataProvider: DataProvider = {
         params.ids.map((id) => api.delete(`/${resource}/${id}`))
       )
       return { data: params.ids }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(`Error in deleteMany for ${resource}:`, error)
-      const status = error.status || (error.name === 'TypeError' ? 500 : 400)
-      const message = error.message || 'Failed to delete items'
+      const err = error as { status?: number; name?: string; message?: string }
+      const status = err.status || (err.name === 'TypeError' ? 500 : 400)
+      const message = err.message || 'Failed to delete items'
       throw new HttpError(message, status, error)
     }
   },

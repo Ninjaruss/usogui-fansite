@@ -3,9 +3,18 @@
 ### Changes
 - Updated character page with further details and show events/gambles
 - Gambles admin page streamlined to look better
+- Removed start/end chapter and set single chapter event occurs
+- Updated dropdowns to show loaded data with proper loading states
+- Enhanced gamble admin dropdowns with better UX (loading messages, helper text, empty states)
+- Added proper references to admin pages (i.e. click on character to go to character page)
+- Fixed arc relation for admin dashboard
+- Added guide view count tracking
 
 ### Notes
 - 
+
+### TODO
+- Add hiding spoilers for events, gamble results, 
 
 ## 2025-08-31
 ### Changes
@@ -18,9 +27,6 @@
 
 ### Notes
 - It seems there have been changes or fluctuations to Claude code this recent week (no official announcement, was looking through reddit lol). May have been the cause for code to be weaker in quality.
-
-### TODO
-- Add hiding spoilers for events, gamble results, 
 
 
 ## 2025-08-30

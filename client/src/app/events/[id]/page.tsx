@@ -23,8 +23,7 @@ interface Event {
   id: number
   title: string
   description: string
-  startChapter: number
-  endChapter?: number
+  chapterNumber: number
   type: string
   arc?: {
     id: number
@@ -130,7 +129,7 @@ export default function EventDetailsPage() {
           <Box sx={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: 1, mb: 2 }}>
             <Chip
               icon={<Calendar size={16} />}
-              label={event.endChapter ? `Chapters ${event.startChapter}-${event.endChapter}` : `Chapter ${event.startChapter}`}
+              label={`Chapter ${event.chapterNumber}`}
               color="primary"
               variant="outlined"
             />
@@ -183,10 +182,10 @@ export default function EventDetailsPage() {
                 
                 <Box sx={{ mb: 3 }}>
                   <Typography variant="body2" color="text.secondary" gutterBottom>
-                    Chapters
+                    Chapter
                   </Typography>
                   <Typography variant="body1">
-                    {event.endChapter ? `${event.startChapter} - ${event.endChapter}` : event.startChapter}
+                    {event.chapterNumber}
                   </Typography>
                 </Box>
 

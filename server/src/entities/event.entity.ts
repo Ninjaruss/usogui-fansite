@@ -35,7 +35,7 @@ export interface ChapterReference {
 
 @Entity()
 @Index(['arc'])
-@Index(['startChapter', 'endChapter'])
+@Index(['chapterNumber'])
 @Index(['title'])
 @Index(['type'])
 @Index(['spoilerChapter'])
@@ -74,18 +74,11 @@ export class Event {
   type: EventType;
 
   @ApiProperty({
-    description: 'Chapter where the event starts',
+    description: 'Chapter number where this event occurs',
     example: 45,
   })
   @Column()
-  startChapter: number;
-
-  @ApiPropertyOptional({
-    description: 'Chapter where the event ends',
-    example: 52,
-  })
-  @Column({ nullable: true })
-  endChapter: number;
+  chapterNumber: number;
 
   @ApiPropertyOptional({
     description:

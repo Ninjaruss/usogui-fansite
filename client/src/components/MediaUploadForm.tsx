@@ -27,6 +27,7 @@ interface MediaUploadFormProps {
   characters: Array<{ id: number; name: string }>
   arcs: Array<{ id: number; name: string }>
   loading?: boolean
+  dataLoading?: boolean
   error?: string
 }
 
@@ -35,6 +36,7 @@ export default function MediaUploadForm({
   characters, 
   arcs, 
   loading = false, 
+  dataLoading = false,
   error 
 }: MediaUploadFormProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
@@ -210,7 +212,7 @@ export default function MediaUploadForm({
           sx={{ mb: 2 }}
         />
 
-        <FormControl fullWidth sx={{ mb: 2 }}>
+        <FormControl fullWidth sx={{ mb: 2 }} disabled={dataLoading}>
           <InputLabel>Character (Optional)</InputLabel>
           <Select
             value={formData.characterId || ''}
@@ -218,15 +220,21 @@ export default function MediaUploadForm({
             onChange={(e) => handleInputChange('characterId', e.target.value || null)}
           >
             <MenuItem value="">None</MenuItem>
-            {characters.map((character) => (
-              <MenuItem key={character.id} value={character.id}>
-                {character.name}
+            {dataLoading ? (
+              <MenuItem value="" disabled>
+                Loading characters...
               </MenuItem>
-            ))}
+            ) : (
+              characters.map((character) => (
+                <MenuItem key={character.id} value={character.id}>
+                  {character.name}
+                </MenuItem>
+              ))
+            )}
           </Select>
         </FormControl>
 
-        <FormControl fullWidth sx={{ mb: 3 }}>
+        <FormControl fullWidth sx={{ mb: 3 }} disabled={dataLoading}>
           <InputLabel>Arc (Optional)</InputLabel>
           <Select
             value={formData.arcId || ''}
@@ -234,11 +242,17 @@ export default function MediaUploadForm({
             onChange={(e) => handleInputChange('arcId', e.target.value || null)}
           >
             <MenuItem value="">None</MenuItem>
-            {arcs.map((arc) => (
-              <MenuItem key={arc.id} value={arc.id}>
-                {arc.name}
+            {dataLoading ? (
+              <MenuItem value="" disabled>
+                Loading arcs...
               </MenuItem>
-            ))}
+            ) : (
+              arcs.map((arc) => (
+                <MenuItem key={arc.id} value={arc.id}>
+                  {arc.name}
+                </MenuItem>
+              ))
+            )}
           </Select>
         </FormControl>
 

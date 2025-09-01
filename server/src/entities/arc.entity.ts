@@ -32,6 +32,19 @@ export class Arc {
   @Column({ type: 'int', default: 0 })
   order: number;
 
+  @ApiProperty({
+    description: 'Type of arc - main or mini',
+    enum: ['main', 'mini'],
+    default: 'main',
+    example: 'main',
+  })
+  @Column({
+    type: 'enum',
+    enum: ['main', 'mini'],
+    default: 'main',
+  })
+  type: 'main' | 'mini';
+
   @ApiPropertyOptional({
     description: 'Description of the arc',
     example:

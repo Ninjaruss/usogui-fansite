@@ -23,8 +23,7 @@ export const EventList = () => (
       <TextField source="id" />
       <TextField source="title" />
       <TextField source="type" />
-      <NumberField source="startChapter" />
-      <NumberField source="endChapter" />
+      <NumberField source="chapterNumber" />
       <ReferenceField source="arcId" reference="arcs" label="Arc">
         <TextField source="name" />
       </ReferenceField>
@@ -40,8 +39,7 @@ export const EventShow = () => (
       <TextField source="title" />
       <TextField source="description" />
       <TextField source="type" />
-      <NumberField source="startChapter" />
-      <NumberField source="endChapter" />
+      <NumberField source="chapterNumber" />
       <NumberField source="spoilerChapter" />
       <ReferenceField source="arcId" reference="arcs" label="Arc">
         <TextField source="name" />
@@ -68,8 +66,7 @@ export const EventEdit = () => (
         ]}
         required
       />
-      <NumberInput source="startChapter" required max={539} />
-      <NumberInput source="endChapter" max={539} />
+      <NumberInput source="chapterNumber" required max={539} />
       <NumberInput source="spoilerChapter" max={539} />
       <ReferenceInput source="arcId" reference="arcs" label="Arc">
         <AutocompleteInput optionText="name" />
@@ -97,8 +94,7 @@ export const EventCreate = () => (
         required
         defaultValue="other"
       />
-      <NumberInput source="startChapter" required max={539} />
-      <NumberInput source="endChapter" max={539} />
+      <NumberInput source="chapterNumber" required max={539} />
       <NumberInput source="spoilerChapter" max={539} />
       <ReferenceInput source="arcId" reference="arcs" label="Arc">
         <AutocompleteInput optionText="name" />

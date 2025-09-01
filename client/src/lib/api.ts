@@ -287,7 +287,7 @@ class ApiClient {
     return this.get<any>(`/gambles/${id}`)
   }
 
-  async getEvents(params?: { page?: number; limit?: number }) {
+  async getEvents(params?: { page?: number; limit?: number; title?: string }) {
     const searchParams = new URLSearchParams()
     if (params) {
       Object.entries(params).forEach(([key, value]) => {
@@ -303,6 +303,33 @@ class ApiClient {
       page: number
       totalPages: number
     }>(`/events${query ? `?${query}` : ''}`)
+  }
+
+  async getEventsGroupedByArc(params?: { 
+    userProgress?: number; 
+    type?: string; 
+    isVerified?: boolean 
+  }) {
+    const searchParams = new URLSearchParams()
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) {
+          searchParams.append(key, value.toString())
+        }
+      })
+    }
+    const query = searchParams.toString()
+    return this.get<{
+      mainArcs: Array<{
+        arc: any
+        events: any[]
+      }>
+      miniArcs: Array<{
+        arc: any
+        events: any[]
+      }>
+      noArc: any[]
+    }>(`/events/grouped/by-arc${query ? `?${query}` : ''}`)
   }
 
   async getEvent(id: number) {

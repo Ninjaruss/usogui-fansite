@@ -64,11 +64,11 @@ export class EventsService {
     }
 
     // Sorting: only allow certain fields for safety
-    const allowedSort = ['id', 'title', 'description', 'startChapter', 'type'];
+    const allowedSort = ['id', 'title', 'description', 'chapterNumber', 'type'];
     if (sort && allowedSort.includes(sort)) {
       query.orderBy(`event.${sort}`, order);
     } else {
-      query.orderBy('event.startChapter', 'ASC');
+      query.orderBy('event.chapterNumber', 'ASC');
     }
 
     query.skip((page - 1) * limit).take(limit);
@@ -113,7 +113,7 @@ export class EventsService {
     }
     // series filter intentionally removed
 
-    query.orderBy('event.startChapter', 'ASC');
+    query.orderBy('event.chapterNumber', 'ASC');
     return query.getMany();
   }
 
@@ -146,7 +146,7 @@ export class EventsService {
       );
     }
 
-    query.orderBy('event.startChapter', 'ASC');
+    query.orderBy('event.chapterNumber', 'ASC');
     return query.getMany();
   }
 
@@ -182,11 +182,7 @@ export class EventsService {
       .createQueryBuilder('event')
       .leftJoinAndSelect('event.arc', 'arc')
       .leftJoinAndSelect('event.characters', 'characters')
-      .where('event.startChapter <= :chapterNumber', { chapterNumber })
-      .andWhere(
-        '(event.endChapter IS NULL OR event.endChapter >= :chapterNumber)',
-        { chapterNumber },
-      );
+      .where('event.chapterNumber = :chapterNumber', { chapterNumber });
 
     if (userProgress !== undefined) {
       query.andWhere(
@@ -229,7 +225,94 @@ export class EventsService {
       query.limit(options.limit);
     }
 
-    query.orderBy('event.startChapter', 'ASC');
+    query.orderBy('event.chapterNumber', 'ASC');
     return query.getMany();
+  }
+
+  /**
+   * Group events by arc chapter ranges with main/mini arc classification
+   */
+  async getEventsGroupedByArc(
+    userProgress?: number,
+    filters?: {
+      type?: EventType;
+      isVerified?: boolean;
+    },
+  ): Promise<{
+    mainArcs: Array<{
+      arc: any;
+      events: Event[];
+    }>;
+    miniArcs: Array<{
+      arc: any;
+      events: Event[];
+    }>;
+    noArc: Event[];
+  }> {
+    // Get all viewable events
+    const eventsQuery = this.repo
+      .createQueryBuilder('event')
+      .leftJoinAndSelect('event.arc', 'arc')
+      .leftJoinAndSelect('event.characters', 'characters');
+
+    if (userProgress !== undefined) {
+      eventsQuery.andWhere(
+        '(event.spoilerChapter IS NULL OR event.spoilerChapter <= :userProgress)',
+        { userProgress },
+      );
+    }
+
+    if (filters?.type) {
+      eventsQuery.andWhere('event.type = :type', { type: filters.type });
+    }
+
+    if (filters?.isVerified !== undefined) {
+      eventsQuery.andWhere('event.isVerified = :isVerified', {
+        isVerified: filters.isVerified,
+      });
+    }
+
+    eventsQuery.orderBy('event.chapterNumber', 'ASC');
+    const events = await eventsQuery.getMany();
+
+    // Group events by arc
+    const arcGroups: { [arcId: number]: Event[] } = {};
+    const noArcEvents: Event[] = [];
+
+    events.forEach((event) => {
+      if (event.arc) {
+        if (!arcGroups[event.arc.id]) {
+          arcGroups[event.arc.id] = [];
+        }
+        arcGroups[event.arc.id].push(event);
+      } else {
+        noArcEvents.push(event);
+      }
+    });
+
+    // Get arc details and separate by type
+    const mainArcs: Array<{ arc: any; events: Event[] }> = [];
+    const miniArcs: Array<{ arc: any; events: Event[] }> = [];
+
+    for (const [arcId, arcEvents] of Object.entries(arcGroups)) {
+      const arc = arcEvents[0].arc; // Arc is already loaded via leftJoinAndSelect
+      const arcGroup = { arc, events: arcEvents };
+      
+      if (arc.type === 'mini') {
+        miniArcs.push(arcGroup);
+      } else {
+        mainArcs.push(arcGroup);
+      }
+    }
+
+    // Sort arc groups by arc order
+    mainArcs.sort((a, b) => (a.arc.order || 0) - (b.arc.order || 0));
+    miniArcs.sort((a, b) => (a.arc.order || 0) - (b.arc.order || 0));
+
+    return {
+      mainArcs,
+      miniArcs,
+      noArc: noArcEvents,
+    };
   }
 }

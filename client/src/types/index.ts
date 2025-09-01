@@ -38,8 +38,7 @@ export interface Event {
   id: number;
   title: string;
   description: string;
-  startChapter: number;
-  endChapter: number;
+  chapterNumber: number;
   type: string;
   isVerified: boolean;
   createdAt: string;

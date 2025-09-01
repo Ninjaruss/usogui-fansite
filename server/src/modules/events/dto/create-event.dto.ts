@@ -47,8 +47,6 @@ export class CreateEventDto {
   })
   type?: EventType;
 
-  // series removed
-
   @IsNumber()
   @IsOptional()
   @Min(1)
@@ -73,20 +71,10 @@ export class CreateEventDto {
   @IsNotEmpty()
   @Min(1)
   @ApiProperty({
-    description: 'Chapter number where the event starts',
+    description: 'Chapter number where this event occurs',
     example: 45,
   })
-  startChapter: number;
-
-  @IsNumber()
-  @IsOptional()
-  @ValidateIf((o) => o.endChapter && o.endChapter >= o.startChapter)
-  @Min(1)
-  @ApiPropertyOptional({
-    description: 'Chapter number where the event ends',
-    example: 52,
-  })
-  endChapter?: number;
+  chapterNumber: number;
 
   @IsNumber()
   @IsOptional()

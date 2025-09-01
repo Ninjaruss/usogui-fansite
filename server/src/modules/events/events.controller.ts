@@ -103,8 +103,7 @@ export class EventsController {
                 example:
                   'A high-stakes tournament where participants must climb 17 steps...',
               },
-              startChapter: { type: 'number', example: 45 },
-              endChapter: { type: 'number', example: 52 },
+              chapterNumber: { type: 'number', example: 45 },
               createdAt: { type: 'string', format: 'date-time' },
               updatedAt: { type: 'string', format: 'date-time' },
             },
@@ -148,6 +147,102 @@ export class EventsController {
       limit: parseInt(limit),
       sort,
       order,
+    });
+  }
+
+  @Get('grouped/by-arc')
+  @ApiOperation({
+    summary: 'Get events grouped by arc',
+    description:
+      'Retrieve events grouped by arc chapter ranges, separated by main and mini arcs, with events that have no arc',
+  })
+  @ApiQuery({
+    name: 'userProgress',
+    required: false,
+    description: "User's reading progress for spoiler protection",
+  })
+  @ApiQuery({
+    name: 'type',
+    required: false,
+    enum: EventType,
+    description: 'Filter by event type',
+  })
+  @ApiQuery({
+    name: 'isVerified',
+    required: false,
+    description: 'Filter by verification status',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Events grouped by arc retrieved successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        mainArcs: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              arc: {
+                type: 'object',
+                properties: {
+                  id: { type: 'number', example: 1 },
+                  name: { type: 'string', example: '17 Steps Tournament Arc' },
+                  type: { type: 'string', enum: ['main', 'mini'], example: 'main' },
+                  order: { type: 'number', example: 1 },
+                  startChapter: { type: 'number', example: 45 },
+                  endChapter: { type: 'number', example: 52 },
+                },
+              },
+              events: {
+                type: 'array',
+                items: { $ref: '#/components/schemas/Event' },
+              },
+            },
+          },
+        },
+        miniArcs: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              arc: {
+                type: 'object',
+                properties: {
+                  id: { type: 'number', example: 2 },
+                  name: { type: 'string', example: 'Side Story Arc' },
+                  type: { type: 'string', enum: ['main', 'mini'], example: 'mini' },
+                  order: { type: 'number', example: 2 },
+                  startChapter: { type: 'number', example: 10 },
+                  endChapter: { type: 'number', example: 15 },
+                },
+              },
+              events: {
+                type: 'array',
+                items: { $ref: '#/components/schemas/Event' },
+              },
+            },
+          },
+        },
+        noArc: {
+          type: 'array',
+          items: { $ref: '#/components/schemas/Event' },
+          description: 'Events that are not associated with any arc',
+        },
+      },
+    },
+  })
+  getEventsGroupedByArc(
+    @Query('userProgress', new ParseIntPipe({ optional: true }))
+    userProgress?: number,
+    @Query('type') type?: EventType,
+    @Query('isVerified') isVerifiedStr?: string,
+  ) {
+    const isVerified =
+      isVerifiedStr !== undefined ? isVerifiedStr === 'true' : undefined;
+    return this.service.getEventsGroupedByArc(userProgress, {
+      type,
+      isVerified,
     });
   }
 
@@ -331,8 +426,7 @@ export class EventsController {
           example:
             'A high-stakes tournament where participants must climb 17 steps...',
         },
-        startChapter: { type: 'number', example: 45 },
-        endChapter: { type: 'number', example: 52 },
+        chapterNumber: { type: 'number', example: 45 },
         createdAt: { type: 'string', format: 'date-time' },
         updatedAt: { type: 'string', format: 'date-time' },
       },
@@ -340,7 +434,7 @@ export class EventsController {
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Event not found' })
-  async getOne(@Param('id') id: number): Promise<Event> {
+  async getOne(@Param('id', ParseIntPipe) id: number): Promise<Event> {
     const event = await this.service.findOne(id);
     if (!event) {
       throw new NotFoundException(`Event with id ${id} not found`);

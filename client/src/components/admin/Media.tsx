@@ -122,6 +122,7 @@ export const MediaList = () => (
       <TextField source="type" />
       <TextField source="description" />
       <TextField source="character.name" label="Character" />
+      <TextField source="arc.name" label="Arc" />
       <MediaStatusField source="status" />
       <TextField source="submittedBy.username" label="Submitted By" />
       <DateField source="createdAt" />
@@ -141,6 +142,7 @@ export const MediaApprovalQueue = () => (
       <TextField source="type" />
       <TextField source="description" />
       <TextField source="character.name" label="Character" />
+      <TextField source="arc.name" label="Arc" />
       <TextField source="submittedBy.username" label="Submitted By" />
       <DateField source="createdAt" />
       <Box display="flex" gap={1}>
@@ -159,6 +161,7 @@ export const MediaShow = () => (
       <TextField source="type" />
       <TextField source="description" />
       <TextField source="character.name" label="Character" />
+      <TextField source="arc.name" label="Arc" />
       <MediaStatusField source="status" />
       <TextField source="rejectionReason" />
       <TextField source="submittedBy.username" label="Submitted By" />
@@ -186,6 +189,9 @@ export const MediaEdit = () => (
       />
       <TextInput source="description" multiline rows={4} />
       <ReferenceInput source="characterId" reference="characters" label="Character">
+        <AutocompleteInput optionText="name" />
+      </ReferenceInput>
+      <ReferenceInput source="arcId" reference="arcs" label="Arc">
         <AutocompleteInput optionText="name" />
       </ReferenceInput>
       <SelectInput 
@@ -217,6 +223,9 @@ export const MediaCreate = () => (
       />
       <TextInput source="description" multiline rows={4} />
       <ReferenceInput source="characterId" reference="characters" label="Character">
+        <AutocompleteInput optionText="name" />
+      </ReferenceInput>
+      <ReferenceInput source="arcId" reference="arcs" label="Arc">
         <AutocompleteInput optionText="name" />
       </ReferenceInput>
       <SelectInput 

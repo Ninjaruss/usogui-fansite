@@ -9,7 +9,6 @@ import {
   Edit,
   Create,
   Show,
-  SimpleForm,
   TextInput,
   ArrayInput,
   SimpleFormIterator,
@@ -23,7 +22,8 @@ import {
   TabbedForm,
   FormTab,
   BooleanField,
-  DateField
+  DateField,
+  ReferenceField
 } from 'react-admin'
 import { Box, Typography, Divider, Card, CardContent } from '@mui/material'
 
@@ -32,11 +32,14 @@ export const GambleList = () => (
     <Datagrid rowClick="show">
       <TextField source="id" />
       <TextField source="name" />
-      <TextField source="chapterId" label="Chapter" />
+      <TextField source="chapter.number" label="Chapter #" />
+      <TextField source="chapterId" label="Chapter ID" />
       <BooleanField source="hasTeams" label="Team Game" />
       <ArrayField source="participants" label="Participants">
         <SingleFieldList>
-          <ChipField source="character.name" size="small" />
+          <ReferenceField source="characterId" reference="characters">
+            <ChipField source="name" size="small" />
+          </ReferenceField>
         </SingleFieldList>
       </ArrayField>
       <TextField source="winnerTeam" label="Winner" />
@@ -53,7 +56,9 @@ export const GambleShow = () => (
         <Divider sx={{ mb: 2 }} />
         <TextField source="id" />
         <TextField source="name" />
-        <TextField source="chapterId" label="Chapter" />
+        <TextField source="chapterId" label="Chapter ID" />
+        <TextField source="chapter.number" label="Chapter Number" />
+        <TextField source="chapter.title" label="Chapter Title" />
         <BooleanField source="hasTeams" label="Team-based Game" />
         <TextField source="winnerTeam" label="Winning Team" />
       </Box>
@@ -69,25 +74,48 @@ export const GambleShow = () => (
         <Typography variant="h6" gutterBottom>Participants</Typography>
         <Divider sx={{ mb: 2 }} />
         <ArrayField source="participants" label="Players">
-          <SingleFieldList>
-            <ChipField source="character.name" />
-          </SingleFieldList>
+          <Datagrid>
+            <ReferenceField source="characterId" reference="characters" label="Character" link="show">
+              <TextField source="name" />
+            </ReferenceField>
+            <TextField source="teamName" label="Team" />
+            <BooleanField source="isWinner" label="Winner" />
+            <TextField source="stake" label="Stake" />
+          </Datagrid>
         </ArrayField>
+      </Box>
+
+      <Box sx={{ mb: 3 }}>
+        <Typography variant="h6" gutterBottom>Observers</Typography>
+        <Divider sx={{ mb: 2 }} />
         <ArrayField source="observers" label="Observers">
           <SingleFieldList>
-            <ChipField source="name" />
+            <ReferenceField source="id" reference="characters">
+              <ChipField source="name" />
+            </ReferenceField>
           </SingleFieldList>
         </ArrayField>
       </Box>
 
-      <Box>
+      <Box sx={{ mb: 3 }}>
         <Typography variant="h6" gutterBottom>Rounds</Typography>
         <Divider sx={{ mb: 2 }} />
         <ArrayField source="rounds">
-          <SingleFieldList>
-            <ChipField source="roundNumber" />
-          </SingleFieldList>
+          <Datagrid>
+            <TextField source="roundNumber" label="Round #" />
+            <TextField source="outcome" label="What Happened" />
+            <TextField source="winnerTeam" label="Round Winner" />
+            <TextField source="reward" label="Reward" />
+            <TextField source="penalty" label="Penalty" />
+          </Datagrid>
         </ArrayField>
+      </Box>
+
+      <Box>
+        <Typography variant="h6" gutterBottom>Metadata</Typography>
+        <Divider sx={{ mb: 2 }} />
+        <DateField source="createdAt" />
+        <DateField source="updatedAt" />
       </Box>
     </SimpleShowLayout>
   </Show>
@@ -106,6 +134,7 @@ export const GambleEdit = () => (
             source="chapterId" 
             label="Chapter Number" 
             required 
+            min={1}
             max={539} 
             helperText="Chapter where this gamble occurs (1-539)"
             sx={{ mb: 2 }}
@@ -118,6 +147,7 @@ export const GambleEdit = () => (
               { id: true, name: 'Team-based Game' }
             ]}
             helperText="Whether this gamble involves teams or individual participants"
+            emptyText="Select game type"
             sx={{ mb: 2 }}
           />
           <TextInput 
@@ -165,7 +195,7 @@ export const GambleEdit = () => (
               <Card variant="outlined" sx={{ mb: 2, p: 2 }}>
                 <CardContent>
                   <ReferenceInput source="characterId" reference="characters" label="Character" required>
-                    <AutocompleteInput optionText="name" />
+                    <AutocompleteInput optionText="name" noOptionsText="No characters found" />
                   </ReferenceInput>
                   <TextInput source="teamName" label="Team Name" helperText="Leave blank for individual games" />
                   <SelectInput 
@@ -175,6 +205,7 @@ export const GambleEdit = () => (
                       { id: false, name: 'No' },
                       { id: true, name: 'Yes' }
                     ]}
+                    helperText="Did this participant win?"
                   />
                   <TextInput source="stake" label="Stake" helperText="What this character is betting" />
                 </CardContent>
@@ -187,10 +218,11 @@ export const GambleEdit = () => (
           <Typography variant="h6" gutterBottom color="primary">
             Observers
           </Typography>
-          <ReferenceArrayInput source="observers" reference="characters">
+          <ReferenceArrayInput source="observerIds" reference="characters">
             <AutocompleteArrayInput 
               optionText="name" 
               helperText="Characters who observed but didn't participate"
+              noOptionsText="No characters available"
             />
           </ReferenceArrayInput>
         </Box>
@@ -244,6 +276,7 @@ export const GambleCreate = () => (
             source="chapterId" 
             label="Chapter Number" 
             required 
+            min={1}
             max={539} 
             helperText="Chapter where this gamble occurs (1-539)"
             sx={{ mb: 2 }}
@@ -304,7 +337,7 @@ export const GambleCreate = () => (
               <Card variant="outlined" sx={{ mb: 2, p: 2 }}>
                 <CardContent>
                   <ReferenceInput source="characterId" reference="characters" label="Character" required>
-                    <AutocompleteInput optionText="name" />
+                    <AutocompleteInput optionText="name" noOptionsText="No characters found" />
                   </ReferenceInput>
                   <TextInput source="teamName" label="Team Name" helperText="Leave blank for individual games" />
                   <SelectInput 
@@ -327,10 +360,11 @@ export const GambleCreate = () => (
           <Typography variant="h6" gutterBottom color="primary">
             Observers
           </Typography>
-          <ReferenceArrayInput source="observers" reference="characters">
+          <ReferenceArrayInput source="observerIds" reference="characters">
             <AutocompleteArrayInput 
               optionText="name" 
               helperText="Characters who observed but didn't participate"
+              noOptionsText="No characters available"
             />
           </ReferenceArrayInput>
         </Box>

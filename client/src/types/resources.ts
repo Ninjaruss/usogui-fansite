@@ -71,7 +71,7 @@ export interface Event {
   id: number;
   title: string;
   description?: string;
-  chapterId?: number;
+  chapterNumber?: number;
   chapter?: Chapter;
   createdAt: string;
   updatedAt: string;
