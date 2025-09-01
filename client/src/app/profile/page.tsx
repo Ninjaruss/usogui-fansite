@@ -72,7 +72,7 @@ export default function ProfilePage() {
         const formattedGambles = gamblesResponse.data.map((gamble: any) => ({
           id: gamble.id,
           name: gamble.name,
-          description: gamble.description
+          rules: gamble.rules
         }))
 
         setQuotes(formattedQuotes)

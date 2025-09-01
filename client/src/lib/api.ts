@@ -185,6 +185,60 @@ class ApiClient {
     return this.get<any>(`/characters/${id}`)
   }
 
+  async getCharacterGambles(characterId: number, params?: { page?: number; limit?: number }) {
+    const searchParams = new URLSearchParams()
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) {
+          searchParams.append(key, value.toString())
+        }
+      })
+    }
+    const query = searchParams.toString()
+    return this.get<{
+      data: any[]
+      total: number
+      page: number
+      totalPages: number
+    }>(`/characters/${characterId}/gambles${query ? `?${query}` : ''}`)
+  }
+
+  async getCharacterEvents(characterId: number, params?: { page?: number; limit?: number }) {
+    const searchParams = new URLSearchParams()
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) {
+          searchParams.append(key, value.toString())
+        }
+      })
+    }
+    const query = searchParams.toString()
+    return this.get<{
+      data: any[]
+      total: number
+      page: number
+      totalPages: number
+    }>(`/characters/${characterId}/events${query ? `?${query}` : ''}`)
+  }
+
+  async getCharacterGuides(characterId: number, params?: { page?: number; limit?: number }) {
+    const searchParams = new URLSearchParams()
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) {
+          searchParams.append(key, value.toString())
+        }
+      })
+    }
+    const query = searchParams.toString()
+    return this.get<{
+      data: any[]
+      total: number
+      page: number
+      totalPages: number
+    }>(`/characters/${characterId}/guides${query ? `?${query}` : ''}`)
+  }
+
   async getArcs(params?: {
     page?: number
     limit?: number
@@ -211,7 +265,7 @@ class ApiClient {
     return this.get<any>(`/arcs/${id}`)
   }
 
-  async getGambles(params?: { page?: number; limit?: number }) {
+  async getGambles(params?: { page?: number; limit?: number; gambleName?: string }) {
     const searchParams = new URLSearchParams()
     if (params) {
       Object.entries(params).forEach(([key, value]) => {

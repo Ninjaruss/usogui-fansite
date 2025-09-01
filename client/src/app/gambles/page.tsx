@@ -25,13 +25,14 @@ import { motion } from 'motion/react'
 interface Gamble {
   id: number
   name: string
-  description: string
   rules: string
-  difficulty: string
-  winConditions: string[]
-  loseConditions: string[]
-  participants: string[]
-  outcome: string
+  winCondition?: string
+  chapterId: number
+  hasTeams: boolean
+  winnerTeam?: string
+  participants: any[]
+  rounds?: any[]
+  observers: any[]
   createdAt: string
   updatedAt: string
 }
@@ -165,15 +166,6 @@ export default function GamblesPage() {
                         </Typography>
                         
                         <Box sx={{ mb: 2 }}>
-                          {gamble.difficulty && (
-                            <Chip
-                              label={`${gamble.difficulty} Difficulty`}
-                              size="small"
-                              color={getDifficultyColor(gamble.difficulty) as any}
-                              variant="outlined"
-                              sx={{ mr: 1, mb: 1 }}
-                            />
-                          )}
                           {gamble.participants?.length > 0 && (
                             <Chip
                               label={`${gamble.participants.length} Participants`}
@@ -182,6 +174,15 @@ export default function GamblesPage() {
                               variant="outlined"
                               icon={<Users size={14} />}
                               sx={{ mb: 1 }}
+                            />
+                          )}
+                          {gamble.hasTeams && (
+                            <Chip
+                              label="Team Game"
+                              size="small"
+                              color="secondary"
+                              variant="outlined"
+                              sx={{ mr: 1, mb: 1 }}
                             />
                           )}
                         </Box>
@@ -197,13 +198,13 @@ export default function GamblesPage() {
                             WebkitLineClamp: 3,
                           }}
                         >
-                          {gamble.description}
+                          {gamble.rules}
                         </Typography>
 
-                        {gamble.outcome && (
+                        {gamble.winnerTeam && (
                           <Box sx={{ mt: 'auto' }}>
                             <Chip
-                              label="Completed"
+                              label={`Winner: ${gamble.winnerTeam}`}
                               size="small"
                               color="success"
                               variant="filled"

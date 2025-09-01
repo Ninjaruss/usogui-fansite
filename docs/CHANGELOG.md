@@ -1,4 +1,11 @@
 # Changelog and notes
+## 2025-09-01
+### Changes
+- Updated character page with further details and show events/gambles
+- Gambles admin page streamlined to look better
+
+### Notes
+- 
 
 ## 2025-08-31
 ### Changes

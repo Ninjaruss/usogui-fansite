@@ -26,6 +26,7 @@ import {
 } from '@mui/material'
 import { Search, BookOpen, Eye, Edit, Upload, X } from 'lucide-react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { api } from '../../lib/api'
 import { useAuth } from '../../providers/AuthProvider'
 import { motion } from 'motion/react'
@@ -411,10 +412,12 @@ export default function ArcsPage() {
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
                   Current Image:
                 </Typography>
-                <img
+                <Image
                   src={`/api/media/arc/${selectedArc.imageFileName}`}
                   alt={selectedArc.imageDisplayName || selectedArc.name}
-                  style={{ maxWidth: '200px', maxHeight: '200px', objectFit: 'cover' }}
+                  width={200}
+                  height={200}
+                  style={{ objectFit: 'cover' }}
                 />
               </Box>
             )}

@@ -574,4 +574,112 @@ export class CharactersController {
 
     return this.service.removeImage(id);
   }
+
+  @Get(':id/gambles')
+  @ApiOperation({
+    summary: 'Get gambles related to character',
+    description: 'Retrieve gambles that mention or involve this character',
+  })
+  @ApiParam({ name: 'id', description: 'Character ID', example: 1 })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    description: 'Page number (default: 1)',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    description: 'Items per page (default: 20)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Character gambles retrieved successfully',
+  })
+  @ApiResponse({ status: 404, description: 'Character not found' })
+  async getCharacterGambles(
+    @Param('id') id: number,
+    @Query('page') page = '1',
+    @Query('limit') limit = '20',
+  ) {
+    const character = await this.service.findOne(id);
+    if (!character) {
+      throw new NotFoundException(`Character with id ${id} not found`);
+    }
+    return this.service.getCharacterGambles(id, {
+      page: parseInt(page),
+      limit: parseInt(limit),
+    });
+  }
+
+  @Get(':id/events')
+  @ApiOperation({
+    summary: 'Get events related to character',
+    description: 'Retrieve events that mention or involve this character, ordered chronologically',
+  })
+  @ApiParam({ name: 'id', description: 'Character ID', example: 1 })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    description: 'Page number (default: 1)',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    description: 'Items per page (default: 20)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Character events retrieved successfully',
+  })
+  @ApiResponse({ status: 404, description: 'Character not found' })
+  async getCharacterEvents(
+    @Param('id') id: number,
+    @Query('page') page = '1',
+    @Query('limit') limit = '20',
+  ) {
+    const character = await this.service.findOne(id);
+    if (!character) {
+      throw new NotFoundException(`Character with id ${id} not found`);
+    }
+    return this.service.getCharacterEvents(id, {
+      page: parseInt(page),
+      limit: parseInt(limit),
+    });
+  }
+
+  @Get(':id/guides')
+  @ApiOperation({
+    summary: 'Get guides related to character',
+    description: 'Retrieve guides that mention or involve this character',
+  })
+  @ApiParam({ name: 'id', description: 'Character ID', example: 1 })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    description: 'Page number (default: 1)',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    description: 'Items per page (default: 20)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Character guides retrieved successfully',
+  })
+  @ApiResponse({ status: 404, description: 'Character not found' })
+  async getCharacterGuides(
+    @Param('id') id: number,
+    @Query('page') page = '1',
+    @Query('limit') limit = '20',
+  ) {
+    const character = await this.service.findOne(id);
+    if (!character) {
+      throw new NotFoundException(`Character with id ${id} not found`);
+    }
+    return this.service.getCharacterGuides(id, {
+      page: parseInt(page),
+      limit: parseInt(limit),
+    });
+  }
 }

@@ -127,4 +127,120 @@ export class CharactersService {
     }
     return updatedCharacter;
   }
+
+  async getCharacterGambles(characterId: number, options: { page: number; limit: number }) {
+    const { page, limit } = options;
+    const character = await this.repo.findOne({ where: { id: characterId } });
+    if (!character) {
+      throw new NotFoundException(`Character with id ${characterId} not found`);
+    }
+
+    // Since there's no direct relationship, we'll search for gambles that mention the character
+    // This is a simple text search - in a real app you might want a proper relationship
+    const query = `
+      SELECT g.*, COUNT(*) OVER() as total_count
+      FROM gamble g
+      WHERE LOWER(g.name) LIKE LOWER($1) 
+         OR LOWER(g.rules) LIKE LOWER($1)
+         OR LOWER(g."winCondition") LIKE LOWER($1)
+      ORDER BY g.id ASC
+      LIMIT $2 OFFSET $3
+    `;
+    
+    const searchTerm = `%${character.name}%`;
+    const offset = (page - 1) * limit;
+    
+    const result = await this.repo.query(query, [searchTerm, limit, offset]);
+    
+    const total = result.length > 0 ? parseInt(result[0].total_count) : 0;
+    const data = result.map(row => {
+      const { total_count, ...gamble } = row;
+      return gamble;
+    });
+    
+    return {
+      data,
+      total,
+      page,
+      totalPages: Math.ceil(total / limit),
+    };
+  }
+
+  async getCharacterEvents(characterId: number, options: { page: number; limit: number }) {
+    const { page, limit } = options;
+    const character = await this.repo.findOne({ where: { id: characterId } });
+    if (!character) {
+      throw new NotFoundException(`Character with id ${characterId} not found`);
+    }
+
+    // Search for events that mention the character, ordered chronologically
+    const query = `
+      SELECT e.*, COUNT(*) OVER() as total_count
+      FROM event e
+      WHERE LOWER(e.title) LIKE LOWER($1) 
+         OR LOWER(e.description) LIKE LOWER($1)
+      ORDER BY e."startChapter" ASC, e.id ASC
+      LIMIT $2 OFFSET $3
+    `;
+    
+    const searchTerm = `%${character.name}%`;
+    const offset = (page - 1) * limit;
+    
+    const result = await this.repo.query(query, [searchTerm, limit, offset]);
+    
+    const total = result.length > 0 ? parseInt(result[0].total_count) : 0;
+    const data = result.map(row => {
+      const { total_count, ...event } = row;
+      return event;
+    });
+    
+    return {
+      data,
+      total,
+      page,
+      totalPages: Math.ceil(total / limit),
+    };
+  }
+
+  async getCharacterGuides(characterId: number, options: { page: number; limit: number }) {
+    const { page, limit } = options;
+    const character = await this.repo.findOne({ where: { id: characterId } });
+    if (!character) {
+      throw new NotFoundException(`Character with id ${characterId} not found`);
+    }
+
+    // Search for guides that mention the character
+    const query = `
+      SELECT g.*, u.username as author_name, COUNT(*) OVER() as total_count
+      FROM guide g
+      LEFT JOIN "user" u ON g."authorId" = u.id
+      WHERE g.status = 'published' 
+        AND (LOWER(g.title) LIKE LOWER($1) 
+             OR LOWER(g.description) LIKE LOWER($1)
+             OR LOWER(g.content) LIKE LOWER($1))
+      ORDER BY g."likeCount" DESC, g."createdAt" DESC
+      LIMIT $2 OFFSET $3
+    `;
+    
+    const searchTerm = `%${character.name}%`;
+    const offset = (page - 1) * limit;
+    
+    const result = await this.repo.query(query, [searchTerm, limit, offset]);
+    
+    const total = result.length > 0 ? parseInt(result[0].total_count) : 0;
+    const data = result.map(row => {
+      const { total_count, author_name, ...guide } = row;
+      return {
+        ...guide,
+        author: { username: author_name }
+      };
+    });
+    
+    return {
+      data,
+      total,
+      page,
+      totalPages: Math.ceil(total / limit),
+    };
+  }
 }
