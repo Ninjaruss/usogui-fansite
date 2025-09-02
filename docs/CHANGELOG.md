@@ -8,6 +8,7 @@
 - Font for headers updated to use LTC Goudy Text (https://fontmeme.com/fonts/goudy-text-font/)
 - Added proper view counting for pages as well as trending section
 - Updated consistency of Lucide icons use (themeing)
+- Added Volumes 37/38 to the landing page with animations
 
 ### Notes
 - Cloister Black was a close contender for font, but I wanted to prioritize legibility of the uppercase.

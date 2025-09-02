@@ -57,15 +57,21 @@ export const SearchBar: React.FC = () => {
   const getTypeColor = (type: string) => {
     switch (type) {
       case 'character':
-        return 'primary'
+        return '#1976d2' // theme.palette.usogui.character
       case 'arc':
-        return 'secondary'
+        return '#dc004e' // theme.palette.usogui.arc
       case 'gamble':
-        return 'error'
+        return '#d32f2f' // theme.palette.usogui.gamble
       case 'event':
-        return 'warning'
+        return '#f57c00' // theme.palette.usogui.event
+      case 'guide':
+        return '#388e3c' // theme.palette.usogui.guide
+      case 'media':
+        return '#7b1fa2' // theme.palette.usogui.media
+      case 'quote':
+        return '#00796b' // theme.palette.usogui.quote
       default:
-        return 'default'
+        return '#e11d48' // theme.palette.usogui.red
     }
   }
 
@@ -136,9 +142,17 @@ export const SearchBar: React.FC = () => {
           startAdornment: (
             <InputAdornment position="start">
               {loading ? (
-                <CircularProgress size={20} />
+                <CircularProgress 
+                  size={20} 
+                  sx={{ 
+                    color: '#e11d48' 
+                  }} 
+                />
               ) : (
-                <Search size={20} />
+                <Search 
+                  size={20} 
+                  color="rgba(255, 255, 255, 0.7)" 
+                />
               )}
             </InputAdornment>
           ),
@@ -146,7 +160,29 @@ export const SearchBar: React.FC = () => {
         sx={{
           '& .MuiOutlinedInput-root': {
             borderRadius: 2,
-            backgroundColor: 'background.paper',
+            backgroundColor: '#0a0a0a', // Use solid Usogui black instead of transparent
+            border: '1px solid rgba(225, 29, 72, 0.2)',
+            backdropFilter: 'blur(10px)',
+            transition: 'all 0.3s ease',
+            '&:hover': {
+              borderColor: 'rgba(225, 29, 72, 0.5)',
+              backgroundColor: 'rgba(10, 10, 10, 0.95)',
+            },
+            '&.Mui-focused': {
+              borderColor: '#e11d48',
+              backgroundColor: 'rgba(10, 10, 10, 0.95)',
+              boxShadow: '0 0 0 2px rgba(225, 29, 72, 0.2)',
+            },
+            '& .MuiOutlinedInput-notchedOutline': {
+              border: 'none', // Remove default border since we're using custom border
+            }
+          },
+          '& .MuiInputBase-input': {
+            color: '#ffffff !important',
+            '&::placeholder': {
+              color: 'rgba(255, 255, 255, 0.7) !important',
+              opacity: 1,
+            }
           }
         }}
       />
@@ -160,7 +196,7 @@ export const SearchBar: React.FC = () => {
             transition={{ duration: 0.2 }}
           >
             <Paper
-              elevation={8}
+              elevation={0}
               sx={{
                 position: 'absolute',
                 top: '100%',
@@ -170,50 +206,87 @@ export const SearchBar: React.FC = () => {
                 maxHeight: 400,
                 overflow: 'auto',
                 mt: 1,
-                borderRadius: 2
+                borderRadius: 2,
+                backgroundColor: '#0a0a0a !important', // Force Usogui black background
+                border: '1px solid rgba(225, 29, 72, 0.2)',
+                backdropFilter: 'blur(10px)',
+                boxShadow: '0 20px 25px -5px rgba(225, 29, 72, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.4)',
               }}
             >
               {results.length > 0 ? (
-                <List disablePadding>
+                <List 
+                  disablePadding
+                  sx={{
+                    backgroundColor: 'transparent',
+                    '& .MuiListItem-root': {
+                      backgroundColor: 'transparent !important',
+                    }
+                  }}
+                >
                   {results.map((result) => (
                     <ListItem
                       key={`${result.type}-${result.id}`}
                       component="button"
                       onClick={() => handleResultClick(result)}
                       sx={{
-                        borderBottom: '1px solid',
-                        borderColor: 'divider',
+                        borderBottom: '1px solid rgba(225, 29, 72, 0.2)',
+                        color: '#ffffff !important',
+                        backgroundColor: 'transparent !important',
                         '&:hover': {
-                          backgroundColor: 'action.hover'
+                          backgroundColor: 'rgba(225, 29, 72, 0.1) !important'
                         },
                         '&:last-child': {
                           borderBottom: 'none'
+                        },
+                        '&.MuiButtonBase-root': {
+                          backgroundColor: 'transparent !important',
                         }
                       }}
                     >
                       <Box sx={{ display: 'flex', alignItems: 'center', mr: 2 }}>
-                        {getTypeIcon(result.type)}
+                        <Box sx={{ color: getTypeColor(result.type) }}>
+                          {getTypeIcon(result.type)}
+                        </Box>
                       </Box>
                       <ListItemText
+                        sx={{
+                          '& .MuiListItemText-primary': {
+                            color: '#ffffff !important',
+                          },
+                          '& .MuiListItemText-secondary': {
+                            color: 'rgba(255, 255, 255, 0.7) !important',
+                          }
+                        }}
                         primary={
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <Typography variant="subtitle2">
+                            <Typography 
+                              variant="subtitle2"
+                              sx={{ color: '#ffffff !important' }}
+                            >
                               {result.title}
                             </Typography>
                             <Chip
                               size="small"
                               label={result.type}
-                              color={getTypeColor(result.type) as any}
-                              variant="outlined"
-                              sx={{ fontSize: '0.75rem' }}
+                              sx={{ 
+                                fontSize: '0.75rem',
+                                backgroundColor: getTypeColor(result.type),
+                                color: '#ffffff',
+                                fontWeight: 500,
+                                border: 'none'
+                              }}
                             />
                             {result.hasSpoilers && (
                               <Chip
                                 size="small"
                                 label="Spoilers"
-                                color="warning"
-                                variant="filled"
-                                sx={{ fontSize: '0.75rem' }}
+                                sx={{
+                                  fontSize: '0.75rem',
+                                  backgroundColor: '#f57c00',
+                                  color: '#ffffff',
+                                  fontWeight: 500,
+                                  border: 'none'
+                                }}
                               />
                             )}
                           </Box>
@@ -221,8 +294,8 @@ export const SearchBar: React.FC = () => {
                         secondary={
                           <Typography
                             variant="body2"
-                            color="text.secondary"
                             sx={{
+                              color: 'rgba(255, 255, 255, 0.7) !important',
                               overflow: 'hidden',
                               textOverflow: 'ellipsis',
                               whiteSpace: 'nowrap',
@@ -237,8 +310,17 @@ export const SearchBar: React.FC = () => {
                   ))}
                 </List>
               ) : (
-                <Box sx={{ p: 3, textAlign: 'center' }}>
-                  <Typography variant="body2" color="text.secondary">
+                <Box sx={{ 
+                  p: 3, 
+                  textAlign: 'center',
+                  backgroundColor: 'transparent !important'
+                }}>
+                  <Typography 
+                    variant="body2" 
+                    sx={{ 
+                      color: 'rgba(255, 255, 255, 0.7) !important'
+                    }}
+                  >
                     {query.trim().length < 2 
                       ? 'Type at least 2 characters to search'
                       : 'No results found'

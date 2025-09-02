@@ -2,39 +2,51 @@
 
 import { Box, Typography } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
-import { motion } from 'motion/react'
+import { motion, useScroll, useTransform } from 'motion/react'
 import Image from 'next/image'
+import { useRef } from 'react'
 
 export function VolumeCoverSection() {
   const theme = useTheme()
+  const containerRef = useRef<HTMLDivElement>(null)
+  
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start end", "end start"]
+  })
+  
+  // Transform values based on scroll progress
+  const volume37Scale = useTransform(scrollYProgress, [0.3, 0.7], [1, 1.03])
+  const volume38Scale = useTransform(scrollYProgress, [0.4, 0.8], [1, 1.03])
+  const volume37X = useTransform(scrollYProgress, [0.3, 0.7], [0, -5])
+  const volume38X = useTransform(scrollYProgress, [0.4, 0.8], [0, 5])
+  const volume37RotateY = useTransform(scrollYProgress, [0.3, 0.7], [-3, -1])
+  const volume38RotateY = useTransform(scrollYProgress, [0.4, 0.8], [3, 1])
+  const volume37Z = useTransform(scrollYProgress, [0.3, 0.7], [0, 10])
+  const volume38Z = useTransform(scrollYProgress, [0.4, 0.8], [0, 10])
+  
+  // Popout floating animations based on scroll
+  const popout37Y = useTransform(scrollYProgress, [0.2, 0.8], [0, -20])
+  const popout38Y = useTransform(scrollYProgress, [0.3, 0.9], [0, -20])
+  const popout37Scale = useTransform(scrollYProgress, [0.2, 0.8], [1, 1.1])
+  const popout38Scale = useTransform(scrollYProgress, [0.3, 0.9], [1, 1.1])
+  const popout37Z = useTransform(scrollYProgress, [0.2, 0.8], [0, 30])
+  const popout38Z = useTransform(scrollYProgress, [0.3, 0.9], [0, 30])
+  const popout37RotateX = useTransform(scrollYProgress, [0.2, 0.8], [0, -5])
+  const popout38RotateX = useTransform(scrollYProgress, [0.3, 0.9], [0, -5])
 
   return (
     <Box
+      ref={containerRef}
       sx={{
         position: 'relative',
-        height: { xs: '500px', md: '600px' },
+        height: { xs: '450px', md: '550px' },
         width: '100%',
         perspective: '1200px',
         mb: 6,
         overflow: 'visible'
       }}
     >
-      <Typography
-        variant="h4"
-        component="h2"
-        textAlign="center"
-        sx={{
-          fontWeight: 'bold',
-          mb: 4,
-          background: `linear-gradient(45deg, ${theme.palette.usogui.character}, ${theme.palette.usogui.arc})`,
-          backgroundClip: 'text',
-          WebkitBackgroundClip: 'text',
-          color: 'transparent'
-        }}
-      >
-        Featured Volumes
-      </Typography>
-
       <Box
         sx={{
           position: 'relative',
@@ -42,37 +54,34 @@ export function VolumeCoverSection() {
           justifyContent: 'center',
           alignItems: 'flex-end',
           height: '80%',
-          gap: { xs: 0, md: 1 }
+          gap: { xs: 0, md: 0.5 },
+          px: { xs: 1, md: 2 }
         }}
       >
         {/* Volume 37 */}
         <motion.div
-          initial={{ opacity: 0, x: -100, rotateY: 15, scale: 0.8 }}
+          initial={{ opacity: 0, x: -80, rotateY: 12, scale: 0.8 }}
           animate={{ opacity: 1, x: 0, rotateY: 0, scale: 1 }}
           transition={{ duration: 1.2, delay: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
           style={{
             position: 'relative',
             transformStyle: 'preserve-3d',
-            zIndex: 1
+            zIndex: 1,
+            flex: '0 0 auto',
+            scale: volume37Scale,
+            x: volume37X,
+            rotateY: volume37RotateY,
+            z: volume37Z
           }}
         >
           <Box
             sx={{
               position: 'relative',
-              width: { xs: '200px', md: '280px', lg: '320px' },
-              height: { xs: '280px', md: '400px', lg: '460px' },
+              width: { xs: '180px', md: '260px', lg: '300px' },
+              height: { xs: '260px', md: '380px', lg: '440px' },
               cursor: 'pointer',
-              transform: 'rotateY(-5deg)',
               transformStyle: 'preserve-3d',
-              '&:hover': {
-                transform: 'rotateY(0deg) scale(1.08) translateZ(20px)',
-                transition: 'transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
-                '& .popout-37': {
-                  opacity: 1,
-                  transform: 'translateY(-60px) translateZ(120px) scale(1.2) rotateX(-10deg)',
-                  transition: 'all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
-                }
-              }
+              transition: 'transform 0.3s ease-out'
             }}
           >
             <Image
@@ -89,7 +98,7 @@ export function VolumeCoverSection() {
             <motion.div
               className="popout-37"
               initial={{ opacity: 0, y: 30, z: -50, scale: 0.6, rotateX: 20 }}
-              animate={{ opacity: 0.9, y: -30, z: 60, scale: 1.1, rotateX: 0 }}
+              animate={{ opacity: 0.9, y: 0, z: 0, scale: 1, rotateX: 0 }}
               transition={{ duration: 1.5, delay: 0.8, ease: [0.175, 0.885, 0.32, 1.275] }}
               style={{
                 position: 'absolute',
@@ -97,55 +106,59 @@ export function VolumeCoverSection() {
                 left: '0',
                 right: '0',
                 bottom: '0',
-                transform: 'translateY(-30px) translateZ(60px) scale(1.1)',
                 zIndex: 10,
                 pointerEvents: 'none',
-                transformStyle: 'preserve-3d',
-                transition: 'all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+                transformStyle: 'preserve-3d'
               }}
             >
-              <Image
-                src="/assets/Usogui_Volume_37_popout.png"
-                alt="Volume 37 Character"
-                fill
+              <motion.div
                 style={{
-                  filter: 'drop-shadow(6px 6px 16px rgba(0, 0, 0, 0.5))',
-                  objectFit: 'contain'
+                  width: '100%',
+                  height: '100%',
+                  y: popout37Y,
+                  scale: popout37Scale,
+                  z: popout37Z,
+                  rotateX: popout37RotateX
                 }}
-              />
+              >
+                <Image
+                  src="/assets/Usogui_Volume_37_popout.png"
+                  alt="Volume 37 Character"
+                  fill
+                  style={{
+                    filter: 'drop-shadow(6px 6px 16px rgba(0, 0, 0, 0.5))',
+                    objectFit: 'contain'
+                  }}
+                />
+              </motion.div>
             </motion.div>
           </Box>
         </motion.div>
 
         {/* Volume 38 */}
         <motion.div
-          initial={{ opacity: 0, x: 100, rotateY: -15, scale: 0.8 }}
+          initial={{ opacity: 0, x: 80, rotateY: -12, scale: 0.8 }}
           animate={{ opacity: 1, x: 0, rotateY: 0, scale: 1 }}
           transition={{ duration: 1.2, delay: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
           style={{
             position: 'relative',
             transformStyle: 'preserve-3d',
             zIndex: 1,
-            marginLeft: '-15px'
+            flex: '0 0 auto',
+            scale: volume38Scale,
+            x: volume38X,
+            rotateY: volume38RotateY,
+            z: volume38Z
           }}
         >
           <Box
             sx={{
               position: 'relative',
-              width: { xs: '200px', md: '280px', lg: '320px' },
-              height: { xs: '280px', md: '400px', lg: '460px' },
+              width: { xs: '180px', md: '260px', lg: '300px' },
+              height: { xs: '260px', md: '380px', lg: '440px' },
               cursor: 'pointer',
-              transform: 'rotateY(5deg)',
               transformStyle: 'preserve-3d',
-              '&:hover': {
-                transform: 'rotateY(0deg) scale(1.08) translateZ(20px)',
-                transition: 'transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
-                '& .popout-38': {
-                  opacity: 1,
-                  transform: 'translateY(-60px) translateZ(120px) scale(1.2) rotateX(-10deg)',
-                  transition: 'all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
-                }
-              }
+              transition: 'transform 0.3s ease-out'
             }}
           >
             <Image
@@ -162,7 +175,7 @@ export function VolumeCoverSection() {
             <motion.div
               className="popout-38"
               initial={{ opacity: 0, y: 30, z: -50, scale: 0.6, rotateX: 20 }}
-              animate={{ opacity: 0.9, y: -30, z: 60, scale: 1.1, rotateX: 0 }}
+              animate={{ opacity: 0.9, y: 0, z: 0, scale: 1, rotateX: 0 }}
               transition={{ duration: 1.5, delay: 1.0, ease: [0.175, 0.885, 0.32, 1.275] }}
               style={{
                 position: 'absolute',
@@ -170,22 +183,31 @@ export function VolumeCoverSection() {
                 left: '0',
                 right: '0',
                 bottom: '0',
-                transform: 'translateY(-30px) translateZ(60px) scale(1.1)',
                 zIndex: 10,
                 pointerEvents: 'none',
-                transformStyle: 'preserve-3d',
-                transition: 'all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+                transformStyle: 'preserve-3d'
               }}
             >
-              <Image
-                src="/assets/Usogui_Volume_38_popout.png"
-                alt="Volume 38 Character"
-                fill
+              <motion.div
                 style={{
-                  filter: 'drop-shadow(6px 6px 16px rgba(0, 0, 0, 0.5))',
-                  objectFit: 'contain'
+                  width: '100%',
+                  height: '100%',
+                  y: popout38Y,
+                  scale: popout38Scale,
+                  z: popout38Z,
+                  rotateX: popout38RotateX
                 }}
-              />
+              >
+                <Image
+                  src="/assets/Usogui_Volume_38_popout.png"
+                  alt="Volume 38 Character"
+                  fill
+                  style={{
+                    filter: 'drop-shadow(6px 6px 16px rgba(0, 0, 0, 0.5))',
+                    objectFit: 'contain'
+                  }}
+                />
+              </motion.div>
             </motion.div>
           </Box>
         </motion.div>
@@ -225,19 +247,6 @@ export function VolumeCoverSection() {
           />
         ))}
       </Box>
-
-      <Typography
-        variant="body1"
-        textAlign="center"
-        color="text.secondary"
-        sx={{ 
-          mt: 3, 
-          fontStyle: 'italic',
-          fontSize: { xs: '0.9rem', md: '1rem' }
-        }}
-      >
-        Hover over the volumes to see the characters come to life
-      </Typography>
     </Box>
   )
 }
