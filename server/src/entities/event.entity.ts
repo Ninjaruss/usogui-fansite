@@ -15,7 +15,11 @@ import { Arc } from './arc.entity';
 import { Character } from './character.entity';
 import { User } from './user.entity';
 import { Tag } from './tag.entity';
-import { ApiProperty, ApiPropertyOptional, ApiHideProperty } from '@nestjs/swagger';
+import {
+  ApiProperty,
+  ApiPropertyOptional,
+  ApiHideProperty,
+} from '@nestjs/swagger';
 
 export enum EventType {
   ARC = 'arc',

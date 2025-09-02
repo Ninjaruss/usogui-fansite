@@ -781,7 +781,8 @@ export class CharactersController {
   @Get(':id/arcs')
   @ApiOperation({
     summary: 'Get arcs where character appears',
-    description: 'Retrieve arcs that feature this character, sorted by arc order',
+    description:
+      'Retrieve arcs that feature this character, sorted by arc order',
   })
   @ApiParam({ name: 'id', description: 'Character ID', type: 'number' })
   @ApiResponse({
@@ -798,7 +799,10 @@ export class CharactersController {
               id: { type: 'number', example: 1 },
               name: { type: 'string', example: '17 Steps Tournament Arc' },
               order: { type: 'number', example: 1 },
-              description: { type: 'string', example: 'Description of the arc' },
+              description: {
+                type: 'string',
+                example: 'Description of the arc',
+              },
             },
           },
         },

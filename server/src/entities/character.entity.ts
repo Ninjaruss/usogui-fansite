@@ -11,7 +11,11 @@ import { Media } from './media.entity';
 import { Faction } from './faction.entity';
 import { GambleCharacter } from './gamble-character.entity';
 import { Quote } from './quote.entity';
-import { ApiProperty, ApiPropertyOptional, ApiHideProperty } from '@nestjs/swagger';
+import {
+  ApiProperty,
+  ApiPropertyOptional,
+  ApiHideProperty,
+} from '@nestjs/swagger';
 
 @Entity()
 @Index(['name'])
@@ -116,12 +120,16 @@ export class Character {
     description: 'Gambles this character participated in',
     type: () => [GambleCharacter],
   })
-  @OneToMany(() => GambleCharacter, (gambleCharacter) => gambleCharacter.character, {
-    nullable: true,
-    cascade: true,
-  })
+  @OneToMany(
+    () => GambleCharacter,
+    (gambleCharacter) => gambleCharacter.character,
+    {
+      nullable: true,
+      cascade: true,
+    },
+  )
   gambleParticipations: GambleCharacter[];
-  
+
   @ApiHideProperty()
   @OneToMany(() => Quote, (quote) => quote.character, {
     nullable: true,

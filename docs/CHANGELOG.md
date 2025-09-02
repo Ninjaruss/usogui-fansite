@@ -2,6 +2,8 @@
 ## 2025-09-02
 ### Changes
 - Arc and gamble appearances added to character detail page
+- Fixed saving data of observers/participants in gambles admin page
+- Adjustment in layout for nav bar to center
 
 ### Notes
 -

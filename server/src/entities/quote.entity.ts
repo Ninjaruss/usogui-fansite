@@ -10,7 +10,11 @@ import {
 } from 'typeorm';
 import { Character } from './character.entity';
 import { User } from './user.entity';
-import { ApiProperty, ApiPropertyOptional, ApiHideProperty } from '@nestjs/swagger';
+import {
+  ApiProperty,
+  ApiPropertyOptional,
+  ApiHideProperty,
+} from '@nestjs/swagger';
 
 @Entity()
 @Index(['character'])

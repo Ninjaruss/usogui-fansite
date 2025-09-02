@@ -7,7 +7,11 @@ import {
 } from 'typeorm';
 import { Character } from './character.entity';
 import { Gamble } from './gamble.entity';
-import { ApiProperty, ApiPropertyOptional, ApiHideProperty } from '@nestjs/swagger';
+import {
+  ApiProperty,
+  ApiPropertyOptional,
+  ApiHideProperty,
+} from '@nestjs/swagger';
 
 @Entity()
 export class GambleCharacter {

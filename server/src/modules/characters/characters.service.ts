@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Character } from '../../entities/character.entity';
+import { Gamble } from '../../entities/gamble.entity';
 import { CreateCharacterDto } from './dto/create-character.dto';
 import { UpdateCharacterDto } from './dto/update-character.dto';
 import { UpdateCharacterImageDto } from './dto/update-character-image.dto';
@@ -10,6 +11,7 @@ import { UpdateCharacterImageDto } from './dto/update-character-image.dto';
 export class CharactersService {
   constructor(
     @InjectRepository(Character) private repo: Repository<Character>,
+    @InjectRepository(Gamble) private gamblesRepository: Repository<Gamble>,
   ) {}
 
   /**
@@ -244,41 +246,38 @@ export class CharactersService {
       throw new NotFoundException(`Character with id ${characterId} not found`);
     }
 
-    // Since there's no direct relationship, we'll search for gambles that mention the character
-    // This is a simple text search - in a real app you might want a proper relationship
-    const query = `
-      SELECT g.*, COUNT(*) OVER() as total_count
-      FROM gamble g
-      WHERE LOWER(g.name) LIKE LOWER($1) 
-         OR LOWER(g.rules) LIKE LOWER($1)
-         OR LOWER(g."winCondition") LIKE LOWER($1)
-      ORDER BY g.id ASC
-      LIMIT $2 OFFSET $3
-    `;
+    // Use proper database relationships to find gambles where the character is a participant or observer
+    const queryBuilder = this.gamblesRepository
+      .createQueryBuilder('gamble')
+      .leftJoinAndSelect('gamble.participants', 'participants')
+      .leftJoinAndSelect('participants.character', 'participant_character')
+      .leftJoinAndSelect('gamble.rounds', 'rounds')
+      .leftJoinAndSelect('gamble.observers', 'observers')
+      .leftJoinAndSelect('gamble.chapter', 'chapter')
+      .where(
+        '(participant_character.id = :characterId OR observers.id = :characterId)',
+        { characterId },
+      )
+      .orderBy('gamble.createdAt', 'DESC');
 
-    const searchTerm = `%${character.name}%`;
-    const offset = (page - 1) * limit;
+    const skip = (page - 1) * limit;
+    queryBuilder.skip(skip).take(limit);
 
-    const result = await this.repo.query(query, [searchTerm, limit, offset]);
-
-    const total = result.length > 0 ? parseInt(result[0].total_count) : 0;
-    const data = result.map((row) => {
-      const { total_count, ...gamble } = row;
-      return gamble;
-    });
+    const [data, total] = await queryBuilder.getManyAndCount();
+    const totalPages = Math.ceil(total / limit);
 
     return {
       data,
       total,
       page,
-      totalPages: Math.ceil(total / limit),
+      totalPages,
     };
   }
 
   async getCharacterEvents(
-    characterId: number, 
+    characterId: number,
     options: { page: number; limit: number },
-    userProgress?: number
+    userProgress?: number,
   ) {
     const { page, limit } = options;
     const character = await this.repo.findOne({ where: { id: characterId } });
@@ -287,7 +286,7 @@ export class CharactersService {
     }
 
     const offset = (page - 1) * limit;
-    
+
     // Use a subquery with UNION to avoid duplicates without DISTINCT
     // Fix JSON column handling by explicitly casting them to JSONB
     const dataQuery = `
@@ -348,26 +347,26 @@ export class CharactersService {
       ORDER BY "chapterNumber" ASC, id ASC
       LIMIT $4 OFFSET $5
     `;
-    
+
     const searchTerm = `%${character.name}%`;
-    
+
     const result = await this.repo.query(dataQuery, [
       characterId,
       userProgress || null,
       searchTerm,
-      limit, 
-      offset
+      limit,
+      offset,
     ]);
-    
+
     const total = result.length > 0 ? parseInt(result[0].total_count) : 0;
-    const data = result.map(row => {
+    const data = result.map((row) => {
       const { total_count, is_spoiler, ...event } = row;
       return {
         ...event,
-        isSpoiler: is_spoiler
+        isSpoiler: is_spoiler,
       };
     });
-    
+
     return {
       data,
       total,
@@ -449,11 +448,14 @@ export class CharactersService {
 
     const total = result.length > 0 ? parseInt(result[0].total_count) : 0;
     const data = result.map((row) => {
-      const { total_count, character_name, submitted_by_username, ...quote } = row;
+      const { total_count, character_name, submitted_by_username, ...quote } =
+        row;
       return {
         ...quote,
         character: { name: character_name },
-        submittedBy: submitted_by_username ? { username: submitted_by_username } : null,
+        submittedBy: submitted_by_username
+          ? { username: submitted_by_username }
+          : null,
       };
     });
 

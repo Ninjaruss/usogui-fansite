@@ -11,7 +11,11 @@ import { Character } from './character.entity';
 import { User } from './user.entity';
 import { Event } from './event.entity';
 import { Arc } from './arc.entity';
-import { ApiProperty, ApiPropertyOptional, ApiHideProperty } from '@nestjs/swagger';
+import {
+  ApiProperty,
+  ApiPropertyOptional,
+  ApiHideProperty,
+} from '@nestjs/swagger';
 
 export enum MediaType {
   IMAGE = 'image',

@@ -54,33 +54,40 @@ export const Navigation: React.FC = () => {
   return (
     <AppBar position="sticky" sx={{ mb: 4 }}>
       <Toolbar>
+        {/* Logo - Left Side */}
         <Typography
           variant="h6"
           component={Link}
           href="/"
           sx={{
-            flexGrow: 1,
             textDecoration: 'none',
             color: 'inherit',
-            fontWeight: 'bold'
+            fontWeight: 'bold',
+            mr: 2
           }}
         >
           Usogui Fansite
         </Typography>
 
         {/* Desktop Navigation */}
-        <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 2 }}>
-          {navItems.map((item) => (
-            <Button
-              key={item.href}
-              component={Link}
-              href={item.href}
-              color="inherit"
-            >
-              {item.label}
-            </Button>
-          ))}
+        <Box sx={{ display: { xs: 'none', md: 'flex' }, flexGrow: 1, justifyContent: 'center' }}>
+          {/* Centered Main Navigation Items */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            {navItems.map((item) => (
+              <Button
+                key={item.href}
+                component={Link}
+                href={item.href}
+                color="inherit"
+              >
+                {item.label}
+              </Button>
+            ))}
+          </Box>
+        </Box>
 
+        {/* Right Side - Admin and Auth */}
+        <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 2 }}>
           {user ? (
             <>
               {(user.role === 'admin' || user.role === 'moderator') && (
@@ -119,7 +126,7 @@ export const Navigation: React.FC = () => {
         </Box>
 
         {/* Mobile Navigation */}
-        <Box sx={{ display: { xs: 'flex', md: 'none' } }}>
+        <Box sx={{ display: { xs: 'flex', md: 'none' }, ml: 'auto' }}>
           <IconButton
             size="large"
             aria-label="show more"

@@ -14,7 +14,11 @@ import { Character } from './character.entity';
 import { Chapter } from './chapter.entity';
 import { GambleCharacter } from './gamble-character.entity';
 import { GambleRound } from './gamble-round.entity';
-import { ApiProperty, ApiPropertyOptional, ApiHideProperty } from '@nestjs/swagger';
+import {
+  ApiProperty,
+  ApiPropertyOptional,
+  ApiHideProperty,
+} from '@nestjs/swagger';
 
 @Entity()
 export class Gamble {
