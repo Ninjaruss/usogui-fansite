@@ -1,56 +1,83 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@300;400;500;600;700&display=swap');
+
+@font-face {
+  font-family: 'OPTI Goudy Text';
+  src: url('/fonts/OPTIGoudy-Text.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
-  }
+  --font-opti-goudy-text: 'OPTI Goudy Text', serif;
+  --font-noto-sans: 'Noto Sans', system-ui, sans-serif;
+  
+  /* Usogui Theme Colors */
+  --usogui-red: #e11d48;
+  --usogui-black: #0a0a0a;
+  --usogui-purple: #7c3aed;
+  --usogui-white: #ffffff;
+  
+  /* Legacy variables updated to Usogui theme */
+  --foreground-rgb: 255, 255, 255;
+  --background-start-rgb: 10, 10, 10;
+  --background-end-rgb: 10, 10, 10;
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+  font-family: var(--font-noto-sans);
+  color: var(--usogui-white);
+  background-color: var(--usogui-black);
 }
 
 .usogui-gradient {
-  background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+  background: linear-gradient(135deg, var(--usogui-black), #1a0a0a, var(--usogui-red));
 }
 
 .gambling-card {
-  background-color: white;
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(225, 29, 72, 0.2);
   border-radius: 0.5rem;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  transition: box-shadow 0.3s ease;
+  box-shadow: 0 10px 15px -3px rgba(225, 29, 72, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
 }
 
 .gambling-card:hover {
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-}
-
-@media (prefers-color-scheme: dark) {
-  .gambling-card {
-    background-color: #1f2937;
-  }
+  border-color: var(--usogui-red);
+  box-shadow: 0 20px 25px -5px rgba(225, 29, 72, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.4);
+  transform: translateY(-2px);
 }
 
 .spoiler-warning {
-  background-color: #fef2f2;
-  border: 1px solid #fca5a5;
-  color: #b91c1c;
+  background-color: rgba(225, 29, 72, 0.1);
+  border: 1px solid var(--usogui-red);
+  color: var(--usogui-red);
   padding: 0.5rem 1rem;
   border-radius: 0.375rem;
+}
+
+/* Typography utilities */
+.font-display {
+  font-family: var(--font-opti-goudy-text);
+}
+
+.text-usogui-red {
+  color: var(--usogui-red);
+}
+
+.bg-usogui-black {
+  background-color: var(--usogui-black);
+}
+
+.bg-usogui-red {
+  background-color: var(--usogui-red);
+}
+
+.border-usogui-red {
+  border-color: var(--usogui-red);
 }

@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import { usePathname } from 'next/navigation'
 import { ThemeProvider } from '@mui/material/styles'
 import CssBaseline from '@mui/material/CssBaseline'
 import { theme } from '../lib/theme'
@@ -11,12 +12,23 @@ interface ClientProvidersProps {
   children: React.ReactNode
 }
 
+function ConditionalNavigation() {
+  const pathname = usePathname()
+  const isAdminPage = pathname?.startsWith('/admin')
+  
+  if (isAdminPage) {
+    return null
+  }
+  
+  return <Navigation />
+}
+
 export function ClientProviders({ children }: ClientProvidersProps) {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <AuthProvider>
-        <Navigation />
+        <ConditionalNavigation />
         <main className="min-h-screen">
           {children}
         </main>

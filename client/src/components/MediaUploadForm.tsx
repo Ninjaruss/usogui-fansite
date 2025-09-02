@@ -135,7 +135,7 @@ export default function MediaUploadForm({
             sx={{
               border: 2,
               borderStyle: 'dashed',
-              borderColor: dragActive ? 'primary.main' : 'grey.300',
+              borderColor: dragActive ? 'primary.main' : 'primary.main',
               borderRadius: 2,
               p: 4,
               textAlign: 'center',

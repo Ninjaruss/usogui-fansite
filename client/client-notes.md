@@ -6,5 +6,5 @@ Motion (animations)
 Lucide (icons)
 Zustand (easier management of global state in react)
 
-Tailwind css
+Material UI (MUI) React
 TypeScript (forced typing)

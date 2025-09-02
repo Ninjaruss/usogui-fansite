@@ -371,7 +371,7 @@ export default function CharactersPage() {
             </Typography>
 
             {/* File Upload Section */}
-            <Box sx={{ mb: 3, p: 2, border: '1px dashed', borderColor: 'grey.300', borderRadius: 1 }}>
+            <Box sx={{ mb: 3, p: 2, border: '1px dashed', borderColor: 'primary.main', borderRadius: 1 }}>
               <Typography variant="h6" gutterBottom>
                 Upload New Image
               </Typography>

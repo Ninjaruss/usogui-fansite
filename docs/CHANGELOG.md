@@ -4,9 +4,12 @@
 - Arc and gamble appearances added to character detail page
 - Fixed saving data of observers/participants in gambles admin page
 - Adjustment in layout for nav bar to center
+- Updated theming of website to use red, purple, white and black color palette 
+- Font for headers updated to use LTC Goudy Text (https://fontmeme.com/fonts/goudy-text-font/)
 
 ### Notes
--
+- Cloister Black was a close contender for font, but I wanted to prioritize legibility of the uppercase.
+- I am considering adding light theme, but for the sake of theming and consistency the site will be dark themed.
 
 ## 2025-09-01
 ### Changes

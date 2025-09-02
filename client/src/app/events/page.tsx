@@ -287,7 +287,7 @@ export default function EventsPage() {
                 
                 {groupedEvents.noArc.length > 0 && (
                   <Box sx={{ mb: 4 }}>
-                    <Typography variant="h4" component="h2" sx={{ mb: 3, color: '#757575', fontWeight: 'bold' }}>
+                    <Typography variant="h4" component="h2" sx={{ mb: 3, color: '#0a0a0a', fontWeight: 'bold' }}>
                       Other Events
                     </Typography>
                     <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>

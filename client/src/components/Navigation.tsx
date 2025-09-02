@@ -66,7 +66,7 @@ export const Navigation: React.FC = () => {
             mr: 2
           }}
         >
-          Usogui Fansite
+          usogui fansite
         </Typography>
 
         {/* Desktop Navigation */}
