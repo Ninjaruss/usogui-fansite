@@ -66,7 +66,7 @@ export const Navigation: React.FC = () => {
             mr: 2
           }}
         >
-        L-file
+        L-File
         </Typography>
 
         {/* Desktop Navigation */}

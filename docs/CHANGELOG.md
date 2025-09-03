@@ -1,7 +1,5 @@
 # Changelog and notes
 ## TODO:
-- Update edit guides/media layout in admin pages to be easier to see
-- Fix view all guides in user (filter doesn't work on guides page)
 - Add spoilers to gambles
 - Add a full disclaimer page (update footer to link it) and faq section/page
 - Build out arcs detail page to display events and structure them in a digestible way
@@ -9,6 +7,7 @@
 ## 2025-09-03
 ### Changes
 - Update show and edit admin pages for guides/media layout to be easier to see
+- Fix view all guides in user (filter doesn't work on guides page)
 
 ### Notes
 - I am thinking of going through with the name L-file for the website. Although it is not completely faithful for the canon use of the term, it's a cool name and neat codename for the project. I will include other ways of making sure the site shows up in relevant search results.

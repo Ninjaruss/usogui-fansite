@@ -169,6 +169,7 @@ export class GuidesService {
   }> {
     const {
       search,
+      authorId,
       tag,
       sortBy = 'createdAt',
       sortOrder = 'DESC',
@@ -202,6 +203,10 @@ export class GuidesService {
         '(guide.title ILIKE :search OR guide.description ILIKE :search)',
         { search: `%${search}%` },
       );
+    }
+
+    if (authorId) {
+      queryBuilder.andWhere('guide.authorId = :authorId', { authorId });
     }
 
     if (tag) {

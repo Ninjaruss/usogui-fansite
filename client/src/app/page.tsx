@@ -93,10 +93,10 @@ export default function HomePage() {
               color: 'transparent'
             }}
           >
-            Welcome to the L-file
+            Welcome to the L-File
           </Typography>
           <Typography variant="h5" color="text.secondary" mb={4}>
-            The ultimate unofficial database for the Usogui gambling manga
+            The unofficial database for the gambling manga masterpiece - Usogui (Lie Eater)
           </Typography>
           
           <Box sx={{ maxWidth: 600, mx: 'auto', mb: 4 }}>

@@ -76,17 +76,26 @@ function GuidesPageContent() {
     }
   }
 
+  // Handle URL parameter changes
   useEffect(() => {
     const authorParam = searchParams.get('author')
     const authorNameParam = searchParams.get('authorName')
     
-    if (authorParam !== authorFilter) {
-      setAuthorFilter(authorParam)
-      setAuthorName(authorNameParam)
-      setCurrentPage(1)
+    console.log('URL params changed:', { authorParam, authorNameParam })
+    
+    // Update state
+    setAuthorFilter(authorParam)
+    setAuthorName(authorNameParam)
+    setCurrentPage(1)
+    
+    // Only clear search when initially setting an author filter from URL
+    // Don't clear it if user is searching within an author's guides
+    if (authorParam && !searchQuery) {
+      setSearchQuery('')
     }
-  }, [searchParams, authorFilter])
+  }, [searchParams])
 
+  // Handle data fetching - this will trigger when authorFilter changes from the above effect
   useEffect(() => {
     fetchGuides(currentPage, searchQuery, authorFilter || undefined)
   }, [currentPage, searchQuery, authorFilter])
@@ -145,13 +154,30 @@ function GuidesPageContent() {
           <Typography variant="h3" component="h1" gutterBottom>
             Community Guides
           </Typography>
-          <Typography variant="h6" color="text.secondary">
+          <Typography variant="h6" color="text.secondary" sx={{ mb: 3 }}>
             In-depth analysis and insights from the Usogui community
           </Typography>
+          
+          <Button
+            component={Link}
+            href="/submit-guide"
+            variant="contained"
+            size="large"
+            startIcon={<FileText size={20} />}
+            sx={{ 
+              mb: 2,
+              px: 4,
+              py: 1.5,
+              fontSize: '1.1rem'
+            }}
+          >
+            Write Guide
+          </Button>
         </Box>
 
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+        <Box sx={{ mb: 4 }}>
           <TextField
+            fullWidth
             variant="outlined"
             placeholder="Search guides..."
             value={searchQuery}
@@ -163,17 +189,8 @@ function GuidesPageContent() {
                 </InputAdornment>
               ),
             }}
-            sx={{ maxWidth: 400 }}
+            sx={{ maxWidth: 500, mx: 'auto', display: 'block' }}
           />
-          
-          <Button
-            component={Link}
-            href="/submit-guide"
-            variant="contained"
-            startIcon={<FileText size={20} />}
-          >
-            Write Guide
-          </Button>
         </Box>
 
         {authorFilter && authorName && (
@@ -354,13 +371,13 @@ function GuidesPageContent() {
                   variant="contained"
                   startIcon={<FileText size={20} />}
                 >
-                  Write the First Guide
+                  Write Your First Guide
                 </Button>
               </Box>
             )}
 
             {totalPages > 1 && (
-              <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'center', mt: 6 }}>
                 <Pagination
                   count={totalPages}
                   page={currentPage}
