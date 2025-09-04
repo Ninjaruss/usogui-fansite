@@ -2,7 +2,7 @@
 
 import { Box, Container, Typography, Grid, Card, CardContent, Button, Skeleton, Alert } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
-import { Users, BookOpen, Dices, CalendarSearch, TrendingUp, Book, Shield, FileText } from 'lucide-react'
+import { Users, BookOpen, Dices, CalendarSearch, TrendingUp, Book, Shield, FileText, Quote } from 'lucide-react'
 import Link from 'next/link'
 import { SearchBar } from '../components/SearchBar'
 import { TrendingSection } from '../components/TrendingSection'
@@ -42,6 +42,20 @@ export default function HomePage() {
       description: 'Key events and plot points throughout the series',
       href: '/events',
       color: 'warning'
+    },
+    {
+      icon: <FileText className="w-8 h-8" />,
+      title: 'Guides',
+      description: 'In-depth analysis and insights from the community',
+      href: '/guides',
+      color: 'info'
+    },
+    {
+      icon: <Quote className="w-8 h-8" />,
+      title: 'Quotes',
+      description: 'Memorable lines and wisdom from Usogui',
+      href: '/quotes',
+      color: 'success'
     },
     {
       icon: <Book className="w-8 h-8" />,

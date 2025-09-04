@@ -437,6 +437,7 @@ class ApiClient {
 
   async submitMedia(data: {
     url: string
+    type: 'image' | 'video' | 'audio'
     characterId?: number
     arcId?: number
     description?: string
@@ -810,6 +811,31 @@ class ApiClient {
 
   async deleteMedia(id: number) {
     return this.delete<any>(`/media/${id}`)
+  }
+
+  async getApprovedMedia(params?: {
+    page?: number
+    limit?: number
+    type?: string
+    characterId?: number
+    arcId?: number
+  }) {
+    const searchParams = new URLSearchParams()
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) {
+          searchParams.append(key, value.toString())
+        }
+      })
+    }
+    const query = searchParams.toString()
+    return this.get<{
+      data: any[]
+      total: number
+      page: number
+      perPage: number
+      totalPages: number
+    }>(`/media/public${query ? `?${query}` : ''}`)
   }
 
   async createArc(data: any) {

@@ -22,10 +22,10 @@ export class CreateMediaDto {
   @IsNotEmpty()
   @IsUrl()
   @Matches(
-    /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be|deviantart\.com|pixiv\.net|twitter\.com|instagram\.com)\/.+$/,
+    /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be|tiktok\.com|vm\.tiktok\.com|deviantart\.com|pixiv\.net|twitter\.com|x\.com|instagram\.com|imgur\.com|i\.imgur\.com|soundcloud\.com)\/.+$|^https?:\/\/[\w\-._~:/?#\[\]@!$&'()*+,;=]+\.(jpg|jpeg|png|gif|webp|mp4|mov|avi|webm|mp3|wav|ogg|flac)$/i,
     {
       message:
-        'URL must be from YouTube, DeviantArt, Pixiv, Twitter, or Instagram',
+        'URL must be from supported platforms (YouTube, TikTok, Instagram, Twitter, DeviantArt, Pixiv, Imgur, SoundCloud) or a direct media file link',
     },
   )
   url: string;

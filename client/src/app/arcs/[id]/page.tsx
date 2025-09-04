@@ -21,6 +21,7 @@ import { useParams } from 'next/navigation'
 import { api } from '../../../lib/api'
 import { motion } from 'motion/react'
 import { usePageView } from '../../../hooks/usePageView'
+import MediaGallery from '../../../components/MediaGallery'
 
 interface Arc {
   id: number
@@ -317,6 +318,17 @@ export default function ArcDetailPage() {
                     </Box>
                   </Box>
                 )}
+              </CardContent>
+            </Card>
+
+            {/* Media Gallery Section */}
+            <Card className="gambling-card" sx={{ mt: 4 }}>
+              <CardContent>
+                <MediaGallery 
+                  arcId={arc.id} 
+                  limit={8}
+                  showTitle={true}
+                />
               </CardContent>
             </Card>
           </Grid>

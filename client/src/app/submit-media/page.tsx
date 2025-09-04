@@ -17,10 +17,9 @@ import {
   CircularProgress,
   Grid,
   Tabs,
-  Tab,
-  Divider
+  Tab
 } from '@mui/material'
-import { Upload, Link as LinkIcon, Image, Video } from 'lucide-react'
+import { Upload, Link as LinkIcon, Image, Video, Music } from 'lucide-react'
 import { useTheme } from '@mui/material/styles'
 import { useAuth } from '../../providers/AuthProvider'
 import { api } from '../../lib/api'
@@ -93,8 +92,10 @@ export default function SubmitMediaPage() {
     setLoading(true)
 
     try {
+      const mediaType = getMediaType(formData.url)
       await api.submitMedia({
         url: formData.url,
+        type: mediaType,
         characterId: formData.characterId || undefined,
         arcId: formData.arcId || undefined,
         description: formData.description
@@ -135,17 +136,37 @@ export default function SubmitMediaPage() {
     }
   }
 
-  const getMediaType = (url: string) => {
-    if (url.includes('youtube.com') || url.includes('youtu.be')) {
+  const getMediaType = (url: string): 'image' | 'video' | 'audio' => {
+    if (url.includes('youtube.com') || url.includes('youtu.be') || 
+        url.includes('tiktok.com') || url.includes('vm.tiktok.com')) {
       return 'video'
     }
+    if (url.includes('soundcloud.com')) {
+      return 'audio'
+    }
     if (url.includes('twitter.com') || url.includes('x.com') || 
-        url.includes('instagram.com') || url.includes('deviantart.com')) {
-      return 'social'
+        url.includes('instagram.com') || url.includes('deviantart.com') ||
+        url.includes('pixiv.net') || url.includes('imgur.com')) {
+      return 'image'
     }
     if (url.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
       return 'image'
     }
+    if (url.match(/\.(mp4|mov|avi|webm)$/i)) {
+      return 'video'
+    }
+    if (url.match(/\.(mp3|wav|ogg|flac)$/i)) {
+      return 'audio'
+    }
+    // Default to image for most social media and art platforms
+    return 'image'
+  }
+
+  const getMediaTypeForIcon = (url: string) => {
+    const type = getMediaType(url)
+    if (type === 'video') return 'video'
+    if (type === 'audio') return 'audio'
+    if (type === 'image') return 'image'
     return 'link'
   }
 
@@ -184,7 +205,7 @@ export default function SubmitMediaPage() {
             Submit Media
           </Typography>
           <Typography variant="h6" color="text.secondary">
-            Share fanart, videos, or other media related to characters or arcs
+            Share fanart, videos, audio, or other media from YouTube, TikTok, Instagram, Pixiv, DeviantArt, Imgur, SoundCloud, and more
           </Typography>
         </Box>
 
@@ -224,13 +245,15 @@ export default function SubmitMediaPage() {
                       value={formData.url}
                       onChange={(e) => handleInputChange('url', e.target.value)}
                       required
-                      helperText="Link to fanart, video, or other media (YouTube, Twitter, DeviantArt, direct image links, etc.)"
+                      helperText="Link to fanart, video, or other media (YouTube, TikTok, Instagram, Twitter, DeviantArt, Pixiv, Imgur, SoundCloud, direct links, etc.)"
                       InputProps={{
                         startAdornment: (
                           <Box sx={{ mr: 1, display: 'flex', alignItems: 'center' }}>
-                            {getMediaType(formData.url) === 'video' ? (
+                            {getMediaTypeForIcon(formData.url) === 'video' ? (
                               <Video size={20} />
-                            ) : getMediaType(formData.url) === 'image' ? (
+                            ) : getMediaTypeForIcon(formData.url) === 'audio' ? (
+                              <Music size={20} />
+                            ) : getMediaTypeForIcon(formData.url) === 'image' ? (
                               <Image size={20} />
                             ) : (
                               <LinkIcon size={20} />

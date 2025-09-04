@@ -95,10 +95,74 @@ export class UrlNormalizerService {
     }
   }
 
+  normalizeTikTokUrl(url: string): string {
+    try {
+      const parsedUrl = new URL(url);
+      if (
+        parsedUrl.hostname === 'tiktok.com' ||
+        parsedUrl.hostname === 'www.tiktok.com' ||
+        parsedUrl.hostname === 'vm.tiktok.com'
+      ) {
+        // For short links (vm.tiktok.com), keep as-is since they redirect
+        if (parsedUrl.hostname === 'vm.tiktok.com') {
+          return url;
+        }
+        // Normalize regular TikTok URLs to use www subdomain
+        return url.replace(/^https?:\/\/(www\.)?tiktok\.com/, 'https://www.tiktok.com');
+      }
+      return url;
+    } catch {
+      return url;
+    }
+  }
+
+  normalizeImgurUrl(url: string): string {
+    try {
+      const parsedUrl = new URL(url);
+      if (
+        parsedUrl.hostname === 'imgur.com' ||
+        parsedUrl.hostname === 'www.imgur.com' ||
+        parsedUrl.hostname === 'i.imgur.com'
+      ) {
+        // For direct image links (i.imgur.com), keep as-is
+        if (parsedUrl.hostname === 'i.imgur.com') {
+          return url;
+        }
+        // Normalize gallery/album URLs to use www subdomain
+        return url.replace(/^https?:\/\/(www\.)?imgur\.com/, 'https://www.imgur.com');
+      }
+      return url;
+    } catch {
+      return url;
+    }
+  }
+
+  normalizeSoundCloudUrl(url: string): string {
+    try {
+      const parsedUrl = new URL(url);
+      if (
+        parsedUrl.hostname === 'soundcloud.com' ||
+        parsedUrl.hostname === 'www.soundcloud.com'
+      ) {
+        // Ensure we're using www subdomain
+        return url.replace(/^https?:\/\/(www\.)?soundcloud\.com/, 'https://www.soundcloud.com');
+      }
+      return url;
+    } catch {
+      return url;
+    }
+  }
+
   normalize(url: string, type: string): string {
     switch (type) {
       case 'video':
+        // Check for TikTok first, then YouTube
+        if (url.includes('tiktok.com') || url.includes('vm.tiktok.com')) {
+          return this.normalizeTikTokUrl(url);
+        }
         return this.normalizeYoutubeUrl(url);
+      case 'audio':
+        return this.normalizeSoundCloudUrl(url);
       case 'image':
         // Apply all image normalizers and return the first one that changes the URL
         const normalizers = [
@@ -106,10 +170,11 @@ export class UrlNormalizerService {
           this.normalizePixivUrl,
           this.normalizeDeviantArtUrl,
           this.normalizeInstagramUrl,
+          this.normalizeImgurUrl,
         ];
 
         for (const normalizer of normalizers) {
-          const normalized = normalizer(url);
+          const normalized = normalizer.call(this, url);
           if (normalized !== url) return normalized;
         }
         return url;

@@ -25,6 +25,7 @@ import { api } from '../../../lib/api'
 import { motion } from 'motion/react'
 import SpoilerWrapper from '../../../components/SpoilerWrapper'
 import { usePageView } from '../../../hooks/usePageView'
+import MediaGallery from '../../../components/MediaGallery'
 
 interface Character {
   id: number
@@ -450,6 +451,17 @@ export default function CharacterDetailPage() {
                 </CardContent>
               </Card>
             )}
+
+            {/* Media Gallery Section */}
+            <Card className="gambling-card" sx={{ mt: 4 }}>
+              <CardContent>
+                <MediaGallery 
+                  characterId={character.id} 
+                  limit={8}
+                  showTitle={true}
+                />
+              </CardContent>
+            </Card>
 
           </Grid>
 
