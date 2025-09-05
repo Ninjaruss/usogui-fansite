@@ -1,7 +1,6 @@
 # Changelog and notes
 ## TODO:
 - Put media gallery as a seperate tab; update media viewer 
-- Fix events showing for character detail pages
 - Add modal to view events info in detail
 - Add highlight of most popular quote, gamble, and character profile picture
 - Add different image profile pictures for characters and adding labeling (update character image based on progressed chapter; subtle chapter progression)
