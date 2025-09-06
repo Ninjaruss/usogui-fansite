@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react'
 import { 
   Card, CardContent, Box, Typography, Chip, Button, 
   Divider, Tooltip, useTheme
@@ -58,7 +58,251 @@ function getEventTypeColor(type: string | null): "default" | "primary" | "second
   }
 }
 
-export default function CharacterTimeline({ 
+// CSS-in-JS styles for performance
+const globalStyles = `
+  .timeline-event-highlight {
+    background-color: var(--mui-palette-warning-light) !important;
+    border: 2px solid var(--mui-palette-warning-main) !important;
+    box-shadow: 0 0 8px var(--mui-palette-warning-light) !important;
+    transition: all 0.2s ease !important;
+  }
+`
+
+// Inject styles once
+if (typeof document !== 'undefined' && !document.getElementById('timeline-styles')) {
+  const styleSheet = document.createElement('style')
+  styleSheet.id = 'timeline-styles'
+  styleSheet.textContent = globalStyles
+  document.head.appendChild(styleSheet)
+}
+
+// Memoized Timeline Display Component
+const TimelineDisplay = React.memo(function TimelineDisplay({ 
+  visibleSections, 
+  characterName, 
+  theme 
+}: {
+  visibleSections: Array<{ arc: Arc; events: TimelineEvent[] }>
+  characterName: string
+  theme: any
+}) {
+  return (
+    <Box sx={{ mb: 3 }}>
+      {visibleSections.map((section, index) => (
+        <Box key={section.arc.id} sx={{ mb: 8 }}>
+          {/* Add separator between arcs (except for the first one) */}
+          {index > 0 && (
+            <Divider sx={{ mb: 6, borderStyle: 'dashed', borderColor: 'primary.main', opacity: 0.3 }} />
+          )}
+          
+          <Box id={`timeline-arc-${section.arc.id}`}>
+            {/* Arc Header */}
+            <Box sx={{ mb: 3, textAlign: 'center' }}>
+              <Typography variant="h5" sx={{ mb: 1, color: 'primary.main', fontWeight: 'bold' }}>
+                {section.arc.name}
+              </Typography>
+              <Typography variant="subtitle1" color="text.secondary" sx={{ mb: 1, fontStyle: 'italic' }}>
+                {characterName}'s events in this arc
+              </Typography>
+              {section.arc.description && (
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2, maxWidth: '600px', mx: 'auto' }}>
+                  {section.arc.description}
+                </Typography>
+              )}
+              <Chip
+                label={`Chapters ${section.arc.startChapter}${section.arc.endChapter && section.arc.endChapter !== section.arc.startChapter ? `-${section.arc.endChapter}` : ''}`}
+                size="small"
+                variant="outlined"
+                color="secondary"
+              />
+            </Box>
+
+            {/* Horizontal Timeline */}
+            <Box sx={{ position: 'relative', px: 2 }}>
+              {/* Timeline Line */}
+              <Box
+                sx={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: 0,
+                  right: 0,
+                  height: '3px',
+                  background: `linear-gradient(90deg, ${theme.palette.primary.main}20, ${theme.palette.primary.main}, ${theme.palette.primary.main}20)`,
+                  transform: 'translateY(-50%)',
+                  zIndex: 1,
+                  borderRadius: '1.5px'
+                }}
+              />
+              
+              {/* Horizontal Scrollable Container with Performance Optimizations */}
+              <Box
+                sx={{
+                  display: 'flex',
+                  gap: 4,
+                  overflowX: 'auto',
+                  overflowY: 'visible',
+                  pb: 2,
+                  pt: 2,
+                  position: 'relative',
+                  zIndex: 2,
+                  // Performance optimizations for scrolling
+                  willChange: 'scroll-position',
+                  transform: 'translateZ(0)', // Force hardware acceleration
+                  '&::-webkit-scrollbar': {
+                    height: '8px',
+                  },
+                  '&::-webkit-scrollbar-track': {
+                    backgroundColor: 'transparent',
+                    borderRadius: '4px',
+                  },
+                  '&::-webkit-scrollbar-thumb': {
+                    backgroundColor: theme.palette.primary.main + '40',
+                    borderRadius: '4px',
+                    '&:hover': {
+                      backgroundColor: theme.palette.primary.main + '60',
+                    }
+                  },
+                }}
+              >
+                {section.events.map((event) => (
+                  <TimelineEventCard key={event.id} event={event} theme={theme} />
+                ))}
+              </Box>
+            </Box>
+          </Box>
+        </Box>
+      ))}
+    </Box>
+  )
+})
+
+// Memoized Event Card Component 
+const TimelineEventCard = React.memo(function TimelineEventCard({ 
+  event, 
+  theme 
+}: {
+  event: TimelineEvent
+  theme: any
+}) {
+  return (
+    <Box
+      id={`event-${event.id}`}
+      sx={{
+        minWidth: '280px',
+        maxWidth: '320px',
+        position: 'relative',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        border: `1px solid ${theme.palette.divider}`,
+        borderRadius: 1,
+        // Performance optimization
+        willChange: 'transform',
+      }}
+    >
+      {/* Timeline Node */}
+      <Box
+        sx={{
+          width: '16px',
+          height: '16px',
+          borderRadius: '50%',
+          backgroundColor: theme.palette.primary.main,
+          border: `3px solid ${theme.palette.background.paper}`,
+          boxShadow: `0 0 0 2px ${theme.palette.primary.main}`,
+          position: 'relative',
+          zIndex: 3,
+          mb: 2,
+          transition: 'transform 0.2s ease', // Reduced transition duration
+          '&:hover': {
+            transform: 'scale(1.2)',
+            boxShadow: `0 0 0 3px ${theme.palette.primary.main}`,
+          }
+        }}
+      />
+      
+      {/* Event Card with Spoiler Protection */}
+      <TimelineSpoilerWrapper event={event}>
+        <Card
+          sx={{
+            width: '100%',
+            transition: 'transform 0.2s ease, box-shadow 0.2s ease', // Reduced transition duration
+            '&:hover': {
+              transform: 'translateY(-4px)',
+              boxShadow: theme.shadows[8],
+            },
+            border: `1px solid ${theme.palette.divider}`,
+            borderRadius: 2,
+            // Performance optimization
+            willChange: 'transform',
+          }}
+        >
+          <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
+            {/* Event Header */}
+            <Box sx={{ mb: 2 }}>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 1, justifyContent: 'center' }}>
+                <Chip
+                  label={`Ch. ${event.chapterNumber}`}
+                  size="small"
+                  variant="outlined"
+                  color="primary"
+                  sx={{ fontSize: '0.75rem', fontWeight: 'bold' }}
+                />
+                {event.type && (
+                  <Chip
+                    label={getEventTypeLabel(event.type)}
+                    size="small"
+                    variant="filled"
+                    color={getEventTypeColor(event.type)}
+                    sx={{ fontSize: '0.7rem' }}
+                  />
+                )}
+              </Box>
+            </Box>
+            
+            {/* Event Title */}
+            <Typography 
+              variant="subtitle2" 
+              fontWeight="bold" 
+              sx={{ 
+                mb: 1, 
+                textAlign: 'center',
+                fontSize: '0.9rem',
+                lineHeight: 1.3,
+                display: '-webkit-box',
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden'
+              }}
+            >
+              {event.title}
+            </Typography>
+            
+            {/* Event Description */}
+            {event.description && (
+              <Typography 
+                variant="body2" 
+                color="text.secondary" 
+                sx={{ 
+                  fontSize: '0.8rem',
+                  lineHeight: 1.4,
+                  textAlign: 'center',
+                  display: '-webkit-box',
+                  WebkitLineClamp: 3,
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden'
+                }}
+              >
+                {event.description}
+              </Typography>
+            )}
+          </CardContent>
+        </Card>
+      </TimelineSpoilerWrapper>
+    </Box>
+  )
+})
+
+const CharacterTimeline = React.memo(function CharacterTimeline({ 
   events, 
   arcs, 
   characterName, 
@@ -68,7 +312,7 @@ export default function CharacterTimeline({
   const [selectedEventTypes, setSelectedEventTypes] = useState<Set<string>>(new Set())
   const [showAllEvents, setShowAllEvents] = useState(false)
 
-  // Get all unique event types from events
+  // Memoize event types calculation with proper dependencies
   const uniqueEventTypes = useMemo(() => {
     const eventTypes = new Set<string>()
     
@@ -83,28 +327,28 @@ export default function CharacterTimeline({
     }))
   }, [events])
 
-  // Filter events based on event types only
+  // Optimize filtered events calculation
   const filteredEvents = useMemo(() => {
-    let filtered = events
-
-    if (selectedEventTypes.size > 0) {
-      filtered = filtered.filter(event => 
-        event.type && selectedEventTypes.has(event.type)
-      )
+    if (selectedEventTypes.size === 0) {
+      return events.slice().sort((a, b) => a.chapterNumber - b.chapterNumber)
     }
-
-    return filtered.sort((a, b) => a.chapterNumber - b.chapterNumber)
+    
+    return events
+      .filter(event => event.type && selectedEventTypes.has(event.type))
+      .sort((a, b) => a.chapterNumber - b.chapterNumber)
   }, [events, selectedEventTypes])
 
-  // Group events by arc for timeline display
+  // Optimize timeline sections grouping
   const timelineSections = useMemo(() => {
     const arcEvents = new Map<number, TimelineEvent[]>()
+    
+    // Create arc lookup for O(1) access
+    const arcLookup = new Map(arcs.map(arc => [arc.id, arc]))
     
     // Only group events that have valid arc IDs and corresponding arc data
     filteredEvents.forEach(event => {
       const arcId = event.arcId
-      // Only include events with valid arc ID and ensure the arc exists
-      if (arcId !== null && arcId !== undefined && arcs.find(a => a.id === arcId)) {
+      if (arcId !== null && arcId !== undefined && arcLookup.has(arcId)) {
         if (!arcEvents.has(arcId)) {
           arcEvents.set(arcId, [])
         }
@@ -115,43 +359,49 @@ export default function CharacterTimeline({
     // Convert to sections with proper arc information
     const sections = Array.from(arcEvents.entries())
       .map(([arcId, events]) => {
-        const arc = arcs.find(a => a.id === arcId)
-        if (arc) {
-          return {
-            arc,
-            events: events.sort((a, b) => a.chapterNumber - b.chapterNumber)
-          }
+        const arc = arcLookup.get(arcId)!
+        return {
+          arc,
+          events: events.sort((a, b) => a.chapterNumber - b.chapterNumber)
         }
-        return null // This shouldn't happen given our filtering above, but safety check
       })
-      .filter(Boolean) // Remove null entries
 
     // Sort sections by arc start chapter
-    return sections.sort((a, b) => a!.arc.startChapter - b!.arc.startChapter) as Array<{
-      arc: Arc;
-      events: TimelineEvent[];
-    }>
+    return sections.sort((a, b) => a.arc.startChapter - b.arc.startChapter)
   }, [filteredEvents, arcs])
 
   // Get visible sections based on showAllEvents
   const visibleSections = useMemo(() => {
-    if (showAllEvents) return timelineSections
-    return timelineSections.slice(0, 3) // Show first 3 arcs by default
+    return showAllEvents ? timelineSections : timelineSections.slice(0, 3)
   }, [timelineSections, showAllEvents])
 
+  // Optimize scroll functions with throttling and requestAnimationFrame
+  const scrollToArcRef = useRef<{ [key: number]: () => void }>({})
+  
+  useEffect(() => {
+    timelineSections.forEach(section => {
+      if (!scrollToArcRef.current[section.arc.id]) {
+        scrollToArcRef.current[section.arc.id] = () => {
+          requestAnimationFrame(() => {
+            const element = document.getElementById(`timeline-arc-${section.arc.id}`)
+            if (element) {
+              element.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'nearest',
+                inline: 'center'
+              })
+            }
+          })
+        }
+      }
+    })
+  }, [timelineSections])
 
-  const scrollToArc = (arcId: number) => {
-    const element = document.getElementById(`timeline-arc-${arcId}`)
-    if (element) {
-      element.scrollIntoView({ 
-        behavior: 'smooth', 
-        block: 'nearest',
-        inline: 'center'
-      })
-    }
-  }
+  const scrollToArc = useCallback((arcId: number) => {
+    scrollToArcRef.current[arcId]?.()
+  }, [])
 
-  const scrollToChapter = (chapterNumber: number) => {
+  const scrollToChapter = useCallback((chapterNumber: number) => {
     // Find the event with this chapter and scroll to its arc
     const event = filteredEvents.find(e => e.chapterNumber === chapterNumber)
     if (event) {
@@ -159,35 +409,47 @@ export default function CharacterTimeline({
       
       // After scrolling to arc, find and highlight the specific event
       setTimeout(() => {
-        const eventElement = document.getElementById(`event-${event.id}`)
-        if (eventElement) {
-          eventElement.scrollIntoView({ 
-            behavior: 'smooth', 
-            block: 'center',
-            inline: 'center' 
-          })
-          
-          // Highlight the event briefly (similar to ArcTimeline)
-          eventElement.style.backgroundColor = theme.palette.warning.light
-          eventElement.style.border = `2px solid ${theme.palette.warning.main}`
-          eventElement.style.boxShadow = `0 0 8px ${theme.palette.warning.light}`
-          eventElement.style.transition = 'all 0.3s ease'
-          setTimeout(() => {
-            eventElement.style.backgroundColor = ''
-            eventElement.style.border = `1px solid ${theme.palette.divider}`
-            eventElement.style.boxShadow = ''
-          }, 3000)
-        }
+        requestAnimationFrame(() => {
+          const eventElement = document.getElementById(`event-${event.id}`)
+          if (eventElement) {
+            eventElement.scrollIntoView({ 
+              behavior: 'smooth', 
+              block: 'center',
+              inline: 'center' 
+            })
+            
+            // Use CSS classes instead of direct style manipulation for better performance
+            eventElement.classList.add('timeline-event-highlight')
+            setTimeout(() => {
+              eventElement.classList.remove('timeline-event-highlight')
+            }, 3000)
+          }
+        })
       }, 500)
     }
-  }
+  }, [filteredEvents, scrollToArc])
 
-
-  const clearAllFilters = () => {
+  const clearAllFilters = useCallback(() => {
     setSelectedEventTypes(new Set())
-  }
+  }, [])
 
-  // Get some quick navigation chapters
+  const toggleEventType = useCallback((type: string) => {
+    setSelectedEventTypes(prev => {
+      const newSelected = new Set(prev)
+      if (newSelected.has(type)) {
+        newSelected.delete(type)
+      } else {
+        newSelected.add(type)
+      }
+      return newSelected
+    })
+  }, [])
+
+  const toggleShowAllEvents = useCallback(() => {
+    setShowAllEvents(prev => !prev)
+  }, [])
+
+  // Get some quick navigation chapters - limit to reduce DOM size
   const uniqueChapters = useMemo(() => {
     return Array.from(new Set(filteredEvents.map(e => e.chapterNumber)))
       .sort((a, b) => a - b)
@@ -249,15 +511,7 @@ export default function CharacterTimeline({
                     variant={selectedEventTypes.has(type) ? 'filled' : 'outlined'}
                     color={color}
                     clickable
-                    onClick={() => {
-                      const newSelected = new Set(selectedEventTypes)
-                      if (newSelected.has(type)) {
-                        newSelected.delete(type)
-                      } else {
-                        newSelected.add(type)
-                      }
-                      setSelectedEventTypes(newSelected)
-                    }}
+                    onClick={() => toggleEventType(type)}
                   />
                 ))}
               </Box>
@@ -370,7 +624,7 @@ export default function CharacterTimeline({
           <Box sx={{ mb: 3, textAlign: 'center' }}>
             <Button
               startIcon={showAllEvents ? <EyeOff size={16} /> : <Eye size={16} />}
-              onClick={() => setShowAllEvents(!showAllEvents)}
+              onClick={toggleShowAllEvents}
               size="small"
               variant="outlined"
             >
@@ -381,205 +635,17 @@ export default function CharacterTimeline({
 
         {/* Horizontal Timeline Display */}
         {timelineSections.length > 0 && (
-          <Box sx={{ mb: 3 }}>
-            {visibleSections.map((section, index) => (
-              <Box key={section.arc.id} sx={{ mb: 8 }}>
-                {/* Add separator between arcs (except for the first one) */}
-                {index > 0 && (
-                  <Divider sx={{ mb: 6, borderStyle: 'dashed', borderColor: 'primary.main', opacity: 0.3 }} />
-                )}
-                
-                <Box id={`timeline-arc-${section.arc.id}`}>
-                  {/* Arc Header */}
-                  <Box sx={{ mb: 3, textAlign: 'center' }}>
-                    <Typography variant="h5" sx={{ mb: 1, color: 'primary.main', fontWeight: 'bold' }}>
-                      {section.arc.name}
-                    </Typography>
-                    <Typography variant="subtitle1" color="text.secondary" sx={{ mb: 1, fontStyle: 'italic' }}>
-  {characterName}&apos;s events in this arc
-                    </Typography>
-                  {section.arc.description && (
-                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2, maxWidth: '600px', mx: 'auto' }}>
-                      {section.arc.description}
-                    </Typography>
-                  )}
-                  <Chip
-                    label={`Chapters ${section.arc.startChapter}${section.arc.endChapter && section.arc.endChapter !== section.arc.startChapter ? `-${section.arc.endChapter}` : ''}`}
-                    size="small"
-                    variant="outlined"
-                    color="secondary"
-                  />
-                </Box>
-
-                {/* Horizontal Timeline */}
-                <Box sx={{ position: 'relative', px: 2 }}>
-                  {/* Timeline Line */}
-                  <Box
-                    sx={{
-                      position: 'absolute',
-                      top: '50%',
-                      left: 0,
-                      right: 0,
-                      height: '3px',
-                      background: `linear-gradient(90deg, ${theme.palette.primary.main}20, ${theme.palette.primary.main}, ${theme.palette.primary.main}20)`,
-                      transform: 'translateY(-50%)',
-                      zIndex: 1,
-                      borderRadius: '1.5px'
-                    }}
-                  />
-                  
-                  {/* Horizontal Scrollable Container */}
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      gap: 4,
-                      overflowX: 'auto',
-                      overflowY: 'visible',
-                      pb: 2,
-                      pt: 2,
-                      position: 'relative',
-                      zIndex: 2,
-                      '&::-webkit-scrollbar': {
-                        height: '8px',
-                      },
-                      '&::-webkit-scrollbar-track': {
-                        backgroundColor: 'transparent',
-                        borderRadius: '4px',
-                      },
-                      '&::-webkit-scrollbar-thumb': {
-                        backgroundColor: theme.palette.primary.main + '40',
-                        borderRadius: '4px',
-                        '&:hover': {
-                          backgroundColor: theme.palette.primary.main + '60',
-                        }
-                      },
-                    }}
-                  >
-                    {section.events.map((event) => (
-                      <Box
-                        key={event.id}
-                        id={`event-${event.id}`}
-                        sx={{
-                          minWidth: '280px',
-                          maxWidth: '320px',
-                          position: 'relative',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'center',
-                          border: `1px solid ${theme.palette.divider}`,
-                          borderRadius: 1,
-                        }}
-                      >
-                        {/* Timeline Node */}
-                        <Box
-                          sx={{
-                            width: '16px',
-                            height: '16px',
-                            borderRadius: '50%',
-                            backgroundColor: theme.palette.primary.main,
-                            border: `3px solid ${theme.palette.background.paper}`,
-                            boxShadow: `0 0 0 2px ${theme.palette.primary.main}`,
-                            position: 'relative',
-                            zIndex: 3,
-                            mb: 2,
-                            transition: 'all 0.3s ease',
-                            '&:hover': {
-                              transform: 'scale(1.2)',
-                              boxShadow: `0 0 0 3px ${theme.palette.primary.main}`,
-                            }
-                          }}
-                        />
-                        
-                        {/* Event Card with Spoiler Protection */}
-                        <TimelineSpoilerWrapper event={event}>
-                          <Card
-                            sx={{
-                              width: '100%',
-                              transition: 'all 0.3s ease',
-                              '&:hover': {
-                                transform: 'translateY(-4px)',
-                                boxShadow: theme.shadows[8],
-                              },
-                              border: `1px solid ${theme.palette.divider}`,
-                              borderRadius: 2,
-                            }}
-                          >
-                            <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-                              {/* Event Header */}
-                              <Box sx={{ mb: 2 }}>
-                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 1, justifyContent: 'center' }}>
-                                  <Chip
-                                    label={`Ch. ${event.chapterNumber}`}
-                                    size="small"
-                                    variant="outlined"
-                                    color="primary"
-                                    sx={{ fontSize: '0.75rem', fontWeight: 'bold' }}
-                                  />
-                                  {event.type && (
-                                    <Chip
-                                      label={getEventTypeLabel(event.type)}
-                                      size="small"
-                                      variant="filled"
-                                      color={getEventTypeColor(event.type)}
-                                      sx={{ fontSize: '0.7rem' }}
-                                    />
-                                  )}
-                                </Box>
-                              </Box>
-                              
-                              {/* Event Title */}
-                              <Typography 
-                                variant="subtitle2" 
-                                fontWeight="bold" 
-                                sx={{ 
-                                  mb: 1, 
-                                  textAlign: 'center',
-                                  fontSize: '0.9rem',
-                                  lineHeight: 1.3,
-                                  display: '-webkit-box',
-                                  WebkitLineClamp: 2,
-                                  WebkitBoxOrient: 'vertical',
-                                  overflow: 'hidden'
-                                }}
-                              >
-                                {event.title}
-                              </Typography>
-                              
-                              {/* Event Description */}
-                              {event.description && (
-                                <Typography 
-                                  variant="body2" 
-                                  color="text.secondary" 
-                                  sx={{ 
-                                    fontSize: '0.8rem',
-                                    lineHeight: 1.4,
-                                    textAlign: 'center',
-                                    display: '-webkit-box',
-                                    WebkitLineClamp: 3,
-                                    WebkitBoxOrient: 'vertical',
-                                    overflow: 'hidden'
-                                  }}
-                                >
-                                  {event.description}
-                                </Typography>
-                              )}
-                            </CardContent>
-                          </Card>
-                        </TimelineSpoilerWrapper>
-                      </Box>
-                    ))}
-                  </Box>
-                </Box>
-                </Box>
-              </Box>
-            ))}
-          </Box>
+          <TimelineDisplay 
+            visibleSections={visibleSections}
+            characterName={characterName}
+            theme={theme}
+          />
         )}
 
       </CardContent>
     </Card>
   )
-}
+})
 
 // Timeline Spoiler Wrapper
 function TimelineSpoilerWrapper({ event, children }: { event: TimelineEvent, children: React.ReactNode }) {
@@ -701,3 +767,6 @@ function TimelineSpoilerWrapper({ event, children }: { event: TimelineEvent, chi
     </Box>
   )
 }
+
+export default CharacterTimeline
+
