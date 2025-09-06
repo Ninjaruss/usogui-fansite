@@ -435,6 +435,7 @@ export default function GambleDetailsPage() {
                   arcs={arcs}
                   gambleName={gamble.name}
                   gambleChapter={gamble.chapter?.number || gamble.chapterId}
+                  participants={gamble.participants || []}
                 />
               </Box>
             )}
