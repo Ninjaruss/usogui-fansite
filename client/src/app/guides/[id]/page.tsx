@@ -24,7 +24,7 @@ import {
   MenuItem,
   Autocomplete
 } from '@mui/material'
-import { ArrowLeft, FileText, Calendar, ThumbsUp, User, Heart, Edit, Save, X } from 'lucide-react'
+import { ArrowLeft, FileText, Calendar, ThumbsUp, User, Heart, Edit, Save, X, Users, BookOpen, Dice6 } from 'lucide-react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { api } from '../../../lib/api'
@@ -48,6 +48,18 @@ interface Guide {
     username: string
   }
   tags: Array<{
+    id: number
+    name: string
+  }>
+  characters?: Array<{
+    id: number
+    name: string
+  }>
+  arc?: {
+    id: number
+    name: string
+  }
+  gambles?: Array<{
     id: number
     name: string
   }>
@@ -296,16 +308,98 @@ export default function GuideDetailsPage() {
                 </Box>
               </Box>
 
+              {((guide.characters && guide.characters.length > 0) || guide.arc || (guide.gambles && guide.gambles.length > 0)) && (
+                <Box sx={{ mb: 3 }}>
+                  <Typography variant="h6" gutterBottom sx={{ mb: 2, fontWeight: 'bold' }}>
+                    Related Content
+                  </Typography>
+                  
+                  {guide.characters && guide.characters.length > 0 && (
+                    <Box sx={{ mb: 2 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                        <Users size={18} style={{ marginRight: 8 }} />
+                        <Typography variant="subtitle2" color="text.secondary">
+                          Characters
+                        </Typography>
+                      </Box>
+                      <Box sx={{ ml: 3 }}>
+                        {guide.characters.map((character) => (
+                          <Chip
+                            key={character.id}
+                            label={character.name}
+                            size="small"
+                            color="primary"
+                            sx={{ mr: 0.5, mb: 0.5 }}
+                            component={Link}
+                            href={`/characters/${character.id}`}
+                            clickable
+                          />
+                        ))}
+                      </Box>
+                    </Box>
+                  )}
+                  
+                  {guide.arc && (
+                    <Box sx={{ mb: 2 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                        <BookOpen size={18} style={{ marginRight: 8 }} />
+                        <Typography variant="subtitle2" color="text.secondary">
+                          Arc
+                        </Typography>
+                      </Box>
+                      <Box sx={{ ml: 3 }}>
+                        <Chip
+                          label={guide.arc.name}
+                          size="small"
+                          color="secondary"
+                          component={Link}
+                          href={`/arcs/${guide.arc.id}`}
+                          clickable
+                        />
+                      </Box>
+                    </Box>
+                  )}
+                  
+                  {guide.gambles && guide.gambles.length > 0 && (
+                    <Box sx={{ mb: 2 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                        <Dice6 size={18} style={{ marginRight: 8 }} />
+                        <Typography variant="subtitle2" color="text.secondary">
+                          Gambles
+                        </Typography>
+                      </Box>
+                      <Box sx={{ ml: 3 }}>
+                        {guide.gambles.map((gamble) => (
+                          <Chip
+                            key={gamble.id}
+                            label={gamble.name}
+                            size="small"
+                            color="info"
+                            sx={{ mr: 0.5, mb: 0.5 }}
+                            component={Link}
+                            href={`/gambles/${gamble.id}`}
+                            clickable
+                          />
+                        ))}
+                      </Box>
+                    </Box>
+                  )}
+                </Box>
+              )}
+
               {guide.tags?.length > 0 && (
                 <Box sx={{ mb: 3 }}>
+                  <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                    Tags
+                  </Typography>
                   {guide.tags.map((tag) => (
                     <Chip
                       key={tag.id}
                       label={tag.name}
                       size="small"
                       variant="outlined"
-                      color="secondary"
-                      sx={{ mr: 0.5, mb: 0.5 }}
+                      color="default"
+                      sx={{ mr: 0.5, mb: 0.5, opacity: 0.8 }}
                     />
                   ))}
                 </Box>

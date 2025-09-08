@@ -6,11 +6,14 @@ import { Guide } from '../../entities/guide.entity';
 import { GuideLike } from '../../entities/guide-like.entity';
 import { Tag } from '../../entities/tag.entity';
 import { User } from '../../entities/user.entity';
+import { Character } from '../../entities/character.entity';
+import { Arc } from '../../entities/arc.entity';
+import { Gamble } from '../../entities/gamble.entity';
 import { PageViewsModule } from '../page-views/page-views.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Guide, GuideLike, Tag, User]),
+    TypeOrmModule.forFeature([Guide, GuideLike, Tag, User, Character, Arc, Gamble]),
     PageViewsModule,
   ],
   controllers: [GuidesController],

@@ -10,6 +10,9 @@ import { Guide, GuideStatus } from '../../entities/guide.entity';
 import { GuideLike } from '../../entities/guide-like.entity';
 import { Tag } from '../../entities/tag.entity';
 import { User, UserRole } from '../../entities/user.entity';
+import { Character } from '../../entities/character.entity';
+import { Arc } from '../../entities/arc.entity';
+import { Gamble } from '../../entities/gamble.entity';
 import { CreateGuideDto } from './dto/create-guide.dto';
 import { UpdateGuideDto } from './dto/update-guide.dto';
 import { GuideQueryDto } from './dto/guide-query.dto';
@@ -27,11 +30,17 @@ export class GuidesService {
     private readonly tagRepository: Repository<Tag>,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    @InjectRepository(Character)
+    private readonly characterRepository: Repository<Character>,
+    @InjectRepository(Arc)
+    private readonly arcRepository: Repository<Arc>,
+    @InjectRepository(Gamble)
+    private readonly gambleRepository: Repository<Gamble>,
     private readonly pageViewsService: PageViewsService,
   ) {}
 
   async create(createGuideDto: CreateGuideDto, author: User): Promise<Guide> {
-    const { tagNames, ...guideData } = createGuideDto;
+    const { tagNames, characterIds, arcId, gambleIds, ...guideData } = createGuideDto;
 
     // Create the guide first - set to PENDING for moderator approval
     const guide = this.guideRepository.create({
@@ -44,6 +53,34 @@ export class GuidesService {
     if (tagNames && tagNames.length > 0) {
       const tags = await this.findOrCreateTags(tagNames);
       guide.tags = tags;
+    }
+
+    // Handle character relations
+    if (characterIds && characterIds.length > 0) {
+      const characters = await this.characterRepository.findByIds(characterIds);
+      if (characters.length !== characterIds.length) {
+        throw new BadRequestException('One or more character IDs are invalid');
+      }
+      guide.characters = characters;
+    }
+
+    // Handle arc relation
+    if (arcId) {
+      const arc = await this.arcRepository.findOne({ where: { id: arcId } });
+      if (!arc) {
+        throw new BadRequestException('Invalid arc ID');
+      }
+      guide.arc = arc;
+      guide.arcId = arcId;
+    }
+
+    // Handle gamble relations
+    if (gambleIds && gambleIds.length > 0) {
+      const gambles = await this.gambleRepository.findByIds(gambleIds);
+      if (gambles.length !== gambleIds.length) {
+        throw new BadRequestException('One or more gamble IDs are invalid');
+      }
+      guide.gambles = gambles;
     }
 
     return await this.guideRepository.save(guide);
@@ -292,7 +329,7 @@ export class GuidesService {
   async findOne(id: number, currentUser?: User): Promise<Guide> {
     const guide = await this.guideRepository.findOne({
       where: { id },
-      relations: ['author', 'tags', 'likes'],
+      relations: ['author', 'tags', 'likes', 'characters', 'arc', 'gambles'],
     });
 
     if (!guide) {
@@ -320,7 +357,7 @@ export class GuidesService {
   ): Promise<Guide & { userHasLiked?: boolean; viewCount?: number }> {
     const guide = await this.guideRepository.findOne({
       where: { id, status: GuideStatus.PUBLISHED },
-      relations: ['author', 'tags'],
+      relations: ['author', 'tags', 'characters', 'arc', 'gambles'],
       select: {
         id: true,
         authorId: true,
@@ -328,6 +365,7 @@ export class GuidesService {
         description: true,
         content: true,
         likeCount: true,
+        arcId: true,
         createdAt: true,
         updatedAt: true,
         author: {
@@ -337,6 +375,21 @@ export class GuidesService {
         tags: {
           id: true,
           name: true,
+        },
+        characters: {
+          id: true,
+          name: true,
+          imageFileName: true,
+        },
+        arc: {
+          id: true,
+          name: true,
+          imageFileName: true,
+        },
+        gambles: {
+          id: true,
+          name: true,
+          rules: true,
         },
       },
     });
@@ -379,7 +432,7 @@ export class GuidesService {
       throw new ForbiddenException('You can only edit your own guides');
     }
 
-    const { tagNames, authorId, ...guideData } = updateGuideDto;
+    const { tagNames, authorId, characterIds, arcId, gambleIds, ...guideData } = updateGuideDto;
 
     // Check if authorId is being changed (admin only)
     if (authorId !== undefined && authorId !== guide.authorId) {
@@ -411,12 +464,53 @@ export class GuidesService {
       }
     }
 
+    // Handle character relations
+    if (characterIds !== undefined) {
+      if (characterIds.length > 0) {
+        const characters = await this.characterRepository.findByIds(characterIds);
+        if (characters.length !== characterIds.length) {
+          throw new BadRequestException('One or more character IDs are invalid');
+        }
+        guide.characters = characters;
+      } else {
+        guide.characters = [];
+      }
+    }
+
+    // Handle arc relation
+    if (arcId !== undefined) {
+      if (arcId) {
+        const arc = await this.arcRepository.findOne({ where: { id: arcId } });
+        if (!arc) {
+          throw new BadRequestException('Invalid arc ID');
+        }
+        guide.arc = arc;
+        guide.arcId = arcId;
+      } else {
+        guide.arc = undefined;
+        guide.arcId = undefined;
+      }
+    }
+
+    // Handle gamble relations
+    if (gambleIds !== undefined) {
+      if (gambleIds.length > 0) {
+        const gambles = await this.gambleRepository.findByIds(gambleIds);
+        if (gambles.length !== gambleIds.length) {
+          throw new BadRequestException('One or more gamble IDs are invalid');
+        }
+        guide.gambles = gambles;
+      } else {
+        guide.gambles = [];
+      }
+    }
+
     const savedGuide = await this.guideRepository.save(guide);
 
     // Fetch the updated guide with all relations to ensure React Admin gets complete data
     const updatedGuide = await this.guideRepository.findOne({
       where: { id: savedGuide.id },
-      relations: ['author', 'tags', 'likes'],
+      relations: ['author', 'tags', 'likes', 'characters', 'arc', 'gambles'],
     });
 
     if (!updatedGuide) {

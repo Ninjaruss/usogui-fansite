@@ -7,6 +7,7 @@ import {
   IsArray,
   IsOptional,
   IsEnum,
+  IsNumber,
 } from 'class-validator';
 import { GuideStatus } from '../../../entities/guide.entity';
 
@@ -67,4 +68,32 @@ export class CreateGuideDto {
   @IsOptional()
   @MaxLength(50, { each: true })
   tagNames?: string[];
+
+  @ApiPropertyOptional({
+    description: 'Character IDs to associate with this guide',
+    example: [1, 2, 3],
+    type: [Number],
+  })
+  @IsArray()
+  @IsNumber({}, { each: true })
+  @IsOptional()
+  characterIds?: number[];
+
+  @ApiPropertyOptional({
+    description: 'Arc ID to associate with this guide',
+    example: 1,
+  })
+  @IsNumber()
+  @IsOptional()
+  arcId?: number;
+
+  @ApiPropertyOptional({
+    description: 'Gamble IDs to associate with this guide',
+    example: [1, 2],
+    type: [Number],
+  })
+  @IsArray()
+  @IsNumber({}, { each: true })
+  @IsOptional()
+  gambleIds?: number[];
 }

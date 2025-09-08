@@ -14,7 +14,12 @@ import {
   SelectInput,
   NumberField,
   ReferenceInput,
+  ReferenceArrayInput,
+  ReferenceArrayField,
   AutocompleteInput,
+  AutocompleteArrayInput,
+  SingleFieldList,
+  ChipField,
   usePermissions,
   Button,
   useRecordContext,
@@ -631,6 +636,85 @@ const GuideShowContent = () => {
               </CardContent>
             </Card>
 
+            {/* Relations */}
+            <Card elevation={0} sx={{ 
+              mb: 3,
+              backgroundColor: '#0a0a0a',
+              border: '1px solid rgba(225, 29, 72, 0.3)'
+            }}>
+              <Box sx={{
+                background: 'linear-gradient(135deg, #16a34a 0%, #15803d 100%)',
+                color: 'white',
+                p: 2
+              }}>
+                <Typography variant="h6" sx={{ fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <FileText size={20} />
+                  Related Content
+                </Typography>
+              </Box>
+              <CardContent sx={{ p: 3 }}>
+                {record?.characters && record.characters.length > 0 && (
+                  <Box sx={{ mb: 2 }}>
+                    <Typography variant="body2" color="text.secondary" gutterBottom>
+                      Characters
+                    </Typography>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                      {record.characters.map((character: any) => (
+                        <Chip 
+                          key={character.id}
+                          label={character.name} 
+                          color="primary" 
+                          size="small"
+                          sx={{ backgroundColor: 'rgba(225, 29, 72, 0.2)', color: '#f43f5e' }}
+                        />
+                      ))}
+                    </Box>
+                  </Box>
+                )}
+                
+                {record?.arc && (
+                  <Box sx={{ mb: 2 }}>
+                    <Typography variant="body2" color="text.secondary" gutterBottom>
+                      Arc
+                    </Typography>
+                    <Chip 
+                      label={record.arc.name} 
+                      color="secondary" 
+                      size="small"
+                      sx={{ backgroundColor: 'rgba(124, 58, 237, 0.2)', color: '#a855f7' }}
+                    />
+                  </Box>
+                )}
+                
+                {record?.gambles && record.gambles.length > 0 && (
+                  <Box sx={{ mb: 2 }}>
+                    <Typography variant="body2" color="text.secondary" gutterBottom>
+                      Gambles
+                    </Typography>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                      {record.gambles.map((gamble: any) => (
+                        <Chip 
+                          key={gamble.id}
+                          label={gamble.name} 
+                          color="info" 
+                          size="small"
+                          sx={{ backgroundColor: 'rgba(25, 118, 210, 0.2)', color: '#60a5fa' }}
+                        />
+                      ))}
+                    </Box>
+                  </Box>
+                )}
+                
+                {(!record?.characters || record.characters.length === 0) && 
+                 !record?.arc && 
+                 (!record?.gambles || record.gambles.length === 0) && (
+                  <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
+                    No related content associated
+                  </Typography>
+                )}
+              </CardContent>
+            </Card>
+
             {/* Statistics */}
             <Card elevation={0} sx={{ 
               mb: 3,
@@ -975,6 +1059,70 @@ export const GuideEdit = () => {
                     />
                   </Box>
                 </Grid>
+
+                <Grid item xs={12}>
+                  <Box sx={{ 
+                    p: 3, 
+                    backgroundColor: 'rgba(16, 185, 129, 0.05)', 
+                    borderRadius: 2, 
+                    border: '1px solid rgba(16, 185, 129, 0.2)',
+                    mb: 3
+                  }}>
+                    <Typography variant="h6" sx={{ color: '#10b981', mb: 3, fontWeight: 'bold' }}>
+                      Related Content
+                    </Typography>
+                    <Grid container spacing={3}>
+                      <Grid item xs={12} md={4}>
+                        <ReferenceArrayInput 
+                          source="characterIds" 
+                          reference="characters" 
+                          label="Characters"
+                        >
+                          <AutocompleteArrayInput 
+                            optionText="name"
+                            sx={{
+                              '& .MuiAutocomplete-root .MuiOutlinedInput-root': {
+                                backgroundColor: '#0f0f0f'
+                              }
+                            }}
+                          />
+                        </ReferenceArrayInput>
+                      </Grid>
+                      <Grid item xs={12} md={4}>
+                        <ReferenceInput 
+                          source="arcId" 
+                          reference="arcs" 
+                          label="Arc"
+                        >
+                          <AutocompleteInput 
+                            optionText="name"
+                            sx={{
+                              '& .MuiAutocomplete-root .MuiOutlinedInput-root': {
+                                backgroundColor: '#0f0f0f'
+                              }
+                            }}
+                          />
+                        </ReferenceInput>
+                      </Grid>
+                      <Grid item xs={12} md={4}>
+                        <ReferenceArrayInput 
+                          source="gambleIds" 
+                          reference="gambles" 
+                          label="Gambles"
+                        >
+                          <AutocompleteArrayInput 
+                            optionText="name"
+                            sx={{
+                              '& .MuiAutocomplete-root .MuiOutlinedInput-root': {
+                                backgroundColor: '#0f0f0f'
+                              }
+                            }}
+                          />
+                        </ReferenceArrayInput>
+                      </Grid>
+                    </Grid>
+                  </Box>
+                </Grid>
               </Grid>
             </SimpleForm>
           </CardContent>
@@ -986,20 +1134,156 @@ export const GuideEdit = () => {
 
 export const GuideCreate = () => (
   <Create>
-    <SimpleForm>
-      <TextInput source="title" required />
-      <TextInput source="description" multiline rows={3} required />
-      <TextInput source="content" multiline rows={12} required />
-      <ReferenceInput source="authorId" reference="users" label="Author">
-        <AutocompleteInput optionText="username" />
-      </ReferenceInput>
-      <SelectInput source="status" choices={[
-        { id: 'draft', name: 'Draft' },
-        { id: 'pending', name: 'Pending' },
-        { id: 'published', name: 'Published' },
-        { id: 'rejected', name: 'Rejected' }
-      ]} defaultValue="pending" />
-      <TextInput source="rejectionReason" multiline rows={3} label="Rejection Reason" helperText="Required when status is rejected" />
-    </SimpleForm>
+    <Box sx={{ 
+      backgroundColor: '#0a0a0a',
+      minHeight: '100vh',
+      p: 3,
+      '& .RaCreate-main': {
+        backgroundColor: 'transparent'
+      }
+    }}>
+      <Card 
+        elevation={0}
+        sx={{ 
+          maxWidth: '1000px',
+          mx: 'auto',
+          backgroundColor: '#0a0a0a',
+          border: '2px solid #e11d48',
+          borderRadius: 2,
+          boxShadow: '0 0 30px rgba(225, 29, 72, 0.2)'
+        }}
+      >
+        <Box sx={{
+          background: 'linear-gradient(135deg, #16a34a 0%, #15803d 100%)',
+          p: 3,
+          color: 'white'
+        }}>
+          <Typography variant="h4" sx={{ 
+            fontWeight: 'bold', 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: 2,
+            textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+          }}>
+            <FileText size={32} />
+            Create New Guide
+          </Typography>
+          <Typography variant="body1" sx={{ opacity: 0.9, mt: 1 }}>
+            Add a new guide to the system
+          </Typography>
+        </Box>
+
+        <CardContent sx={{ p: 4 }}>
+          <SimpleForm sx={{
+            '& .MuiTextField-root': {
+              mb: 3,
+              '& .MuiOutlinedInput-root': {
+                backgroundColor: '#0f0f0f',
+                border: '1px solid rgba(225, 29, 72, 0.3)',
+                '&:hover': {
+                  borderColor: 'rgba(225, 29, 72, 0.5)'
+                },
+                '&.Mui-focused': {
+                  borderColor: '#e11d48'
+                },
+                '& .MuiOutlinedInput-notchedOutline': {
+                  border: 'none'
+                }
+              },
+              '& .MuiInputLabel-root': {
+                color: 'rgba(255, 255, 255, 0.7)',
+                '&.Mui-focused': {
+                  color: '#e11d48'
+                }
+              },
+              '& .MuiInputBase-input': {
+                color: '#ffffff'
+              }
+            },
+            '& .MuiFormControl-root': {
+              mb: 3
+            }
+          }}>
+            <Grid container spacing={3}>
+              <Grid item xs={12}>
+                <Box sx={{ 
+                  p: 3, 
+                  backgroundColor: 'rgba(225, 29, 72, 0.05)', 
+                  borderRadius: 2, 
+                  border: '1px solid rgba(225, 29, 72, 0.2)',
+                  mb: 3
+                }}>
+                  <Typography variant="h6" sx={{ color: '#e11d48', mb: 2, fontWeight: 'bold' }}>
+                    Basic Information
+                  </Typography>
+                  <TextInput source="title" required fullWidth />
+                  <TextInput source="description" multiline rows={3} required fullWidth />
+                </Box>
+              </Grid>
+
+              <Grid item xs={12}>
+                <Box sx={{ 
+                  p: 3, 
+                  backgroundColor: 'rgba(124, 58, 237, 0.05)', 
+                  borderRadius: 2, 
+                  border: '1px solid rgba(124, 58, 237, 0.2)',
+                  mb: 3
+                }}>
+                  <Typography variant="h6" sx={{ color: '#7c3aed', mb: 2, fontWeight: 'bold' }}>
+                    Guide Content
+                  </Typography>
+                  <TextInput source="content" multiline rows={12} required fullWidth />
+                </Box>
+              </Grid>
+
+              <Grid item xs={12} md={6}>
+                <Box sx={{ 
+                  p: 3, 
+                  backgroundColor: 'rgba(25, 118, 210, 0.05)', 
+                  borderRadius: 2, 
+                  border: '1px solid rgba(25, 118, 210, 0.2)'
+                }}>
+                  <Typography variant="h6" sx={{ color: '#1976d2', mb: 2, fontWeight: 'bold' }}>
+                    Author & Status
+                  </Typography>
+                  <ReferenceInput source="authorId" reference="users" label="Author">
+                    <AutocompleteInput optionText="username" />
+                  </ReferenceInput>
+                  <SelectInput source="status" choices={[
+                    { id: 'draft', name: 'Draft' },
+                    { id: 'pending', name: 'Pending' },
+                    { id: 'published', name: 'Published' },
+                    { id: 'rejected', name: 'Rejected' }
+                  ]} defaultValue="pending" />
+                  <TextInput source="rejectionReason" multiline rows={3} label="Rejection Reason" helperText="Required when status is rejected" />
+                </Box>
+              </Grid>
+
+              <Grid item xs={12} md={6}>
+                <Box sx={{ 
+                  p: 3, 
+                  backgroundColor: 'rgba(16, 185, 129, 0.05)', 
+                  borderRadius: 2, 
+                  border: '1px solid rgba(16, 185, 129, 0.2)'
+                }}>
+                  <Typography variant="h6" sx={{ color: '#10b981', mb: 2, fontWeight: 'bold' }}>
+                    Related Content
+                  </Typography>
+                  <ReferenceArrayInput source="characterIds" reference="characters" label="Characters">
+                    <AutocompleteArrayInput optionText="name" />
+                  </ReferenceArrayInput>
+                  <ReferenceInput source="arcId" reference="arcs" label="Arc">
+                    <AutocompleteInput optionText="name" />
+                  </ReferenceInput>
+                  <ReferenceArrayInput source="gambleIds" reference="gambles" label="Gambles">
+                    <AutocompleteArrayInput optionText="name" />
+                  </ReferenceArrayInput>
+                </Box>
+              </Grid>
+            </Grid>
+          </SimpleForm>
+        </CardContent>
+      </Card>
+    </Box>
   </Create>
 )

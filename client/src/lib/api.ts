@@ -439,6 +439,9 @@ class ApiClient {
     description: string
     content: string
     tags?: string[]
+    characterIds?: number[]
+    arcId?: number
+    gambleIds?: number[]
   }) {
     const { tags, ...rest } = data
     return this.post<any>('/guides', {

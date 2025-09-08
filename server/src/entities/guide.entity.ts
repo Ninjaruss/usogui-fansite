@@ -15,6 +15,9 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { User } from './user.entity';
 import { Tag } from './tag.entity';
 import { GuideLike } from './guide-like.entity';
+import { Character } from './character.entity';
+import { Arc } from './arc.entity';
+import { Gamble } from './gamble.entity';
 
 export enum GuideStatus {
   DRAFT = 'draft',
@@ -107,6 +110,44 @@ export class Guide {
   })
   @OneToMany(() => GuideLike, (guideLike) => guideLike.guide)
   likes: GuideLike[];
+
+  @ApiPropertyOptional({
+    type: () => [Character],
+    description: 'Characters associated with this guide',
+  })
+  @ManyToMany(() => Character, { cascade: false })
+  @JoinTable({
+    name: 'guide_characters',
+    joinColumn: { name: 'guideId', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'characterId', referencedColumnName: 'id' },
+  })
+  characters?: Character[];
+
+  @ApiPropertyOptional({
+    type: () => Arc,
+    description: 'Arc associated with this guide',
+  })
+  @ManyToOne(() => Arc, { eager: false, nullable: true })
+  @JoinColumn({ name: 'arcId' })
+  arc?: Arc;
+
+  @ApiPropertyOptional({
+    description: 'Arc ID associated with this guide',
+  })
+  @Column({ nullable: true })
+  arcId?: number;
+
+  @ApiPropertyOptional({
+    type: () => [Gamble],
+    description: 'Gambles associated with this guide',
+  })
+  @ManyToMany(() => Gamble, { cascade: false })
+  @JoinTable({
+    name: 'guide_gambles',
+    joinColumn: { name: 'guideId', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'gambleId', referencedColumnName: 'id' },
+  })
+  gambles?: Gamble[];
 
   @ApiProperty({ description: 'Date and time when the guide was created' })
   @CreateDateColumn()

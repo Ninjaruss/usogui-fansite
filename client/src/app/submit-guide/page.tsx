@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   Container,
   Typography,
@@ -12,9 +12,11 @@ import {
   Alert,
   CircularProgress,
   Grid,
-  Chip
+  Chip,
+  Autocomplete,
+  FormControl
 } from '@mui/material'
-import { FileText, Send, Plus, X } from 'lucide-react'
+import { FileText, Send, Plus, X, Users, BookOpen, Dice6 } from 'lucide-react'
 import { useTheme } from '@mui/material/styles'
 import { useAuth } from '../../providers/AuthProvider'
 import { api } from '../../lib/api'
@@ -27,12 +29,19 @@ export default function SubmitGuidePage() {
     title: '',
     description: '',
     content: '',
-    tags: [] as string[]
+    tags: [] as string[],
+    characterIds: [] as number[],
+    arcId: null as number | null,
+    gambleIds: [] as number[]
   })
   const [newTag, setNewTag] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [characters, setCharacters] = useState<Array<{id: number, name: string}>>([])
+  const [arcs, setArcs] = useState<Array<{id: number, name: string}>>([])
+  const [gambles, setGambles] = useState<Array<{id: number, name: string}>>([])
+  const [loadingData, setLoadingData] = useState(true)
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({
@@ -69,14 +78,20 @@ export default function SubmitGuidePage() {
         title: formData.title,
         description: formData.description,
         content: formData.content,
-        tags: formData.tags
+        tags: formData.tags,
+        characterIds: formData.characterIds.length > 0 ? formData.characterIds : undefined,
+        arcId: formData.arcId || undefined,
+        gambleIds: formData.gambleIds.length > 0 ? formData.gambleIds : undefined
       })
       setSuccess('Guide submitted successfully! It is now pending moderator approval and will be reviewed before being published.')
       setFormData({
         title: '',
         description: '',
         content: '',
-        tags: []
+        tags: [],
+        characterIds: [],
+        arcId: null,
+        gambleIds: []
       })
     } catch (error: any) {
       setError(error.message || 'Failed to submit guide')
@@ -92,7 +107,29 @@ export default function SubmitGuidePage() {
     }
   }
 
-  if (authLoading) {
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const [charactersRes, arcsRes, gamblesRes] = await Promise.all([
+          api.getCharacters({ limit: 1000 }),
+          api.getArcs({ limit: 1000 }),
+          api.getGambles({ limit: 1000 })
+        ])
+        
+        setCharacters(charactersRes.data || [])
+        setArcs(arcsRes.data || [])
+        setGambles(gamblesRes.data || [])
+      } catch (error) {
+        console.error('Error loading data:', error)
+      } finally {
+        setLoadingData(false)
+      }
+    }
+    
+    loadData()
+  }, [])
+
+  if (authLoading || loadingData) {
     return (
       <Container maxWidth="md" sx={{ py: 8 }}>
         <Box sx={{ display: 'flex', justifyContent: 'center' }}>
@@ -193,6 +230,142 @@ Be detailed and informative. Use clear headings and structure your content well.
                     required
                     helperText="Minimum 50 characters. Use line breaks to structure your content."
                   />
+                </Grid>
+
+                <Grid item xs={12}>
+                  <Box sx={{ 
+                    p: 3, 
+                    backgroundColor: 'rgba(16, 185, 129, 0.05)', 
+                    borderRadius: 2, 
+                    border: `1px solid ${theme.palette.usogui.guide}`,
+                    mb: 3
+                  }}>
+                    <Typography variant="h6" gutterBottom sx={{ 
+                      color: theme.palette.usogui.guide,
+                      fontWeight: 'bold',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1
+                    }}>
+                      <BookOpen size={20} />
+                      Related Content (Optional)
+                    </Typography>
+                    
+                    <Grid container spacing={3}>
+                      <Grid item xs={12} md={4}>
+                        <FormControl fullWidth>
+                          <Autocomplete
+                            multiple
+                            options={characters}
+                            getOptionLabel={(option) => option.name}
+                            value={characters.filter(char => formData.characterIds.includes(char.id))}
+                            onChange={(_, newValue) => {
+                              handleInputChange('characterIds', newValue.map(char => char.id))
+                            }}
+                            renderInput={(params) => (
+                              <TextField
+                                {...params}
+                                label="Characters"
+                                placeholder="Select related characters"
+                                helperText="Link to characters featured in your guide"
+                              />
+                            )}
+                            renderOption={(props, option) => (
+                              <li {...props}>
+                                <Users size={16} style={{ marginRight: 8 }} />
+                                {option.name}
+                              </li>
+                            )}
+                            renderTags={(value, getTagProps) =>
+                              value.map((option, index) => {
+                                const { key, ...tagProps } = getTagProps({ index });
+                                return (
+                                  <Chip
+                                    key={key}
+                                    label={option.name}
+                                    {...tagProps}
+                                    color="primary"
+                                    size="small"
+                                    icon={<Users size={14} />}
+                                  />
+                                );
+                              })
+                            }
+                          />
+                        </FormControl>
+                      </Grid>
+
+                      <Grid item xs={12} md={4}>
+                        <FormControl fullWidth>
+                          <Autocomplete
+                            options={arcs}
+                            getOptionLabel={(option) => option.name}
+                            value={arcs.find(arc => arc.id === formData.arcId) || null}
+                            onChange={(_, newValue) => {
+                              handleInputChange('arcId', newValue?.id || null)
+                            }}
+                            renderInput={(params) => (
+                              <TextField
+                                {...params}
+                                label="Arc"
+                                placeholder="Select related arc"
+                                helperText="Link to the story arc your guide covers"
+                              />
+                            )}
+                            renderOption={(props, option) => (
+                              <li {...props}>
+                                <BookOpen size={16} style={{ marginRight: 8 }} />
+                                {option.name}
+                              </li>
+                            )}
+                          />
+                        </FormControl>
+                      </Grid>
+
+                      <Grid item xs={12} md={4}>
+                        <FormControl fullWidth>
+                          <Autocomplete
+                            multiple
+                            options={gambles}
+                            getOptionLabel={(option) => option.name}
+                            value={gambles.filter(gamble => formData.gambleIds.includes(gamble.id))}
+                            onChange={(_, newValue) => {
+                              handleInputChange('gambleIds', newValue.map(gamble => gamble.id))
+                            }}
+                            renderInput={(params) => (
+                              <TextField
+                                {...params}
+                                label="Gambles"
+                                placeholder="Select related gambles"
+                                helperText="Link to gambles analyzed in your guide"
+                              />
+                            )}
+                            renderOption={(props, option) => (
+                              <li {...props}>
+                                <Dice6 size={16} style={{ marginRight: 8 }} />
+                                {option.name}
+                              </li>
+                            )}
+                            renderTags={(value, getTagProps) =>
+                              value.map((option, index) => {
+                                const { key, ...tagProps } = getTagProps({ index });
+                                return (
+                                  <Chip
+                                    key={key}
+                                    label={option.name}
+                                    {...tagProps}
+                                    color="secondary"
+                                    size="small"
+                                    icon={<Dice6 size={14} />}
+                                  />
+                                );
+                              })
+                            }
+                          />
+                        </FormControl>
+                      </Grid>
+                    </Grid>
+                  </Box>
                 </Grid>
 
                 <Grid item xs={12}>

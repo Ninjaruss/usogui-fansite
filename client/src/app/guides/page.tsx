@@ -18,7 +18,7 @@ import {
   Chip,
   Avatar
 } from '@mui/material'
-import { Search, FileText, Eye, Calendar, ThumbsUp, Heart, X } from 'lucide-react'
+import { Search, FileText, Eye, Calendar, ThumbsUp, Heart, X, Users, BookOpen, Dice6 } from 'lucide-react'
 import { useTheme } from '@mui/material/styles'
 import Link from 'next/link'
 import { useSearchParams, useRouter } from 'next/navigation'
@@ -30,11 +30,24 @@ interface Guide {
   id: number
   title: string
   content: string
+  description: string
   tags: string[]
   author: {
     id: number
     username: string
   }
+  characters?: Array<{
+    id: number
+    name: string
+  }>
+  arc?: {
+    id: number
+    name: string
+  }
+  gambles?: Array<{
+    id: number
+    name: string
+  }>
   likeCount: number
   userHasLiked?: boolean
   viewCount: number
@@ -273,6 +286,75 @@ function GuidesPageContent() {
                           </Box>
                         </Box>
                         
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                          {getContentPreview(guide.description || guide.content)}
+                        </Typography>
+
+                        {/* Related Content */}
+                        {((guide.characters && guide.characters.length > 0) || guide.arc || (guide.gambles && guide.gambles.length > 0)) && (
+                          <Box sx={{ mb: 2 }}>
+                            {guide.characters && guide.characters.length > 0 && (
+                              <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                                <Users size={14} style={{ marginRight: 4 }} />
+                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                                  {guide.characters.slice(0, 2).map((character) => (
+                                    <Chip
+                                      key={character.id}
+                                      label={character.name}
+                                      size="small"
+                                      color="primary"
+                                      sx={{ fontSize: '0.75rem', height: '20px' }}
+                                    />
+                                  ))}
+                                  {guide.characters.length > 2 && (
+                                    <Chip
+                                      label={`+${guide.characters.length - 2}`}
+                                      size="small"
+                                      color="default"
+                                      sx={{ fontSize: '0.75rem', height: '20px' }}
+                                    />
+                                  )}
+                                </Box>
+                              </Box>
+                            )}
+                            {guide.arc && (
+                              <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                                <BookOpen size={14} style={{ marginRight: 4 }} />
+                                <Chip
+                                  label={guide.arc.name}
+                                  size="small"
+                                  color="secondary"
+                                  sx={{ fontSize: '0.75rem', height: '20px' }}
+                                />
+                              </Box>
+                            )}
+                            {guide.gambles && guide.gambles.length > 0 && (
+                              <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                                <Dice6 size={14} style={{ marginRight: 4 }} />
+                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                                  {guide.gambles.slice(0, 2).map((gamble) => (
+                                    <Chip
+                                      key={gamble.id}
+                                      label={gamble.name}
+                                      size="small"
+                                      color="info"
+                                      sx={{ fontSize: '0.75rem', height: '20px' }}
+                                    />
+                                  ))}
+                                  {guide.gambles.length > 2 && (
+                                    <Chip
+                                      label={`+${guide.gambles.length - 2}`}
+                                      size="small"
+                                      color="default"
+                                      sx={{ fontSize: '0.75rem', height: '20px' }}
+                                    />
+                                  )}
+                                </Box>
+                              </Box>
+                            )}
+                          </Box>
+                        )}
+
                         {guide.tags?.length > 0 && (
                           <Box sx={{ mb: 2 }}>
                             {guide.tags.slice(0, 3).map((tag, index) => (
@@ -281,8 +363,8 @@ function GuidesPageContent() {
                                 label={typeof tag === 'object' ? (tag as any)?.name || String(tag) : tag}
                                 size="small"
                                 variant="outlined"
-                                color="secondary"
-                                sx={{ mr: 0.5, mb: 0.5 }}
+                                color="default"
+                                sx={{ mr: 0.5, mb: 0.5, fontSize: '0.7rem', opacity: 0.8 }}
                               />
                             ))}
                             {guide.tags.length > 3 && (
@@ -291,7 +373,7 @@ function GuidesPageContent() {
                                 size="small"
                                 variant="outlined"
                                 color="default"
-                                sx={{ mb: 0.5 }}
+                                sx={{ mb: 0.5, fontSize: '0.7rem', opacity: 0.8 }}
                               />
                             )}
                           </Box>
