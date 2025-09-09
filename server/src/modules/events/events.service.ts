@@ -251,7 +251,7 @@ export class EventsService {
   findOne(id: number): Promise<Event | null> {
     return this.repo.findOne({
       where: { id },
-      relations: ['arc', 'characters', 'tags'],
+      relations: ['arc', 'characters', 'tags', 'gamble'],
     });
   }
 

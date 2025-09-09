@@ -81,10 +81,17 @@ export default function GuideDetailsPage() {
     description: '',
     content: '',
     status: 'draft' as string,
-    tagNames: [] as string[]
+    tagNames: [] as string[],
+    characterIds: [] as number[],
+    arcId: null as number | null,
+    gambleIds: [] as number[]
   })
   const [saving, setSaving] = useState(false)
   const [tagInput, setTagInput] = useState('')
+  const [characters, setCharacters] = useState<Array<{id: number, name: string}>>([])
+  const [arcs, setArcs] = useState<Array<{id: number, name: string}>>([])
+  const [gambles, setGambles] = useState<Array<{id: number, name: string}>>([])
+  const [loadingRelationData, setLoadingRelationData] = useState(false)
 
   // Track page view
   const guideId = Array.isArray(id) ? id[0] : id
@@ -144,15 +151,37 @@ export default function GuideDetailsPage() {
     }
   }
 
-  const handleEditClick = () => {
+  const handleEditClick = async () => {
     if (guide) {
       setEditForm({
         title: guide.title,
         description: guide.description,
         content: guide.content,
         status: guide.status,
-        tagNames: guide.tags?.map(tag => tag.name) || []
+        tagNames: guide.tags?.map(tag => tag.name) || [],
+        characterIds: guide.characters?.map(char => char.id) || [],
+        arcId: guide.arc?.id || null,
+        gambleIds: guide.gambles?.map(gamble => gamble.id) || []
       })
+      
+      // Load relation data for dropdowns
+      setLoadingRelationData(true)
+      try {
+        const [charactersRes, arcsRes, gamblesRes] = await Promise.all([
+          api.getCharacters({ limit: 1000 }),
+          api.getArcs({ limit: 1000 }),
+          api.getGambles({ limit: 1000 })
+        ])
+        
+        setCharacters(charactersRes.data || [])
+        setArcs(arcsRes.data || [])
+        setGambles(gamblesRes.data || [])
+      } catch (error) {
+        console.error('Error loading relation data:', error)
+      } finally {
+        setLoadingRelationData(false)
+      }
+      
       setIsEditing(true)
     }
   }
@@ -162,7 +191,17 @@ export default function GuideDetailsPage() {
     
     setSaving(true)
     try {
-      const updatedGuide = await api.updateGuide(Number(id), editForm)
+      const updateData = {
+        title: editForm.title,
+        description: editForm.description,
+        content: editForm.content,
+        status: editForm.status,
+        tagNames: editForm.tagNames,
+        characterIds: editForm.characterIds.length > 0 ? editForm.characterIds : undefined,
+        arcId: editForm.arcId || undefined,
+        gambleIds: editForm.gambleIds.length > 0 ? editForm.gambleIds : undefined
+      }
+      const updatedGuide = await api.updateGuide(Number(id), updateData)
       setGuide(updatedGuide)
       setIsEditing(false)
       setError('')
@@ -180,7 +219,10 @@ export default function GuideDetailsPage() {
       description: '',
       content: '',
       status: 'draft',
-      tagNames: []
+      tagNames: [],
+      characterIds: [],
+      arcId: null,
+      gambleIds: []
     })
   }
 
@@ -581,6 +623,136 @@ export default function GuideDetailsPage() {
                   />
                 )}
               />
+
+              {/* Related Content Section */}
+              <Box sx={{ 
+                p: 3, 
+                backgroundColor: 'rgba(16, 185, 129, 0.05)', 
+                borderRadius: 2, 
+                border: '1px solid #10b981',
+                mb: 2
+              }}>
+                <Typography variant="h6" gutterBottom sx={{ 
+                  color: '#10b981',
+                  fontWeight: 'bold',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1,
+                  mb: 2
+                }}>
+                  <BookOpen size={20} />
+                  Related Content (Optional)
+                </Typography>
+                
+                {loadingRelationData ? (
+                  <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
+                    <CircularProgress size={24} />
+                  </Box>
+                ) : (
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <Autocomplete
+                      multiple
+                      options={characters}
+                      getOptionLabel={(option) => option.name}
+                      value={characters.filter(char => editForm.characterIds.includes(char.id))}
+                      onChange={(_, newValue) => {
+                        setEditForm({ ...editForm, characterIds: newValue.map(char => char.id) })
+                      }}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          label="Characters"
+                          placeholder="Select related characters"
+                          helperText="Link to characters featured in your guide"
+                        />
+                      )}
+                      renderOption={(props, option) => (
+                        <li {...props}>
+                          <Users size={16} style={{ marginRight: 8 }} />
+                          {option.name}
+                        </li>
+                      )}
+                      renderTags={(value, getTagProps) =>
+                        value.map((option, index) => {
+                          const { key, ...tagProps } = getTagProps({ index });
+                          return (
+                            <Chip
+                              key={key}
+                              label={option.name}
+                              {...tagProps}
+                              color="primary"
+                              size="small"
+                              icon={<Users size={14} />}
+                            />
+                          );
+                        })
+                      }
+                    />
+
+                    <Autocomplete
+                      options={arcs}
+                      getOptionLabel={(option) => option.name}
+                      value={arcs.find(arc => arc.id === editForm.arcId) || null}
+                      onChange={(_, newValue) => {
+                        setEditForm({ ...editForm, arcId: newValue?.id || null })
+                      }}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          label="Arc"
+                          placeholder="Select related arc"
+                          helperText="Link to the story arc your guide covers"
+                        />
+                      )}
+                      renderOption={(props, option) => (
+                        <li {...props}>
+                          <BookOpen size={16} style={{ marginRight: 8 }} />
+                          {option.name}
+                        </li>
+                      )}
+                    />
+
+                    <Autocomplete
+                      multiple
+                      options={gambles}
+                      getOptionLabel={(option) => option.name}
+                      value={gambles.filter(gamble => editForm.gambleIds.includes(gamble.id))}
+                      onChange={(_, newValue) => {
+                        setEditForm({ ...editForm, gambleIds: newValue.map(gamble => gamble.id) })
+                      }}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          label="Gambles"
+                          placeholder="Select related gambles"
+                          helperText="Link to gambles analyzed in your guide"
+                        />
+                      )}
+                      renderOption={(props, option) => (
+                        <li {...props}>
+                          <Dice6 size={16} style={{ marginRight: 8 }} />
+                          {option.name}
+                        </li>
+                      )}
+                      renderTags={(value, getTagProps) =>
+                        value.map((option, index) => {
+                          const { key, ...tagProps } = getTagProps({ index });
+                          return (
+                            <Chip
+                              key={key}
+                              label={option.name}
+                              {...tagProps}
+                              color="secondary"
+                              size="small"
+                              icon={<Dice6 size={14} />}
+                            />
+                          );
+                        })
+                      }
+                    />
+                  </Box>
+                )}
+              </Box>
 
               <TextField
                 label="Content"

@@ -13,7 +13,7 @@ import {
   Chip,
   Grid
 } from '@mui/material'
-import { ArrowLeft, CalendarSearch, Calendar, Users, BookOpen } from 'lucide-react'
+import { ArrowLeft, CalendarSearch, Calendar, Users, BookOpen, Dice6, Tag } from 'lucide-react'
 import { useTheme } from '@mui/material/styles'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
@@ -27,8 +27,11 @@ interface Event {
   title: string
   description: string
   chapterNumber: number
+  spoilerChapter?: number
   type: 'gamble' | 'decision' | 'reveal' | 'shift' | 'resolution'
   status: 'draft' | 'pending_review' | 'approved'
+  arcId?: number
+  gambleId?: number
   arc?: {
     id: number
     name: string
@@ -40,6 +43,10 @@ interface Event {
     winCondition?: string
   }
   characters: Array<{
+    id: number
+    name: string
+  }>
+  tags?: Array<{
     id: number
     name: string
   }>
@@ -149,6 +156,20 @@ export default function EventDetailsPage() {
                 label={event.arc.name}
                 color="secondary"
                 variant="outlined"
+                component={Link}
+                href={`/arcs/${event.arc.id}`}
+                clickable
+              />
+            )}
+            {event.gamble && (
+              <Chip
+                icon={<Dice6 size={16} />}
+                label={event.gamble.name}
+                color="info"
+                variant="outlined"
+                component={Link}
+                href={`/gambles/${event.gamble.id}`}
+                clickable
               />
             )}
           </Box>
@@ -231,8 +252,48 @@ export default function EventDetailsPage() {
                     <Typography variant="body2" color="text.secondary" gutterBottom>
                       Arc
                     </Typography>
-                    <Typography variant="body1">
+                    <Typography 
+                      variant="body1"
+                      component={Link}
+                      href={`/arcs/${event.arc.id}`}
+                      sx={{ 
+                        textDecoration: 'none', 
+                        color: 'primary.main',
+                        '&:hover': { textDecoration: 'underline' }
+                      }}
+                    >
                       {event.arc.name}
+                    </Typography>
+                  </Box>
+                )}
+
+                {event.gamble && (
+                  <Box sx={{ mb: 3 }}>
+                    <Typography variant="body2" color="text.secondary" gutterBottom>
+                      Related Gamble
+                    </Typography>
+                    <Typography 
+                      variant="body1"
+                      component={Link}
+                      href={`/gambles/${event.gamble.id}`}
+                      sx={{ 
+                        textDecoration: 'none', 
+                        color: 'primary.main',
+                        '&:hover': { textDecoration: 'underline' }
+                      }}
+                    >
+                      {event.gamble.name}
+                    </Typography>
+                  </Box>
+                )}
+
+                {event.spoilerChapter && (
+                  <Box sx={{ mb: 3 }}>
+                    <Typography variant="body2" color="text.secondary" gutterBottom>
+                      Spoiler Chapter
+                    </Typography>
+                    <Typography variant="body1">
+                      Chapter {event.spoilerChapter}
                     </Typography>
                   </Box>
                 )}
@@ -265,6 +326,29 @@ export default function EventDetailsPage() {
                           variant="outlined"
                           color="primary"
                           icon={<Users size={14} />}
+                          component={Link}
+                          href={`/characters/${character.id}`}
+                          clickable
+                        />
+                      ))}
+                    </Box>
+                  </Box>
+                )}
+
+                {event.tags && event.tags.length > 0 && (
+                  <Box sx={{ mb: 3 }}>
+                    <Typography variant="body2" color="text.secondary" gutterBottom>
+                      Tags
+                    </Typography>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                      {event.tags.map((tag) => (
+                        <Chip
+                          key={tag.id}
+                          label={tag.name}
+                          size="small"
+                          variant="outlined"
+                          color="default"
+                          icon={<Tag size={14} />}
                         />
                       ))}
                     </Box>

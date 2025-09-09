@@ -384,7 +384,9 @@ class ApiClient {
   async search(query: string, type?: string, userProgress?: number) {
     const params = new URLSearchParams({ query })
     if (type) params.append('type', type)
-    if (userProgress !== undefined) params.append('userProgress', userProgress.toString())
+    if (userProgress !== undefined && !Number.isNaN(userProgress)) {
+      params.append('userProgress', userProgress.toString())
+    }
     
     return this.get<{
       results: Array<{

@@ -2,15 +2,10 @@ import { DataProvider, HttpError } from 'react-admin'
 import { api } from '../../lib/api'
 
 // Function to clean update data by removing read-only fields and relationship objects
-const cleanUpdateData = (resource: string, data: Record<string, unknown>): Record<string, unknown> => {
+const cleanUpdateData = (resource: string, data: Record<string, unknown>) => {
   const cleaned = { ...data }
   
-  // Remove common read-only fields
-  delete cleaned.id
-  delete cleaned.createdAt
-  delete cleaned.updatedAt
-  
-  // Remove relationship objects/arrays that shouldn't be sent in updates
+  // Common relationship fields to remove (these are populated by the server)
   const relationshipFields = [
     'user', 'author', 'character', 'characters', 'chapter', 'chapters', 'arc', 'arcs',
     'gamble', 'gambles', 'event', 'events', 'faction', 'factions', 'tag', 'tags',
@@ -86,9 +81,13 @@ const cleanUpdateData = (resource: string, data: Record<string, unknown>): Recor
   }
   
   if (resource === 'guides') {
+    console.log('=== GUIDE DATA CLEANING DEBUG ===')
+    console.log('Original data:', JSON.stringify(data, null, 2))
+    
     // Keep only the fields that are allowed in the CreateGuideDto/UpdateGuideDto
     const allowedFields = [
-      'title', 'description', 'content', 'status', 'tagNames', 'authorId'
+      'title', 'description', 'content', 'status', 'tagNames', 'authorId',
+      'characterIds', 'arcId', 'gambleIds', 'rejectionReason'
     ]
     
     const guideCleaned: Record<string, unknown> = {}
@@ -98,11 +97,133 @@ const cleanUpdateData = (resource: string, data: Record<string, unknown>): Recor
       }
     })
     
+    console.log('After allowed fields filtering:', JSON.stringify(guideCleaned, null, 2))
+    
+    // Handle characterIds - ReferenceArrayInput might set this as objects or IDs
+    try {
+      if (guideCleaned.characterIds && Array.isArray(guideCleaned.characterIds)) {
+        console.log('Processing characterIds:', guideCleaned.characterIds)
+        guideCleaned.characterIds = guideCleaned.characterIds.map((c: unknown) => {
+          // If it's already a number, keep it
+          if (typeof c === 'number') return c
+          // If it's a string that can be parsed as number, parse it
+          if (typeof c === 'string' && !isNaN(Number(c))) return Number(c)
+          // If it's an object with id property, extract the id
+          if (typeof c === 'object' && c !== null && 'id' in c) {
+            const id = (c as Record<string, unknown>).id
+            return typeof id === 'number' ? id : Number(id)
+          }
+          console.warn('Unexpected characterId format:', c)
+          return c
+        }).filter(id => {
+          const isValid = id !== null && id !== undefined && !isNaN(Number(id))
+          if (!isValid) console.warn('Filtered out invalid characterId:', id)
+          return isValid
+        })
+        console.log('Processed characterIds:', guideCleaned.characterIds)
+      } else if (data.characters && Array.isArray(data.characters)) {
+        console.log('Extracting characterIds from characters:', data.characters)
+        guideCleaned.characterIds = data.characters.map((c: any) => 
+          typeof c === 'object' && c !== null ? c.id : c
+        ).filter((id: any) => {
+          const isValid = id !== null && id !== undefined && !isNaN(Number(id))
+          if (!isValid) console.warn('Filtered out invalid extracted characterId:', id)
+          return isValid
+        })
+        console.log('Extracted characterIds:', guideCleaned.characterIds)
+      }
+    } catch (error) {
+      console.error('Error processing characterIds:', error)
+      delete guideCleaned.characterIds
+    }
+    
+    // Handle gambleIds - ReferenceArrayInput might set this as objects or IDs
+    try {
+      if (guideCleaned.gambleIds && Array.isArray(guideCleaned.gambleIds)) {
+        console.log('Processing gambleIds:', guideCleaned.gambleIds)
+        guideCleaned.gambleIds = guideCleaned.gambleIds.map((g: unknown) => {
+          // If it's already a number, keep it
+          if (typeof g === 'number') return g
+          // If it's a string that can be parsed as number, parse it
+          if (typeof g === 'string' && !isNaN(Number(g))) return Number(g)
+          // If it's an object with id property, extract the id
+          if (typeof g === 'object' && g !== null && 'id' in g) {
+            const id = (g as Record<string, unknown>).id
+            return typeof id === 'number' ? id : Number(id)
+          }
+          console.warn('Unexpected gambleId format:', g)
+          return g
+        }).filter(id => {
+          const isValid = id !== null && id !== undefined && !isNaN(Number(id))
+          if (!isValid) console.warn('Filtered out invalid gambleId:', id)
+          return isValid
+        })
+        console.log('Processed gambleIds:', guideCleaned.gambleIds)
+      } else if (data.gambles && Array.isArray(data.gambles)) {
+        console.log('Extracting gambleIds from gambles:', data.gambles)
+        guideCleaned.gambleIds = data.gambles.map((g: any) => 
+          typeof g === 'object' && g !== null ? g.id : g
+        ).filter((id: any) => {
+          const isValid = id !== null && id !== undefined && !isNaN(Number(id))
+          if (!isValid) console.warn('Filtered out invalid extracted gambleId:', id)
+          return isValid
+        })
+        console.log('Extracted gambleIds:', guideCleaned.gambleIds)
+      }
+    } catch (error) {
+      console.error('Error processing gambleIds:', error)
+      delete guideCleaned.gambleIds
+    }
+    
+    // Handle arcId - might be an object with id property
+    try {
+      if (guideCleaned.arcId && typeof guideCleaned.arcId === 'object' && guideCleaned.arcId !== null && 'id' in (guideCleaned.arcId as Record<string, unknown>)) {
+        const id = (guideCleaned.arcId as Record<string, unknown>).id
+        console.log('Extracting arcId from object:', guideCleaned.arcId, 'extracted:', id)
+        guideCleaned.arcId = typeof id === 'number' ? id : Number(id)
+      } else if (data.arc && typeof data.arc === 'object' && data.arc !== null && 'id' in (data.arc as Record<string, unknown>)) {
+        const id = (data.arc as Record<string, unknown>).id
+        console.log('Extracting arcId from data.arc:', data.arc, 'extracted:', id)
+        guideCleaned.arcId = typeof id === 'number' ? id : Number(id)
+      }
+      
+      // Validate arcId is a valid number
+      if (guideCleaned.arcId !== undefined && (isNaN(Number(guideCleaned.arcId)) || guideCleaned.arcId === null)) {
+        console.warn('Invalid arcId, removing:', guideCleaned.arcId)
+        delete guideCleaned.arcId
+      }
+    } catch (error) {
+      console.error('Error processing arcId:', error)
+      delete guideCleaned.arcId
+    }
+    
+    // Handle tagNames - ensure it's an array of strings
+    try {
+      if (guideCleaned.tagNames && Array.isArray(guideCleaned.tagNames)) {
+        guideCleaned.tagNames = guideCleaned.tagNames.filter(tag => 
+          typeof tag === 'string' && tag.trim().length > 0
+        )
+        console.log('Processed tagNames:', guideCleaned.tagNames)
+      }
+    } catch (error) {
+      console.error('Error processing tagNames:', error)
+      delete guideCleaned.tagNames
+    }
+    
     // Remove read-only fields that are auto-calculated by backend
     delete guideCleaned.viewCount
     delete guideCleaned.likeCount  
     delete guideCleaned.author
     delete guideCleaned.likes
+    delete guideCleaned.characters
+    delete guideCleaned.gambles
+    delete guideCleaned.arc
+    delete guideCleaned.tags
+    delete guideCleaned.createdAt
+    delete guideCleaned.updatedAt
+    
+    console.log('Final cleaned data:', JSON.stringify(guideCleaned, null, 2))
+    console.log('=== END GUIDE DATA CLEANING DEBUG ===')
     
     return guideCleaned
   }
@@ -181,11 +302,23 @@ export const AdminDataProvider: DataProvider = {
       }
     }
     
-    // Base query parameters
+    // Base query parameters - filter out invalid values
+    const cleanFilter: Record<string, string> = {}
+    if (params.filter) {
+      Object.keys(params.filter).forEach(key => {
+        const value = params.filter[key]
+        // Skip undefined, null, empty strings, NaN, and "NaN" values
+        if (value !== undefined && value !== null && value !== '' && 
+            !Number.isNaN(value) && value !== 'NaN') {
+          cleanFilter[key] = String(value)
+        }
+      })
+    }
+    
     const query: Record<string, string> = {
       page: page.toString(),
       limit: perPage.toString(),
-      ...params.filter,
+      ...cleanFilter,
     }
 
     // Add sorting parameters based on resource type
@@ -270,14 +403,23 @@ export const AdminDataProvider: DataProvider = {
   },
 
   getMany: async (resource, params) => {
+    // Filter out invalid IDs (NaN, null, undefined)
+    const validIds = params.ids.filter(id => 
+      id !== null && id !== undefined && !Number.isNaN(id) && id !== 'NaN'
+    )
+    
+    if (validIds.length === 0) {
+      return { data: [] }
+    }
+    
     try {
       const responses = await Promise.all(
-        params.ids.map((id) => api.get<unknown>(`/${resource}/${id}`))
+        validIds.map((id) => api.get<unknown>(`/${resource}/${id}`))
       )
       
       const data = responses.map((response, index) => {
         const item = (response as Record<string, unknown>)?.data ?? response
-        return item ? { ...(item as Record<string, unknown>), id: (item as Record<string, unknown>).id ?? params.ids[index] } : null
+        return item ? { ...(item as Record<string, unknown>), id: (item as Record<string, unknown>).id ?? validIds[index] } : null
       }).filter(Boolean) // Remove any null entries
       
       return { data: data as any[] }
@@ -294,12 +436,24 @@ export const AdminDataProvider: DataProvider = {
     const { page, perPage } = params.pagination || { page: 1, perPage: 20 }
     const { field, order } = params.sort || { field: 'id', order: 'ASC' }
     
-    // Base query parameters
+    // Base query parameters - filter out invalid values
+    const cleanFilter: Record<string, string> = {}
+    if (params.filter) {
+      Object.keys(params.filter).forEach(key => {
+        const value = params.filter[key]
+        // Skip undefined, null, empty strings, NaN, and "NaN" values
+        if (value !== undefined && value !== null && value !== '' && 
+            !Number.isNaN(value) && value !== 'NaN') {
+          cleanFilter[key] = String(value)
+        }
+      })
+    }
+    
     const query: Record<string, string> = {
       page: page.toString(),
       limit: perPage.toString(),
       [params.target]: params.id.toString(),
-      ...params.filter,
+      ...cleanFilter,
     }
 
     // Add sorting parameters based on resource type

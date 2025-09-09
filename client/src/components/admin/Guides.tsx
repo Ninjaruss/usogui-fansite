@@ -209,6 +209,53 @@ export const GuideList = () => (
       <Box sx={{ width: '100px', display: 'flex', justifyContent: 'center' }}>
         <GuideStatusField source="status" />
       </Box>
+      <ReferenceArrayField 
+        source="characterIds" 
+        reference="characters" 
+        label="Characters"
+        sx={{ 
+          maxWidth: '150px',
+          '& .RaReferenceArrayField-ul': {
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: '4px',
+            listStyle: 'none',
+            padding: 0,
+            margin: 0
+          }
+        }}
+      >
+        <SingleFieldList linkType={false}>
+          <ChipField 
+            source="name" 
+            size="small"
+            sx={{
+              backgroundColor: 'rgba(225, 29, 72, 0.1)',
+              color: '#f43f5e',
+              fontSize: '0.7rem',
+              height: '20px'
+            }}
+          />
+        </SingleFieldList>
+      </ReferenceArrayField>
+      <ReferenceField 
+        source="arcId" 
+        reference="arcs" 
+        label="Arc"
+        sx={{ width: '100px' }}
+        emptyText=""
+      >
+        <ChipField 
+          source="name" 
+          size="small"
+          sx={{
+            backgroundColor: 'rgba(124, 58, 237, 0.1)',
+            color: '#a855f7',
+            fontSize: '0.7rem',
+            height: '20px'
+          }}
+        />
+      </ReferenceField>
       <TextField 
         source="rejectionReason" 
         label="Rejection" 

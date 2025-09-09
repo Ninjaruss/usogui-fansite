@@ -10,12 +10,20 @@
 - Add proper README at the root of the project; add AGPL v3 license to allow people to copy but force them to open source as well
 - Update admin edit pages to have better layout (put delete button somewhere to not be clicked accidentally)
 
+## 2025-09-07
+### Changes
+- Fixed guides data saving in admin pages; added relations to characters, arcs, and gambles
+### Notes
+- Spent a little too long trying to troubleshoot relation issues. A lot of these issues are from not really knowing how the frontend handles the data as typically the backend endpoints I know work correctly.
+- Apparently, Anthropic admitted there were performance issues over the past month, so likely some of my sessions were affected. I'll see if Claude code is more consistent over the next week.
+- So far, there have been no issues with the LLM forgetting to check the build and the code generated. This was an issue that got worse over last week where I would try to have it implement a feature, but the code would be riddled with missing types or duplicated brackets.
+
 ## 2025-09-06
 ### Changes
 - Added tabs and media to gambles
 
 ### Notes
-
+- Lots of fiddeling around with getting relations to work for each entity in the admin pages.
 
 
 ## 2025-09-05
