@@ -270,12 +270,15 @@ Be detailed and informative. Use clear headings and structure your content well.
                                 helperText="Link to characters featured in your guide"
                               />
                             )}
-                            renderOption={(props, option) => (
-                              <li {...props}>
-                                <Users size={16} style={{ marginRight: 8 }} />
-                                {option.name}
-                              </li>
-                            )}
+                            renderOption={(props, option) => {
+                              const { key, ...otherProps } = props;
+                              return (
+                                <li key={key} {...otherProps}>
+                                  <Users size={16} style={{ marginRight: 8 }} />
+                                  {option.name}
+                                </li>
+                              );
+                            }}
                             renderTags={(value, getTagProps) =>
                               value.map((option, index) => {
                                 const { key, ...tagProps } = getTagProps({ index });
