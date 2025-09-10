@@ -121,6 +121,10 @@ export class UsersService {
     return this.repo.findOne({ where: { username } });
   }
 
+  async findByDiscordId(discordId: string): Promise<User | null> {
+    return this.repo.findOne({ where: { discordId } });
+  }
+
   async findByEmail(email: string): Promise<User | null> {
     return this.repo.findOne({ where: { email } });
   }
@@ -160,9 +164,40 @@ export class UsersService {
     return this.repo.save(user);
   }
 
+  async createDiscordUser(data: {
+    discordId: string;
+    discordUsername: string;
+    discordAvatar: string | null;
+    username: string;
+    email: string | null;
+    role?: UserRole;
+  }): Promise<User> {
+    // Ensure unique username by appending number if needed
+    let finalUsername = data.username;
+    let counter = 1;
+    while (await this.findByUsername(finalUsername)) {
+      finalUsername = `${data.username}_${counter}`;
+      counter++;
+    }
+
+    const user = this.repo.create({
+      discordId: data.discordId,
+      discordUsername: data.discordUsername,
+      discordAvatar: data.discordAvatar,
+      username: finalUsername,
+      email: data.email,
+      role: data.role || UserRole.USER,
+      isEmailVerified: true, // Discord users are considered verified
+      password: null, // No password for Discord users
+    });
+
+    return this.repo.save(user);
+  }
+
   // --- Validate password ---
   async validatePassword(user: User, plain: string): Promise<boolean> {
-    return bcrypt.compare(plain, user.password);
+    if (!user.password) return false; // Discord users don't have passwords
+    return await bcrypt.compare(plain, user.password);
   }
 
   // --- Email verification ---
@@ -224,6 +259,20 @@ export class UsersService {
     }
     await this.repo.update(id, data);
     return this.findOne(id);
+  }
+
+  async updateDiscordInfo(userId: number, data: {
+    discordUsername: string;
+    discordAvatar: string | null;
+  }): Promise<void> {
+    await this.repo.update(userId, {
+      discordUsername: data.discordUsername,
+      discordAvatar: data.discordAvatar,
+    });
+  }
+
+  async updateRole(userId: number, role: UserRole): Promise<void> {
+    await this.repo.update(userId, { role });
   }
 
   // --- Refresh token helpers ---

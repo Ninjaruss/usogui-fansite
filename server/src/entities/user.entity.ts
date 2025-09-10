@@ -22,35 +22,59 @@ export enum UserRole {
 }
 
 @Entity()
-@Index(['emailVerificationToken'])
-@Index(['passwordResetToken'])
+@Index(['discordId'])
+@Index(['emailVerificationToken']) // Keep for legacy data
+@Index(['passwordResetToken']) // Keep for legacy data
 export class User {
   @ApiProperty({ description: 'Unique identifier of the user' })
   @PrimaryGeneratedColumn()
   id: number;
 
   @ApiProperty({
-    description: 'Username for login',
+    description: 'Username (from Discord or custom)',
     example: 'usogui_fan',
   })
   @Column({ type: 'varchar', unique: true })
   username: string;
 
   @ApiProperty({
-    description: "User's email address",
+    description: "User's email address (optional for Discord users)",
     example: 'user@example.com',
   })
-  @Column({ type: 'varchar', unique: true })
-  email: string;
+  @Column({ type: 'varchar', nullable: true })
+  email: string | null;
 
+  // Discord-specific fields
+  @ApiProperty({
+    description: "User's Discord ID (primary identifier)",
+    example: '123456789012345678',
+  })
+  @Column({ type: 'varchar', unique: true, nullable: true })
+  discordId: string | null;
+
+  @ApiProperty({
+    description: "User's Discord username",
+    example: 'usogui_fan#1234',
+  })
+  @Column({ type: 'varchar', nullable: true })
+  discordUsername: string | null;
+
+  @ApiProperty({
+    description: "User's Discord avatar URL",
+    example: 'https://cdn.discordapp.com/avatars/123456789012345678/avatar.png',
+  })
+  @Column({ type: 'varchar', nullable: true })
+  discordAvatar: string | null;
+
+  // Legacy auth fields (nullable for Discord-only users)
   @Column({ type: 'boolean', default: false })
   isEmailVerified: boolean;
 
   @Column({ type: 'varchar', nullable: true })
   emailVerificationToken: string | null;
 
-  @Column({ type: 'varchar' })
-  password: string;
+  @Column({ type: 'varchar', nullable: true })
+  password: string | null;
 
   @Column({ type: 'varchar', nullable: true })
   passwordResetToken: string | null;

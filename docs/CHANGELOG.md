@@ -9,6 +9,11 @@
 - Discord integration for creating account
 - Add proper README at the root of the project; add AGPL v3 license to allow people to copy but force them to open source as well
 - Update admin edit pages to have better layout (put delete button somewhere to not be clicked accidentally)
+## 2025-09-09
+### Changes
+- Replaced email register/login with Discord Oauth2 login
+
+### Notes
 
 ## 2025-09-07
 ### Changes

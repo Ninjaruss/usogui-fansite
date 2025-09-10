@@ -114,14 +114,9 @@ export const Navigation: React.FC = () => {
               </IconButton>
             </>
           ) : (
-            <Box sx={{ display: 'flex', gap: 1 }}>
-              <Button component={Link} href="/login" color="inherit">
-                Login
-              </Button>
-              <Button component={Link} href="/register" variant="outlined" color="inherit">
-                Sign Up
-              </Button>
-            </Box>
+            <Button component={Link} href="/login" color="inherit">
+              Login
+            </Button>
           )}
         </Box>
 
@@ -199,14 +194,9 @@ export const Navigation: React.FC = () => {
               </MenuItem>
             ]
           ) : (
-            [
-              <MenuItem key="login" component={Link} href="/login">
-                Login
-              </MenuItem>,
-              <MenuItem key="register" component={Link} href="/register">
-                Sign Up
-              </MenuItem>
-            ]
+            <MenuItem component={Link} href="/login">
+              Login
+            </MenuItem>
           )}
         </Menu>
       </Toolbar>

@@ -44,7 +44,30 @@ class ApiClient {
     const response = await fetch(url, {
       ...options,
       headers,
+      credentials: 'include', // Important for cookies (refresh token)
     })
+
+    // Handle token expiration (401 Unauthorized)
+    if (response.status === 401 && 
+        endpoint !== '/auth/refresh' && 
+        endpoint !== '/auth/login' &&
+        endpoint !== '/auth/logout') {
+      console.log('[API] Token expired, attempting to refresh...')
+      try {
+        // Try to refresh the token
+        const refreshResult = await this.refreshToken()
+        if (refreshResult && refreshResult.access_token) {
+          console.log('[API] Token refresh successful, retrying original request')
+          // Retry the original request with the new token
+          return this.request<T>(endpoint, options)
+        }
+      } catch (refreshError) {
+        console.error('[API] Token refresh failed:', refreshError)
+        // If refresh fails, clear token and throw the original error
+        this.setToken(null)
+        localStorage.removeItem('accessToken')
+      }
+    }
 
     if (!response.ok) {
       let errorMessage: string
@@ -139,6 +162,7 @@ class ApiClient {
 
   async logout() {
     try {
+      // Refresh token is now handled via httpOnly cookie
       await this.post('/auth/logout', {})
     } finally {
       this.setToken(null)
@@ -156,17 +180,41 @@ class ApiClient {
       profileImageId?: string
       favoriteQuoteId?: number
       favoriteGambleId?: number
+      // Discord fields
+      discordId?: string | null
+      discordUsername?: string | null
+      discordAvatar?: string | null
     }>('/auth/me')
   }
 
   async refreshToken() {
-    const response = await this.post<{
-      access_token: string
-      user: any
-    }>('/auth/refresh', {})
-    
-    this.setToken(response.access_token)
-    return response
+    try {
+      console.log('[API] Attempting to refresh token')
+      const response = await fetch(`${this.baseURL}/auth/refresh`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include', // Important for cookies (refresh token)
+      });
+      
+      if (!response.ok) {
+        console.error('[API] Token refresh failed:', response.status, response.statusText)
+        throw new Error('Token refresh failed')
+      }
+      
+      const data = await response.json();
+      console.log('[API] Token refresh successful')
+      
+      // Update token
+      this.setToken(data.access_token)
+      return data
+    } catch (error) {
+      console.error('[API] Error refreshing token:', error)
+      // Clear token on refresh error
+      this.setToken(null)
+      throw error
+    }
   }
 
   // Content methods

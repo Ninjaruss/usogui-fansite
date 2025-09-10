@@ -2,51 +2,56 @@ import { AuthProvider } from 'react-admin'
 import { api } from '../../lib/api'
 
 export const AdminAuthProvider: AuthProvider = {
-  login: async ({ username, password }) => {
-    try {
-      const response = await api.login(username, password)
-      
-      // Check if user has admin or moderator role
-      if (response.user.role !== 'admin' && response.user.role !== 'moderator') {
-        throw new Error('Access denied. Admin or moderator role required.')
-      }
-
-      localStorage.setItem('auth', JSON.stringify(response.user))
-      return Promise.resolve()
-    } catch (error: any) {
-      return Promise.reject(new Error(error.message || 'Login failed'))
-    }
+  login: async () => {
+    // Redirect to main login page which now handles Discord auth
+    window.location.href = '/login'
+    return Promise.resolve()
   },
 
   logout: async () => {
     try {
+      // Call logout endpoint (refresh token is handled via httpOnly cookie)
       await api.logout()
     } catch (error) {
       // Ignore logout errors
     }
-    localStorage.removeItem('auth')
+    localStorage.removeItem('accessToken')
+    api.setToken(null)
+    
+    // Redirect to home page after logout
+    window.location.href = '/'
     return Promise.resolve()
   },
 
   checkAuth: async () => {
     try {
+      const token = localStorage.getItem('accessToken')
+      if (!token) {
+        throw new Error('No access token')
+      }
+
+      // Make sure the API client has the token
+      api.setToken(token)
+      
       const user = await api.getCurrentUser()
       
       if (user.role !== 'admin' && user.role !== 'moderator') {
-        throw new Error('Access denied')
+        throw new Error('Access denied. Admin or moderator role required.')
       }
 
       return Promise.resolve()
     } catch (error) {
-      localStorage.removeItem('auth')
-      return Promise.reject(new Error('Not authenticated'))
+      localStorage.removeItem('accessToken')
+      api.setToken(null)
+      return Promise.reject(new Error('Not authenticated or insufficient permissions'))
     }
   },
 
   checkError: (error) => {
     const status = error.status
     if (status === 401 || status === 403) {
-      localStorage.removeItem('auth')
+      localStorage.removeItem('accessToken')
+      api.setToken(null)
       return Promise.reject()
     }
     return Promise.resolve()
@@ -55,10 +60,22 @@ export const AdminAuthProvider: AuthProvider = {
   getIdentity: async () => {
     try {
       const user = await api.getCurrentUser()
+      let avatar = undefined
+      
+      if (user.discordAvatar && user.discordId) {
+        // If discordAvatar is already a full URL, use it directly
+        if (user.discordAvatar.startsWith('http')) {
+          avatar = user.discordAvatar
+        } else {
+          // Otherwise, construct the Discord CDN URL
+          avatar = `https://cdn.discordapp.com/avatars/${user.discordId}/${user.discordAvatar}.png`
+        }
+      }
+      
       return Promise.resolve({
         id: user.id,
         fullName: user.username,
-        avatar: undefined,
+        avatar,
       })
     } catch (error) {
       return Promise.reject(error)

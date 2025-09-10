@@ -14,7 +14,7 @@ import { EmailService } from '../email/email.service';
 
 @Injectable()
 export class MediaService {
-  private readonly isTestUser = (email: string) =>
+  private readonly isTestUser = (email: string | null) =>
     email === 'testuser@example.com';
 
   constructor(
@@ -180,8 +180,8 @@ export class MediaService {
     media.status = MediaStatus.APPROVED;
     const savedMedia = await this.mediaRepo.save(media);
 
-    // Skip email for test user
-    if (!this.isTestUser(media.submittedBy.email)) {
+    // Skip email for test user or if no email
+    if (media.submittedBy.email && !this.isTestUser(media.submittedBy.email)) {
       await this.emailService.sendMediaApprovalNotification(
         media.submittedBy.email,
         media.description || 'your submission',
@@ -208,8 +208,8 @@ export class MediaService {
 
     const savedMedia = await this.mediaRepo.save(media);
 
-    // Skip email for test user
-    if (!this.isTestUser(media.submittedBy.email)) {
+    // Skip email for test user or if no email
+    if (media.submittedBy.email && !this.isTestUser(media.submittedBy.email)) {
       await this.emailService.sendMediaRejectionNotification(
         media.submittedBy.email,
         media.description || 'your submission',
