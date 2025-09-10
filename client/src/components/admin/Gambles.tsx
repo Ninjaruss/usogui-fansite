@@ -28,6 +28,7 @@ import {
   NumberField
 } from 'react-admin'
 import { Box, Typography } from '@mui/material'
+import { EditToolbar } from './EditToolbar'
 
 
 const GambleFilters = [
@@ -268,6 +269,7 @@ const GambleEditForm = () => {
     <TabbedForm
       record={transformedRecord}
       sanitizeEmptyValues={false}
+      toolbar={<GambleEditToolbar />}
       sx={{
         backgroundColor: '#0a0a0a',
         '& .RaTabbedForm-content': {
@@ -414,6 +416,14 @@ const GambleEditForm = () => {
     </TabbedForm>
   )
 }
+
+const GambleEditToolbar = () => (
+  <EditToolbar 
+    resource="gambles"
+    confirmTitle="Delete Gamble"
+    confirmMessage="Are you sure you want to delete this gamble? This will remove all associated events and data and cannot be undone."
+  />
+)
 
 export const GambleEdit = () => {
   return (

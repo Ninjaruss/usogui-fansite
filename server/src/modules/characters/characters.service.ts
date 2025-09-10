@@ -46,9 +46,12 @@ export class CharactersService {
     const qb = this.repo.createQueryBuilder('character');
 
     if (name) {
-      qb.andWhere('LOWER(character.name) LIKE LOWER(:name)', {
-        name: `%${name}%`,
-      });
+      qb.andWhere(
+        '(LOWER(character.name) LIKE LOWER(:name) OR character.alternateNames ILIKE :name)',
+        {
+          name: `%${name}%`,
+        },
+      );
     }
 
     if (arcId) {

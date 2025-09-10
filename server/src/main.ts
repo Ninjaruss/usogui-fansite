@@ -33,13 +33,13 @@ async function bootstrap() {
   });
 
   // Rate limiting
-  // Allow overriding via environment variables. Defaults increased to reduce accidental blocking during development.
+  // Allow overriding via environment variables. Defaults increased to support power users browsing multiple pages.
   const RATE_LIMIT_WINDOW_MS = process.env.RATE_LIMIT_WINDOW_MS
     ? Number(process.env.RATE_LIMIT_WINDOW_MS)
     : 15 * 60 * 1000; // default 15 minutes
   const RATE_LIMIT_MAX = process.env.RATE_LIMIT_MAX
     ? Number(process.env.RATE_LIMIT_MAX)
-    : 1000; // default 1000 requests per window
+    : 2000; // default 2000 requests per window (increased for power users)
   console.log(
     `Rate limiter: windowMs=${RATE_LIMIT_WINDOW_MS}, max=${RATE_LIMIT_MAX}`,
   );

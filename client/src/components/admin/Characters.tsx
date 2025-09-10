@@ -22,6 +22,7 @@ import {
 } from 'react-admin'
 import { Box, Card, CardContent, Typography, Grid } from '@mui/material'
 import { User, Edit3, Plus } from 'lucide-react'
+import { EditToolbar } from './EditToolbar'
 
 export const CharacterList = () => (
   <List>
@@ -230,6 +231,11 @@ export const CharacterEdit = () => (
               </Grid>
             </Grid>
           </SimpleForm>
+          <EditToolbar 
+            resource="characters"
+            confirmTitle="Delete Character"
+            confirmMessage="Are you sure you want to delete this character? This will remove all associated data and cannot be undone."
+          />
         </CardContent>
       </Card>
     </Box>

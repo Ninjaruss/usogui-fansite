@@ -12,6 +12,7 @@ import {
   NumberInput,
   NumberField
 } from 'react-admin'
+import { EditToolbar } from './EditToolbar'
 
 export const ArcList = () => (
   <List>
@@ -39,7 +40,13 @@ export const ArcShow = () => (
 
 export const ArcEdit = () => (
   <Edit>
-    <SimpleForm>
+    <SimpleForm 
+      toolbar={<EditToolbar 
+        resource="arcs"
+        confirmTitle="Delete Arc"
+        confirmMessage="Are you sure you want to delete this arc? This will remove all associated data and cannot be undone."
+      />}
+    >
       <TextInput source="name" required />
       <TextInput source="description" multiline rows={4} />
       <NumberInput source="startChapter" required />

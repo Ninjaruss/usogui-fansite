@@ -1,7 +1,6 @@
 # Changelog and notes
 ## TODO:
-- Fix all counters for content (gambles)
-
+- Redis based rate limiting with caching middle ware for responses; add cache headers to specific routes
 - Add highlight of most popular quote, gamble, and character profile picture
 - Add different image profile pictures for characters and adding labeling (update character image based on progressed chapter; subtle chapter progression)
 - Add image upload for gambles, events, factions, volumes (need to setup Backblaze + CDN); allow character profile picture choice from characters
@@ -9,13 +8,22 @@
 - Discord integration for creating account
 - Add proper README at the root of the project; add AGPL v3 license to allow people to copy but force them to open source as well
 - Update admin edit pages to have better layout (put delete button somewhere to not be clicked accidentally)
+
+## 2025-09-10
+### Changes
+- Fixed arc relation for events/gambles admin pages
+- Fixed guides page to show descriptions and link user profiles
+- Added confirmation for deletion of data
+
+### Notes
+- 
+
 ## 2025-09-09
 ### Changes
 - Replaced email register/login with Discord Oauth2 login
-- Fixed arc relation for events/gambles admin pages
-- Fixed guides page to show descriptions and link user profiles
 
 ### Notes
+- Claude code had a lot of issues trying to implement Discord OAuth2 login. It seemed to get lik 80-90% of the code, but couldn't get it to work until a couple of tries to debug.
 
 ## 2025-09-07
 ### Changes

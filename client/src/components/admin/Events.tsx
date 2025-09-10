@@ -30,6 +30,7 @@ import {
   TabbedForm
 } from 'react-admin'
 import { Box, Typography } from '@mui/material'
+import { EditToolbar } from './EditToolbar'
 
 const EVENT_TYPE_CHOICES = [
   { id: 'gamble', name: 'Gamble' },
@@ -301,7 +302,13 @@ export const EventEdit = () => (
         backgroundColor: 'transparent'
       }
     }}>
-      <TabbedForm sx={{
+      <TabbedForm 
+        toolbar={<EditToolbar 
+          resource="events"
+          confirmTitle="Delete Event"
+          confirmMessage="Are you sure you want to delete this event? This will remove all associated data and cannot be undone."
+        />}
+        sx={{
         backgroundColor: '#0a0a0a',
         '& .RaTabbedForm-content': {
           backgroundColor: '#0a0a0a',

@@ -306,8 +306,7 @@ export class SearchService {
   private async searchGambles(query: string, offset: number, limit: number) {
     const [gambles, total] = await this.gambleRepository
       .createQueryBuilder('gamble')
-      .leftJoinAndSelect('gamble.participants', 'participants')
-      .leftJoinAndSelect('participants.character', 'character')
+      .leftJoinAndSelect('gamble.participants', 'character')
       .where(
         `(
           to_tsvector('english', gamble.name) @@ plainto_tsquery('english', :query) OR
@@ -318,7 +317,7 @@ export class SearchService {
       )
       .orderBy(
         `ts_rank(
-          to_tsvector('english', gamble.name || ' ' || gamble.rules || ' ' || character.name),
+          to_tsvector('english', gamble.name || ' ' || gamble.rules || ' ' || COALESCE(character.name, '')),
           plainto_tsquery('english', :query)
         )`,
         'DESC',
