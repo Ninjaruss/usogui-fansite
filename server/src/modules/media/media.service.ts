@@ -470,6 +470,7 @@ export class MediaService {
         ownerId,
         isDefault: true,
         status: MediaStatus.APPROVED,
+        purpose: MediaPurpose.ENTITY_DISPLAY,
       },
       relations: ['submittedBy'],
       order: { createdAt: 'DESC' },
@@ -491,11 +492,19 @@ export class MediaService {
       );
     }
 
-    // Remove default flag from other media for the same owner
+    // Only entity display media can be set as default
+    if (media.purpose !== MediaPurpose.ENTITY_DISPLAY) {
+      throw new BadRequestException(
+        'Only entity display media can be set as default',
+      );
+    }
+
+    // Remove default flag from other entity display media for the same owner
     await this.mediaRepo.update(
       {
         ownerType: media.ownerType,
         ownerId: media.ownerId,
+        purpose: MediaPurpose.ENTITY_DISPLAY,
         isDefault: true,
       },
       { isDefault: false },

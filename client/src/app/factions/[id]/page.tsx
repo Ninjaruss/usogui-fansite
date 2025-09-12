@@ -22,6 +22,7 @@ import { api } from '../../../lib/api'
 import { motion } from 'motion/react'
 import SpoilerWrapper from '../../../components/SpoilerWrapper'
 import MediaThumbnail from '../../../components/MediaThumbnail'
+import MediaGallery from '../../../components/MediaGallery'
 import { usePageView } from '../../../hooks/usePageView'
 
 interface Faction {
@@ -343,6 +344,24 @@ export default function FactionDetailPage() {
                 </CardContent>
               </Card>
             )}
+
+            {/* Media Gallery Section */}
+            <Card className="gambling-card" sx={{ mt: 4 }}>
+              <CardContent>
+                <Typography variant="h5" gutterBottom>
+                  Media Gallery
+                </Typography>
+                <MediaGallery
+                  ownerType="faction"
+                  ownerId={faction.id}
+                  purpose="gallery"
+                  showTitle={false}
+                  compactMode={false}
+                  showFilters={true}
+                  allowMultipleTypes={true}
+                />
+              </CardContent>
+            </Card>
           </Grid>
 
           <Grid item xs={12} md={4}>

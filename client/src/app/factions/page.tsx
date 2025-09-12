@@ -19,6 +19,7 @@ import { Search, Shield, Users } from 'lucide-react'
 import Link from 'next/link'
 import { api } from '../../lib/api'
 import { motion } from 'motion/react'
+import MediaThumbnail from '../../components/MediaThumbnail'
 
 interface Faction {
   id: number
@@ -144,6 +145,17 @@ export default function FactionsPage() {
                         }
                       }}
                     >
+                      <Box sx={{ position: 'relative' }}>
+                        <MediaThumbnail
+                          entityType="faction"
+                          entityId={faction.id}
+                          entityName={faction.name}
+                          maxWidth="100%"
+                          maxHeight="200px"
+                          allowCycling={false}
+                        />
+                      </Box>
+
                       <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                           <Shield size={24} style={{ marginRight: 8 }} />

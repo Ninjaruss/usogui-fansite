@@ -294,6 +294,10 @@ export class CharactersService {
       return {
         ...quote,
         character: { name: character_name },
+        chapter: {
+          id: quote.chapterNumber, // Using chapter number as id since we don't have proper chapter entities
+          number: quote.chapterNumber,
+        },
         submittedBy: submitted_by_username
           ? { username: submitted_by_username }
           : null,

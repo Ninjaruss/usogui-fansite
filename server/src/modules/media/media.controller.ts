@@ -110,7 +110,10 @@ export class MediaController {
                 example: 'https://www.youtube.com/watch?v=example',
               },
               type: { type: 'string', example: 'video' },
-              description: { type: 'string', example: 'Character analysis video' },
+              description: {
+                type: 'string',
+                example: 'Character analysis video',
+              },
               ownerType: { type: 'string', example: 'character' },
               ownerId: { type: 'number', example: 1 },
               chapterNumber: { type: 'number', example: 45, nullable: true },
@@ -250,7 +253,8 @@ export class MediaController {
   @UseInterceptors(FileInterceptor('file'))
   @ApiOperation({
     summary: 'Upload media file',
-    description: 'Upload a media file directly to the server (requires authentication)',
+    description:
+      'Upload a media file directly to the server (requires authentication)',
   })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
@@ -398,7 +402,7 @@ export class MediaController {
   ) {
     const pageNum = parseInt(page) || 1;
     const limitNum = parseInt(limit) || 20;
-    
+
     // Properly validate and parse ownerId to prevent NaN errors
     let ownerIdNum: number | undefined;
     if (ownerId) {
@@ -589,11 +593,18 @@ export class MediaController {
         },
         type: { type: 'string', enum: ['image', 'video', 'audio'] },
         description: { type: 'string', example: 'Updated description' },
-        ownerType: { type: 'string', enum: ['character', 'arc', 'event', 'gamble', 'faction', 'user'] },
+        ownerType: {
+          type: 'string',
+          enum: ['character', 'arc', 'event', 'gamble', 'faction', 'user'],
+        },
         ownerId: { type: 'number', example: 1 },
         chapterNumber: { type: 'number', example: 45 },
         isDefault: { type: 'boolean', example: false },
-        purpose: { type: 'string', enum: ['gallery', 'entity_display'], example: 'gallery' },
+        purpose: {
+          type: 'string',
+          enum: ['gallery', 'entity_display'],
+          example: 'gallery',
+        },
         status: { type: 'string', enum: ['pending', 'approved', 'rejected'] },
         rejectionReason: { type: 'string', example: 'Reason for rejection' },
       },
@@ -991,7 +1002,8 @@ export class MediaController {
     let chapterNum: number | undefined;
     if (chapter) {
       const parsedChapter = parseInt(chapter, 10);
-      chapterNum = !isNaN(parsedChapter) && parsedChapter > 0 ? parsedChapter : undefined;
+      chapterNum =
+        !isNaN(parsedChapter) && parsedChapter > 0 ? parsedChapter : undefined;
     }
 
     let pageNum: number | undefined;
@@ -1003,7 +1015,8 @@ export class MediaController {
     let limitNum: number | undefined;
     if (limit) {
       const parsedLimit = parseInt(limit, 10);
-      limitNum = !isNaN(parsedLimit) && parsedLimit > 0 ? parsedLimit : undefined;
+      limitNum =
+        !isNaN(parsedLimit) && parsedLimit > 0 ? parsedLimit : undefined;
     }
 
     return this.mediaService.findForOwner(ownerType, ownerId, chapterNum, {
@@ -1015,8 +1028,9 @@ export class MediaController {
 
   @Get('owner/:ownerType/:ownerId/default')
   @ApiOperation({
-    summary: 'Get default media for a specific owner',
-    description: 'Retrieve the default media item for an entity',
+    summary: 'Get default entity display media for a specific owner',
+    description:
+      'Retrieve the default entity display media item for an entity (used for thumbnails)',
   })
   @ApiParam({
     name: 'ownerType',
@@ -1040,12 +1054,13 @@ export class MediaController {
   @ApiBearerAuth()
   @Roles(UserRole.MODERATOR, UserRole.ADMIN)
   @ApiOperation({
-    summary: 'Set media as default for its owner',
-    description: 'Mark a media item as the default for its associated entity',
+    summary: 'Set entity display media as default for its owner',
+    description:
+      'Mark an entity display media item as the default thumbnail for its associated entity',
   })
   @ApiParam({
     name: 'id',
-    description: 'Media ID',
+    description: 'Media ID (must be entity display media)',
     type: 'number',
   })
   setAsDefault(@Param('id', ParseIntPipe) id: number) {
@@ -1208,7 +1223,8 @@ export class MediaController {
   @Roles(UserRole.MODERATOR, UserRole.ADMIN)
   @ApiOperation({
     summary: 'Update media relations',
-    description: 'Update the ownership and relationship details of a media item',
+    description:
+      'Update the ownership and relationship details of a media item',
   })
   @ApiParam({
     name: 'id',

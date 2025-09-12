@@ -23,7 +23,7 @@ import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { api } from '../../lib/api'
 import { motion } from 'motion/react'
-// import SpoilerWrapper from '../../components/SpoilerWrapper' // Commented out as it's not used
+import MediaThumbnail from '../../components/MediaThumbnail'
 
 interface Gamble {
   id: number
@@ -147,20 +147,6 @@ function GamblesPageContent() {
               : 'Discover the high-stakes games and competitions of Usogui'
             }
           </Typography>
-          {characterFilter && (
-            <Box sx={{ mt: 2 }}>
-              <Chip
-                label={`Filtered by: ${characterFilter}`}
-                onDelete={() => {
-                  window.history.replaceState({}, '', '/gambles')
-                  setCharacterFilter(null)
-                  fetchGambles(1, searchQuery)
-                }}
-                color="primary"
-                variant="outlined"
-              />
-            </Box>
-          )}
         </Box>
 
         <Box sx={{ mb: 4 }}>
@@ -215,6 +201,17 @@ function GamblesPageContent() {
                         '&:hover': { transform: 'translateY(-4px)' }
                       }}
                     >
+                      <Box sx={{ position: 'relative' }}>
+                        <MediaThumbnail
+                          entityType="gamble"
+                          entityId={gamble.id}
+                          entityName={gamble.name}
+                          maxWidth="100%"
+                          maxHeight="200px"
+                          allowCycling={false}
+                        />
+                      </Box>
+
                       <CardContent sx={{ flexGrow: 1 }}>
                         <Typography variant="h6" component="h2" gutterBottom>
                           {gamble.name}

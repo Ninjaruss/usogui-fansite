@@ -230,20 +230,6 @@ function ArcsPageContent() {
               : 'Explore the major storylines and arcs of Usogui'
             }
           </Typography>
-          {characterFilter && (
-            <Box sx={{ mt: 2 }}>
-              <Chip
-                label={`Filtered by: ${characterFilter}`}
-                onDelete={() => {
-                  window.history.replaceState({}, '', '/arcs')
-                  setCharacterFilter(null)
-                  fetchArcs(1, searchQuery)
-                }}
-                color="primary"
-                variant="outlined"
-              />
-            </Box>
-          )}
         </Box>
 
         <Box sx={{ mb: 4 }}>
@@ -518,6 +504,7 @@ function ArcsPageContent() {
     </Container>
   )
 }
+
 
 export default function ArcsPage() {
   return (

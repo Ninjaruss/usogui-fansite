@@ -511,7 +511,7 @@ export default function CharacterDetailPage() {
                                     }
                                   }}>
                                     <SpoilerWrapper 
-                                      chapterNumber={quote.chapter?.number || 0}
+                                      chapterNumber={quote.chapter?.number || 1}
                                       spoilerType="minor"
                                       description="Character quote"
                                     >
