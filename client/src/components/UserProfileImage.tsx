@@ -18,6 +18,7 @@ interface UserProfileImageProps {
       ownerType?: string
       ownerId?: number
     } | null
+    discordId?: string | null
     discordAvatar?: string | null
   }
   size?: number
@@ -34,10 +35,14 @@ export default function UserProfileImage({
   const [error, setError] = useState(false)
 
   // Discord avatar
-  if (user.profilePictureType === 'discord' && user.discordAvatar) {
+  if (user.profilePictureType === 'discord' && user.discordAvatar && user.discordId) {
+    const discordAvatarUrl = user.discordAvatar.startsWith('http') 
+      ? user.discordAvatar 
+      : `https://cdn.discordapp.com/avatars/${user.discordId}/${user.discordAvatar}.png?size=256`
+    
     return (
       <Avatar
-        src={`https://cdn.discordapp.com/avatars/${user.id}/${user.discordAvatar}.png?size=256`}
+        src={discordAvatarUrl}
         alt={`${user.username}'s Discord avatar`}
         className={className}
         sx={{
@@ -70,6 +75,28 @@ export default function UserProfileImage({
         onError={() => setError(true)}
       >
         {showFallback && user.username[0]?.toUpperCase()}
+      </Avatar>
+    )
+  }
+
+  // Fallback Discord avatar (when profilePictureType is not set but Discord data exists)
+  if (!user.profilePictureType && user.discordAvatar && user.discordId && !error) {
+    const discordAvatarUrl = user.discordAvatar.startsWith('http') 
+      ? user.discordAvatar 
+      : `https://cdn.discordapp.com/avatars/${user.discordId}/${user.discordAvatar}.png?size=256`
+    
+    return (
+      <Avatar
+        src={discordAvatarUrl}
+        alt={`${user.username}'s Discord avatar`}
+        className={className}
+        sx={{
+          width: size,
+          height: size,
+        }}
+        onError={() => setError(true)}
+      >
+        {(error || !user.discordAvatar) && showFallback && user.username[0]?.toUpperCase()}
       </Avatar>
     )
   }

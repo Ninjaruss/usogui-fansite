@@ -30,7 +30,7 @@ import { useParams } from 'next/navigation'
 import { api } from '../../../lib/api'
 import { motion } from 'motion/react'
 import { useAuth } from '../../../providers/AuthProvider'
-import SpoilerWrapper from '../../../components/SpoilerWrapper'
+import TimelineSpoilerWrapper from '../../../components/TimelineSpoilerWrapper'
 import SpoilerMarkdown from '../../../components/SpoilerMarkdown'
 import { usePageView } from '../../../hooks/usePageView'
 
@@ -532,14 +532,11 @@ export default function GuideDetailsPage() {
                 }
               }
             }}>
-              <SpoilerWrapper
-                spoilerType="minor"
-                description="Guide content may contain story spoilers"
-              >
+              <TimelineSpoilerWrapper>
                 <SpoilerMarkdown 
                   content={guide.content}
                 />
-              </SpoilerWrapper>
+              </TimelineSpoilerWrapper>
             </Box>
           </CardContent>
         </Card>

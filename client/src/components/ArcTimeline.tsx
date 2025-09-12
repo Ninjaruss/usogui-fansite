@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react'
+import React, { useState, useMemo, useCallback, useRef } from 'react'
 import {
   Box,
   Typography,
@@ -8,7 +8,6 @@ import {
   CardContent,
   Chip,
   Button,
-  Tooltip,
   Divider,
   useTheme
 } from '@mui/material'

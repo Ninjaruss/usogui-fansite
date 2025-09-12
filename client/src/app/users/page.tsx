@@ -38,6 +38,7 @@ interface PublicUser {
     ownerType?: string
     ownerId?: number
   } | null
+  discordId?: string | null
   discordAvatar?: string | null
   createdAt: string
   guidesCount?: number

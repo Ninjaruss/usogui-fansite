@@ -12,6 +12,7 @@
 ### Changes 
 - Profile picture can now select from available character display media or keep default Discord profile
 - Updated users page and profile to load the new modern profile header
+- Normalized spoiler wrapper component by replacing it with timeline spoiler component
 ### Notes
 - I really like the new profile picture selection. I was inspired by the og duelingnetwork profile pictures that showed the card art of the iconic monsters.
 

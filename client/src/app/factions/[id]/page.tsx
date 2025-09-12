@@ -20,10 +20,10 @@ import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { api } from '../../../lib/api'
 import { motion } from 'motion/react'
-import SpoilerWrapper from '../../../components/SpoilerWrapper'
 import MediaThumbnail from '../../../components/MediaThumbnail'
 import MediaGallery from '../../../components/MediaGallery'
 import { usePageView } from '../../../hooks/usePageView'
+import TimelineSpoilerWrapper from '../../../components/TimelineSpoilerWrapper'
 
 interface Faction {
   id: number
@@ -185,15 +185,13 @@ export default function FactionDetailPage() {
                   <Typography variant="h5" gutterBottom>
                     About {faction.name}
                   </Typography>
-                  <SpoilerWrapper 
+                  <TimelineSpoilerWrapper 
                     chapterNumber={1}
-                    spoilerType="minor"
-                    description="Faction overview and background"
                   >
                     <Typography variant="body1" paragraph>
                       {faction.description}
                     </Typography>
-                  </SpoilerWrapper>
+                  </TimelineSpoilerWrapper>
                 </CardContent>
               </Card>
             )}
@@ -304,10 +302,8 @@ export default function FactionDetailPage() {
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                           <Box sx={{ flex: 1 }}>
                             {event.isSpoiler ? (
-                              <SpoilerWrapper 
+                              <TimelineSpoilerWrapper 
                                 chapterNumber={event.spoilerChapter || event.chapterNumber}
-                                spoilerType="major"
-                                description="Event details and outcome"
                               >
                                 <Typography variant="h6" component={Link} href={`/events/${event.id}`}
                                           sx={{ textDecoration: 'none', color: 'primary.main', '&:hover': { textDecoration: 'underline' } }}>
@@ -316,7 +312,7 @@ export default function FactionDetailPage() {
                                 <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
                                   {event.description}
                                 </Typography>
-                              </SpoilerWrapper>
+                              </TimelineSpoilerWrapper>
                             ) : (
                               <>
                                 <Typography variant="h6" component={Link} href={`/events/${event.id}`}

@@ -23,7 +23,7 @@ import { useParams } from 'next/navigation'
 import { api } from '../../../lib/api'
 import { motion } from 'motion/react'
 import { usePageView } from '../../../hooks/usePageView'
-import SpoilerWrapper from '../../../components/SpoilerWrapper'
+import TimelineSpoilerWrapper from '../../../components/TimelineSpoilerWrapper'
 import GambleTimeline from '../../../components/GambleTimeline'
 import MediaGallery from '../../../components/MediaGallery'
 import MediaThumbnail from '../../../components/MediaThumbnail'
@@ -445,10 +445,8 @@ export default function GambleDetailsPage() {
                             <Typography variant="body2" color="text.secondary" gutterBottom sx={{ fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 }}>
                               Participants ({gamble.participants.length})
                             </Typography>
-                            <SpoilerWrapper 
+                            <TimelineSpoilerWrapper 
                               chapterNumber={gamble.chapter?.number || gamble.chapterId}
-                              spoilerType="minor"
-                              description="Gamble participants"
                             >
                               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                                 {gamble.participants.map((participant) => (
@@ -487,7 +485,7 @@ export default function GambleDetailsPage() {
                                   </Box>
                                 ))}
                               </Box>
-                            </SpoilerWrapper>
+                            </TimelineSpoilerWrapper>
                           </Box>
                         )}
                       </CardContent>

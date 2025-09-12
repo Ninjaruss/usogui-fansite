@@ -19,8 +19,8 @@ import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { api } from '../../../lib/api'
 import { motion } from 'motion/react'
-import SpoilerWrapper from '../../../components/SpoilerWrapper'
 import { usePageView } from '../../../hooks/usePageView'
+import TimelineSpoilerWrapper from '../../../components/TimelineSpoilerWrapper'
 
 interface Event {
   id: number
@@ -199,26 +199,18 @@ export default function EventDetailsPage() {
                 <Typography variant="h5" gutterBottom>
                   Description
                 </Typography>
-                <SpoilerWrapper 
-                  chapterNumber={event.chapterNumber} 
-                  spoilerType="major"
-                  description="Event outcome and plot details"
-                >
+                <TimelineSpoilerWrapper chapterNumber={event.chapterNumber}>
                   <Typography variant="body1" sx={{ mb: 3, lineHeight: 1.7 }}>
                     {event.description}
                   </Typography>
-                </SpoilerWrapper>
+                </TimelineSpoilerWrapper>
 
                 {event.gamble && (
                   <>
                     <Typography variant="h6" gutterBottom sx={{ mt: 3 }}>
                       Related Gamble
                     </Typography>
-                    <SpoilerWrapper 
-                      chapterNumber={event.chapterNumber}
-                      spoilerType="minor"
-                      description={`Gamble details: ${event.gamble.name}`}
-                    >
+                    <TimelineSpoilerWrapper chapterNumber={event.chapterNumber}>
                       <Box sx={{ p: 2, bgcolor: 'background.default', borderRadius: 1 }}>
                         <Typography variant="h6" gutterBottom>
                           {event.gamble.name}
@@ -232,7 +224,7 @@ export default function EventDetailsPage() {
                           </Typography>
                         )}
                       </Box>
-                    </SpoilerWrapper>
+                    </TimelineSpoilerWrapper>
                   </>
                 )}
               </CardContent>

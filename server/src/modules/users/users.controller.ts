@@ -130,6 +130,7 @@ export class UsersController {
         chapterNumber: user.selectedCharacterMedia.chapterNumber,
         character: (user.selectedCharacterMedia as any).character || null,
       } : null,
+      discordId: user.discordId,
       discordAvatar: user.discordAvatar,
       createdAt: user.createdAt,
     }));
@@ -196,6 +197,7 @@ export class UsersController {
       favoriteQuote: user.favoriteQuote,
       favoriteGambleId: user.favoriteGambleId,
       favoriteGamble: user.favoriteGamble,
+      discordId: user.discordId,
       discordAvatar: user.discordAvatar,
       createdAt: user.createdAt,
     };

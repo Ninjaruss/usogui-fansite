@@ -24,7 +24,7 @@ import { motion } from 'motion/react'
 import { usePageView } from '../../../hooks/usePageView'
 import MediaGallery from '../../../components/MediaGallery'
 import ArcTimeline from '../../../components/ArcTimeline'
-import SpoilerWrapper from '../../../components/SpoilerWrapper'
+import TimelineSpoilerWrapper from '../../../components/TimelineSpoilerWrapper'
 import MediaThumbnail from '../../../components/MediaThumbnail'
 
 interface Arc {
@@ -409,10 +409,8 @@ export default function ArcDetailPage() {
                           </Typography>
                         </Box>
 
-                        <SpoilerWrapper 
+                        <TimelineSpoilerWrapper 
                           chapterNumber={arc.startChapter}
-                          spoilerType="minor"
-                          description="Arc description and overview"
                         >
                           <Typography variant="body1" sx={{ 
                             fontSize: { xs: '1rem', md: '1.1rem' },
@@ -423,7 +421,7 @@ export default function ArcDetailPage() {
                           }}>
                             {arc.description}
                           </Typography>
-                        </SpoilerWrapper>
+                        </TimelineSpoilerWrapper>
                       </CardContent>
                     </Card>
                   </Grid>

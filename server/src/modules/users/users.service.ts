@@ -308,35 +308,13 @@ export class UsersService {
       throw new BadRequestException('User does not have a Discord account linked');
     }
 
-    try {
-      // Fetch fresh Discord user data using Discord API
-      const discordResponse = await fetch(`https://discord.com/api/v10/users/${user.discordId}`, {
-        headers: {
-          'Authorization': `Bot ${process.env.DISCORD_BOT_TOKEN || ''}`,
-        },
-      });
-
-      if (!discordResponse.ok) {
-        throw new BadRequestException('Failed to fetch Discord user data');
-      }
-
-      const discordUser = await discordResponse.json();
-      
-      // Update the Discord avatar with fresh data
-      const newAvatarUrl = discordUser.avatar
-        ? `https://cdn.discordapp.com/avatars/${user.discordId}/${discordUser.avatar}.png`
-        : null;
-
-      await this.updateDiscordInfo(userId, {
-        discordUsername: discordUser.username,
-        discordAvatar: newAvatarUrl,
-      });
-
-      return this.getUserProfile(userId);
-    } catch (error) {
-      console.error('Failed to refresh Discord avatar:', error);
-      throw new BadRequestException('Failed to refresh Discord avatar. Please try logging out and back in.');
-    }
+    // Since we don't have a Discord Bot Token configured, and we don't store 
+    // user access tokens, we need to redirect the user to re-authenticate
+    // via Discord OAuth to get fresh avatar data.
+    throw new BadRequestException(
+      'To refresh your Discord avatar, please log out and log back in with Discord. ' +
+      'This will fetch your latest avatar from Discord.'
+    );
   }
 
   async updateRole(userId: number, role: UserRole): Promise<void> {

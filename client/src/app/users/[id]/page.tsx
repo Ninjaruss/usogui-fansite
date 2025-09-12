@@ -45,6 +45,7 @@ interface PublicUser {
       name: string
     }
   } | null
+  discordId?: string | null
   discordAvatar?: string | null
   favoriteQuoteId?: number
   favoriteGambleId?: number

@@ -16,17 +16,156 @@ import {
   Select,
   MenuItem,
   FormControl,
-  InputLabel
+  InputLabel,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  IconButton,
+  TextField,
+  InputAdornment,
+  Tabs,
+  Tab,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  Tooltip,
+  useTheme
 } from '@mui/material'
-import { User, Settings, Crown, BookOpen, Save } from 'lucide-react'
+import { User, Settings, Crown, BookOpen, Save, X, Camera, Search, AlertTriangle } from 'lucide-react'
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import { useAuth } from '../../providers/AuthProvider'
 import { useProgress } from '../../providers/ProgressProvider'
+import { useSpoilerSettings } from '../../hooks/useSpoilerSettings'
 import { api } from '../../lib/api'
 import { motion } from 'motion/react'
 import UserProfileImage from '../../components/UserProfileImage'
 
+// Profile Picture Spoiler Wrapper - matches CharacterTimeline spoiler behavior
+function ProfilePictureSpoilerWrapper({ 
+  media, 
+  children 
+}: { 
+  media: { id: number, chapterNumber?: number },
+  children: React.ReactNode 
+}) {
+  const [isRevealed, setIsRevealed] = useState(false)
+  const { userProgress } = useProgress()
+  const { settings } = useSpoilerSettings()
+  const theme = useTheme()
+
+  const shouldHideSpoiler = () => {
+    const chapterNumber = media.chapterNumber
+    
+    // First check if spoiler settings say to show all spoilers
+    if (settings.showAllSpoilers) {
+      return false
+    }
+
+    // Determine the effective progress to use for spoiler checking
+    // Priority: spoiler settings tolerance > user progress
+    const effectiveProgress = settings.chapterTolerance > 0 
+      ? settings.chapterTolerance 
+      : userProgress
+
+    // If we have a chapter number, use unified logic
+    if (chapterNumber) {
+      return chapterNumber > effectiveProgress
+    }
+
+    // For media without chapter numbers, don't hide
+    return false
+  }
+
+  // Always check client-side logic
+  const clientSideShouldHide = shouldHideSpoiler()
+  
+  // Always render the media, but with spoiler protection overlay if needed
+  if (!clientSideShouldHide || isRevealed) {
+    return <>{children}</>
+  }
+
+  const handleReveal = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsRevealed(true)
+  }
+
+  const chapterNumber = media.chapterNumber
+  const effectiveProgress = settings.chapterTolerance > 0 
+    ? settings.chapterTolerance 
+    : userProgress
+
+  return (
+    <Box sx={{ position: 'relative' }}>
+      {/* Render the actual content underneath */}
+      <Box sx={{ opacity: 0.3, filter: 'blur(2px)', pointerEvents: 'none' }}>
+        {children}
+      </Box>
+      
+      {/* Spoiler overlay */}
+      <Box 
+        sx={{ 
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: 'error.light',
+          borderRadius: 2,
+          cursor: 'pointer',
+          border: `1px solid ${theme.palette.error.main}`,
+          '&:hover': {
+            backgroundColor: 'error.dark'
+          },
+          zIndex: 100
+        }}
+        onClick={handleReveal}
+      >
+        <Tooltip 
+          title={chapterNumber ? `Chapter ${chapterNumber} spoiler - You're at Chapter ${effectiveProgress}. Click to reveal.` : `Spoiler content. Click to reveal.`}
+          placement="top"
+          arrow
+        >
+          <Box sx={{ textAlign: 'center', width: '100%' }}>
+            <Typography 
+              variant="caption" 
+              sx={{ 
+                color: 'white',
+                fontWeight: 'bold',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 0.5,
+                fontSize: '0.75rem',
+                mb: 0.5
+              }}
+            >
+              <AlertTriangle size={14} />
+              {chapterNumber ? `Chapter ${chapterNumber} Spoiler` : 'Spoiler'}
+            </Typography>
+            <Typography 
+              variant="caption" 
+              sx={{ 
+                color: 'rgba(255,255,255,0.8)',
+                fontSize: '0.65rem',
+                display: 'block'
+              }}
+            >
+              Click to reveal
+            </Typography>
+          </Box>
+        </Tooltip>
+      </Box>
+    </Box>
+  )
+}
+
 export default function ProfilePage() {
-  const { user, refreshUser, loading: authLoading } = useAuth()
+  const { user, refreshUser, logout, loading: authLoading } = useAuth()
   const { userProgress, updateProgress } = useProgress()
   const [selectedQuote, setSelectedQuote] = useState<number | null>(null)
   const [selectedGamble, setSelectedGamble] = useState<number | null>(null)
@@ -51,9 +190,11 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(false)
   const [progressLoading, setProgressLoading] = useState(false)
   const [dataLoading, setDataLoading] = useState(true)
-  const [refreshingAvatar, setRefreshingAvatar] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [profilePictureModalOpen, setProfilePictureModalOpen] = useState(false)
+  const [characterSearchTerm, setCharacterSearchTerm] = useState('')
+  const [selectedTab, setSelectedTab] = useState(0) // 0 = Discord, 1 = Character Media
 
   useEffect(() => {
     const fetchData = async () => {
@@ -234,21 +375,67 @@ export default function ProfilePage() {
     }
   }
 
-  const handleRefreshDiscordAvatar = async () => {
-    setRefreshingAvatar(true)
+  const handleSaveProfilePicture = async () => {
+    setLoading(true)
     setError('')
     setSuccess('')
 
     try {
-      await api.refreshDiscordAvatar()
+      // Prepare the update data for profile picture only
+      const updateData: {
+        profilePictureType?: 'discord' | 'character_media' | null
+        selectedCharacterMediaId?: number | null
+      } = {}
+
+      // Handle profile picture selection
+      if (selectedCharacterMedia === null) {
+        // Discord profile selected
+        updateData.profilePictureType = 'discord'
+        updateData.selectedCharacterMediaId = null
+      } else {
+        // Character media selected
+        updateData.profilePictureType = 'character_media'
+        updateData.selectedCharacterMediaId = selectedCharacterMedia
+      }
+
+      console.log('Sending profile picture update data:', updateData)
+      
+      const result = await api.updateProfile(updateData)
+      console.log('Profile picture update result:', result)
+      
       await refreshUser()
-      setSuccess('Discord avatar refreshed successfully!')
+      setSuccess('Profile picture updated successfully!')
+      setProfilePictureModalOpen(false)
     } catch (error: unknown) {
-      console.error('Discord avatar refresh error:', error)
-      setError(error instanceof Error ? error.message : 'Failed to refresh Discord avatar')
+      console.error('Profile picture update error:', error)
+      setError(error instanceof Error ? error.message : 'Failed to update profile picture')
     } finally {
-      setRefreshingAvatar(false)
+      setLoading(false)
     }
+  }
+
+  // Helper function to organize character media by character
+  const organizeCharacterMedia = () => {
+    const filtered = characterMedia.filter(media => 
+      characterSearchTerm === '' || 
+      media.character.name.toLowerCase().includes(characterSearchTerm.toLowerCase())
+    )
+    
+    const grouped = filtered.reduce((acc, media) => {
+      const characterName = media.character.name
+      if (!acc[characterName]) {
+        acc[characterName] = []
+      }
+      acc[characterName].push(media)
+      return acc
+    }, {} as Record<string, typeof characterMedia>)
+    
+    // Sort each character's media by chapter number
+    Object.keys(grouped).forEach(character => {
+      grouped[character].sort((a, b) => a.chapterNumber - b.chapterNumber)
+    })
+    
+    return grouped
   }
 
   if (authLoading) {
@@ -296,11 +483,43 @@ export default function ProfilePage() {
               flexDirection: { xs: 'column', sm: 'row' },
               textAlign: { xs: 'center', sm: 'left' }
             }}>
-              {/* Profile Image */}
-              <UserProfileImage
-                user={user}
-                size={120}
-              />
+              {/* Profile Image - Clickable */}
+              <Box 
+                sx={{ 
+                  position: 'relative',
+                  cursor: 'pointer',
+                  '&:hover .camera-overlay': {
+                    opacity: 1
+                  }
+                }}
+                onClick={() => setProfilePictureModalOpen(true)}
+              >
+                <UserProfileImage
+                  user={user}
+                  size={120}
+                />
+                
+                {/* Camera Overlay */}
+                <Box 
+                  className="camera-overlay"
+                  sx={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRadius: '50%',
+                    opacity: 0,
+                    transition: 'opacity 0.2s ease-in-out'
+                  }}
+                >
+                  <Camera size={32} color="white" />
+                </Box>
+              </Box>
               
               {/* User Info */}
               <Box sx={{ flex: 1 }}>
@@ -510,103 +729,6 @@ export default function ProfilePage() {
                   </FormControl>
                 </Box>
 
-                <Box sx={{ mb: 3 }}>
-                  <Typography variant="h6" gutterBottom>
-                    Profile Picture
-                  </Typography>
-                  
-                  {/* Discord Profile Option - Default */}
-                  <Box sx={{ mb: 3 }}>
-                    <Typography variant="body2" color="text.secondary" gutterBottom>
-                      Default Option
-                    </Typography>
-                    {user.discordId && user.discordAvatar ? (
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 2, border: selectedCharacterMedia === null ? 2 : 1, borderColor: selectedCharacterMedia === null ? 'primary.main' : 'divider', borderRadius: 2, cursor: 'pointer', bgcolor: selectedCharacterMedia === null ? 'primary.50' : 'transparent' }}
-                           onClick={() => setSelectedCharacterMedia(null)}>
-                        <Avatar
-                          src={user.discordAvatar.startsWith('http') ? user.discordAvatar : `https://cdn.discordapp.com/avatars/${user.discordId}/${user.discordAvatar}.png`}
-                          sx={{ width: 48, height: 48 }}
-                        />
-                        <Box>
-                          <Typography variant="body1" fontWeight={selectedCharacterMedia === null ? 'bold' : 'normal'}>
-                            Discord Profile Picture
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            {user.discordUsername || user.username}
-                          </Typography>
-                        </Box>
-                      </Box>
-                    ) : (
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 2, border: selectedCharacterMedia === null ? 2 : 1, borderColor: selectedCharacterMedia === null ? 'primary.main' : 'divider', borderRadius: 2, cursor: 'pointer', bgcolor: selectedCharacterMedia === null ? 'primary.50' : 'transparent' }}
-                           onClick={() => setSelectedCharacterMedia(null)}>
-                        <Avatar sx={{ width: 48, height: 48, bgcolor: 'grey.400' }}>
-                          {user.username[0].toUpperCase()}
-                        </Avatar>
-                        <Box>
-                          <Typography variant="body1" fontWeight={selectedCharacterMedia === null ? 'bold' : 'normal'}>
-                            Default Profile Picture
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            No Discord profile available
-                          </Typography>
-                        </Box>
-                      </Box>
-                    )}
-                    
-                    {/* Refresh Discord Avatar Button */}
-                    {user.discordId && (
-                      <Box sx={{ mt: 2, mb: 1 }}>
-                        <Button
-                          onClick={handleRefreshDiscordAvatar}
-                          disabled={refreshingAvatar}
-                          variant="outlined"
-                          size="small"
-                          startIcon={refreshingAvatar ? <CircularProgress size={16} /> : undefined}
-                        >
-                          {refreshingAvatar ? 'Refreshing...' : 'Refresh Discord Avatar'}
-                        </Button>
-                        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
-                          Click to fetch your latest Discord profile picture
-                        </Typography>
-                      </Box>
-                    )}
-                  </Box>
-                  
-                  
-                  {/* Character Entity Display Media */}
-                  {characterMedia.length > 0 && (
-                    <>
-                      <Typography variant="body2" color="text.secondary" gutterBottom>
-                        Character Display Media (Based on Reading Progress)
-                      </Typography>
-                      <Box sx={{ mb: 2, maxHeight: 200, overflowY: 'auto' }}>
-                        {characterMedia.map((media) => (
-                          <Box key={media.id} 
-                               sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 2, mb: 1, border: selectedCharacterMedia === media.id ? 2 : 1, borderColor: selectedCharacterMedia === media.id ? 'primary.main' : 'divider', borderRadius: 2, cursor: 'pointer' }}
-                               onClick={() => setSelectedCharacterMedia(media.id)}>
-                            <Avatar
-                              src={media.url}
-                              sx={{ width: 48, height: 48 }}
-                            >
-                              {media.character.name[0]}
-                            </Avatar>
-                            <Box>
-                              <Typography variant="body1">
-                                {media.character.name} - Chapter {media.chapterNumber}
-                              </Typography>
-                              {media.description && (
-                                <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem', fontStyle: 'italic' }}>
-                                  {media.description}
-                                </Typography>
-                              )}
-                            </Box>
-                          </Box>
-                        ))}
-                      </Box>
-                    </>
-                  )}
-                </Box>
-
                 <Button
                   variant="contained"
                   startIcon={loading ? <CircularProgress size={20} /> : <Save size={20} />}
@@ -768,6 +890,276 @@ export default function ProfilePage() {
           </Card>
         </Box>
       </motion.div>
+
+      {/* Profile Picture Selection Modal */}
+      <Dialog 
+        open={profilePictureModalOpen} 
+        onClose={() => setProfilePictureModalOpen(false)}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{ sx: { height: '80vh' } }}
+      >
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          Choose Profile Picture
+          <IconButton onClick={() => setProfilePictureModalOpen(false)} size="small">
+            <X size={20} />
+          </IconButton>
+        </DialogTitle>
+        
+        <DialogContent sx={{ p: 0 }}>
+          {error && (
+            <Alert severity="error" sx={{ m: 2, mb: 0 }}>
+              {error}
+            </Alert>
+          )}
+
+          {success && (
+            <Alert severity="success" sx={{ m: 2, mb: 0 }}>
+              {success}
+            </Alert>
+          )}
+
+          {/* Tabs for different picture types */}
+          <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+            <Tabs value={selectedTab} onChange={(e, newValue) => setSelectedTab(newValue)}>
+              <Tab label="Discord Profile" />
+              <Tab label="Character Media" />
+            </Tabs>
+          </Box>
+
+          {/* Tab Content */}
+          <Box sx={{ p: 2, height: 'calc(80vh - 200px)', overflowY: 'auto' }}>
+            {selectedTab === 0 && (
+              // Discord Profile Tab
+              <Box>
+                <Typography variant="h6" gutterBottom>
+                  Discord Profile Picture
+                </Typography>
+                <Typography variant="body2" color="text.secondary" gutterBottom sx={{ mb: 2 }}>
+                  Use your Discord avatar as your profile picture
+                </Typography>
+                
+                {user.discordId && user.discordAvatar ? (
+                  <Box 
+                    sx={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: 2, 
+                      p: 3, 
+                      border: selectedCharacterMedia === null ? 2 : 1, 
+                      borderColor: selectedCharacterMedia === null ? 'primary.main' : 'divider', 
+                      borderRadius: 2, 
+                      cursor: 'pointer', 
+                      bgcolor: selectedCharacterMedia === null ? 'primary.50' : 'transparent',
+                      '&:hover': {
+                        bgcolor: selectedCharacterMedia === null ? 'primary.100' : 'action.hover'
+                      }
+                    }}
+                    onClick={() => setSelectedCharacterMedia(null)}
+                  >
+                    <Avatar
+                      src={user.discordAvatar.startsWith('http') ? user.discordAvatar : `https://cdn.discordapp.com/avatars/${user.discordId}/${user.discordAvatar}.png`}
+                      sx={{ width: 64, height: 64 }}
+                    />
+                    <Box sx={{ flex: 1 }}>
+                      <Typography variant="h6" fontWeight={selectedCharacterMedia === null ? 'bold' : 'normal'}>
+                        Discord Profile Picture
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {user.discordUsername || user.username}
+                      </Typography>
+                      {selectedCharacterMedia === null && (
+                        <Chip label="Selected" color="primary" size="small" sx={{ mt: 1 }} />
+                      )}
+                    </Box>
+                  </Box>
+                ) : (
+                  <Box 
+                    sx={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: 2, 
+                      p: 3, 
+                      border: selectedCharacterMedia === null ? 2 : 1, 
+                      borderColor: selectedCharacterMedia === null ? 'primary.main' : 'divider', 
+                      borderRadius: 2, 
+                      cursor: 'pointer', 
+                      bgcolor: selectedCharacterMedia === null ? 'primary.50' : 'transparent',
+                      '&:hover': {
+                        bgcolor: selectedCharacterMedia === null ? 'primary.100' : 'action.hover'
+                      }
+                    }}
+                    onClick={() => setSelectedCharacterMedia(null)}
+                  >
+                    <Avatar sx={{ width: 64, height: 64, bgcolor: 'grey.400' }}>
+                      {user.username[0].toUpperCase()}
+                    </Avatar>
+                    <Box sx={{ flex: 1 }}>
+                      <Typography variant="h6" fontWeight={selectedCharacterMedia === null ? 'bold' : 'normal'}>
+                        Default Profile Picture
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        No Discord profile available
+                      </Typography>
+                      {selectedCharacterMedia === null && (
+                        <Chip label="Selected" color="primary" size="small" sx={{ mt: 1 }} />
+                      )}
+                    </Box>
+                  </Box>
+                )}
+                
+                {/* Discord Avatar Notice */}
+                {user.discordId && (
+                  <Box sx={{ mt: 3, p: 2, backgroundColor: 'background.paper', borderRadius: 1, border: '1px solid', borderColor: 'divider' }}>
+                    <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
+                      💡 To update your Discord avatar, log out and log back in with Discord
+                    </Typography>
+                  </Box>
+                )}
+              </Box>
+            )}
+
+            {selectedTab === 1 && (
+              // Character Media Tab
+              <Box>
+                <Typography variant="h6" gutterBottom>
+                  Character Display Media
+                </Typography>
+                <Typography variant="body2" color="text.secondary" gutterBottom>
+                  Choose from character images based on your reading progress
+                </Typography>
+                
+                {/* Search Box */}
+                <TextField
+                  fullWidth
+                  placeholder="Search characters..."
+                  value={characterSearchTerm}
+                  onChange={(e) => setCharacterSearchTerm(e.target.value)}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Search size={20} />
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{ mb: 2, mt: 2 }}
+                />
+
+                {characterMedia.length === 0 ? (
+                  <Box sx={{ textAlign: 'center', py: 4 }}>
+                    <Typography variant="body1" color="text.secondary">
+                      No character media available based on your reading progress.
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Continue reading to unlock more profile picture options!
+                    </Typography>
+                  </Box>
+                ) : (
+                  <Box>
+                    {Object.entries(organizeCharacterMedia()).map(([characterName, mediaItems]) => (
+                      <Accordion key={characterName} defaultExpanded={Object.keys(organizeCharacterMedia()).length <= 3}>
+                        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                            <Avatar
+                              src={mediaItems[0]?.url}
+                              sx={{ width: 32, height: 32 }}
+                            >
+                              {characterName[0]}
+                            </Avatar>
+                            <Typography variant="h6">{characterName}</Typography>
+                            <Chip 
+                              label={`${mediaItems.length} image${mediaItems.length !== 1 ? 's' : ''}`} 
+                              size="small" 
+                              variant="outlined" 
+                            />
+                          </Box>
+                        </AccordionSummary>
+                        <AccordionDetails>
+                          <Grid container spacing={2}>
+                            {mediaItems.map((media) => (
+                              <Grid item xs={6} sm={4} key={media.id}>
+                                <ProfilePictureSpoilerWrapper media={media}>
+                                  <Box
+                                    sx={{
+                                      position: 'relative',
+                                      cursor: 'pointer',
+                                      border: selectedCharacterMedia === media.id ? 2 : 1,
+                                      borderColor: selectedCharacterMedia === media.id ? 'primary.main' : 'divider',
+                                      borderRadius: 2,
+                                      overflow: 'hidden',
+                                      bgcolor: selectedCharacterMedia === media.id ? 'primary.50' : 'transparent',
+                                      '&:hover': {
+                                        bgcolor: selectedCharacterMedia === media.id ? 'primary.100' : 'action.hover'
+                                      }
+                                    }}
+                                    onClick={() => setSelectedCharacterMedia(media.id)}
+                                  >
+                                    <Avatar
+                                      src={media.url}
+                                      sx={{ width: '100%', height: 120, borderRadius: 1 }}
+                                      variant="rounded"
+                                    >
+                                      {characterName[0]}
+                                    </Avatar>
+                                    <Box sx={{ p: 1 }}>
+                                      <Typography variant="caption" color="text.secondary" display="block">
+                                        Chapter {media.chapterNumber}
+                                      </Typography>
+                                      {media.description && (
+                                        <Typography 
+                                          variant="caption" 
+                                          color="text.secondary" 
+                                          sx={{ 
+                                            fontSize: '0.7rem', 
+                                            fontStyle: 'italic',
+                                            display: '-webkit-box',
+                                            WebkitLineClamp: 2,
+                                            WebkitBoxOrient: 'vertical',
+                                            overflow: 'hidden'
+                                          }}
+                                        >
+                                          {media.description}
+                                        </Typography>
+                                      )}
+                                      {selectedCharacterMedia === media.id && (
+                                        <Chip 
+                                          label="Selected" 
+                                          color="primary" 
+                                          size="small" 
+                                          sx={{ mt: 0.5, fontSize: '0.7rem', height: 20 }} 
+                                        />
+                                      )}
+                                    </Box>
+                                  </Box>
+                                </ProfilePictureSpoilerWrapper>
+                              </Grid>
+                            ))}
+                          </Grid>
+                        </AccordionDetails>
+                      </Accordion>
+                    ))}
+                  </Box>
+                )}
+              </Box>
+            )}
+          </Box>
+        </DialogContent>
+
+        <DialogActions sx={{ p: 3 }}>
+          <Button onClick={() => setProfilePictureModalOpen(false)} disabled={loading}>
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            startIcon={loading ? <CircularProgress size={20} /> : <Save size={20} />}
+            onClick={handleSaveProfilePicture}
+            disabled={loading || dataLoading}
+          >
+            {loading ? 'Saving...' : 'Save Profile Picture'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
     </Container>
   )
 }

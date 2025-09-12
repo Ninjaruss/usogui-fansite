@@ -12,11 +12,10 @@ import {
   Button,
   CircularProgress,
   Alert,
-  Divider,
   Tabs,
   Tab
 } from '@mui/material'
-import { ArrowLeft, User, Crown, Users as UsersIcon, Calendar, BookOpen, AlertTriangle } from 'lucide-react'
+import { ArrowLeft, User, Crown, Calendar, BookOpen, AlertTriangle } from 'lucide-react'
 import { useTheme } from '@mui/material/styles'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
@@ -25,10 +24,10 @@ import { motion } from 'motion/react'
 import { usePageView } from '../../../hooks/usePageView'
 import MediaGallery from '../../../components/MediaGallery'
 import CharacterTimeline from '../../../components/CharacterTimeline'
-import SpoilerWrapper from '../../../components/SpoilerWrapper'
 import MediaThumbnail from '../../../components/MediaThumbnail'
 import { useProgress } from '../../../providers/ProgressProvider'
 import { useSpoilerSettings } from '../../../hooks/useSpoilerSettings'
+import TimelineSpoilerWrapper from '../../../components/TimelineSpoilerWrapper'
 import type { Arc, Event, Gamble, Guide, Quote } from '../../../types'
 
 interface Character {
@@ -409,11 +408,7 @@ export default function CharacterDetailPage() {
                         </Box>
 
                         {character.description && character.firstAppearanceChapter && (
-                          <SpoilerWrapper 
-                            chapterNumber={character.firstAppearanceChapter}
-                            spoilerType="minor"
-                            description="Character background and story role"
-                          >
+                          <TimelineSpoilerWrapper chapterNumber={character.firstAppearanceChapter}>
                             <Typography variant="body1" sx={{ 
                               fontSize: { xs: '1rem', md: '1.1rem' },
                               lineHeight: 1.8,
@@ -423,7 +418,7 @@ export default function CharacterDetailPage() {
                             }}>
                               {character.description}
                             </Typography>
-                          </SpoilerWrapper>
+                          </TimelineSpoilerWrapper>
                         )}
 
                         {character.description && !character.firstAppearanceChapter && (
@@ -510,11 +505,7 @@ export default function CharacterDetailPage() {
                                       borderRadius: '0 2px 2px 0'
                                     }
                                   }}>
-                                    <SpoilerWrapper 
-                                      chapterNumber={quote.chapter?.number || 1}
-                                      spoilerType="minor"
-                                      description="Character quote"
-                                    >
+                                    <TimelineSpoilerWrapper chapterNumber={quote.chapter?.number || 1}>
                                       <Typography variant="body2" sx={{ 
                                         fontStyle: 'italic', 
                                         fontSize: '0.9rem',
@@ -534,7 +525,7 @@ export default function CharacterDetailPage() {
                                       }}>
                                         Ch. {quote.chapter?.number || '?'}
                                       </Typography>
-                                    </SpoilerWrapper>
+                                    </TimelineSpoilerWrapper>
                                   </Box>
                                 ))}
                               </Box>

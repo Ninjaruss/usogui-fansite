@@ -20,7 +20,7 @@ import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { api } from '../../../lib/api'
 import { motion } from 'motion/react'
-import SpoilerWrapper from '../../../components/SpoilerWrapper'
+import TimelineSpoilerWrapper from '../../../components/TimelineSpoilerWrapper'
 import { usePageView } from '../../../hooks/usePageView'
 
 interface Volume {
@@ -186,15 +186,13 @@ export default function ChapterDetailPage() {
                   <Typography variant="h5" gutterBottom>
                     Chapter Summary
                   </Typography>
-                  <SpoilerWrapper 
+                  <TimelineSpoilerWrapper 
                     chapterNumber={chapter.number}
-                    spoilerType="major"
-                    description="Chapter summary and events"
                   >
                     <Typography variant="body1" paragraph>
                       {chapter.description || chapter.summary}
                     </Typography>
-                  </SpoilerWrapper>
+                  </TimelineSpoilerWrapper>
                 </CardContent>
               </Card>
             )}

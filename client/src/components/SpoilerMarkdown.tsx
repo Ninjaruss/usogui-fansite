@@ -3,7 +3,7 @@
 import React from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import SpoilerWrapper from './SpoilerWrapper'
+import TimelineSpoilerWrapper from './TimelineSpoilerWrapper'
 
 interface SpoilerMarkdownProps {
   content: string
@@ -25,10 +25,8 @@ const SpoilerMarkdown: React.FC<SpoilerMarkdownProps> = ({ content, className })
         const spoilerContent = spoilerMatch[2]
         
         return (
-          <SpoilerWrapper
+          <TimelineSpoilerWrapper
             chapterNumber={chapterNum}
-            spoilerType="major"
-            description={chapterNum ? `Spoiler for Chapter ${chapterNum}` : 'Content spoiler'}
           >
             <blockquote {...props} style={{
               borderLeft: '4px solid #dc004e',
@@ -42,7 +40,7 @@ const SpoilerMarkdown: React.FC<SpoilerMarkdownProps> = ({ content, className })
             }}>
               {spoilerContent}
             </blockquote>
-          </SpoilerWrapper>
+          </TimelineSpoilerWrapper>
         )
       }
       
@@ -58,13 +56,11 @@ const SpoilerMarkdown: React.FC<SpoilerMarkdownProps> = ({ content, className })
         const chapterNum = chapterMatch ? parseInt(chapterMatch[1], 10) : undefined
         
         return (
-          <SpoilerWrapper
+          <TimelineSpoilerWrapper
             chapterNumber={chapterNum}
-            spoilerType="major"
-            description={chapterNum ? `Spoiler for Chapter ${chapterNum}` : 'Content spoiler'}
           >
             <div className={divClassName} {...props}>{children}</div>
-          </SpoilerWrapper>
+          </TimelineSpoilerWrapper>
         )
       }
       
