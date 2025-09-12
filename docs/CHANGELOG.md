@@ -2,13 +2,21 @@
 ## TODO:
 - Redis based rate limiting with caching middle ware for responses; add cache headers to specific routes
 - Update factions page/data; include members and possibly calculate faction switches based on events
-- Add highlight of most popular quote, gamble, and character profile picture
-- Allow profiles to set their profile image based on entity display media for any character
+- Add highlight of most popular quote, gamble, and character profile picture 
+- Update profile image selection to have character names on the left and be a sort of in-tab window
 - Add image upload for gambles, events, factions, volumes (need to setup Backblaze + CDN); allow character profile picture choice from characters
 - Update landing page volume showcase to handle other volume covers (single and pairs) 
 - Add proper README at the root of the project; add AGPL v3 license to allow people to copy but force them to open source as well
 
+## 2025-09-12
+### Changes 
+- Profile picture can now select from available character display media or keep default Discord profile
+- Updated users page and profile to load the new modern profile header
+### Notes
+- I really like the new profile picture selection. I was inspired by the og duelingnetwork profile pictures that showed the card art of the iconic monsters.
+
 ## 2025-09-11
+### Changes
 - Overhauled media to now support polymorphic ownership; added entity purpose
 - Added media thumbnails to load images
 - Implemented media with entity display type to load based on chapter progress and update the thumbnail
@@ -18,7 +26,6 @@
 - Fixed arc relation for events/gambles admin pages
 - Fixed guides page to show descriptions and link user profiles
 - Added confirmation for deletion of data
-
 
 ## 2025-09-09
 ### Changes

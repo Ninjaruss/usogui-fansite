@@ -19,8 +19,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: any): Promise<Partial<User>> {
-    const user = await this.usersService.findOne(payload.sub);
-    // Return all safe fields including profile preferences
+    const user = await this.usersService.getUserProfile(payload.sub);
+    // Return all safe fields including profile preferences and selected character media
     return {
       id: user.id,
       username: user.username,
@@ -28,9 +28,15 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       role: user.role,
       isEmailVerified: user.isEmailVerified,
       userProgress: user.userProgress,
-      profileImageId: user.profileImageId,
+      profilePictureType: user.profilePictureType,
+      selectedCharacterMediaId: user.selectedCharacterMediaId,
+      selectedCharacterMedia: user.selectedCharacterMedia,
       favoriteQuoteId: user.favoriteQuoteId,
       favoriteGambleId: user.favoriteGambleId,
+      // Discord fields
+      discordId: user.discordId,
+      discordUsername: user.discordUsername,
+      discordAvatar: user.discordAvatar,
     };
   }
 }

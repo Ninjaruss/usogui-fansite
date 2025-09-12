@@ -1,5 +1,5 @@
 import { DataSource } from 'typeorm';
-import { Media, MediaType, MediaStatus } from '../../entities/media.entity';
+import { Media, MediaType, MediaStatus, MediaOwnerType } from '../../entities/media.entity';
 import { Character } from '../../entities/character.entity';
 import { User } from '../../entities/user.entity';
 import { Seeder } from './seeder.interface';
@@ -37,7 +37,8 @@ export class MediaSeeder implements Seeder {
         type: MediaType.VIDEO,
         description:
           "Fan-made AMV showcasing Baku's most intense gambling moments",
-        character: baku || undefined,
+        ownerType: MediaOwnerType.CHARACTER,
+        ownerId: baku?.id || 1,
         status: MediaStatus.APPROVED,
         submittedBy: testUser,
       },
@@ -45,7 +46,8 @@ export class MediaSeeder implements Seeder {
         url: 'https://www.deviantart.com/example/art/baku-madarame-fanart-123456789',
         type: MediaType.IMAGE,
         description: 'Digital artwork of Baku Madarame in his iconic pose',
-        character: baku || undefined,
+        ownerType: MediaOwnerType.CHARACTER,
+        ownerId: baku?.id || 1,
         status: MediaStatus.APPROVED,
         submittedBy: testUser,
       },
@@ -54,7 +56,8 @@ export class MediaSeeder implements Seeder {
         type: MediaType.IMAGE,
         description:
           'Character illustration of Marco during the card tournament',
-        character: marco || undefined,
+        ownerType: MediaOwnerType.CHARACTER,
+        ownerId: marco?.id || 2,
         status: MediaStatus.APPROVED,
         submittedBy: testUser,
       },
@@ -62,7 +65,8 @@ export class MediaSeeder implements Seeder {
         url: 'https://twitter.com/example/status/123456789',
         type: MediaType.IMAGE,
         description: 'Sketch of Baku and Marco working together',
-        character: baku || undefined,
+        ownerType: MediaOwnerType.CHARACTER,
+        ownerId: baku?.id || 1,
         status: MediaStatus.PENDING,
         submittedBy: testUser,
       },
@@ -70,7 +74,8 @@ export class MediaSeeder implements Seeder {
         url: 'https://www.instagram.com/p/example123/',
         type: MediaType.IMAGE,
         description: 'Cosplay photo of Baku Madarame costume',
-        character: baku || undefined,
+        ownerType: MediaOwnerType.CHARACTER,
+        ownerId: baku?.id || 1,
         status: MediaStatus.PENDING,
         submittedBy: testUser,
       },
@@ -78,7 +83,8 @@ export class MediaSeeder implements Seeder {
         url: 'https://www.youtube.com/watch?v=example123',
         type: MediaType.VIDEO,
         description: 'Analysis video discussing Usogui gambling strategies',
-        character: undefined,
+        ownerType: MediaOwnerType.USER,
+        ownerId: testUser.id,
         status: MediaStatus.APPROVED,
         submittedBy: testUser,
       },

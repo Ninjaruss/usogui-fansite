@@ -23,12 +23,29 @@ import { useParams } from 'next/navigation'
 import { api } from '../../../lib/api'
 import { motion } from 'motion/react'
 import { usePageView } from '../../../hooks/usePageView'
+import UserProfileImage from '../../../components/UserProfileImage'
 
 interface PublicUser {
   id: number
   username: string
   role: string
   userProgress: number
+  profilePictureType?: 'discord' | 'character_media' | null
+  selectedCharacterMediaId?: number | null
+  selectedCharacterMedia?: {
+    id: number
+    url: string
+    fileName?: string
+    description?: string
+    ownerType?: string
+    ownerId?: number
+    chapterNumber?: number
+    character?: {
+      id: number
+      name: string
+    }
+  } | null
+  discordAvatar?: string | null
   favoriteQuoteId?: number
   favoriteGambleId?: number
   profileImageId?: string
@@ -145,37 +162,172 @@ export default function UserProfilePage() {
           Back to Users
         </Button>
 
-        <Box sx={{ textAlign: 'center', mb: 4 }}>
-          <Avatar
-            sx={{
-              width: 80,
-              height: 80,
-              mx: 'auto',
-              mb: 2,
-              bgcolor: theme.palette.primary.main,
-              fontSize: '2rem'
-            }}
-          >
-            {user.username[0].toUpperCase()}
-          </Avatar>
-          
-          <Typography variant="h3" component="h1" gutterBottom>
-            {user.username}
-          </Typography>
-          
-          <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1, mb: 2 }}>
-            <Chip
-              label={user.role === 'admin' ? 'Administrator' : 
-                     user.role === 'moderator' ? 'Moderator' : 'Member'}
-              color={user.role === 'admin' ? 'error' : user.role === 'moderator' ? 'warning' : 'default'}
-              icon={user.role === 'admin' || user.role === 'moderator' ? <Crown size={16} /> : <User size={16} />}
-            />
-          </Box>
+        {/* Modern Profile Header */}
+        <Card className="gambling-card" sx={{ mb: 4, overflow: 'visible' }}>
+          <CardContent sx={{ p: 4 }}>
+            <Box sx={{ 
+              display: 'flex', 
+              flexDirection: { xs: 'column', sm: 'row' },
+              alignItems: { xs: 'center', sm: 'flex-start' },
+              gap: 3
+            }}>
+              {/* Profile Image */}
+              <Box sx={{ 
+                position: 'relative',
+                flexShrink: 0
+              }}>
+                <UserProfileImage
+                  user={user}
+                  size={120}
+                  showFallback={true}
+                  className="user-profile-avatar-large"
+                />
+                
+                {/* Role Badge */}
+                <Chip
+                  label={user.role === 'admin' ? 'Admin' : 
+                         user.role === 'moderator' ? 'Mod' : 'Member'}
+                  color={user.role === 'admin' ? 'error' : user.role === 'moderator' ? 'warning' : 'primary'}
+                  icon={user.role === 'admin' || user.role === 'moderator' ? <Crown size={14} /> : <User size={14} />}
+                  size="small"
+                  sx={{
+                    position: 'absolute',
+                    bottom: -8,
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    fontWeight: 'bold',
+                    boxShadow: 2
+                  }}
+                />
+              </Box>
 
-          <Typography variant="body1" color="text.secondary">
-            Member since {new Date(user.createdAt).toLocaleDateString()}
-          </Typography>
-        </Box>
+              {/* User Information */}
+              <Box sx={{ 
+                flex: 1,
+                textAlign: { xs: 'center', sm: 'left' },
+                minWidth: 0
+              }}>
+                <Typography 
+                  variant="h3" 
+                  component="h1" 
+                  gutterBottom
+                  sx={{ 
+                    fontWeight: 700,
+                    background: `linear-gradient(135deg, ${theme.palette.text.primary} 0%, ${theme.palette.primary.main} 100%)`,
+                    backgroundClip: 'text',
+                    WebkitBackgroundClip: 'text',
+                    color: 'transparent',
+                    mb: 1
+                  }}
+                >
+                  {user.username}
+                </Typography>
+
+                <Typography 
+                  variant="body1" 
+                  color="text.secondary" 
+                  sx={{ mb: 3, fontSize: '1.1rem' }}
+                >
+                  Member since {new Date(user.createdAt).toLocaleDateString()}
+                </Typography>
+
+                {/* Quick Stats */}
+                <Box sx={{ 
+                  display: 'flex', 
+                  flexDirection: { xs: 'column', sm: 'row' },
+                  gap: 2,
+                  mt: 2
+                }}>
+                  <Box sx={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: 1,
+                    px: 2,
+                    py: 1,
+                    bgcolor: 'action.hover',
+                    borderRadius: 2
+                  }}>
+                    <BookOpen size={20} color={theme.palette.primary.main} />
+                    <Box>
+                      <Typography variant="caption" color="text.secondary" display="block">
+                        Current Chapter
+                      </Typography>
+                      <Typography variant="h6" fontWeight="bold">
+                        {user.userProgress}
+                      </Typography>
+                    </Box>
+                  </Box>
+                  
+                  <Box sx={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: 1,
+                    px: 2,
+                    py: 1,
+                    bgcolor: 'action.hover',
+                    borderRadius: 2
+                  }}>
+                    <FileText size={20} color={theme.palette.secondary.main} />
+                    <Box>
+                      <Typography variant="caption" color="text.secondary" display="block">
+                        Guides Written
+                      </Typography>
+                      <Typography variant="h6" fontWeight="bold">
+                        {guides.length}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Box>
+              </Box>
+            </Box>
+          </CardContent>
+        </Card>
+
+        {/* Profile Picture Information */}
+        {user.profilePictureType === 'character_media' && user.selectedCharacterMedia && (
+          <Card className="gambling-card" sx={{ mb: 4 }}>
+            <CardContent>
+              <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <User size={20} />
+                Profile Picture
+              </Typography>
+              
+              <Box sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: 2,
+                p: 2,
+                bgcolor: 'action.hover',
+                borderRadius: 2
+              }}>
+                <Avatar
+                  src={user.selectedCharacterMedia.url}
+                  sx={{ width: 64, height: 64 }}
+                >
+                  {user.selectedCharacterMedia.character?.name?.[0] || '?'}
+                </Avatar>
+                
+                <Box sx={{ flex: 1 }}>
+                  <Typography variant="h6" gutterBottom>
+                    {user.selectedCharacterMedia.character?.name || 'Unknown Character'}
+                  </Typography>
+                  
+                  {user.selectedCharacterMedia.chapterNumber && (
+                    <Typography variant="body2" color="text.secondary" gutterBottom>
+                      Chapter {user.selectedCharacterMedia.chapterNumber}
+                    </Typography>
+                  )}
+                  
+                  {user.selectedCharacterMedia.description && (
+                    <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
+                      {user.selectedCharacterMedia.description}
+                    </Typography>
+                  )}
+                </Box>
+              </Box>
+            </CardContent>
+          </Card>
+        )}
 
         <Grid container spacing={4}>
           <Grid item xs={12} md={8}>
@@ -291,16 +443,17 @@ export default function UserProfilePage() {
           <Grid item xs={12} md={4}>
             <Card className="gambling-card">
               <CardContent>
-                <Typography variant="h6" gutterBottom>
+                <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <BookOpen size={20} />
                   Reading Progress
                 </Typography>
                 
-                <Box sx={{ mb: 2 }}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                <Box sx={{ mb: 3 }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                     <Typography variant="body2" color="text.secondary">
                       Current Chapter
                     </Typography>
-                    <Typography variant="body1" fontWeight="bold">
+                    <Typography variant="h5" fontWeight="bold" color="primary.main">
                       {user.userProgress}
                     </Typography>
                   </Box>
@@ -309,49 +462,27 @@ export default function UserProfilePage() {
                     variant="determinate"
                     value={progressPercentage}
                     sx={{
-                      height: 8,
-                      borderRadius: 1,
+                      height: 12,
+                      borderRadius: 2,
+                      bgcolor: 'action.hover',
                       '& .MuiLinearProgress-bar': {
-                        borderRadius: 1,
+                        borderRadius: 2,
+                        background: `linear-gradient(90deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
                       },
                     }}
                   />
                   
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
-                    <Typography variant="caption" color="text.secondary">
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
+                    <Typography variant="body2" fontWeight="medium" color="primary.main">
                       {progressPercentage}% complete
                     </Typography>
-                    <Typography variant="caption" color="text.secondary">
+                    <Typography variant="body2" color="text.secondary">
                       {539 - user.userProgress} chapters remaining
                     </Typography>
                   </Box>
                 </Box>
 
-                <Divider sx={{ my: 2 }} />
-                
-                <Typography variant="h6" gutterBottom>
-                  Statistics
-                </Typography>
-                
-                <Box sx={{ mb: 2 }}>
-                  <Typography variant="body2" color="text.secondary">
-                    Guides Written
-                  </Typography>
-                  <Typography variant="body1">
-                    {guides.length}
-                  </Typography>
-                </Box>
-
-                <Box sx={{ mb: 2 }}>
-                  <Typography variant="body2" color="text.secondary">
-                    Member Since
-                  </Typography>
-                  <Typography variant="body1">
-                    {new Date(user.createdAt).toLocaleDateString()}
-                  </Typography>
-                </Box>
-
-                <Divider sx={{ my: 2 }} />
+                <Divider sx={{ my: 3 }} />
                 
                 <Typography variant="h6" gutterBottom>
                   Quick Links

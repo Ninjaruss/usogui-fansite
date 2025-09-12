@@ -7,11 +7,11 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
-import { User, UserRole } from '../../entities/user.entity';
+import { User, UserRole, ProfilePictureType } from '../../entities/user.entity';
 import { Quote } from '../../entities/quote.entity';
 import { Gamble } from '../../entities/gamble.entity';
-import { ProfileImage } from '../../entities/profile-image.entity';
-import { Media, MediaStatus } from '../../entities/media.entity';
+import { Character } from '../../entities/character.entity';
+import { Media, MediaStatus, MediaPurpose } from '../../entities/media.entity';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { randomBytes } from 'crypto';
 
@@ -21,25 +21,52 @@ export class UsersService {
     @InjectRepository(User) private readonly repo: Repository<User>,
     @InjectRepository(Quote) private readonly quoteRepo: Repository<Quote>,
     @InjectRepository(Gamble) private readonly gambleRepo: Repository<Gamble>,
-    @InjectRepository(ProfileImage)
-    private readonly profileImageRepo: Repository<ProfileImage>,
   ) {}
 
   // --- Find methods ---
-  async findAll(filters: { page?: number; limit?: number } = {}): Promise<{
+  async findAll(filters: { page?: number; limit?: number; username?: string } = {}): Promise<{
     data: User[];
     total: number;
     page: number;
     perPage: number;
     totalPages: number;
   }> {
-    const { page = 1, limit = 1000 } = filters;
+    const { page = 1, limit = 1000, username } = filters;
     const skip = (page - 1) * limit;
-    const [data, total] = await this.repo
+    
+    const queryBuilder = this.repo
       .createQueryBuilder('user')
+      .leftJoinAndSelect('user.selectedCharacterMedia', 'selectedCharacterMedia')
       .skip(skip)
-      .take(limit)
-      .getManyAndCount();
+      .take(limit);
+
+    // Add username filter if provided
+    if (username) {
+      queryBuilder.where('user.username ILIKE :username', { 
+        username: `%${username}%` 
+      });
+    }
+
+    const [data, total] = await queryBuilder.getManyAndCount();
+    
+    // Fetch character information for each user's selected character media
+    for (const user of data) {
+      if (user.selectedCharacterMedia && user.selectedCharacterMedia.ownerType === 'character') {
+        const characterRepo = this.repo.manager.getRepository(Character);
+        const character = await characterRepo.findOne({
+          where: { id: user.selectedCharacterMedia.ownerId }
+        });
+        
+        if (character) {
+          // Add character information to the media object
+          (user.selectedCharacterMedia as any).character = {
+            id: character.id,
+            name: character.name
+          };
+        }
+      }
+    }
+    
     const totalPages = Math.max(1, Math.ceil(total / limit));
     return { data, total, page, perPage: limit, totalPages };
   }
@@ -274,6 +301,44 @@ export class UsersService {
     });
   }
 
+  async refreshDiscordAvatar(userId: number): Promise<User> {
+    const user = await this.findOne(userId);
+    
+    if (!user.discordId) {
+      throw new BadRequestException('User does not have a Discord account linked');
+    }
+
+    try {
+      // Fetch fresh Discord user data using Discord API
+      const discordResponse = await fetch(`https://discord.com/api/v10/users/${user.discordId}`, {
+        headers: {
+          'Authorization': `Bot ${process.env.DISCORD_BOT_TOKEN || ''}`,
+        },
+      });
+
+      if (!discordResponse.ok) {
+        throw new BadRequestException('Failed to fetch Discord user data');
+      }
+
+      const discordUser = await discordResponse.json();
+      
+      // Update the Discord avatar with fresh data
+      const newAvatarUrl = discordUser.avatar
+        ? `https://cdn.discordapp.com/avatars/${user.discordId}/${discordUser.avatar}.png`
+        : null;
+
+      await this.updateDiscordInfo(userId, {
+        discordUsername: discordUser.username,
+        discordAvatar: newAvatarUrl,
+      });
+
+      return this.getUserProfile(userId);
+    } catch (error) {
+      console.error('Failed to refresh Discord avatar:', error);
+      throw new BadRequestException('Failed to refresh Discord avatar. Please try logging out and back in.');
+    }
+  }
+
   async updateRole(userId: number, role: UserRole): Promise<void> {
     await this.repo.update(userId, { role });
   }
@@ -307,23 +372,6 @@ export class UsersService {
     updateProfileDto: UpdateProfileDto,
   ): Promise<User> {
     const user = await this.findOne(userId);
-
-    // Validate and update profile image if provided
-    if (updateProfileDto.profileImageId !== undefined) {
-      if (updateProfileDto.profileImageId === null) {
-        user.profileImageId = null;
-      } else {
-        const profileImage = await this.profileImageRepo.findOne({
-          where: { id: updateProfileDto.profileImageId, isActive: true },
-        });
-        if (!profileImage) {
-          throw new NotFoundException(
-            `Profile image with id ${updateProfileDto.profileImageId} not found or is inactive`,
-          );
-        }
-        user.profileImageId = updateProfileDto.profileImageId;
-      }
-    }
 
     // Validate favorite quote exists if provided
     if (updateProfileDto.favoriteQuoteId !== undefined) {
@@ -359,6 +407,46 @@ export class UsersService {
       }
     }
 
+    // Handle profile picture type and character media selection
+    if (updateProfileDto.profilePictureType !== undefined) {
+      user.profilePictureType = updateProfileDto.profilePictureType;
+      
+      // If switching to discord, clear character media selection
+      if (updateProfileDto.profilePictureType === ProfilePictureType.DISCORD) {
+        user.selectedCharacterMediaId = null;
+      }
+    }
+
+    // Validate character media if provided
+    if (updateProfileDto.selectedCharacterMediaId !== undefined) {
+      if (updateProfileDto.selectedCharacterMediaId === null) {
+        user.selectedCharacterMediaId = null;
+        // If clearing character media, default back to discord
+        if (user.profilePictureType === ProfilePictureType.CHARACTER_MEDIA) {
+          user.profilePictureType = ProfilePictureType.DISCORD;
+        }
+      } else {
+        const mediaRepo = this.repo.manager.getRepository(Media);
+        const characterMedia = await mediaRepo.findOne({
+          where: { 
+            id: updateProfileDto.selectedCharacterMediaId,
+            purpose: MediaPurpose.ENTITY_DISPLAY,
+            status: MediaStatus.APPROVED,
+          },
+          relations: ['submittedBy'],
+        });
+        
+        if (!characterMedia) {
+          throw new NotFoundException(
+            `Character media with id ${updateProfileDto.selectedCharacterMediaId} not found, not approved, or not entity display media`,
+          );
+        }
+        
+        user.selectedCharacterMediaId = updateProfileDto.selectedCharacterMediaId;
+        user.profilePictureType = ProfilePictureType.CHARACTER_MEDIA;
+      }
+    }
+
     await this.repo.save(user);
     return this.getUserProfile(userId);
   }
@@ -376,11 +464,10 @@ export class UsersService {
     const user = await this.repo.findOne({
       where: { id: userId },
       relations: [
-        'profileImage',
-        'profileImage.character',
         'favoriteQuote',
         'favoriteQuote.character',
         'favoriteGamble',
+        'selectedCharacterMedia',
       ],
     });
 
@@ -388,20 +475,25 @@ export class UsersService {
       throw new NotFoundException(`User with id ${userId} not found`);
     }
 
+    // If user has selected character media, fetch the character information
+    if (user.selectedCharacterMedia && user.selectedCharacterMedia.ownerType === 'character') {
+      const characterRepo = this.repo.manager.getRepository(Character);
+      const character = await characterRepo.findOne({
+        where: { id: user.selectedCharacterMedia.ownerId }
+      });
+      
+      if (character) {
+        // Add character information to the media object
+        (user.selectedCharacterMedia as any).character = {
+          id: character.id,
+          name: character.name
+        };
+      }
+    }
+
     return user;
   }
 
-  async getAvailableProfileImages(): Promise<ProfileImage[]> {
-    return this.profileImageRepo.find({
-      where: { isActive: true },
-      relations: ['character'],
-      order: {
-        characterId: 'ASC',
-        sortOrder: 'ASC',
-        displayName: 'ASC',
-      },
-    });
-  }
 
   async getQuotePopularityStats(): Promise<
     Array<{ quote: Quote; userCount: number }>
@@ -465,48 +557,13 @@ export class UsersService {
   }
 
   async getProfileCustomizationStats(): Promise<{
-    profileImageStats: Array<{ profileImage: ProfileImage; userCount: number }>;
     totalUsersWithCustomization: {
-      profileImage: number;
       favoriteQuote: number;
       favoriteGamble: number;
+      characterMedia: number;
     };
   }> {
-    // Get profile image popularity
-    const profileImageStats = await this.repo
-      .createQueryBuilder('user')
-      .select('user.profileImageId', 'profileImageId')
-      .addSelect('COUNT(*)', 'userCount')
-      .where('user.profileImageId IS NOT NULL')
-      .groupBy('user.profileImageId')
-      .orderBy('userCount', 'DESC')
-      .getRawMany();
-
-    const imageStatsWithDetails: Array<{
-      profileImage: ProfileImage;
-      userCount: number;
-    }> = [];
-
-    for (const stat of profileImageStats) {
-      const profileImage = await this.profileImageRepo.findOne({
-        where: { id: stat.profileImageId },
-        relations: ['character'],
-      });
-
-      if (profileImage) {
-        imageStatsWithDetails.push({
-          profileImage,
-          userCount: parseInt(stat.userCount),
-        });
-      }
-    }
-
     // Get total counts for each customization type
-    const totalWithProfileImage = await this.repo
-      .createQueryBuilder('user')
-      .where('user.profileImageId IS NOT NULL')
-      .getCount();
-
     const totalWithFavoriteQuote = await this.repo
       .createQueryBuilder('user')
       .where('user.favoriteQuoteId IS NOT NULL')
@@ -517,12 +574,16 @@ export class UsersService {
       .where('user.favoriteGambleId IS NOT NULL')
       .getCount();
 
+    const totalWithCharacterMedia = await this.repo
+      .createQueryBuilder('user')
+      .where('user.selectedCharacterMediaId IS NOT NULL')
+      .getCount();
+
     return {
-      profileImageStats: imageStatsWithDetails,
       totalUsersWithCustomization: {
-        profileImage: totalWithProfileImage,
         favoriteQuote: totalWithFavoriteQuote,
         favoriteGamble: totalWithFavoriteGamble,
+        characterMedia: totalWithCharacterMedia,
       },
     };
   }

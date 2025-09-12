@@ -17,7 +17,6 @@ import { User } from '../../entities/user.entity';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { QuotePopularityDto } from './dto/quote-popularity.dto';
 import { GamblePopularityDto } from './dto/gamble-popularity.dto';
-import { ProfileCustomizationStatsDto } from './dto/profile-customization-stats.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -119,8 +118,19 @@ export class UsersController {
       username: user.username,
       role: user.role,
       userProgress: user.userProgress,
-      profileImageId: user.profileImageId,
-      profileImage: user.profileImage,
+      profilePictureType: user.profilePictureType,
+      selectedCharacterMediaId: user.selectedCharacterMediaId,
+      selectedCharacterMedia: user.selectedCharacterMedia ? {
+        id: user.selectedCharacterMedia.id,
+        url: user.selectedCharacterMedia.url,
+        fileName: user.selectedCharacterMedia.fileName,
+        description: user.selectedCharacterMedia.description,
+        ownerType: user.selectedCharacterMedia.ownerType,
+        ownerId: user.selectedCharacterMedia.ownerId,
+        chapterNumber: user.selectedCharacterMedia.chapterNumber,
+        character: (user.selectedCharacterMedia as any).character || null,
+      } : null,
+      discordAvatar: user.discordAvatar,
       createdAt: user.createdAt,
     }));
 
@@ -170,12 +180,23 @@ export class UsersController {
       username: user.username,
       role: user.role,
       userProgress: user.userProgress,
-      profileImageId: user.profileImageId,
-      profileImage: user.profileImage,
+      profilePictureType: user.profilePictureType,
+      selectedCharacterMediaId: user.selectedCharacterMediaId,
+      selectedCharacterMedia: user.selectedCharacterMedia ? {
+        id: user.selectedCharacterMedia.id,
+        url: user.selectedCharacterMedia.url,
+        fileName: user.selectedCharacterMedia.fileName,
+        description: user.selectedCharacterMedia.description,
+        ownerType: user.selectedCharacterMedia.ownerType,
+        ownerId: user.selectedCharacterMedia.ownerId,
+        chapterNumber: user.selectedCharacterMedia.chapterNumber,
+        character: (user.selectedCharacterMedia as any).character || null,
+      } : null,
       favoriteQuoteId: user.favoriteQuoteId,
       favoriteQuote: user.favoriteQuote,
       favoriteGambleId: user.favoriteGambleId,
       favoriteGamble: user.favoriteGamble,
+      discordAvatar: user.discordAvatar,
       createdAt: user.createdAt,
     };
   }
@@ -647,6 +668,26 @@ export class UsersController {
     return this.service.updateProfile(user.id, updateProfileDto);
   }
 
+  @Post('profile/refresh-discord-avatar')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.USER, UserRole.MODERATOR, UserRole.ADMIN)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Refresh Discord avatar',
+    description:
+      'Fetch the latest Discord avatar for the current user from Discord API',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Discord avatar refreshed successfully',
+    type: User,
+  })
+  @ApiResponse({ status: 400, description: 'User does not have Discord linked or Discord API error' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async refreshDiscordAvatar(@CurrentUser() user: User): Promise<User> {
+    return this.service.refreshDiscordAvatar(user.id);
+  }
+
   @Get('profile/progress')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.USER, UserRole.MODERATOR, UserRole.ADMIN)
@@ -732,43 +773,6 @@ export class UsersController {
     };
   }
 
-  @Get('profile/images')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.USER, UserRole.MODERATOR, UserRole.ADMIN)
-  @ApiBearerAuth()
-  @ApiOperation({
-    summary: 'Get available profile images',
-    description:
-      'Retrieve list of available profile images with character details',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'List of available profile images',
-    schema: {
-      type: 'array',
-      items: {
-        type: 'object',
-        properties: {
-          id: { type: 'string', format: 'uuid' },
-          displayName: {
-            type: 'string',
-            example: 'Baku Madarame - Confident Smile',
-          },
-          fileName: {
-            type: 'string',
-            example: 'baku-madarame-confident-v2.webp',
-          },
-          description: { type: 'string', nullable: true },
-          character: { type: 'object' },
-          tags: { type: 'array', items: { type: 'string' } },
-        },
-      },
-    },
-  })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async getAvailableProfileImages() {
-    return this.service.getAvailableProfileImages();
-  }
 
   // --- Statistics endpoints ---
   @Get('stats/quote-popularity')
@@ -829,7 +833,6 @@ export class UsersController {
   @ApiResponse({
     status: 200,
     description: 'Profile customization statistics',
-    type: ProfileCustomizationStatsDto,
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({

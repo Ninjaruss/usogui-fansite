@@ -1,14 +1,8 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsUUID, IsInt, Min } from 'class-validator';
+import { IsOptional, IsInt, Min, IsEnum } from 'class-validator';
+import { ProfilePictureType } from '../../../entities/user.entity';
 
 export class UpdateProfileDto {
-  @ApiPropertyOptional({
-    description: 'ID of the selected profile image',
-    example: '123e4567-e89b-12d3-a456-426614174000',
-  })
-  @IsOptional()
-  @IsUUID()
-  profileImageId?: string;
 
   @ApiPropertyOptional({
     description: 'ID of favorite quote from the quote database',
@@ -29,4 +23,23 @@ export class UpdateProfileDto {
   @IsInt()
   @Min(1)
   favoriteGambleId?: number;
+
+  @ApiPropertyOptional({
+    description: 'Type of profile picture to use',
+    enum: ProfilePictureType,
+    example: ProfilePictureType.DISCORD,
+  })
+  @IsOptional()
+  @IsEnum(ProfilePictureType)
+  profilePictureType?: ProfilePictureType;
+
+  @ApiPropertyOptional({
+    description: 'ID of the selected character media (when profilePictureType is CHARACTER_MEDIA)',
+    example: 1,
+    minimum: 1,
+  })
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  selectedCharacterMediaId?: number;
 }

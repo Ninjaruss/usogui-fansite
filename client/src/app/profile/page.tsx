@@ -23,13 +23,14 @@ import { useAuth } from '../../providers/AuthProvider'
 import { useProgress } from '../../providers/ProgressProvider'
 import { api } from '../../lib/api'
 import { motion } from 'motion/react'
+import UserProfileImage from '../../components/UserProfileImage'
 
 export default function ProfilePage() {
   const { user, refreshUser, loading: authLoading } = useAuth()
   const { userProgress, updateProgress } = useProgress()
   const [selectedQuote, setSelectedQuote] = useState<number | null>(null)
   const [selectedGamble, setSelectedGamble] = useState<number | null>(null)
-  const [selectedProfileImage, setSelectedProfileImage] = useState<string | null>(null)
+  const [selectedCharacterMedia, setSelectedCharacterMedia] = useState<number | null>(null)
   const [selectedChapter, setSelectedChapter] = useState<number>(1)
   const [currentChapterInfo, setCurrentChapterInfo] = useState<{
     id: number
@@ -39,9 +40,18 @@ export default function ProfilePage() {
   } | null>(null)
   const [quotes, setQuotes] = useState<Array<{ id: number; text: string; character: string }>>([])
   const [gambles, setGambles] = useState<Array<{ id: number; name: string; description?: string }>>([])
+  const [characterMedia, setCharacterMedia] = useState<Array<{
+    id: number
+    url: string
+    fileName: string
+    description: string
+    character: { id: number; name: string }
+    chapterNumber: number
+  }>>([])
   const [loading, setLoading] = useState(false)
   const [progressLoading, setProgressLoading] = useState(false)
   const [dataLoading, setDataLoading] = useState(true)
+  const [refreshingAvatar, setRefreshingAvatar] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
 
@@ -54,7 +64,14 @@ export default function ProfilePage() {
         // Set user selections
         setSelectedQuote(user?.favoriteQuoteId || null)
         setSelectedGamble(user?.favoriteGambleId || null)
-        setSelectedProfileImage(user?.profileImageId || null)
+        
+        // Handle profile picture selection based on user's current settings
+        if (user?.profilePictureType === 'character_media' && user?.selectedCharacterMediaId) {
+          setSelectedCharacterMedia(user.selectedCharacterMediaId)
+        } else {
+          setSelectedCharacterMedia(null) // null represents Discord profile (default)
+        }
+        
         setSelectedChapter(userProgress)
 
         // Fetch quotes and gambles from API
@@ -79,6 +96,38 @@ export default function ProfilePage() {
 
         setQuotes(formattedQuotes)
         setGambles(formattedGambles)
+        
+        // Fetch all available characters and their entity display media
+        try {
+          const charactersResponse = await api.getCharacters({ limit: 50 }) // Get first 50 characters
+          const characters = charactersResponse.data || []
+          
+          if (characters.length > 0) {
+            const mediaPromises = characters.map(async (character: any) => {
+              try {
+                const response = await api.getEntityDisplayMediaForCycling('character', character.id, userProgress)
+                const mediaArray = Array.isArray(response) ? response : (response as any).data || []
+                return mediaArray.map((media: any) => ({
+                  id: media.id,
+                  url: media.url || media.fileName,
+                  fileName: media.fileName,
+                  description: media.description || '',
+                  character: { id: character.id, name: character.name },
+                  chapterNumber: media.chapterNumber
+                }))
+              } catch (error) {
+                // Silently ignore errors for characters with no media
+                return []
+              }
+            })
+            
+            const allMediaResults = await Promise.all(mediaPromises)
+            const flattenedMedia = allMediaResults.flat()
+            setCharacterMedia(flattenedMedia)
+          }
+        } catch (error) {
+          console.error('Failed to fetch characters for entity display media:', error)
+        }
 
         // Fetch current chapter information
         if (userProgress > 0) {
@@ -118,15 +167,42 @@ export default function ProfilePage() {
     setSuccess('')
 
     try {
-      await api.updateProfile({
-        profileImageId: selectedProfileImage || undefined,
-        favoriteQuoteId: selectedQuote || undefined,
-        favoriteGambleId: selectedGamble || undefined,
-      })
+      // Prepare the update data based on selection type
+      const updateData: {
+        favoriteQuoteId?: number | null
+        favoriteGambleId?: number | null
+        profilePictureType?: 'discord' | 'character_media' | null
+        selectedCharacterMediaId?: number | null
+      } = {}
+
+      // Add basic preferences only if they have values
+      if (selectedQuote) {
+        updateData.favoriteQuoteId = selectedQuote
+      }
+      if (selectedGamble) {
+        updateData.favoriteGambleId = selectedGamble
+      }
+
+      // Handle profile picture selection
+      if (selectedCharacterMedia === null) {
+        // Discord profile selected
+        updateData.profilePictureType = 'discord'
+        updateData.selectedCharacterMediaId = null
+      } else {
+        // Character media selected
+        updateData.profilePictureType = 'character_media'
+        updateData.selectedCharacterMediaId = selectedCharacterMedia
+      }
+
+      console.log('Sending profile update data:', updateData)
+      
+      const result = await api.updateProfile(updateData)
+      console.log('Profile update result:', result)
       
       await refreshUser()
       setSuccess('Profile updated successfully!')
     } catch (error: unknown) {
+      console.error('Profile update error:', error)
       setError(error instanceof Error ? error.message : 'Failed to update profile')
     } finally {
       setLoading(false)
@@ -158,6 +234,23 @@ export default function ProfilePage() {
     }
   }
 
+  const handleRefreshDiscordAvatar = async () => {
+    setRefreshingAvatar(true)
+    setError('')
+    setSuccess('')
+
+    try {
+      await api.refreshDiscordAvatar()
+      await refreshUser()
+      setSuccess('Discord avatar refreshed successfully!')
+    } catch (error: unknown) {
+      console.error('Discord avatar refresh error:', error)
+      setError(error instanceof Error ? error.message : 'Failed to refresh Discord avatar')
+    } finally {
+      setRefreshingAvatar(false)
+    }
+  }
+
   if (authLoading) {
     return (
       <Container maxWidth="lg" sx={{ py: 8 }}>
@@ -185,27 +278,99 @@ export default function ProfilePage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <Box sx={{ textAlign: 'center', mb: 4 }}>
-          <Avatar
-            sx={{
-              width: 80,
-              height: 80,
-              mx: 'auto',
-              mb: 2,
-              bgcolor: 'primary.main',
-              fontSize: '2rem'
-            }}
-          >
-            {user.username[0].toUpperCase()}
-          </Avatar>
-          <Typography variant="h3" component="h1" gutterBottom>
-            {user.username}
-          </Typography>
-          <Typography variant="h6" color="text.secondary">
-            {user.role === 'admin' ? 'Administrator' : 
-             user.role === 'moderator' ? 'Moderator' : 'Member'}
-          </Typography>
-        </Box>
+        {/* Modern Profile Header */}
+        <Card 
+          className="gambling-card" 
+          sx={{ 
+            mb: 4,
+            background: 'linear-gradient(135deg, rgba(25, 118, 210, 0.05) 0%, rgba(156, 39, 176, 0.05) 100%)',
+            border: '1px solid',
+            borderColor: 'divider'
+          }}
+        >
+          <CardContent sx={{ p: 4 }}>
+            <Box sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: 3,
+              flexDirection: { xs: 'column', sm: 'row' },
+              textAlign: { xs: 'center', sm: 'left' }
+            }}>
+              {/* Profile Image */}
+              <UserProfileImage
+                user={user}
+                size={120}
+              />
+              
+              {/* User Info */}
+              <Box sx={{ flex: 1 }}>
+                <Typography 
+                  variant="h3" 
+                  component="h1" 
+                  sx={{
+                    background: 'linear-gradient(45deg, #1976d2 30%, #9c27b0 90%)',
+                    backgroundClip: 'text',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    fontWeight: 'bold',
+                    mb: 1
+                  }}
+                >
+                  {user.username}
+                </Typography>
+                
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2, justifyContent: { xs: 'center', sm: 'flex-start' } }}>
+                  <Chip
+                    label={user.role === 'admin' ? 'Administrator' : 
+                           user.role === 'moderator' ? 'Moderator' : 'Member'}
+                    color={user.role === 'admin' ? 'error' : user.role === 'moderator' ? 'warning' : 'default'}
+                    variant="outlined"
+                    icon={user.role === 'admin' || user.role === 'moderator' ? <Crown size={16} /> : undefined}
+                  />
+                  
+                  <Chip
+                    label={user.isEmailVerified ? 'Verified' : 'Not Verified'}
+                    color={user.isEmailVerified ? 'success' : 'warning'}
+                    size="small"
+                  />
+                </Box>
+                
+                {/* Quick Stats */}
+                <Box sx={{ 
+                  display: 'flex', 
+                  gap: 3, 
+                  flexDirection: { xs: 'column', sm: 'row' },
+                  alignItems: { xs: 'center', sm: 'flex-start' }
+                }}>
+                  <Box sx={{ textAlign: 'center' }}>
+                    <Typography variant="h6" color="primary" sx={{ fontWeight: 'bold' }}>
+                      {userProgress}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Current Chapter
+                    </Typography>
+                  </Box>
+                  <Box sx={{ textAlign: 'center' }}>
+                    <Typography variant="h6" color="secondary" sx={{ fontWeight: 'bold' }}>
+                      {Math.round((userProgress / 539) * 100)}%
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Progress
+                    </Typography>
+                  </Box>
+                  <Box sx={{ textAlign: 'center' }}>
+                    <Typography variant="h6" color="info.main" sx={{ fontWeight: 'bold' }}>
+                      {user.role === 'admin' ? '∞' : '0'}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Contributions
+                    </Typography>
+                  </Box>
+                </Box>
+              </Box>
+            </Box>
+          </CardContent>
+        </Card>
 
         {error && (
           <Alert severity="error" sx={{ mb: 3 }}>
@@ -232,15 +397,6 @@ export default function ProfilePage() {
 
                 <Box sx={{ mb: 2 }}>
                   <Typography variant="body2" color="text.secondary">
-                    Username
-                  </Typography>
-                  <Typography variant="body1">
-                    {user.username}
-                  </Typography>
-                </Box>
-
-                <Box sx={{ mb: 2 }}>
-                  <Typography variant="body2" color="text.secondary">
                     Email
                   </Typography>
                   <Typography variant="body1">
@@ -250,25 +406,20 @@ export default function ProfilePage() {
 
                 <Box sx={{ mb: 2 }}>
                   <Typography variant="body2" color="text.secondary">
-                    Email Status
+                    User ID
                   </Typography>
-                  <Chip
-                    label={user.isEmailVerified ? 'Verified' : 'Not Verified'}
-                    color={user.isEmailVerified ? 'success' : 'warning'}
-                    size="small"
-                  />
+                  <Typography variant="body1">
+                    #{user.id}
+                  </Typography>
                 </Box>
 
                 <Box>
                   <Typography variant="body2" color="text.secondary">
-                    Role
+                    Discord Connection
                   </Typography>
-                  <Chip
-                    label={user.role}
-                    color={user.role === 'admin' ? 'error' : user.role === 'moderator' ? 'warning' : 'default'}
-                    variant="outlined"
-                    icon={user.role === 'admin' || user.role === 'moderator' ? <Crown size={16} /> : undefined}
-                  />
+                  <Typography variant="body1">
+                    {user.discordId ? 'Connected' : 'Not Connected'}
+                  </Typography>
                 </Box>
               </CardContent>
             </Card>
@@ -357,6 +508,103 @@ export default function ProfilePage() {
                       ))}
                     </Select>
                   </FormControl>
+                </Box>
+
+                <Box sx={{ mb: 3 }}>
+                  <Typography variant="h6" gutterBottom>
+                    Profile Picture
+                  </Typography>
+                  
+                  {/* Discord Profile Option - Default */}
+                  <Box sx={{ mb: 3 }}>
+                    <Typography variant="body2" color="text.secondary" gutterBottom>
+                      Default Option
+                    </Typography>
+                    {user.discordId && user.discordAvatar ? (
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 2, border: selectedCharacterMedia === null ? 2 : 1, borderColor: selectedCharacterMedia === null ? 'primary.main' : 'divider', borderRadius: 2, cursor: 'pointer', bgcolor: selectedCharacterMedia === null ? 'primary.50' : 'transparent' }}
+                           onClick={() => setSelectedCharacterMedia(null)}>
+                        <Avatar
+                          src={user.discordAvatar.startsWith('http') ? user.discordAvatar : `https://cdn.discordapp.com/avatars/${user.discordId}/${user.discordAvatar}.png`}
+                          sx={{ width: 48, height: 48 }}
+                        />
+                        <Box>
+                          <Typography variant="body1" fontWeight={selectedCharacterMedia === null ? 'bold' : 'normal'}>
+                            Discord Profile Picture
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            {user.discordUsername || user.username}
+                          </Typography>
+                        </Box>
+                      </Box>
+                    ) : (
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 2, border: selectedCharacterMedia === null ? 2 : 1, borderColor: selectedCharacterMedia === null ? 'primary.main' : 'divider', borderRadius: 2, cursor: 'pointer', bgcolor: selectedCharacterMedia === null ? 'primary.50' : 'transparent' }}
+                           onClick={() => setSelectedCharacterMedia(null)}>
+                        <Avatar sx={{ width: 48, height: 48, bgcolor: 'grey.400' }}>
+                          {user.username[0].toUpperCase()}
+                        </Avatar>
+                        <Box>
+                          <Typography variant="body1" fontWeight={selectedCharacterMedia === null ? 'bold' : 'normal'}>
+                            Default Profile Picture
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            No Discord profile available
+                          </Typography>
+                        </Box>
+                      </Box>
+                    )}
+                    
+                    {/* Refresh Discord Avatar Button */}
+                    {user.discordId && (
+                      <Box sx={{ mt: 2, mb: 1 }}>
+                        <Button
+                          onClick={handleRefreshDiscordAvatar}
+                          disabled={refreshingAvatar}
+                          variant="outlined"
+                          size="small"
+                          startIcon={refreshingAvatar ? <CircularProgress size={16} /> : undefined}
+                        >
+                          {refreshingAvatar ? 'Refreshing...' : 'Refresh Discord Avatar'}
+                        </Button>
+                        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+                          Click to fetch your latest Discord profile picture
+                        </Typography>
+                      </Box>
+                    )}
+                  </Box>
+                  
+                  
+                  {/* Character Entity Display Media */}
+                  {characterMedia.length > 0 && (
+                    <>
+                      <Typography variant="body2" color="text.secondary" gutterBottom>
+                        Character Display Media (Based on Reading Progress)
+                      </Typography>
+                      <Box sx={{ mb: 2, maxHeight: 200, overflowY: 'auto' }}>
+                        {characterMedia.map((media) => (
+                          <Box key={media.id} 
+                               sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 2, mb: 1, border: selectedCharacterMedia === media.id ? 2 : 1, borderColor: selectedCharacterMedia === media.id ? 'primary.main' : 'divider', borderRadius: 2, cursor: 'pointer' }}
+                               onClick={() => setSelectedCharacterMedia(media.id)}>
+                            <Avatar
+                              src={media.url}
+                              sx={{ width: 48, height: 48 }}
+                            >
+                              {media.character.name[0]}
+                            </Avatar>
+                            <Box>
+                              <Typography variant="body1">
+                                {media.character.name} - Chapter {media.chapterNumber}
+                              </Typography>
+                              {media.description && (
+                                <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem', fontStyle: 'italic' }}>
+                                  {media.description}
+                                </Typography>
+                              )}
+                            </Box>
+                          </Box>
+                        ))}
+                      </Box>
+                    </>
+                  )}
                 </Box>
 
                 <Button

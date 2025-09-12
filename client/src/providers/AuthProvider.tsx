@@ -17,6 +17,16 @@ interface User {
   discordId?: string | null
   discordUsername?: string | null
   discordAvatar?: string | null
+  // Profile picture fields
+  profilePictureType?: 'discord' | 'character_media' | null
+  selectedCharacterMediaId?: number | null
+  // Full relation objects
+  selectedCharacterMedia?: {
+    id: number
+    url: string
+    fileName: string
+    description?: string
+  } | null
 }
 
 interface AuthContextType {

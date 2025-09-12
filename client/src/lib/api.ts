@@ -190,6 +190,16 @@ class ApiClient {
       discordId?: string | null
       discordUsername?: string | null
       discordAvatar?: string | null
+      // Profile picture fields  
+      profilePictureType?: 'discord' | 'character_media' | null
+      selectedCharacterMediaId?: number | null
+      // Full relation objects
+      selectedCharacterMedia?: {
+        id: number
+        url: string
+        fileName: string
+        description?: string
+      } | null
     }>('/auth/me')
   }
 
@@ -596,12 +606,18 @@ class ApiClient {
   }
 
   async updateProfile(data: {
-    profileImageId?: string
-    favoriteQuoteId?: number
-    favoriteGambleId?: number
+    favoriteQuoteId?: number | null
+    favoriteGambleId?: number | null
+    profilePictureType?: 'discord' | 'character_media' | null
+    selectedCharacterMediaId?: number | null
   }) {
     return this.patch<any>('/users/profile', data)
   }
+
+  async refreshDiscordAvatar() {
+    return this.post<any>('/users/profile/refresh-discord-avatar', {})
+  }
+
 
   async updateUserProgress(userProgress: number) {
     return this.put<{ message: string; userProgress: number }>('/users/profile/progress', { userProgress })

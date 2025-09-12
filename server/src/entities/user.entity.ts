@@ -12,13 +12,18 @@ import {
 import { Event } from './event.entity';
 import { Quote } from './quote.entity';
 import { Gamble } from './gamble.entity';
-import { ProfileImage } from './profile-image.entity';
+import { Media } from './media.entity';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export enum UserRole {
   USER = 'user',
   ADMIN = 'admin',
   MODERATOR = 'moderator',
+}
+
+export enum ProfilePictureType {
+  DISCORD = 'discord',
+  CHARACTER_MEDIA = 'character_media',
 }
 
 @Entity()
@@ -93,12 +98,6 @@ export class User {
   @Column({ type: 'int', default: 1 })
   userProgress: number;
 
-  @ApiPropertyOptional({
-    description: "ID of the user's profile image",
-    example: 'uuid-here',
-  })
-  @Column({ type: 'uuid', nullable: true })
-  profileImageId: string | null;
 
   @ApiPropertyOptional({
     description: "ID of the user's favorite quote",
@@ -114,15 +113,27 @@ export class User {
   @Column({ type: 'int', nullable: true })
   favoriteGambleId: number | null;
 
+  @ApiProperty({
+    description: 'Type of profile picture the user has selected',
+    enum: ProfilePictureType,
+    default: ProfilePictureType.DISCORD,
+    example: ProfilePictureType.DISCORD,
+  })
+  @Column({
+    type: 'enum',
+    enum: ProfilePictureType,
+    default: ProfilePictureType.DISCORD,
+  })
+  profilePictureType: ProfilePictureType;
+
   @ApiPropertyOptional({
-    description: "User's profile image object",
-    type: () => ProfileImage,
+    description:
+      'ID of the character media selected as profile picture (when type is CHARACTER_MEDIA)',
+    example: 1,
   })
-  @ManyToOne(() => ProfileImage, (profileImage) => profileImage.users, {
-    nullable: true,
-  })
-  @JoinColumn({ name: 'profileImageId' })
-  profileImage: ProfileImage | null;
+  @Column({ type: 'int', nullable: true })
+  selectedCharacterMediaId: number | null;
+
 
   @ApiPropertyOptional({
     description: "User's favorite quote object",
@@ -139,6 +150,14 @@ export class User {
   @ManyToOne(() => Gamble, { nullable: true })
   @JoinColumn({ name: 'favoriteGambleId' })
   favoriteGamble: Gamble | null;
+
+  @ApiPropertyOptional({
+    description: "User's selected character media for profile picture",
+    type: () => Media,
+  })
+  @ManyToOne(() => Media, { nullable: true })
+  @JoinColumn({ name: 'selectedCharacterMediaId' })
+  selectedCharacterMedia: Media | null;
 
   @OneToMany(() => Event, (event) => event.createdBy)
   submittedEvents: Event[];

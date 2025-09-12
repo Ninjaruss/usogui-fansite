@@ -21,12 +21,24 @@ import { Search, User, Crown, Users, BookOpen } from 'lucide-react'
 import Link from 'next/link'
 import { api } from '../../lib/api'
 import { motion } from 'motion/react'
+import UserProfileImage from '../../components/UserProfileImage'
 
 interface PublicUser {
   id: number
   username: string
   role: string
   userProgress: number
+  profilePictureType?: 'discord' | 'character_media' | null
+  selectedCharacterMediaId?: number | null
+  selectedCharacterMedia?: {
+    id: number
+    url: string
+    fileName?: string
+    description?: string
+    ownerType?: string
+    ownerId?: number
+  } | null
+  discordAvatar?: string | null
   createdAt: string
   guidesCount?: number
 }
@@ -152,17 +164,12 @@ export default function UsersPage() {
                         }}
                       >
                         <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                          <Avatar
-                            sx={{
-                              width: 60,
-                              height: 60,
-                              mb: 2,
-                              bgcolor: 'primary.main',
-                              fontSize: '1.5rem'
-                            }}
-                          >
-                            {user.username[0].toUpperCase()}
-                          </Avatar>
+                          <UserProfileImage
+                            user={user}
+                            size={60}
+                            showFallback={true}
+                            className="user-profile-avatar"
+                          />
                           
                           <Typography 
                             variant="h6" 
@@ -173,7 +180,8 @@ export default function UsersPage() {
                               color: 'primary.main',
                               '&:hover': { textDecoration: 'underline' },
                               mb: 1,
-                              textAlign: 'center'
+                              textAlign: 'center',
+                              mt: 2
                             }}
                           >
                             {user.username}

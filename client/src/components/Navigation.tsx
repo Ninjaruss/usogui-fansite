@@ -43,6 +43,27 @@ export const Navigation: React.FC = () => {
     handleMenuClose()
   }
 
+  // Helper function to get the appropriate avatar source
+  const getAvatarSrc = () => {
+    if (!user) return null
+    
+    // If user has selected character media as profile picture type
+    if (user.profilePictureType === 'character_media' && user.selectedCharacterMedia) {
+      return user.selectedCharacterMedia.url
+    }
+    
+    // If user has Discord avatar and either no profile picture type set or discord type
+    if (user.discordId && user.discordAvatar && 
+        (user.profilePictureType === 'discord' || !user.profilePictureType)) {
+      return user.discordAvatar.startsWith('http') 
+        ? user.discordAvatar 
+        : `https://cdn.discordapp.com/avatars/${user.discordId}/${user.discordAvatar}.png`
+    }
+    
+    // Default: no image, show initials
+    return null
+  }
+
   const navItems = [
     { label: 'Characters', href: '/characters' },
     { label: 'Arcs', href: '/arcs' },
@@ -50,6 +71,8 @@ export const Navigation: React.FC = () => {
     { label: 'Events', href: '/events' },
     { label: 'Guides', href: '/guides' }
   ]
+
+  const avatarSrc = getAvatarSrc()
 
   return (
     <AppBar position="sticky" sx={{ mb: 4 }}>
@@ -108,8 +131,8 @@ export const Navigation: React.FC = () => {
                 onClick={handleProfileMenuOpen}
                 color="inherit"
               >
-                <Avatar sx={{ width: 32, height: 32 }}>
-                  {user.username[0].toUpperCase()}
+                <Avatar src={avatarSrc || undefined} sx={{ width: 32, height: 32 }}>
+                  {!avatarSrc && user.username[0].toUpperCase()}
                 </Avatar>
               </IconButton>
             </>
