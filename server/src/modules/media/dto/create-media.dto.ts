@@ -75,14 +75,6 @@ export class CreateMediaDto {
   chapterNumber?: number;
 
   @ApiPropertyOptional({
-    description: 'Whether this is the default media for the entity',
-    default: false,
-  })
-  @IsOptional()
-  @IsBoolean()
-  isDefault?: boolean;
-
-  @ApiPropertyOptional({
     description:
       'Purpose of the media - gallery for user uploads or entity display for official entity images',
     enum: MediaPurpose,

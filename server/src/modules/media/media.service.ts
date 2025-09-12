@@ -45,7 +45,6 @@ export class MediaService {
       ownerType: data.ownerType,
       ownerId: data.ownerId,
       chapterNumber: data.chapterNumber,
-      isDefault: data.isDefault || false,
       submittedBy: user,
       status: MediaStatus.PENDING,
       purpose: data.purpose || MediaPurpose.GALLERY,
@@ -87,7 +86,6 @@ export class MediaService {
       ownerType: data.ownerType,
       ownerId: data.ownerId,
       chapterNumber: data.chapterNumber,
-      isDefault: data.isDefault || false,
       submittedBy: user,
       status: MediaStatus.APPROVED, // Auto-approve uploads by moderators/admins
       purpose: data.purpose || MediaPurpose.GALLERY,
@@ -447,7 +445,6 @@ export class MediaService {
 
     query
       .orderBy('media.chapterNumber', 'ASC')
-      .addOrderBy('media.isDefault', 'DESC')
       .addOrderBy('media.createdAt', 'DESC')
       .skip((page - 1) * limit)
       .take(limit);
@@ -468,7 +465,6 @@ export class MediaService {
       where: {
         ownerType,
         ownerId,
-        isDefault: true,
         status: MediaStatus.APPROVED,
         purpose: MediaPurpose.ENTITY_DISPLAY,
       },
@@ -480,40 +476,7 @@ export class MediaService {
   /**
    * Set a media as default for its owner (unsets other defaults)
    */
-  async setAsDefault(mediaId: number): Promise<Media> {
-    const media = await this.mediaRepo.findOne({ where: { id: mediaId } });
-    if (!media) {
-      throw new NotFoundException(`Media with id ${mediaId} not found`);
-    }
-
-    if (!media.ownerType || !media.ownerId) {
-      throw new BadRequestException(
-        'Media must have ownerType and ownerId to set as default',
-      );
-    }
-
-    // Only entity display media can be set as default
-    if (media.purpose !== MediaPurpose.ENTITY_DISPLAY) {
-      throw new BadRequestException(
-        'Only entity display media can be set as default',
-      );
-    }
-
-    // Remove default flag from other entity display media for the same owner
-    await this.mediaRepo.update(
-      {
-        ownerType: media.ownerType,
-        ownerId: media.ownerId,
-        purpose: MediaPurpose.ENTITY_DISPLAY,
-        isDefault: true,
-      },
-      { isDefault: false },
-    );
-
-    // Set this media as default
-    media.isDefault = true;
-    return this.mediaRepo.save(media);
-  }
+  // This method has been removed as isDefault functionality is no longer supported
 
   /**
    * Find media for entity display (official images)
@@ -569,6 +532,92 @@ export class MediaService {
   }
 
   /**
+   * Get entity display media thumbnail closest to user's progress
+   * Returns the media with chapter number closest to (but not exceeding) user progress
+   * Returns null if no suitable media found
+   */
+  async getThumbnailForUserProgress(
+    ownerType: MediaOwnerType,
+    ownerId: number,
+    userProgress: number,
+  ): Promise<Media | null> {
+    // First, try to find entity display media within user's progress
+    const mediaWithinProgress = await this.mediaRepo
+      .createQueryBuilder('media')
+      .leftJoinAndSelect('media.submittedBy', 'submittedBy')
+      .where('media.ownerType = :ownerType', { ownerType })
+      .andWhere('media.ownerId = :ownerId', { ownerId })
+      .andWhere('media.purpose = :purpose', {
+        purpose: MediaPurpose.ENTITY_DISPLAY,
+      })
+      .andWhere('media.status = :status', { status: MediaStatus.APPROVED })
+      .andWhere('media.chapterNumber IS NOT NULL')
+      .andWhere('media.chapterNumber <= :userProgress', { userProgress })
+      .orderBy('media.chapterNumber', 'DESC') // Highest chapter first
+      .addOrderBy('media.createdAt', 'DESC') // Then newest
+      .getOne();
+
+    if (mediaWithinProgress) {
+      return mediaWithinProgress;
+    }
+
+    // If no media within progress, return any entity display media
+    return this.mediaRepo
+      .createQueryBuilder('media')
+      .leftJoinAndSelect('media.submittedBy', 'submittedBy')
+      .where('media.ownerType = :ownerType', { ownerType })
+      .andWhere('media.ownerId = :ownerId', { ownerId })
+      .andWhere('media.purpose = :purpose', {
+        purpose: MediaPurpose.ENTITY_DISPLAY,
+      })
+      .andWhere('media.status = :status', { status: MediaStatus.APPROVED })
+      .orderBy('media.createdAt', 'DESC')
+      .getOne();
+  }
+
+  /**
+   * Get all entity display media for cycling on detail pages
+   */
+  async getEntityDisplayMediaForCycling(
+    ownerType: MediaOwnerType,
+    ownerId: number,
+    userProgress?: number,
+  ): Promise<Media[]> {
+    const query = this.mediaRepo
+      .createQueryBuilder('media')
+      .leftJoinAndSelect('media.submittedBy', 'submittedBy')
+      .where('media.ownerType = :ownerType', { ownerType })
+      .andWhere('media.ownerId = :ownerId', { ownerId })
+      .andWhere('media.purpose = :purpose', {
+        purpose: MediaPurpose.ENTITY_DISPLAY,
+      })
+      .andWhere('media.status = :status', { status: MediaStatus.APPROVED });
+
+    // Return all media regardless of user progress - spoiler system will handle protection
+
+    return query
+      .orderBy('media.chapterNumber', 'ASC')
+      .addOrderBy('media.createdAt', 'DESC')
+      .getMany();
+  }
+
+  /**
+   * Get next entity display media for manual cycling
+   */
+
+  /**
+   * Get previous entity display media for manual cycling
+   */
+
+  /**
+   * Get media cycling info (current position and total count)
+   */
+
+  /**
+   * Get current media with full cycling context
+   */
+
+  /**
    * Promote gallery media to entity display media
    */
   async setAsEntityDisplay(
@@ -603,7 +652,6 @@ export class MediaService {
     ownerType: MediaOwnerType,
     ownerId: number,
     chapterNumber?: number,
-    isDefault?: boolean,
   ): Promise<Media> {
     const media = await this.mediaRepo.findOne({ where: { id: mediaId } });
     if (!media) {
@@ -614,9 +662,6 @@ export class MediaService {
     media.ownerId = ownerId;
     if (chapterNumber !== undefined) {
       media.chapterNumber = chapterNumber;
-    }
-    if (isDefault !== undefined) {
-      media.isDefault = isDefault;
     }
 
     return this.mediaRepo.save(media);

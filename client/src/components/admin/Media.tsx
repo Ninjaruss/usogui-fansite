@@ -187,7 +187,7 @@ const PolymorphicInfoChip = ({ source }: { source: string }) => {
   if (record.ownerType && record.ownerId) {
     return (
       <Chip 
-        label={`${record.ownerType}:${record.ownerId}${record.chapterNumber ? ` (Ch.${record.chapterNumber})` : ''}${record.isDefault ? ' [Default]' : ''}`}
+        label={`${record.ownerType}:${record.ownerId}${record.chapterNumber ? ` (Ch.${record.chapterNumber})` : ''}`}
         color="success" 
         size="small" 
         sx={{
@@ -906,23 +906,6 @@ export const MediaShow = () => {
                   </Box>
                 )}
                 
-                {record?.isDefault && (
-                  <Box sx={{ mb: 3 }}>
-                    <Typography variant="body2" color="text.secondary" gutterBottom>
-                      Default Media
-                    </Typography>
-                    <Chip 
-                      label="Default"
-                      color="success" 
-                      size="small" 
-                      sx={{
-                        fontWeight: 'bold',
-                        fontSize: '0.8rem',
-                        height: '28px'
-                      }}
-                    />
-                  </Box>
-                )}
 
                 <Box>
                   <Typography variant="body2" color="text.secondary" gutterBottom>
@@ -1092,23 +1075,6 @@ const EntitySelector = ({ entities, loadingEntities, loadEntities, getEntityChoi
           type="number"
           fullWidth
           helperText="For chapter-based progression (optional)"
-        />
-      </Grid>
-      <Grid item xs={12} sm={6}>
-        <SelectInput 
-          source="isDefault" 
-          label="Set as Default"
-          choices={[
-            { id: false, name: 'No' },
-            { id: true, name: 'Yes' },
-          ]}
-          fullWidth
-          sx={{
-            '& .MuiSelect-select': {
-              backgroundColor: '#0f0f0f'
-            }
-          }}
-          helperText="Whether this is the default media for the entity"
         />
       </Grid>
     </Grid>
@@ -1399,24 +1365,6 @@ export const MediaEdit = () => {
                 }}
               />
             </Grid>
-            <Grid item xs={6}>
-              <SelectInput 
-                source="isDefault" 
-                label="Set as Default"
-                choices={[
-                  { id: false, name: 'No' },
-                  { id: true, name: 'Yes' },
-                ]}
-                fullWidth
-                helperText="Whether this is the default media for the entity"
-                sx={{ 
-                  '& .MuiInputBase-root': {
-                    backgroundColor: 'rgba(10, 10, 10, 0.8)',
-                    color: '#ffffff',
-                  }
-                }}
-              />
-            </Grid>
           </Grid>
         </Box>
 
@@ -1522,16 +1470,6 @@ export const MediaCreate = () => (
         label="Chapter Number"
         type="number"
         helperText="For chapter-based progression (optional)"
-      />
-      <SelectInput 
-        source="isDefault" 
-        label="Set as Default"
-        choices={[
-          { id: false, name: 'No' },
-          { id: true, name: 'Yes' },
-        ]}
-        defaultValue={false}
-        helperText="Whether this is the default media for the entity"
       />
       <SelectInput 
         source="purpose" 

@@ -114,15 +114,33 @@ export default function MediaGallery({
           return
         }
         
-        const params = {
-          page: 1,
-          limit,
-          ...(finalOwnerType && { ownerType: finalOwnerType }),
-          ...(finalOwnerId && { ownerId: finalOwnerId }),
-          ...(purpose && { purpose })
+        // Use specific API methods based on purpose
+        let response
+        if (purpose === 'entity_display' && finalOwnerType && finalOwnerId) {
+          response = await api.getEntityDisplayMedia(finalOwnerType, finalOwnerId, {
+            page: 1,
+            limit
+          })
+        } else if (purpose === 'gallery' && finalOwnerType && finalOwnerId) {
+          response = await api.getGalleryMedia(finalOwnerType, finalOwnerId, {
+            page: 1,
+            limit
+          })
+        } else if (finalOwnerType && finalOwnerId) {
+          // Default to gallery media for character pages to show only user-submitted content
+          response = await api.getGalleryMedia(finalOwnerType, finalOwnerId, {
+            page: 1,
+            limit
+          })
+        } else {
+          // Fallback to general approved media
+          const params = {
+            page: 1,
+            limit,
+            ...(purpose && { purpose })
+          }
+          response = await api.getApprovedMedia(params)
         }
-        
-        const response = await api.getApprovedMedia(params)
         
         setMedia(response.data)
         setFilteredMedia(response.data)

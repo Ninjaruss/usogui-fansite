@@ -272,7 +272,7 @@ const cleanUpdateData = (resource: string, data: Record<string, unknown>) => {
   if (resource === 'media') {
     // Keep only the fields that are allowed in the media DTOs using polymorphic system
     const allowedFields = [
-      'url', 'type', 'description', 'ownerType', 'ownerId', 'chapterNumber', 'isDefault', 'status', 'rejectionReason', 'purpose'
+      'url', 'type', 'description', 'ownerType', 'ownerId', 'chapterNumber', 'status', 'rejectionReason', 'purpose'
     ]
     
     const mediaCleaned: Record<string, unknown> = {}

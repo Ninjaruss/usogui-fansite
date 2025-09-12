@@ -48,7 +48,6 @@ export enum MediaOwnerType {
 @Index(['submittedBy'])
 @Index(['ownerType', 'ownerId'])
 @Index(['ownerType', 'ownerId', 'chapterNumber'])
-@Index(['ownerType', 'ownerId', 'isDefault'])
 @Index(['purpose'])
 export class Media {
   @ApiProperty({ description: 'Unique identifier of the media' })
@@ -110,13 +109,6 @@ export class Media {
   })
   @Column({ type: 'int', nullable: true })
   chapterNumber: number;
-
-  @ApiPropertyOptional({
-    description: 'Whether this is the default media for the entity',
-    default: false,
-  })
-  @Column({ type: 'boolean', default: false })
-  isDefault: boolean;
 
   @ApiProperty({
     description: 'Type of media content',

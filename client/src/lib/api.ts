@@ -95,14 +95,20 @@ class ApiClient {
       return undefined as T
     }
 
-    // Check if response has content
-    const contentType = response.headers.get('content-type')
-    if (contentType && contentType.includes('application/json')) {
-      const text = await response.text()
-      return text ? JSON.parse(text) : undefined as T
+    // Always try to read response as text first, then parse JSON if content exists
+    let text = ''
+    try {
+      text = await response.text()
+      if (!text.trim()) {
+        return undefined as T
+      }
+      return JSON.parse(text)
+    } catch (jsonError) {
+      console.error('[API] JSON parse error for endpoint:', endpoint, 'Response text:', text)
+      console.error('[API] JSON parse error details:', jsonError)
+      // If JSON parsing fails, return undefined for empty responses
+      return undefined as T
     }
-
-    return response.json()
   }
 
   async get<T>(endpoint: string): Promise<T> {
@@ -513,7 +519,6 @@ class ApiClient {
     ownerType: 'character' | 'arc' | 'event' | 'gamble' | 'faction' | 'user'
     ownerId: number
     chapterNumber?: number
-    isDefault?: boolean
     purpose?: 'gallery' | 'entity_display'
     description?: string
   }) {
@@ -526,7 +531,6 @@ class ApiClient {
     ownerType: 'character' | 'arc' | 'event' | 'gamble' | 'faction' | 'user'
     ownerId: number
     chapterNumber?: number
-    isDefault?: boolean
     description?: string
   }) {
     return this.post<any>('/media', data)
@@ -550,7 +554,6 @@ class ApiClient {
     ownerType: 'character' | 'arc' | 'event' | 'gamble' | 'faction' | 'user'
     ownerId: number
     chapterNumber?: number
-    isDefault?: boolean
     purpose?: 'gallery' | 'entity_display'
     description?: string
   }) {
@@ -561,7 +564,6 @@ class ApiClient {
     formData.append('ownerId', data.ownerId.toString())
     if (data.description) formData.append('description', data.description)
     if (data.chapterNumber) formData.append('chapterNumber', data.chapterNumber.toString())
-    if (data.isDefault) formData.append('isDefault', data.isDefault.toString())
     if (data.purpose) formData.append('purpose', data.purpose)
 
     return this.request<any>('/media/upload', {
@@ -1019,6 +1021,23 @@ class ApiClient {
       perPage: number
       totalPages: number
     }>(`/media/gallery/${ownerType}/${ownerId}${query ? `?${query}` : ''}`)
+  }
+
+  async getThumbnailForUserProgress(
+    ownerType: 'character' | 'arc' | 'event' | 'gamble' | 'faction' | 'user',
+    ownerId: number,
+    userProgress: number
+  ) {
+    return this.get<any>(`/media/thumbnail/${ownerType}/${ownerId}/${userProgress}`)
+  }
+
+  async getEntityDisplayMediaForCycling(
+    ownerType: 'character' | 'arc' | 'event' | 'gamble' | 'faction' | 'user',
+    ownerId: number,
+    userProgress?: number
+  ) {
+    const query = userProgress !== undefined ? `?userProgress=${userProgress}` : ''
+    return this.get<{data: any[]}>(`/media/entity-display/${ownerType}/${ownerId}/cycling${query}`)
   }
 
   async setMediaAsDefault(mediaId: number) {

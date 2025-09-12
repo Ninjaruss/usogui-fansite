@@ -62,7 +62,6 @@ export default function SubmitMediaPage() {
     ownerType: '' as MediaOwnerType | '',
     ownerId: null as number | null,
     chapterNumber: null as number | null,
-    isDefault: false
   })
   const [characters, setCharacters] = useState<Character[]>([])
   const [arcs, setArcs] = useState<Arc[]>([])
@@ -136,7 +135,6 @@ export default function SubmitMediaPage() {
         ownerType: formData.ownerType,
         ownerId: formData.ownerId,
         chapterNumber: formData.chapterNumber || undefined,
-        isDefault: formData.isDefault,
         description: formData.description
       })
       setSuccess('Media submitted successfully! It will be reviewed by moderators.')
@@ -146,8 +144,7 @@ export default function SubmitMediaPage() {
         ownerType: '',
         ownerId: null,
         chapterNumber: null,
-        isDefault: false
-      })
+          })
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : 'Failed to submit media')
     } finally {
@@ -160,7 +157,6 @@ export default function SubmitMediaPage() {
     ownerType: 'character' | 'arc' | 'event' | 'gamble' | 'faction' | 'user'
     ownerId: number
     chapterNumber?: number
-    isDefault?: boolean
     purpose?: 'gallery' | 'entity_display'
   }) => {
     setError('')
@@ -398,19 +394,6 @@ export default function SubmitMediaPage() {
                     />
                   </Grid>
 
-                  <Grid item xs={12} sm={6}>
-                    <FormControl fullWidth>
-                      <InputLabel>Set as Default</InputLabel>
-                      <Select
-                        value={formData.isDefault.toString()}
-                        label="Set as Default"
-                        onChange={(e) => handleInputChange('isDefault', e.target.value === 'true')}
-                      >
-                        <MenuItem value="false">No</MenuItem>
-                        <MenuItem value="true">Yes - Make this the default media for this entity</MenuItem>
-                      </Select>
-                    </FormControl>
-                  </Grid>
 
                   <Grid item xs={12}>
                     <TextField

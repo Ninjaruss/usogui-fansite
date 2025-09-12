@@ -331,8 +331,7 @@ export class GamblesService {
       }
     } else {
       // No user progress provided, get default or most recent
-      selectedMedia =
-        allMedia.data.find((media) => media.isDefault) || allMedia.data[0];
+      selectedMedia = allMedia.data[0];
     }
 
     if (selectedMedia) {

@@ -23,7 +23,6 @@ interface MediaUploadFormProps {
     ownerType: 'character' | 'arc' | 'event' | 'gamble' | 'faction' | 'user'
     ownerId: number
     chapterNumber?: number
-    isDefault?: boolean
     purpose?: 'gallery' | 'entity_display'
   }) => Promise<void>
   characters: Array<{ id: number; name: string }>
@@ -56,7 +55,6 @@ export default function MediaUploadForm({
     ownerType: '' as 'character' | 'arc' | 'event' | 'gamble' | 'faction' | 'user' | '',
     ownerId: null as number | null,
     chapterNumber: null as number | null,
-    isDefault: false,
     purpose: 'gallery' as 'gallery' | 'entity_display',
   })
   const [dragActive, setDragActive] = useState(false)
@@ -117,7 +115,6 @@ export default function MediaUploadForm({
       ownerType: formData.ownerType,
       ownerId: formData.ownerId,
       chapterNumber: formData.chapterNumber || undefined,
-      isDefault: formData.isDefault,
       purpose: formData.purpose || 'gallery', // Default to gallery
     })
   }
@@ -323,17 +320,6 @@ export default function MediaUploadForm({
               sx={{ mb: 2 }}
             />
             
-            <FormControl fullWidth sx={{ mb: 2 }}>
-              <InputLabel>Set as Default</InputLabel>
-              <Select
-                value={formData.isDefault.toString()}
-                label="Set as Default"
-                onChange={(e) => handleInputChange('isDefault', e.target.value === 'true')}
-              >
-                <MenuItem value="false">No</MenuItem>
-                <MenuItem value="true">Yes - Make this the default media</MenuItem>
-              </Select>
-            </FormControl>
           </>
         )}
 

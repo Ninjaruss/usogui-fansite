@@ -599,7 +599,6 @@ export class MediaController {
         },
         ownerId: { type: 'number', example: 1 },
         chapterNumber: { type: 'number', example: 45 },
-        isDefault: { type: 'boolean', example: false },
         purpose: {
           type: 'string',
           enum: ['gallery', 'entity_display'],
@@ -980,6 +979,12 @@ export class MediaController {
     enum: MediaType,
   })
   @ApiQuery({
+    name: 'purpose',
+    required: false,
+    description: 'Media purpose filter',
+    enum: MediaPurpose,
+  })
+  @ApiQuery({
     name: 'page',
     required: false,
     description: 'Page number',
@@ -996,6 +1001,7 @@ export class MediaController {
     @Param('ownerId', ParseIntPipe) ownerId: number,
     @Query('chapter') chapter?: string,
     @Query('type') type?: string,
+    @Query('purpose') purpose?: string,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
   ) {
@@ -1021,8 +1027,65 @@ export class MediaController {
 
     return this.mediaService.findForOwner(ownerType, ownerId, chapterNum, {
       type: type as any,
+      purpose: purpose as MediaPurpose,
       page: pageNum,
       limit: limitNum,
+    });
+  }
+
+  @Get('gallery/:ownerType/:ownerId')
+  @ApiOperation({
+    summary: 'Get gallery media only (for Related Media tab)',
+    description:
+      'Get only gallery media for related media sections - excludes entity display media',
+  })
+  @ApiParam({
+    name: 'ownerType',
+    description: 'Type of entity',
+    enum: MediaOwnerType,
+  })
+  @ApiParam({
+    name: 'ownerId',
+    description: 'ID of the entity',
+    type: 'number',
+  })
+  @ApiQuery({
+    name: 'chapter',
+    required: false,
+    description: 'Chapter number filter',
+    type: 'number',
+  })
+  @ApiQuery({
+    name: 'type',
+    required: false,
+    description: 'Media type filter',
+    enum: MediaType,
+  })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    description: 'Page number',
+    type: 'number',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    description: 'Items per page',
+    type: 'number',
+  })
+  async getGalleryMediaOnly(
+    @Param('ownerType') ownerType: MediaOwnerType,
+    @Param('ownerId', ParseIntPipe) ownerId: number,
+    @Query('chapter') chapter?: number,
+    @Query('type') type?: MediaType,
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+  ) {
+    return this.mediaService.findForGallery(ownerType, ownerId, {
+      chapter,
+      type,
+      page,
+      limit,
     });
   }
 
@@ -1047,24 +1110,6 @@ export class MediaController {
     @Param('ownerId', ParseIntPipe) ownerId: number,
   ) {
     return this.mediaService.getDefaultForOwner(ownerType, ownerId);
-  }
-
-  @Put(':id/set-default')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @ApiBearerAuth()
-  @Roles(UserRole.MODERATOR, UserRole.ADMIN)
-  @ApiOperation({
-    summary: 'Set entity display media as default for its owner',
-    description:
-      'Mark an entity display media item as the default thumbnail for its associated entity',
-  })
-  @ApiParam({
-    name: 'id',
-    description: 'Media ID (must be entity display media)',
-    type: 'number',
-  })
-  setAsDefault(@Param('id', ParseIntPipe) id: number) {
-    return this.mediaService.setAsDefault(id);
   }
 
   @Get('entity-display/:ownerType/:ownerId')
@@ -1119,6 +1164,74 @@ export class MediaController {
       page,
       limit,
     });
+  }
+
+  @Get('thumbnail/:ownerType/:ownerId/:userProgress')
+  @ApiOperation({
+    summary: 'Get thumbnail closest to user progress',
+    description:
+      'Get entity display media thumbnail closest to user reading progress. Returns null if none available.',
+  })
+  @ApiParam({
+    name: 'ownerType',
+    description: 'Type of entity',
+    enum: MediaOwnerType,
+  })
+  @ApiParam({
+    name: 'ownerId',
+    description: 'ID of the entity',
+    type: 'number',
+  })
+  @ApiParam({
+    name: 'userProgress',
+    description: "User's current reading progress (chapter number)",
+    type: 'number',
+  })
+  async getThumbnailForUserProgress(
+    @Param('ownerType') ownerType: MediaOwnerType,
+    @Param('ownerId', ParseIntPipe) ownerId: number,
+    @Param('userProgress', ParseIntPipe) userProgress: number,
+  ) {
+    const result = await this.mediaService.getThumbnailForUserProgress(
+      ownerType,
+      ownerId,
+      userProgress,
+    );
+    return result;
+  }
+
+  @Get('entity-display/:ownerType/:ownerId/cycling')
+  @ApiOperation({
+    summary: 'Get all entity display media for cycling on detail pages',
+    description:
+      'Get all entity display media for an entity, optionally filtered by user progress for spoiler protection.',
+  })
+  @ApiParam({
+    name: 'ownerType',
+    description: 'Type of entity',
+    enum: MediaOwnerType,
+  })
+  @ApiParam({
+    name: 'ownerId',
+    description: 'ID of the entity',
+    type: 'number',
+  })
+  @ApiQuery({
+    name: 'userProgress',
+    required: false,
+    description: "User's reading progress to filter spoilers",
+    type: 'number',
+  })
+  async getEntityDisplayMediaForCycling(
+    @Param('ownerType') ownerType: MediaOwnerType,
+    @Param('ownerId', ParseIntPipe) ownerId: number,
+    @Query('userProgress') userProgress?: number,
+  ) {
+    return this.mediaService.getEntityDisplayMediaForCycling(
+      ownerType,
+      ownerId,
+      userProgress,
+    );
   }
 
   @Get('gallery/:ownerType/:ownerId')
@@ -1249,10 +1362,6 @@ export class MediaController {
           type: 'number',
           description: 'Chapter number (optional)',
         },
-        isDefault: {
-          type: 'boolean',
-          description: 'Whether this should be the default media',
-        },
       },
     },
   })
@@ -1263,7 +1372,6 @@ export class MediaController {
       ownerType: MediaOwnerType;
       ownerId: number;
       chapterNumber?: number;
-      isDefault?: boolean;
     },
   ) {
     return this.mediaService.updateMediaRelations(
@@ -1271,7 +1379,6 @@ export class MediaController {
       body.ownerType,
       body.ownerId,
       body.chapterNumber,
-      body.isDefault,
     );
   }
 
