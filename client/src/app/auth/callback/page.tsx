@@ -94,10 +94,11 @@ export default function AuthCallback() {
         if (window.opener && !window.opener.closed) {
           try {
             addDebugInfo('Sending postMessage to opener window...')
-            window.opener.postMessage({ 
-              type: 'DISCORD_AUTH_SUCCESS', 
+            window.opener.postMessage({
+              type: 'DISCORD_AUTH_SUCCESS',
               token,
-              timestamp: Date.now()
+              timestamp: Date.now(),
+              refreshUser: true
             }, window.location.origin)
             addDebugInfo('PostMessage sent successfully')
           } catch (error) {
@@ -107,36 +108,39 @@ export default function AuthCallback() {
           addDebugInfo('No opener window available')
         }
         
-        // Give the main app time to process the auth success
+        // Try to close popup immediately after sending messages
         setTimeout(() => {
-          addDebugInfo('Attempting to close popup window...')
-          
-          // Try multiple methods to close the window
-          try {
-            if (window.opener && !window.opener.closed) {
-              addDebugInfo('Opener window detected, closing popup...')
-              window.close()
-              
-              // Fallback: if window.close() didn't work, try to redirect the opener
-              setTimeout(() => {
-                try {
-                  if (window.opener && window.opener.location.origin === window.location.origin) {
-                    window.opener.location.reload()
-                  }
-                } catch (e) {
-                  addDebugInfo('Could not reload opener window')
-                }
-              }, 500)
-            } else {
-              addDebugInfo('No opener window, redirecting to home page...')
-              window.location.href = '/'
+          addDebugInfo('Attempting immediate popup close...')
+
+          // Try to close via parent window first
+          if (window.opener && !window.opener.closed) {
+            try {
+              // Send a direct close message to parent
+              window.opener.postMessage({
+                type: 'CLOSE_AUTH_POPUP'
+              }, window.location.origin)
+              addDebugInfo('Close popup message sent to parent')
+            } catch (error) {
+              addDebugInfo(`Failed to send close message: ${error}`)
             }
-          } catch (error) {
-            addDebugInfo(`Error closing window: ${error}`)
-            // Final fallback
-            window.location.href = '/'
           }
-        }, 2000)
+
+          // Also try window.close() as a fallback
+          try {
+            addDebugInfo('Attempting window.close()...')
+            window.close()
+          } catch (error) {
+            addDebugInfo(`window.close() failed: ${error}`)
+          }
+
+          // If still open after a reasonable time, show manual close instruction
+          setTimeout(() => {
+            if (!window.closed) {
+              addDebugInfo('Popup was not closed automatically, showing manual close instruction')
+              setStatus('Authentication successful! You can close this window.')
+            }
+          }, 2000)
+        }, 500)
         
       } catch (error) {
         console.error('Auth callback error:', error)

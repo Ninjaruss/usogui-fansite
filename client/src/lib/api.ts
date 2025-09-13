@@ -63,10 +63,19 @@ class ApiClient {
         }
       } catch (refreshError) {
         console.error('[API] Token refresh failed:', refreshError)
-        // If refresh fails, clear token and throw the original error
+        // If refresh fails, clear token and fall through to handle 401 gracefully
         this.setToken(null)
         localStorage.removeItem('accessToken')
       }
+      
+      // If we reach here, authentication failed - provide user-friendly error
+      // instead of exposing technical 401 details
+      const userFriendlyError = new Error('Please log in to access this content')
+      ;(userFriendlyError as any).status = 401
+      ;(userFriendlyError as any).isAuthError = true
+      ;(userFriendlyError as any).url = url
+      ;(userFriendlyError as any).method = options.method || 'GET'
+      throw userFriendlyError
     }
 
     if (!response.ok) {
@@ -216,7 +225,12 @@ class ApiClient {
       });
       
       if (!response.ok) {
-        console.error('[API] Token refresh failed:', response.status, response.statusText)
+        // Only log as error for unexpected status codes (not 401, which is expected when no refresh token exists)
+        if (response.status !== 401) {
+          console.error('[API] Token refresh failed:', response.status, response.statusText)
+        } else {
+          console.log('[API] No valid refresh token available (401)')
+        }
         throw new Error('Token refresh failed')
       }
       
@@ -227,7 +241,12 @@ class ApiClient {
       this.setToken(data.access_token)
       return data
     } catch (error) {
-      console.error('[API] Error refreshing token:', error)
+      // Only log as error if it's not the expected "Token refresh failed" error from 401 response
+      if (error instanceof Error && error.message === 'Token refresh failed') {
+        console.log('[API] Token refresh unavailable - user needs to log in')
+      } else {
+        console.error('[API] Error refreshing token:', error)
+      }
       // Clear token on refresh error
       this.setToken(null)
       throw error

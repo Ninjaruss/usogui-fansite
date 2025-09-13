@@ -3,6 +3,13 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import { api } from '../lib/api'
 
+// Extend Window interface to include authPopup
+declare global {
+  interface Window {
+    authPopup?: Window | null
+  }
+}
+
 interface User {
   id: number
   username: string
@@ -214,32 +221,50 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Listen for postMessage from auth callback tab
     const handleMessage = async (event: MessageEvent) => {
       console.log('[AUTH PROVIDER] Received message:', event.origin, event.data)
-      
+
       // Ensure the message is from our domain
       if (event.origin !== window.location.origin) {
         console.log('[AUTH PROVIDER] Message origin mismatch:', event.origin, 'vs', window.location.origin)
         return
       }
 
+      if (event.data.type === 'CLOSE_AUTH_POPUP') {
+        console.log('[AUTH PROVIDER] Received close popup message')
+        // Close the popup window if it exists
+        if (window.authPopup && !window.authPopup.closed) {
+          console.log('[AUTH PROVIDER] Closing auth popup window via close message')
+          window.authPopup.close()
+          window.authPopup = null
+        }
+        return
+      }
+
       if (event.data.type === 'DISCORD_AUTH_SUCCESS') {
         console.log('[AUTH PROVIDER] Discord auth success message received')
-        
+
+        // Close the popup window if it exists
+        if (window.authPopup && !window.authPopup.closed) {
+          console.log('[AUTH PROVIDER] Closing auth popup window')
+          window.authPopup.close()
+          window.authPopup = null
+        }
+
         // Process authentication success
         const { token, refreshUser } = event.data
         if (token) {
           console.log('[AUTH PROVIDER] Processing token from message')
-          
+
           // Clear any existing token first
           localStorage.removeItem('accessToken')
           localStorage.setItem('accessToken', token)
           api.setToken(token)
-          
+
           try {
             // Get user data and set it
             const userData = await api.getCurrentUser()
             setUser(userData)
             console.log('[AUTH PROVIDER] User data fetched and set:', userData.username)
-            
+
             // Redirect to homepage if currently on login page
             if (window.location.pathname === '/login') {
               console.log('[AUTH PROVIDER] Redirecting to homepage')
@@ -262,27 +287,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       if (event.data.type === 'DISCORD_AUTH_SUCCESS') {
         console.log('[AUTH PROVIDER] Discord auth success broadcast received')
-        
+
+        // Close the popup window if it exists
+        if (window.authPopup && !window.authPopup.closed) {
+          console.log('[AUTH PROVIDER] Closing auth popup window from broadcast')
+          window.authPopup.close()
+          window.authPopup = null
+        }
+
         // Process authentication success
         const { token, refreshUser } = event.data
         if (token) {
           console.log('[AUTH PROVIDER] Processing token from broadcast - Token length:', token.length)
-          
+
           // Clear any existing token first
           localStorage.removeItem('accessToken')
-          
+
           // Store token in this tab's localStorage
           localStorage.setItem('accessToken', token)
           api.setToken(token)
-          
+
           console.log('[AUTH PROVIDER] Tokens stored, attempting to fetch user data...')
-          
+
           try {
             // Get user data and set it
             const userData = await api.getCurrentUser()
             setUser(userData)
             console.log('[AUTH PROVIDER] User data fetched from broadcast:', userData.username, 'Role:', userData.role)
-            
+
             // Redirect to homepage if currently on login page
             if (window.location.pathname === '/login') {
               console.log('[AUTH PROVIDER] Redirecting to homepage from broadcast')
@@ -373,6 +405,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Focus the popup window
     if (popup) {
       popup.focus()
+      
+      // Store popup reference for later closing
+      window.authPopup = popup
     }
   }
 

@@ -384,11 +384,8 @@ export default function HomePage() {
             Create an account to submit fan content, guides, and track your reading progress
           </Typography>
           <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
-            <Button component={Link} href="/register" variant="contained" size="large">
-              Sign Up
-            </Button>
             <Button component={Link} href="/login" variant="outlined" size="large">
-              Log In
+              Log In with Discord
             </Button>
             <Button component={Link} href="/users" variant="text" size="large" startIcon={<Users className="w-4 h-4" />}>
               Browse Community

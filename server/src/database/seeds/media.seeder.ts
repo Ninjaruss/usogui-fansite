@@ -4,9 +4,11 @@ import {
   MediaType,
   MediaStatus,
   MediaOwnerType,
+  MediaPurpose,
 } from '../../entities/media.entity';
 import { Character } from '../../entities/character.entity';
 import { User } from '../../entities/user.entity';
+import { Gamble } from '../../entities/gamble.entity';
 import { Seeder } from './seeder.interface';
 
 export class MediaSeeder implements Seeder {
@@ -15,6 +17,7 @@ export class MediaSeeder implements Seeder {
   async run(): Promise<void> {
     const mediaRepository = this.dataSource.getRepository(Media);
     const characterRepository = this.dataSource.getRepository(Character);
+    const gambleRepository = this.dataSource.getRepository(Gamble);
     const userRepository = this.dataSource.getRepository(User);
 
     // Get a test user for media submissions
@@ -36,7 +39,17 @@ export class MediaSeeder implements Seeder {
       where: { name: 'Marco Reiji' },
     });
 
+    // Get gambles for media associations
+    const protoporos = await gambleRepository.findOne({
+      where: { name: 'Protoporos' },
+    });
+
+    const pokerTournament = await gambleRepository.findOne({
+      where: { name: 'Poker Tournament' },
+    });
+
     const mediaItems = [
+      // Character media
       {
         url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
         type: MediaType.VIDEO,
@@ -84,6 +97,7 @@ export class MediaSeeder implements Seeder {
         status: MediaStatus.PENDING,
         submittedBy: testUser,
       },
+      // User media
       {
         url: 'https://www.youtube.com/watch?v=example123',
         type: MediaType.VIDEO,
@@ -92,6 +106,59 @@ export class MediaSeeder implements Seeder {
         ownerId: testUser.id,
         status: MediaStatus.APPROVED,
         submittedBy: testUser,
+      },
+      // Gamble media
+      {
+        url: 'https://www.youtube.com/watch?v=protoporos-rules',
+        type: MediaType.VIDEO,
+        description: 'Detailed explanation of Protoporos rules and strategies',
+        ownerType: MediaOwnerType.GAMBLE,
+        ownerId: protoporos?.id || 1,
+        status: MediaStatus.APPROVED,
+        submittedBy: testUser,
+        purpose: MediaPurpose.ENTITY_DISPLAY,
+      },
+      {
+        url: 'https://www.deviantart.com/example/art/protoporos-game-board-789',
+        type: MediaType.IMAGE,
+        description: 'Detailed diagram of the Protoporos game setup',
+        ownerType: MediaOwnerType.GAMBLE,
+        ownerId: protoporos?.id || 1,
+        status: MediaStatus.APPROVED,
+        submittedBy: testUser,
+        purpose: MediaPurpose.GALLERY,
+      },
+      {
+        url: 'https://www.pixiv.net/en/artworks/poker-tournament-art',
+        type: MediaType.IMAGE,
+        description: 'Artistic representation of the high-stakes poker tournament',
+        ownerType: MediaOwnerType.GAMBLE,
+        ownerId: pokerTournament?.id || 2,
+        status: MediaStatus.APPROVED,
+        submittedBy: testUser,
+        purpose: MediaPurpose.ENTITY_DISPLAY,
+      },
+      {
+        url: 'https://www.youtube.com/watch?v=poker-strategies-usogui',
+        type: MediaType.VIDEO,
+        description: 'Analysis of poker strategies used in Usogui tournaments',
+        ownerType: MediaOwnerType.GAMBLE,
+        ownerId: pokerTournament?.id || 2,
+        status: MediaStatus.APPROVED,
+        submittedBy: testUser,
+        purpose: MediaPurpose.GALLERY,
+        chapterNumber: 5,
+      },
+      {
+        url: 'https://twitter.com/fan/status/protoporos-analysis',
+        type: MediaType.IMAGE,
+        description: 'Fan analysis of Protoporos winning strategies',
+        ownerType: MediaOwnerType.GAMBLE,
+        ownerId: protoporos?.id || 1,
+        status: MediaStatus.PENDING,
+        submittedBy: testUser,
+        purpose: MediaPurpose.GALLERY,
+        chapterNumber: 1,
       },
     ];
 
