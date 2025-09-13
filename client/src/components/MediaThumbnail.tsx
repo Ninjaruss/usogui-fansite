@@ -18,7 +18,7 @@ interface MediaItem {
 }
 
 interface MediaThumbnailProps {
-  entityType: 'character' | 'arc' | 'gamble' | 'faction'
+  entityType: 'character' | 'arc' | 'gamble' | 'faction' | 'volume'
   entityId: number
   entityName?: string
   className?: string

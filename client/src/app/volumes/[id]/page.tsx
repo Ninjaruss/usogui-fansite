@@ -35,6 +35,8 @@ interface Volume {
   updatedAt: string
 }
 
+import MediaThumbnail from '../../../components/MediaThumbnail'
+
 export default function VolumeDetailPage() {
   const theme = useTheme()
   const [volume, setVolume] = useState<Volume | null>(null)
@@ -125,24 +127,16 @@ export default function VolumeDetailPage() {
             </Typography>
           )}
 
-          {volume.coverUrl ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
-              <img 
-                src={volume.coverUrl}
-                alt={`Volume ${volume.number} cover`}
-                style={{ 
-                  maxWidth: '200px',
-                  maxHeight: '300px',
-                  borderRadius: '8px',
-                  boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
-                }}
-              />
-            </Box>
-          ) : (
-            <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
-              <Book size={48} color={theme.palette.primary.main} />
-            </Box>
-          )}
+          <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
+            <MediaThumbnail
+              entityType="volume"
+              entityId={volume.id}
+              entityName={`Volume ${volume.number}`}
+              maxWidth="200px"
+              maxHeight="300px"
+              allowCycling={true}
+            />
+          </Box>
 
           <Box sx={{ mt: 2 }}>
             <Chip

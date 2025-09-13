@@ -31,6 +31,8 @@ interface Volume {
   endChapter: number
 }
 
+import MediaThumbnail from '../../components/MediaThumbnail'
+
 export default function VolumesPage() {
   const [volumes, setVolumes] = useState<Volume[]>([])
   const [loading, setLoading] = useState(true)
@@ -152,15 +154,16 @@ export default function VolumesPage() {
                         }
                       }}
                     >
-                      {volume.coverUrl && (
-                        <CardMedia
-                          component="img"
-                          height="200"
-                          image={volume.coverUrl}
-                          alt={`Volume ${volume.number} cover`}
-                          sx={{ objectFit: 'cover' }}
+                      <Box sx={{ position: 'relative' }}>
+                        <MediaThumbnail
+                          entityType="volume"
+                          entityId={volume.id}
+                          entityName={`Volume ${volume.number}`}
+                          maxWidth="100%"
+                          maxHeight="200px"
+                          allowCycling={false}
                         />
-                      )}
+                      </Box>
                       
                       <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>

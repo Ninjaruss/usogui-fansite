@@ -41,6 +41,7 @@ export enum MediaOwnerType {
   GAMBLE = 'gamble',
   FACTION = 'faction',
   USER = 'user',
+  VOLUME = 'volume',
 }
 
 @Entity()

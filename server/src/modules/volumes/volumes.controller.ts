@@ -11,6 +11,7 @@ import {
   UsePipes,
   ValidationPipe,
   UseGuards,
+  ParseIntPipe,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -172,6 +173,46 @@ export class VolumesController {
     return {
       chapters: this.service.getChapterRange(volume),
     };
+  }
+
+  @Get(':id/entity-display-media')
+  @ApiOperation({
+    summary: 'Get entity display media for volume',
+    description: 'Retrieve official display media for volume thumbnails',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'Volume ID',
+    type: 'number',
+  })
+  @ApiQuery({
+    name: 'userProgress',
+    required: false,
+    description: 'User progress (chapter number) for spoiler protection',
+    type: 'number',
+  })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    description: 'Page number',
+    type: 'number',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    description: 'Items per page',
+    type: 'number',
+  })
+  async getVolumeEntityDisplayMedia(
+    @Param('id', ParseIntPipe) id: number,
+    @Query('userProgress') userProgress?: number,
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+  ) {
+    return this.service.getVolumeEntityDisplayMedia(id, userProgress, {
+      page,
+      limit,
+    });
   }
 
   @Post()

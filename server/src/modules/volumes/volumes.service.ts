@@ -5,9 +5,15 @@ import { Volume } from '../../entities/volume.entity';
 import { CreateVolumeDto } from './dto/create-volume.dto';
 import { UpdateVolumeDto } from './dto/update-volume.dto';
 
+import { MediaService } from '../media/media.service';
+import { MediaOwnerType } from '../../entities/media.entity';
+
 @Injectable()
 export class VolumesService {
-  constructor(@InjectRepository(Volume) private repo: Repository<Volume>) {}
+  constructor(
+    @InjectRepository(Volume) private repo: Repository<Volume>,
+    private readonly mediaService: MediaService,
+  ) {}
 
   /**
    * Get all volumes with pagination and filtering
@@ -88,5 +94,39 @@ export class VolumesService {
       chapters.push(i);
     }
     return chapters;
+  }
+
+  /**
+   * Get entity display media for a volume
+   */
+  async getVolumeEntityDisplayMedia(
+    volumeId: number,
+    userProgress?: number,
+    options: {
+      page?: number;
+      limit?: number;
+    } = {},
+  ) {
+    const volume = await this.findOne(volumeId);
+
+    const result = await this.mediaService.findForEntityDisplay(
+      MediaOwnerType.VOLUME,
+      volumeId,
+      undefined, // no chapter filter - we'll handle spoilers separately
+      {
+        page: options.page,
+        limit: options.limit,
+      },
+    );
+
+    // Apply spoiler protection if user progress is provided
+    if (userProgress !== undefined) {
+      result.data = result.data.map((media) => ({
+        ...media,
+        isSpoiler: media.chapterNumber > userProgress,
+      }));
+    }
+
+    return result;
   }
 }

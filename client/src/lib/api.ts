@@ -562,7 +562,7 @@ class ApiClient {
 
   async uploadMedia(file: File, data: {
     type: 'image' | 'video' | 'audio'
-    ownerType: 'character' | 'arc' | 'event' | 'gamble' | 'faction' | 'user'
+    ownerType: 'character' | 'arc' | 'event' | 'gamble' | 'faction' | 'user' | 'volume'
     ownerId: number
     chapterNumber?: number
     purpose?: 'gallery' | 'entity_display'
@@ -935,7 +935,7 @@ class ApiClient {
     page?: number
     limit?: number
     type?: string
-    ownerType?: 'character' | 'arc' | 'event' | 'gamble' | 'faction' | 'user'
+    ownerType?: 'character' | 'arc' | 'event' | 'gamble' | 'faction' | 'user' | 'volume'
     ownerId?: number
     purpose?: 'gallery' | 'entity_display'
   }) {
@@ -958,7 +958,7 @@ class ApiClient {
   }
 
   async getMediaForOwner(
-    ownerType: 'character' | 'arc' | 'event' | 'gamble' | 'faction' | 'user',
+    ownerType: 'character' | 'arc' | 'event' | 'gamble' | 'faction' | 'user' | 'volume',
     ownerId: number,
     params?: {
       chapter?: number
@@ -986,14 +986,14 @@ class ApiClient {
   }
 
   async getDefaultMediaForOwner(
-    ownerType: 'character' | 'arc' | 'event' | 'gamble' | 'faction' | 'user',
+    ownerType: 'character' | 'arc' | 'event' | 'gamble' | 'faction' | 'user' | 'volume',
     ownerId: number
   ) {
     return this.get<any>(`/media/owner/${ownerType}/${ownerId}/default`)
   }
 
   async getEntityDisplayMedia(
-    ownerType: 'character' | 'arc' | 'event' | 'gamble' | 'faction' | 'user',
+    ownerType: 'character' | 'arc' | 'event' | 'gamble' | 'faction' | 'user' | 'volume',
     ownerId: number,
     params?: {
       chapter?: number
@@ -1021,7 +1021,7 @@ class ApiClient {
   }
 
   async getGalleryMedia(
-    ownerType: 'character' | 'arc' | 'event' | 'gamble' | 'faction' | 'user',
+    ownerType: 'character' | 'arc' | 'event' | 'gamble' | 'faction' | 'user' | 'volume',
     ownerId: number,
     params?: {
       chapter?: number
@@ -1049,7 +1049,7 @@ class ApiClient {
   }
 
   async getThumbnailForUserProgress(
-    ownerType: 'character' | 'arc' | 'event' | 'gamble' | 'faction' | 'user',
+    ownerType: 'character' | 'arc' | 'event' | 'gamble' | 'faction' | 'user' | 'volume',
     ownerId: number,
     userProgress: number
   ) {
@@ -1057,7 +1057,7 @@ class ApiClient {
   }
 
   async getEntityDisplayMediaForCycling(
-    ownerType: 'character' | 'arc' | 'event' | 'gamble' | 'faction' | 'user',
+    ownerType: 'character' | 'arc' | 'event' | 'gamble' | 'faction' | 'user' | 'volume',
     ownerId: number,
     userProgress?: number
   ) {
