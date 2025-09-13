@@ -275,18 +275,6 @@ export default function UserProfilePage() {
                   />
                 </Box>
 
-                <Typography 
-                  variant="body1" 
-                  color="text.secondary" 
-                  sx={{ mb: 3, fontSize: '1.1rem' }}
-                >
-                  Member since {new Date(user.createdAt).toLocaleDateString('en-US', { 
-                    month: 'short', 
-                    day: 'numeric',
-                    year: 'numeric' 
-                  })}
-                </Typography>
-
                 {/* Improved Quick Stats */}
                 <Box sx={{ 
                   display: 'flex', 
