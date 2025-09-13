@@ -423,16 +423,17 @@ export default function ProfilePage() {
           <CardContent sx={{ p: 4 }}>
             <Box sx={{ 
               display: 'flex', 
-              alignItems: 'center', 
+              alignItems: 'flex-start', 
               gap: 3,
-              flexDirection: { xs: 'column', sm: 'row' },
-              textAlign: { xs: 'center', sm: 'left' }
+              flexDirection: 'row',
+              textAlign: 'left'
             }}>
               {/* Profile Image - Clickable */}
               <Box 
                 sx={{ 
                   position: 'relative',
                   cursor: 'pointer',
+                  flexShrink: 0,
                   '&:hover .camera-overlay': {
                     opacity: 1
                   }
@@ -475,7 +476,7 @@ export default function ProfilePage() {
                   gap: 2,
                   mb: 2,
                   flexWrap: 'wrap',
-                  justifyContent: { xs: 'center', sm: 'flex-start' }
+                  justifyContent: 'flex-start'
                 }}>
                   <Typography 
                     variant="h3" 
@@ -506,9 +507,9 @@ export default function ProfilePage() {
                 {/* Improved Quick Stats */}
                 <Box sx={{ 
                   display: 'flex', 
-                  gap: 3, 
-                  flexDirection: { xs: 'column', sm: 'row' },
-                  alignItems: { xs: 'center', sm: 'flex-start' },
+                  gap: 2, 
+                  flexDirection: 'row',
+                  alignItems: 'flex-start',
                   flexWrap: 'wrap',
                   mb: 3
                 }}>
@@ -516,13 +517,13 @@ export default function ProfilePage() {
                     display: 'flex',
                     alignItems: 'center',
                     gap: 2,
-                    px: 3,
-                    py: 2,
+                    px: 2,
+                    py: 1.5,
                     bgcolor: 'action.hover',
                     borderRadius: 3,
                     border: '1px solid',
                     borderColor: 'divider',
-                    minWidth: 140,
+                    minWidth: 120,
                     transition: 'all 0.2s ease',
                     '&:hover': {
                       borderColor: 'primary.main',
@@ -544,13 +545,13 @@ export default function ProfilePage() {
                     display: 'flex',
                     alignItems: 'center',
                     gap: 2,
-                    px: 3,
-                    py: 2,
+                    px: 2,
+                    py: 1.5,
                     bgcolor: 'action.hover',
                     borderRadius: 3,
                     border: '1px solid',
                     borderColor: 'divider',
-                    minWidth: 140,
+                    minWidth: 120,
                     transition: 'all 0.2s ease',
                     '&:hover': {
                       borderColor: 'secondary.main',
@@ -572,13 +573,13 @@ export default function ProfilePage() {
                     display: 'flex',
                     alignItems: 'center',
                     gap: 2,
-                    px: 3,
-                    py: 2,
+                    px: 2,
+                    py: 1.5,
                     bgcolor: 'action.hover',
                     borderRadius: 3,
                     border: '1px solid',
                     borderColor: 'divider',
-                    minWidth: 140,
+                    minWidth: 120,
                     transition: 'all 0.2s ease',
                     '&:hover': {
                       borderColor: 'info.main',
@@ -600,13 +601,13 @@ export default function ProfilePage() {
                     display: 'flex',
                     alignItems: 'center',
                     gap: 2,
-                    px: 3,
-                    py: 2,
+                    px: 2,
+                    py: 1.5,
                     bgcolor: 'action.hover',
                     borderRadius: 3,
                     border: '1px solid',
                     borderColor: 'divider',
-                    minWidth: 140,
+                    minWidth: 120,
                     transition: 'all 0.2s ease',
                     '&:hover': {
                       borderColor: 'success.main',
@@ -621,6 +622,7 @@ export default function ProfilePage() {
                       <Typography variant="h6" color="success.main" sx={{ fontWeight: 'bold', fontSize: '1.1rem' }}>
                         {user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-US', { 
                           month: 'short', 
+                          day: 'numeric',
                           year: 'numeric' 
                         }) : 'Unknown'}
                       </Typography>
@@ -633,8 +635,8 @@ export default function ProfilePage() {
                   display: 'flex',
                   alignItems: 'center',
                   gap: 2,
-                  px: 3,
-                  py: 2,
+                  px: 2,
+                  py: 1.5,
                   bgcolor: 'action.hover',
                   borderRadius: 3,
                   border: '1px solid',

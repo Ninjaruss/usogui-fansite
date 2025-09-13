@@ -8,15 +8,12 @@ import {
   Chip,
   Card,
   CardContent,
-  Grid,
   Button,
   CircularProgress,
   Alert,
-  Divider,
-  Avatar,
   LinearProgress
 } from '@mui/material'
-import { ArrowLeft, User, Crown, BookOpen, FileText, Quote, Dices, Calendar } from 'lucide-react'
+import { ArrowLeft, Crown, FileText, Quote, Dices, Calendar, BookOpen, Camera } from 'lucide-react'
 import { useTheme } from '@mui/material/styles'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
@@ -55,6 +52,11 @@ interface PublicUser {
   // Additional computed fields we might add
   guidesCount?: number
   totalViews?: number
+  userStats?: {
+    guidesWritten: number
+    mediaSubmitted: number
+    likesReceived: number
+  }
 }
 
 interface UserGuide {
@@ -72,7 +74,13 @@ export default function UserProfilePage() {
   const [guides, setGuides] = useState<UserGuide[]>([])
   const [favoriteQuote, setFavoriteQuote] = useState<any>(null)
   const [favoriteGamble, setFavoriteGamble] = useState<any>(null)
+  const [userStats, setUserStats] = useState<{
+    guidesWritten: number
+    mediaSubmitted: number
+    likesReceived: number
+  } | null>(null)
   const [loading, setLoading] = useState(true)
+  const [dataLoading, setDataLoading] = useState(true)
   const [error, setError] = useState('')
   const params = useParams()
 
@@ -83,6 +91,7 @@ export default function UserProfilePage() {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
+        setDataLoading(true)
         const id = Array.isArray(params.id) ? params.id[0] : params.id
         const userIdNum = Number(id)
         
@@ -90,18 +99,45 @@ export default function UserProfilePage() {
         const userData = await api.getPublicUserProfile(userIdNum)
         setUser(userData)
 
-        // Fetch user's public guides
-        try {
-          const guidesResponse = await api.getGuides({ limit: 10 })
-          // Filter guides by author on the client side for now
-          setGuides(guidesResponse.data?.filter(guide => guide.author?.id === userIdNum) || [])
-        } catch (guidesError) {
-          // Guides might not be available, continue without them
-          console.log('Could not fetch user guides:', guidesError)
+        // Use stats from API response if available, otherwise fetch user's public guides for fallback stats
+        if (userData.userStats) {
+          // Use stats from API response
+          setUserStats(userData.userStats)
+        } else {
+          // Fetch user's public guides for fallback stats calculation
+          try {
+            const guidesResponse = await api.getGuides({ limit: 100 })
+            // Filter guides by author on the client side for now
+            const userGuides = guidesResponse.data?.filter(guide => guide.author?.id === userIdNum) || []
+            setGuides(userGuides)
+            
+            // Set user stats based on available data as fallback
+            setUserStats({
+              guidesWritten: userGuides.length,
+              mediaSubmitted: 0, // TODO: Fetch from API when available
+              likesReceived: userGuides.reduce((total, guide) => total + (guide.likeCount || 0), 0)
+            })
+          } catch (guidesError) {
+            // Guides might not be available, set default values
+            console.log('Could not fetch user guides:', guidesError)
+            setUserStats({
+              guidesWritten: 0,
+              mediaSubmitted: 0,
+              likesReceived: 0
+            })
+          }
         }
 
-        // No need to fetch favorite quote and gamble separately anymore
-        // as they are included in the public profile response
+        // Fetch user's guides separately for display (regardless of stats source)
+        try {
+          const guidesResponse = await api.getGuides({ limit: 10 })
+          const userGuides = guidesResponse.data?.filter(guide => guide.author?.id === userIdNum) || []
+          setGuides(userGuides)
+        } catch (guidesError) {
+          console.log('Could not fetch user guides for display:', guidesError)
+        }
+
+        // Set favorite quote and gamble from API response
         if (userData.favoriteQuote) {
           setFavoriteQuote(userData.favoriteQuote)
         }
@@ -113,6 +149,7 @@ export default function UserProfilePage() {
         setError(error.message)
       } finally {
         setLoading(false)
+        setDataLoading(false)
       }
     }
 
@@ -146,7 +183,6 @@ export default function UserProfilePage() {
     )
   }
 
-  const progressPercentage = Math.round((user.userProgress / 539) * 100)
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -165,7 +201,15 @@ export default function UserProfilePage() {
         </Button>
 
         {/* Modern Profile Header */}
-        <Card className="gambling-card" sx={{ mb: 4, overflow: 'visible' }}>
+        <Card 
+          className="gambling-card" 
+          sx={{ 
+            mb: 4,
+            background: 'linear-gradient(135deg, rgba(25, 118, 210, 0.05) 0%, rgba(156, 39, 176, 0.05) 100%)',
+            border: '1px solid',
+            borderColor: 'divider'
+          }}
+        >
           <CardContent sx={{ p: 4 }}>
             <Box sx={{ 
               display: 'flex', 
@@ -217,12 +261,12 @@ export default function UserProfilePage() {
                   >
                     {user.username}
                   </Typography>
-
+                  
                   <Chip
                     label={user.role === 'admin' ? 'Admin' : 
                            user.role === 'moderator' ? 'Mod' : 'Member'}
                     color={user.role === 'admin' ? 'error' : user.role === 'moderator' ? 'warning' : 'primary'}
-                    icon={user.role === 'admin' || user.role === 'moderator' ? <Crown size={14} /> : <User size={14} />}
+                    icon={user.role === 'admin' || user.role === 'moderator' ? <Crown size={14} /> : undefined}
                     size="medium"
                     sx={{
                       fontWeight: 'bold',
@@ -236,40 +280,45 @@ export default function UserProfilePage() {
                   color="text.secondary" 
                   sx={{ mb: 3, fontSize: '1.1rem' }}
                 >
-                  Member since {new Date(user.createdAt).toLocaleDateString()}
+                  Member since {new Date(user.createdAt).toLocaleDateString('en-US', { 
+                    month: 'short', 
+                    day: 'numeric',
+                    year: 'numeric' 
+                  })}
                 </Typography>
 
                 {/* Improved Quick Stats */}
                 <Box sx={{ 
                   display: 'flex', 
-                  flexDirection: { xs: 'column', sm: 'row' },
-                  gap: 3,
+                  flexDirection: 'row',
+                  flexWrap: 'wrap',
+                  gap: 2,
                   mt: 2
                 }}>
                   <Box sx={{ 
                     display: 'flex', 
                     alignItems: 'center', 
                     gap: 2,
-                    px: 3,
-                    py: 2,
+                    px: 2,
+                    py: 1.5,
                     bgcolor: 'action.hover',
                     borderRadius: 3,
                     border: '1px solid',
                     borderColor: 'divider',
-                    minWidth: 140,
+                    minWidth: 120,
                     transition: 'all 0.2s ease',
                     '&:hover': {
                       borderColor: 'primary.main',
                       bgcolor: 'rgba(225, 29, 72, 0.05)'
                     }
                   }}>
-                    <BookOpen size={24} color={theme.palette.primary.main} />
-                    <Box>
+                    <FileText size={24} color="#e11d48" />
+                    <Box sx={{ textAlign: 'left' }}>
                       <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
-                        Current Chapter
+                        Guides Written
                       </Typography>
-                      <Typography variant="h5" fontWeight="bold" color="primary.main">
-                        {user.userProgress}
+                      <Typography variant="h5" color="primary" sx={{ fontWeight: 'bold' }}>
+                        {userStats ? userStats.guidesWritten : dataLoading ? '...' : '0'}
                       </Typography>
                     </Box>
                   </Box>
@@ -278,26 +327,26 @@ export default function UserProfilePage() {
                     display: 'flex', 
                     alignItems: 'center', 
                     gap: 2,
-                    px: 3,
-                    py: 2,
+                    px: 2,
+                    py: 1.5,
                     bgcolor: 'action.hover',
                     borderRadius: 3,
                     border: '1px solid',
                     borderColor: 'divider',
-                    minWidth: 140,
+                    minWidth: 120,
                     transition: 'all 0.2s ease',
                     '&:hover': {
                       borderColor: 'secondary.main',
                       bgcolor: 'rgba(124, 58, 237, 0.05)'
                     }
                   }}>
-                    <FileText size={24} color={theme.palette.secondary.main} />
-                    <Box>
+                    <Camera size={24} color="#7c3aed" />
+                    <Box sx={{ textAlign: 'left' }}>
                       <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
-                        Guides Written
+                        Media Submitted
                       </Typography>
-                      <Typography variant="h5" fontWeight="bold" color="secondary.main">
-                        {guides.length}
+                      <Typography variant="h5" color="secondary" sx={{ fontWeight: 'bold' }}>
+                        {userStats ? userStats.mediaSubmitted : dataLoading ? '...' : '0'}
                       </Typography>
                     </Box>
                   </Box>
@@ -306,27 +355,56 @@ export default function UserProfilePage() {
                     display: 'flex', 
                     alignItems: 'center', 
                     gap: 2,
-                    px: 3,
-                    py: 2,
+                    px: 2,
+                    py: 1.5,
                     bgcolor: 'action.hover',
                     borderRadius: 3,
                     border: '1px solid',
                     borderColor: 'divider',
-                    minWidth: 140,
+                    minWidth: 120,
+                    transition: 'all 0.2s ease',
+                    '&:hover': {
+                      borderColor: 'info.main',
+                      bgcolor: 'rgba(25, 118, 210, 0.05)'
+                    }
+                  }}>
+                    <BookOpen size={24} color="#1976d2" />
+                    <Box sx={{ textAlign: 'left' }}>
+                      <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                        Likes Received
+                      </Typography>
+                      <Typography variant="h5" color="info.main" sx={{ fontWeight: 'bold' }}>
+                        {userStats ? userStats.likesReceived : dataLoading ? '...' : '0'}
+                      </Typography>
+                    </Box>
+                  </Box>
+                  
+                  <Box sx={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: 2,
+                    px: 2,
+                    py: 1.5,
+                    bgcolor: 'action.hover',
+                    borderRadius: 3,
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    minWidth: 120,
                     transition: 'all 0.2s ease',
                     '&:hover': {
                       borderColor: 'success.main',
                       bgcolor: 'rgba(56, 142, 60, 0.05)'
                     }
                   }}>
-                    <Calendar size={24} color={theme.palette.success.main} />
-                    <Box>
+                    <Calendar size={24} color="#388e3c" />
+                    <Box sx={{ textAlign: 'left' }}>
                       <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
                         Joined
                       </Typography>
-                      <Typography variant="h6" fontWeight="bold" color="success.main" sx={{ fontSize: '1.1rem' }}>
+                      <Typography variant="h6" color="success.main" sx={{ fontWeight: 'bold', fontSize: '1.1rem' }}>
                         {user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-US', { 
                           month: 'short', 
+                          day: 'numeric',
                           year: 'numeric' 
                         }) : 'Unknown'}
                       </Typography>
@@ -334,108 +412,164 @@ export default function UserProfilePage() {
                   </Box>
                 </Box>
 
+                {/* Improved Reading Progress Section */}
+                <Box sx={{ 
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 2,
+                  px: 3,
+                  py: 2,
+                  bgcolor: 'action.hover',
+                  borderRadius: 3,
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  mt: 2,
+                  transition: 'all 0.2s ease',
+                  '&:hover': {
+                    borderColor: 'success.main',
+                    bgcolor: 'rgba(56, 142, 60, 0.05)'
+                  }
+                }}>
+                  <BookOpen size={24} color="#388e3c" />
+                  <Box sx={{ flex: 1 }}>
+                    <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                      Reading Progress
+                    </Typography>
+                    <Typography variant="h6" color="success.main" sx={{ fontWeight: 'bold', mb: 1 }}>
+                      Chapter {user.userProgress} of 539 ({Math.round((user.userProgress / 539) * 100)}%)
+                    </Typography>
+                    <LinearProgress
+                      variant="determinate"
+                      value={(user.userProgress / 539) * 100}
+                      sx={{
+                        height: 10,
+                        borderRadius: 5,
+                        backgroundColor: 'action.hover',
+                        '& .MuiLinearProgress-bar': {
+                          borderRadius: 5,
+                          background: 'linear-gradient(90deg, #e11d48 0%, #7c3aed 100%)',
+                        },
+                        mb: 0
+                      }}
+                    />
+                  </Box>
+                </Box>
+
                 {/* Enhanced Favorites Section */}
                 {(favoriteQuote || favoriteGamble) && (
-                  <Box sx={{ mt: 3 }}>
-                    <Typography variant="h6" gutterBottom sx={{ 
-                      fontWeight: 'bold', 
-                      mb: 3,
-                      color: 'primary.main' 
+                  <Box sx={{ 
+                    mt: 3, 
+                    p: 3, 
+                    bgcolor: 'action.hover', 
+                    borderRadius: 3,
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    transition: 'all 0.2s ease',
+                    '&:hover': {
+                      borderColor: 'primary.main',
+                      bgcolor: 'rgba(225, 29, 72, 0.02)'
+                    }
+                  }}>
+                    <Box sx={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: 1, 
+                      mb: 2 
                     }}>
-                      Favorites
-                    </Typography>
+                      <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+                        Favorites
+                      </Typography>
+                    </Box>
                     
                     <Box sx={{ 
-                      display: 'grid', 
-                      gap: 2,
-                      gridTemplateColumns: { xs: '1fr', md: 'repeat(auto-fit, minmax(300px, 1fr))' }
+                      display: 'flex', 
+                      flexDirection: { xs: 'column', md: 'row' }, 
+                      gap: 3,
+                      alignItems: { xs: 'flex-start', md: 'flex-start' }
                     }}>
                       {favoriteQuote && (
-                        <Card sx={{ 
-                          p: 3, 
-                          borderRadius: 3,
+                        <Box sx={{ 
+                          flex: 1,
+                          p: 2,
+                          borderRadius: 2,
                           border: '1px solid',
                           borderColor: 'divider',
                           bgcolor: 'background.paper',
-                          transition: 'all 0.2s ease',
-                          '&:hover': {
-                            borderColor: '#7c3aed',
-                            bgcolor: 'rgba(124, 58, 237, 0.02)',
-                            transform: 'translateY(-2px)',
-                            boxShadow: '0 4px 12px rgba(124, 58, 237, 0.1)'
-                          }
+                          transition: 'all 0.2s ease'
                         }}>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
-                            <Quote size={20} color="#7c3aed" />
-                            <Typography variant="subtitle2" sx={{ fontWeight: 'bold', color: '#7c3aed' }}>
+                          <Box sx={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            gap: 1, 
+                            mb: 2
+                          }}>
+                            <Quote size={18} color="#00796b" />
+                            <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.primary' }}>
                               Favorite Quote
                             </Typography>
                           </Box>
-                          <Typography variant="body2" sx={{ 
-                            fontStyle: 'italic',
-                            mb: 2,
-                            lineHeight: 1.5,
-                            color: 'text.primary'
-                          }}>
-                            "{favoriteQuote.text}"
-                          </Typography>
-                          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
-                            <Chip 
-                              label={favoriteQuote.character?.name || 'Unknown'} 
-                              size="small" 
-                              sx={{
-                                bgcolor: 'rgba(124, 58, 237, 0.1)',
-                                color: '#7c3aed',
-                                fontWeight: 'medium'
-                              }}
-                            />
-                            {favoriteQuote.chapterNumber && (
-                              <Chip 
-                                label={`Ch. ${favoriteQuote.chapterNumber}`} 
-                                size="small" 
-                                sx={{
-                                  bgcolor: 'rgba(225, 29, 72, 0.1)',
-                                  color: '#e11d48',
-                                  fontWeight: 'medium'
-                                }}
-                              />
-                            )}
+                          <Box sx={{ maxWidth: '400px' }}>
+                            <Box>
+                              <Typography variant="body2" sx={{ 
+                                fontStyle: 'italic',
+                                mb: 1.5,
+                                overflow: 'hidden',
+                                display: '-webkit-box',
+                                WebkitLineClamp: 2,
+                                WebkitBoxOrient: 'vertical',
+                                lineHeight: 1.4,
+                                color: 'text.primary'
+                              }}>
+                                &ldquo;{favoriteQuote.text}&rdquo;
+                              </Typography>
+                              <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                                <Chip 
+                                  label={favoriteQuote.character?.name || 'Unknown'} 
+                                  size="small" 
+                                  variant="outlined"
+                                  sx={{ bgcolor: 'rgba(0, 121, 107, 0.1)', borderColor: '#00796b' }}
+                                />
+                                {favoriteQuote.chapterNumber && (
+                                  <Chip 
+                                    label={`Ch. ${favoriteQuote.chapterNumber}`} 
+                                    size="small" 
+                                    variant="outlined"
+                                    color="primary"
+                                  />
+                                )}
+                              </Box>
+                            </Box>
                           </Box>
-                        </Card>
+                        </Box>
                       )}
 
                       {favoriteGamble && (
-                        <Card sx={{ 
-                          p: 3, 
-                          borderRadius: 3,
+                        <Box sx={{ 
+                          p: 2,
+                          borderRadius: 2,
                           border: '1px solid',
                           borderColor: 'divider',
                           bgcolor: 'background.paper',
                           transition: 'all 0.2s ease',
-                          '&:hover': {
-                            borderColor: '#e11d48',
-                            bgcolor: 'rgba(225, 29, 72, 0.02)',
-                            transform: 'translateY(-2px)',
-                            boxShadow: '0 4px 12px rgba(225, 29, 72, 0.1)'
-                          }
+                          minWidth: { md: 200 }
                         }}>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
-                            <Dices size={20} color="#e11d48" />
-                            <Typography variant="subtitle2" sx={{ fontWeight: 'bold', color: '#e11d48' }}>
+                          <Box sx={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            gap: 1, 
+                            mb: 2
+                          }}>
+                            <Dices size={18} color="#d32f2f" />
+                            <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.primary' }}>
                               Favorite Gamble
                             </Typography>
                           </Box>
-                          <Box sx={{ mt: 1 }}>
-                            <GambleChip 
-                              gamble={{
-                                id: favoriteGamble.id,
-                                name: favoriteGamble.name,
-                                rules: favoriteGamble.rules
-                              }} 
-                              size="medium" 
-                            />
-                          </Box>
-                        </Card>
+                          <GambleChip gamble={{
+                            id: favoriteGamble.id,
+                            name: favoriteGamble.name,
+                            rules: favoriteGamble.rules
+                          }} size="medium" />
+                        </Box>
                       )}
                     </Box>
                   </Box>
@@ -445,191 +579,62 @@ export default function UserProfilePage() {
           </CardContent>
         </Card>
 
-        {/* Profile Picture Information */}
-        {user.profilePictureType === 'character_media' && user.selectedCharacterMedia && (
-          <Card className="gambling-card" sx={{ mb: 4 }}>
+
+        {/* User's Guides Section */}
+        {guides.length > 0 && (
+          <Card className="gambling-card">
             <CardContent>
-              <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <User size={20} />
-                Profile Picture
-              </Typography>
-              
-              <Box sx={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: 2,
-                p: 2,
-                bgcolor: 'action.hover',
-                borderRadius: 2
-              }}>
-                <Avatar
-                  src={user.selectedCharacterMedia.url}
-                  sx={{ width: 64, height: 64 }}
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                <Typography variant="h5" gutterBottom>
+                  Guides by {user.username}
+                </Typography>
+                <Button
+                  component={Link}
+                  href={`/guides?author=${user.id}&authorName=${encodeURIComponent(user.username)}`}
+                  size="small"
+                  color="primary"
                 >
-                  {user.selectedCharacterMedia.character?.name?.[0] || '?'}
-                </Avatar>
-                
-                <Box sx={{ flex: 1 }}>
-                  <Typography variant="h6" gutterBottom>
-                    {user.selectedCharacterMedia.character?.name || 'Unknown Character'}
-                  </Typography>
-                  
-                  {user.selectedCharacterMedia.chapterNumber && (
-                    <Typography variant="body2" color="text.secondary" gutterBottom>
-                      Chapter {user.selectedCharacterMedia.chapterNumber}
-                    </Typography>
-                  )}
-                  
-                  {user.selectedCharacterMedia.description && (
-                    <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
-                      {user.selectedCharacterMedia.description}
-                    </Typography>
-                  )}
-                </Box>
+                  View All
+                </Button>
               </Box>
+              
+              {guides.map((guide) => (
+                <Card key={guide.id} variant="outlined" sx={{ mb: 2 }}>
+                  <CardContent>
+                    <Typography 
+                      variant="h6" 
+                      component={Link} 
+                      href={`/guides/${guide.id}`}
+                      sx={{ textDecoration: 'none', color: 'primary.main', '&:hover': { textDecoration: 'underline' } }}
+                    >
+                      {guide.title}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1, mb: 2 }}>
+                      {guide.description}
+                    </Typography>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Box sx={{ display: 'flex', gap: 2 }}>
+                        <Typography variant="caption" color="text.secondary">
+                          {guide.viewCount} views
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {guide.likeCount} likes
+                        </Typography>
+                      </Box>
+                      <Typography variant="caption" color="text.secondary">
+                        {new Date(guide.createdAt).toLocaleDateString('en-US', { 
+                          month: 'short', 
+                          day: 'numeric',
+                          year: 'numeric' 
+                        })}
+                      </Typography>
+                    </Box>
+                  </CardContent>
+                </Card>
+              ))}
             </CardContent>
           </Card>
         )}
-
-        <Grid container spacing={4}>
-          <Grid item xs={12} md={8}>
-            {/* User's Guides Section */}
-            {guides.length > 0 && (
-              <Card className="gambling-card">
-                <CardContent>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                    <Typography variant="h5" gutterBottom>
-                      Guides by {user.username}
-                    </Typography>
-                    <Button
-                      component={Link}
-                      href={`/guides?author=${user.id}&authorName=${encodeURIComponent(user.username)}`}
-                      size="small"
-                      color="primary"
-                    >
-                      View All
-                    </Button>
-                  </Box>
-                  
-                  {guides.map((guide) => (
-                    <Card key={guide.id} variant="outlined" sx={{ mb: 2 }}>
-                      <CardContent>
-                        <Typography 
-                          variant="h6" 
-                          component={Link} 
-                          href={`/guides/${guide.id}`}
-                          sx={{ textDecoration: 'none', color: 'primary.main', '&:hover': { textDecoration: 'underline' } }}
-                        >
-                          {guide.title}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary" sx={{ mt: 1, mb: 2 }}>
-                          {guide.description}
-                        </Typography>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <Box sx={{ display: 'flex', gap: 2 }}>
-                            <Typography variant="caption" color="text.secondary">
-                              {guide.viewCount} views
-                            </Typography>
-                            <Typography variant="caption" color="text.secondary">
-                              {guide.likeCount} likes
-                            </Typography>
-                          </Box>
-                          <Typography variant="caption" color="text.secondary">
-                            {new Date(guide.createdAt).toLocaleDateString()}
-                          </Typography>
-                        </Box>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </CardContent>
-              </Card>
-            )}
-          </Grid>
-
-          <Grid item xs={12} md={4}>
-            <Card className="gambling-card">
-              <CardContent>
-                <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <BookOpen size={20} />
-                  Reading Progress
-                </Typography>
-                
-                <Box sx={{ mb: 3 }}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                    <Typography variant="body2" color="text.secondary">
-                      Current Chapter
-                    </Typography>
-                    <Typography variant="h5" fontWeight="bold" color="primary.main">
-                      {user.userProgress}
-                    </Typography>
-                  </Box>
-                  
-                  <LinearProgress
-                    variant="determinate"
-                    value={progressPercentage}
-                    sx={{
-                      height: 12,
-                      borderRadius: 2,
-                      bgcolor: 'action.hover',
-                      '& .MuiLinearProgress-bar': {
-                        borderRadius: 2,
-                        background: `linear-gradient(90deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
-                      },
-                    }}
-                  />
-                  
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
-                    <Typography variant="body2" fontWeight="medium" color="primary.main">
-                      {progressPercentage}% complete
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {539 - user.userProgress} chapters remaining
-                    </Typography>
-                  </Box>
-                </Box>
-
-                <Divider sx={{ my: 3 }} />
-                
-                <Typography variant="h6" gutterBottom>
-                  Quick Links
-                </Typography>
-                
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                  <Button
-                    component={Link}
-                    href="/guides"
-                    variant="outlined"
-                    size="small"
-                    fullWidth
-                    startIcon={<FileText size={16} />}
-                  >
-                    Browse Guides
-                  </Button>
-                  <Button
-                    component={Link}
-                    href="/characters"
-                    variant="outlined"
-                    size="small"
-                    fullWidth
-                    startIcon={<User size={16} />}
-                  >
-                    Browse Characters
-                  </Button>
-                  <Button
-                    component={Link}
-                    href={`/chapters/${user.userProgress}`}
-                    variant="outlined"
-                    size="small"
-                    fullWidth
-                    startIcon={<BookOpen size={16} />}
-                  >
-                    Current Chapter
-                  </Button>
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-        </Grid>
       </motion.div>
     </Container>
   )

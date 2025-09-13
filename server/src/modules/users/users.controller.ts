@@ -166,6 +166,14 @@ export class UsersController {
         favoriteQuote: { type: 'object', nullable: true },
         favoriteGambleId: { type: 'number', nullable: true },
         favoriteGamble: { type: 'object', nullable: true },
+        userStats: {
+          type: 'object',
+          properties: {
+            guidesWritten: { type: 'number', example: 5 },
+            mediaSubmitted: { type: 'number', example: 12 },
+            likesReceived: { type: 'number', example: 28 },
+          },
+        },
         createdAt: { type: 'string', format: 'date-time' },
       },
     },
@@ -174,6 +182,9 @@ export class UsersController {
   @ApiParam({ name: 'id', description: 'User ID', example: 1 })
   async getPublicUserProfile(@Param('id', ParseIntPipe) id: number) {
     const user = await this.service.getUserProfile(id);
+    
+    // Get user stats for public profile
+    const userStats = await this.service.getUserProfileStats(id);
 
     // Return only safe, non-sensitive information for public access
     return {
@@ -199,6 +210,7 @@ export class UsersController {
       favoriteGamble: user.favoriteGamble,
       discordId: user.discordId,
       discordAvatar: user.discordAvatar,
+      userStats,
       createdAt: user.createdAt,
     };
   }
