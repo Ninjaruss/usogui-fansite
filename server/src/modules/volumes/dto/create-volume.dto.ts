@@ -4,10 +4,8 @@ import {
   IsNumber,
   IsOptional,
   IsNotEmpty,
-  MinLength,
   MaxLength,
   Min,
-  IsUrl,
 } from 'class-validator';
 
 export class CreateVolumeDto {
@@ -19,16 +17,6 @@ export class CreateVolumeDto {
     example: 1,
   })
   number: number;
-
-  @IsString()
-  @IsOptional()
-  @IsUrl()
-  @MaxLength(500)
-  @ApiPropertyOptional({
-    description: 'URL to the volume cover image',
-    example: 'https://example.com/covers/volume1.jpg',
-  })
-  coverUrl?: string;
 
   @IsNumber()
   @IsNotEmpty()
@@ -56,5 +44,6 @@ export class CreateVolumeDto {
   })
   description?: string;
 
-  // (series concept removed)
+  // Cover images are now handled polymorphically through the Media entity
+  // with ownerType='volume' and ownerId=volume.id
 }

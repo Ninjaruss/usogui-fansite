@@ -120,16 +120,18 @@ export class UsersController {
       userProgress: user.userProgress,
       profilePictureType: user.profilePictureType,
       selectedCharacterMediaId: user.selectedCharacterMediaId,
-      selectedCharacterMedia: user.selectedCharacterMedia ? {
-        id: user.selectedCharacterMedia.id,
-        url: user.selectedCharacterMedia.url,
-        fileName: user.selectedCharacterMedia.fileName,
-        description: user.selectedCharacterMedia.description,
-        ownerType: user.selectedCharacterMedia.ownerType,
-        ownerId: user.selectedCharacterMedia.ownerId,
-        chapterNumber: user.selectedCharacterMedia.chapterNumber,
-        character: (user.selectedCharacterMedia as any).character || null,
-      } : null,
+      selectedCharacterMedia: user.selectedCharacterMedia
+        ? {
+            id: user.selectedCharacterMedia.id,
+            url: user.selectedCharacterMedia.url,
+            fileName: user.selectedCharacterMedia.fileName,
+            description: user.selectedCharacterMedia.description,
+            ownerType: user.selectedCharacterMedia.ownerType,
+            ownerId: user.selectedCharacterMedia.ownerId,
+            chapterNumber: user.selectedCharacterMedia.chapterNumber,
+            character: (user.selectedCharacterMedia as any).character || null,
+          }
+        : null,
       discordId: user.discordId,
       discordAvatar: user.discordAvatar,
       createdAt: user.createdAt,
@@ -182,7 +184,7 @@ export class UsersController {
   @ApiParam({ name: 'id', description: 'User ID', example: 1 })
   async getPublicUserProfile(@Param('id', ParseIntPipe) id: number) {
     const user = await this.service.getUserProfile(id);
-    
+
     // Get user stats for public profile
     const userStats = await this.service.getUserProfileStats(id);
 
@@ -194,16 +196,18 @@ export class UsersController {
       userProgress: user.userProgress,
       profilePictureType: user.profilePictureType,
       selectedCharacterMediaId: user.selectedCharacterMediaId,
-      selectedCharacterMedia: user.selectedCharacterMedia ? {
-        id: user.selectedCharacterMedia.id,
-        url: user.selectedCharacterMedia.url,
-        fileName: user.selectedCharacterMedia.fileName,
-        description: user.selectedCharacterMedia.description,
-        ownerType: user.selectedCharacterMedia.ownerType,
-        ownerId: user.selectedCharacterMedia.ownerId,
-        chapterNumber: user.selectedCharacterMedia.chapterNumber,
-        character: (user.selectedCharacterMedia as any).character || null,
-      } : null,
+      selectedCharacterMedia: user.selectedCharacterMedia
+        ? {
+            id: user.selectedCharacterMedia.id,
+            url: user.selectedCharacterMedia.url,
+            fileName: user.selectedCharacterMedia.fileName,
+            description: user.selectedCharacterMedia.description,
+            ownerType: user.selectedCharacterMedia.ownerType,
+            ownerId: user.selectedCharacterMedia.ownerId,
+            chapterNumber: user.selectedCharacterMedia.chapterNumber,
+            character: (user.selectedCharacterMedia as any).character || null,
+          }
+        : null,
       favoriteQuoteId: user.favoriteQuoteId,
       favoriteQuote: user.favoriteQuote,
       favoriteGambleId: user.favoriteGambleId,
@@ -696,7 +700,10 @@ export class UsersController {
     description: 'Discord avatar refreshed successfully',
     type: User,
   })
-  @ApiResponse({ status: 400, description: 'User does not have Discord linked or Discord API error' })
+  @ApiResponse({
+    status: 400,
+    description: 'User does not have Discord linked or Discord API error',
+  })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async refreshDiscordAvatar(@CurrentUser() user: User): Promise<User> {
     return this.service.refreshDiscordAvatar(user.id);
@@ -802,31 +809,32 @@ export class UsersController {
     schema: {
       type: 'object',
       properties: {
-        guidesWritten: { 
-          type: 'number', 
+        guidesWritten: {
+          type: 'number',
           example: 5,
-          description: 'Number of published guides written by the user'
+          description: 'Number of published guides written by the user',
         },
-        mediaSubmitted: { 
-          type: 'number', 
+        mediaSubmitted: {
+          type: 'number',
           example: 12,
-          description: 'Total number of media submissions by the user'
+          description: 'Total number of media submissions by the user',
         },
-        likesReceived: { 
-          type: 'number', 
+        likesReceived: {
+          type: 'number',
           example: 28,
-          description: 'Total number of likes received on all published guides'
+          description: 'Total number of likes received on all published guides',
         },
       },
     },
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async getUserProfileStats(
-    @CurrentUser() user: User,
-  ): Promise<{ guidesWritten: number; mediaSubmitted: number; likesReceived: number }> {
+  async getUserProfileStats(@CurrentUser() user: User): Promise<{
+    guidesWritten: number;
+    mediaSubmitted: number;
+    likesReceived: number;
+  }> {
     return this.service.getUserProfileStats(user.id);
   }
-
 
   // --- Statistics endpoints ---
   @Get('stats/quote-popularity')

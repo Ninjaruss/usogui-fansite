@@ -20,13 +20,6 @@ export class Volume {
   @Column()
   number: number;
 
-  @ApiPropertyOptional({
-    description: 'URL to the volume cover image',
-    example: 'https://example.com/covers/volume1.jpg',
-  })
-  @Column({ nullable: true, length: 500 })
-  coverUrl: string;
-
   @ApiProperty({
     description: 'First chapter number included in this volume',
     example: 1,
@@ -46,6 +39,9 @@ export class Volume {
   })
   @Column({ type: 'text', nullable: true })
   description: string;
+
+  // Media relationships are now handled polymorphically through the Media entity
+  // with ownerType='volume' and ownerId=volume.id
 
   @ApiProperty({ description: 'When the volume was created' })
   @CreateDateColumn()

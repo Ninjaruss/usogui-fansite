@@ -54,17 +54,6 @@ export class Arc {
   @Column({ type: 'int', nullable: true })
   endChapter: number | null;
 
-  @ApiPropertyOptional({
-    description: 'Main arc image/cover art filename',
-    example: '17-steps-tournament-cover.webp',
-  })
-  @Column({ type: 'varchar', nullable: true, length: 500 })
-  imageFileName: string | null;
-
-  @ApiPropertyOptional({
-    description: 'Display name for the arc image',
-    example: '17 Steps Tournament - Official Cover',
-  })
-  @Column({ type: 'varchar', nullable: true, length: 200 })
-  imageDisplayName: string | null;
+  // Media relationships are now handled polymorphically through the Media entity
+  // with ownerType='arc' and ownerId=arc.id
 }

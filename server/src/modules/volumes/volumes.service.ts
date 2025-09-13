@@ -57,7 +57,6 @@ export class VolumesService {
   async create(data: CreateVolumeDto) {
     const volume = this.repo.create({
       number: data.number,
-      coverUrl: data.coverUrl,
       startChapter: data.startChapter,
       endChapter: data.endChapter,
       description: data.description,

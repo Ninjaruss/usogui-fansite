@@ -1,5 +1,10 @@
 import { DataSource } from 'typeorm';
-import { Media, MediaType, MediaStatus, MediaOwnerType } from '../../entities/media.entity';
+import {
+  Media,
+  MediaType,
+  MediaStatus,
+  MediaOwnerType,
+} from '../../entities/media.entity';
 import { Character } from '../../entities/character.entity';
 import { User } from '../../entities/user.entity';
 import { Seeder } from './seeder.interface';

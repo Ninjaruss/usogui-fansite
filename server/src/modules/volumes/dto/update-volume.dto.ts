@@ -3,10 +3,8 @@ import {
   IsString,
   IsNumber,
   IsOptional,
-  MinLength,
   MaxLength,
   Min,
-  IsUrl,
 } from 'class-validator';
 
 export class UpdateVolumeDto {
@@ -21,23 +19,12 @@ export class UpdateVolumeDto {
 
   @IsString()
   @IsOptional()
-  @MinLength(1)
   @MaxLength(200)
   @ApiPropertyOptional({
     description: 'Title of the volume',
     example: 'The Beginning',
   })
   title?: string;
-
-  @IsString()
-  @IsOptional()
-  @IsUrl()
-  @MaxLength(500)
-  @ApiPropertyOptional({
-    description: 'URL to the volume cover image',
-    example: 'https://example.com/covers/volume1.jpg',
-  })
-  coverUrl?: string;
 
   @IsNumber()
   @IsOptional()
@@ -66,5 +53,6 @@ export class UpdateVolumeDto {
   })
   description?: string;
 
-  // related collection id removed
+  // Cover images are now handled polymorphically through the Media entity
+  // with ownerType='volume' and ownerId=volume.id
 }

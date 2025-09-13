@@ -98,7 +98,6 @@ export class User {
   @Column({ type: 'int', default: 1 })
   userProgress: number;
 
-
   @ApiPropertyOptional({
     description: "ID of the user's favorite quote",
     example: 1,
@@ -133,7 +132,6 @@ export class User {
   })
   @Column({ type: 'int', nullable: true })
   selectedCharacterMediaId: number | null;
-
 
   @ApiPropertyOptional({
     description: "User's favorite quote object",

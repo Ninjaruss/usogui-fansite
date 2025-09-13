@@ -26,7 +26,9 @@ export class UsersService {
   ) {}
 
   // --- Find methods ---
-  async findAll(filters: { page?: number; limit?: number; username?: string } = {}): Promise<{
+  async findAll(
+    filters: { page?: number; limit?: number; username?: string } = {},
+  ): Promise<{
     data: User[];
     total: number;
     page: number;
@@ -35,40 +37,46 @@ export class UsersService {
   }> {
     const { page = 1, limit = 1000, username } = filters;
     const skip = (page - 1) * limit;
-    
+
     const queryBuilder = this.repo
       .createQueryBuilder('user')
-      .leftJoinAndSelect('user.selectedCharacterMedia', 'selectedCharacterMedia')
+      .leftJoinAndSelect(
+        'user.selectedCharacterMedia',
+        'selectedCharacterMedia',
+      )
       .skip(skip)
       .take(limit);
 
     // Add username filter if provided
     if (username) {
-      queryBuilder.where('user.username ILIKE :username', { 
-        username: `%${username}%` 
+      queryBuilder.where('user.username ILIKE :username', {
+        username: `%${username}%`,
       });
     }
 
     const [data, total] = await queryBuilder.getManyAndCount();
-    
+
     // Fetch character information for each user's selected character media
     for (const user of data) {
-      if (user.selectedCharacterMedia && user.selectedCharacterMedia.ownerType === 'character') {
+      if (
+        user.selectedCharacterMedia &&
+        user.selectedCharacterMedia.ownerType === 'character'
+      ) {
         const characterRepo = this.repo.manager.getRepository(Character);
         const character = await characterRepo.findOne({
-          where: { id: user.selectedCharacterMedia.ownerId }
+          where: { id: user.selectedCharacterMedia.ownerId },
         });
-        
+
         if (character) {
           // Add character information to the media object
           (user.selectedCharacterMedia as any).character = {
             id: character.id,
-            name: character.name
+            name: character.name,
           };
         }
       }
     }
-    
+
     const totalPages = Math.max(1, Math.ceil(total / limit));
     return { data, total, page, perPage: limit, totalPages };
   }
@@ -342,17 +350,19 @@ export class UsersService {
 
   async refreshDiscordAvatar(userId: number): Promise<User> {
     const user = await this.findOne(userId);
-    
+
     if (!user.discordId) {
-      throw new BadRequestException('User does not have a Discord account linked');
+      throw new BadRequestException(
+        'User does not have a Discord account linked',
+      );
     }
 
-    // Since we don't have a Discord Bot Token configured, and we don't store 
+    // Since we don't have a Discord Bot Token configured, and we don't store
     // user access tokens, we need to redirect the user to re-authenticate
     // via Discord OAuth to get fresh avatar data.
     throw new BadRequestException(
       'To refresh your Discord avatar, please log out and log back in with Discord. ' +
-      'This will fetch your latest avatar from Discord.'
+        'This will fetch your latest avatar from Discord.',
     );
   }
 
@@ -427,7 +437,7 @@ export class UsersService {
     // Handle profile picture type and character media selection
     if (updateProfileDto.profilePictureType !== undefined) {
       user.profilePictureType = updateProfileDto.profilePictureType;
-      
+
       // If switching to discord, clear character media selection
       if (updateProfileDto.profilePictureType === ProfilePictureType.DISCORD) {
         user.selectedCharacterMediaId = null;
@@ -445,21 +455,22 @@ export class UsersService {
       } else {
         const mediaRepo = this.repo.manager.getRepository(Media);
         const characterMedia = await mediaRepo.findOne({
-          where: { 
+          where: {
             id: updateProfileDto.selectedCharacterMediaId,
             purpose: MediaPurpose.ENTITY_DISPLAY,
             status: MediaStatus.APPROVED,
           },
           relations: ['submittedBy'],
         });
-        
+
         if (!characterMedia) {
           throw new NotFoundException(
             `Character media with id ${updateProfileDto.selectedCharacterMediaId} not found, not approved, or not entity display media`,
           );
         }
-        
-        user.selectedCharacterMediaId = updateProfileDto.selectedCharacterMediaId;
+
+        user.selectedCharacterMediaId =
+          updateProfileDto.selectedCharacterMediaId;
         user.profilePictureType = ProfilePictureType.CHARACTER_MEDIA;
       }
     }
@@ -493,24 +504,26 @@ export class UsersService {
     }
 
     // If user has selected character media, fetch the character information
-    if (user.selectedCharacterMedia && user.selectedCharacterMedia.ownerType === 'character') {
+    if (
+      user.selectedCharacterMedia &&
+      user.selectedCharacterMedia.ownerType === 'character'
+    ) {
       const characterRepo = this.repo.manager.getRepository(Character);
       const character = await characterRepo.findOne({
-        where: { id: user.selectedCharacterMedia.ownerId }
+        where: { id: user.selectedCharacterMedia.ownerId },
       });
-      
+
       if (character) {
         // Add character information to the media object
         (user.selectedCharacterMedia as any).character = {
           id: character.id,
-          name: character.name
+          name: character.name,
         };
       }
     }
 
     return user;
   }
-
 
   async getQuotePopularityStats(): Promise<
     Array<{ quote: Quote; userCount: number }>
