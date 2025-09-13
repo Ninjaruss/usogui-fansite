@@ -834,12 +834,12 @@ export default function ProfilePage() {
                   </Box>
                 )}
 
-                {/* Enhanced Add Favorites Section if none exist */}
-                {!user.favoriteQuoteId && !user.favoriteGambleId && (
-                  <Box sx={{ 
-                    mt: 3, 
-                    p: 4, 
-                    bgcolor: 'background.paper', 
+                {/* Add missing favorites section */}
+                {(!user.favoriteQuoteId || !user.favoriteGambleId) && (
+                  <Box sx={{
+                    mt: 3,
+                    p: 3,
+                    bgcolor: 'background.paper',
                     borderRadius: 3,
                     border: '2px dashed',
                     borderColor: 'primary.main',
@@ -851,38 +851,45 @@ export default function ProfilePage() {
                     }
                   }}>
                     <Typography variant="h6" sx={{ color: 'primary.main', fontWeight: 'bold', mb: 1 }}>
-                      Add Your Favorites
+                      {!user.favoriteQuoteId && !user.favoriteGambleId ? 'Add Your Favorites' : 'Complete Your Favorites'}
                     </Typography>
                     <Typography variant="body2" color="text.secondary" gutterBottom sx={{ mb: 3 }}>
-                      Showcase your favorite quote and gamble on your profile
+                      {!user.favoriteQuoteId && !user.favoriteGambleId
+                        ? 'Showcase your favorite quote and gamble on your profile'
+                        : 'Add your missing favorite to complete your profile'
+                      }
                     </Typography>
                     <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
-                      <Button 
-                        variant="contained" 
-                        startIcon={<Quote size={18} />}
-                        onClick={() => setQuoteSelectionOpen(true)}
-                        sx={{
-                          bgcolor: '#00796b',
-                          '&:hover': { bgcolor: '#005a52' },
-                          borderRadius: 2,
-                          px: 3
-                        }}
-                      >
-                        Add Favorite Quote
-                      </Button>
-                      <Button 
-                        variant="contained" 
-                        startIcon={<Dices size={18} />}
-                        onClick={() => setGambleSelectionOpen(true)}
-                        sx={{
-                          bgcolor: '#d32f2f',
-                          '&:hover': { bgcolor: '#b71c1c' },
-                          borderRadius: 2,
-                          px: 3
-                        }}
-                      >
-                        Add Favorite Gamble
-                      </Button>
+                      {!user.favoriteQuoteId && (
+                        <Button
+                          variant="contained"
+                          startIcon={<Quote size={18} />}
+                          onClick={() => setQuoteSelectionOpen(true)}
+                          sx={{
+                            bgcolor: '#00796b',
+                            '&:hover': { bgcolor: '#005a52' },
+                            borderRadius: 2,
+                            px: 3
+                          }}
+                        >
+                          Add Favorite Quote
+                        </Button>
+                      )}
+                      {!user.favoriteGambleId && (
+                        <Button
+                          variant="contained"
+                          startIcon={<Dices size={18} />}
+                          onClick={() => setGambleSelectionOpen(true)}
+                          sx={{
+                            bgcolor: '#d32f2f',
+                            '&:hover': { bgcolor: '#b71c1c' },
+                            borderRadius: 2,
+                            px: 3
+                          }}
+                        >
+                          Add Favorite Gamble
+                        </Button>
+                      )}
                     </Box>
                   </Box>
                 )}
