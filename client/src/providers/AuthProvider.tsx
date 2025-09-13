@@ -13,6 +13,7 @@ interface User {
   profileImageId?: string
   favoriteQuoteId?: number
   favoriteGambleId?: number
+  createdAt?: string
   // Discord fields
   discordId?: string | null
   discordUsername?: string | null

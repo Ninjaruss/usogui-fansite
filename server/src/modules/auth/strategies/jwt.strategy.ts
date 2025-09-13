@@ -33,6 +33,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       selectedCharacterMedia: user.selectedCharacterMedia,
       favoriteQuoteId: user.favoriteQuoteId,
       favoriteGambleId: user.favoriteGambleId,
+      createdAt: user.createdAt,
       // Discord fields
       discordId: user.discordId,
       discordUsername: user.discordUsername,

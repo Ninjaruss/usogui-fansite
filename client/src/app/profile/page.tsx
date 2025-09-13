@@ -29,7 +29,7 @@ import {
   useTheme,
   LinearProgress
 } from '@mui/material'
-import { User, Crown, Save, X, Camera, Search, AlertTriangle, Quote, Dices, Edit, BookOpen } from 'lucide-react'
+import { User, Crown, Save, X, Camera, Search, AlertTriangle, Quote, Dices, Edit, BookOpen, FileText, Calendar } from 'lucide-react'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import { useAuth } from '../../providers/AuthProvider'
 import { useProgress } from '../../providers/ProgressProvider'
@@ -468,118 +468,249 @@ export default function ProfilePage() {
               
               {/* User Info */}
               <Box sx={{ flex: 1 }}>
-                <Typography 
-                  variant="h3" 
-                  component="h1" 
-                  sx={{
-                    background: 'linear-gradient(45deg, #1976d2 30%, #9c27b0 90%)',
-                    backgroundClip: 'text',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    fontWeight: 'bold',
-                    mb: 1
-                  }}
-                >
-                  {user.username}
-                </Typography>
-                
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2, justifyContent: { xs: 'center', sm: 'flex-start' } }}>
+                {/* Username and Role Chip Row */}
+                <Box sx={{ 
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 2,
+                  mb: 2,
+                  flexWrap: 'wrap',
+                  justifyContent: { xs: 'center', sm: 'flex-start' }
+                }}>
+                  <Typography 
+                    variant="h3" 
+                    component="h1" 
+                    sx={{
+                      background: 'linear-gradient(45deg, #1976d2 30%, #9c27b0 90%)',
+                      backgroundClip: 'text',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                      fontWeight: 'bold',
+                      mb: 0
+                    }}
+                  >
+                    {user.username}
+                  </Typography>
+                  
                   <Chip
                     label={user.role === 'admin' ? 'Administrator' : 
                            user.role === 'moderator' ? 'Moderator' : 'Member'}
                     color={user.role === 'admin' ? 'error' : user.role === 'moderator' ? 'warning' : 'default'}
                     variant="outlined"
                     icon={user.role === 'admin' || user.role === 'moderator' ? <Crown size={16} /> : undefined}
+                    size="medium"
+                    sx={{ fontWeight: 'bold' }}
                   />
                 </Box>
                 
-                {/* Quick Stats */}
+                {/* Improved Quick Stats */}
                 <Box sx={{ 
                   display: 'flex', 
                   gap: 3, 
                   flexDirection: { xs: 'column', sm: 'row' },
-                  alignItems: { xs: 'center', sm: 'flex-start' }
+                  alignItems: { xs: 'center', sm: 'flex-start' },
+                  flexWrap: 'wrap',
+                  mb: 3
                 }}>
-                  <Box sx={{ textAlign: 'center' }}>
-                    <Typography variant="h6" color="primary" sx={{ fontWeight: 'bold' }}>
-                      {userStats ? userStats.guidesWritten : dataLoading ? '...' : '0'}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Guides Written
-                    </Typography>
+                  <Box sx={{ 
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 2,
+                    px: 3,
+                    py: 2,
+                    bgcolor: 'action.hover',
+                    borderRadius: 3,
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    minWidth: 140,
+                    transition: 'all 0.2s ease',
+                    '&:hover': {
+                      borderColor: 'primary.main',
+                      bgcolor: 'rgba(225, 29, 72, 0.05)'
+                    }
+                  }}>
+                    <FileText size={24} color="#e11d48" />
+                    <Box sx={{ textAlign: 'left' }}>
+                      <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                        Guides Written
+                      </Typography>
+                      <Typography variant="h5" color="primary" sx={{ fontWeight: 'bold' }}>
+                        {userStats ? userStats.guidesWritten : dataLoading ? '...' : '0'}
+                      </Typography>
+                    </Box>
                   </Box>
-                  <Box sx={{ textAlign: 'center' }}>
-                    <Typography variant="h6" color="secondary" sx={{ fontWeight: 'bold' }}>
-                      {userStats ? userStats.mediaSubmitted : dataLoading ? '...' : '0'}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Media Submitted
-                    </Typography>
+                  
+                  <Box sx={{ 
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 2,
+                    px: 3,
+                    py: 2,
+                    bgcolor: 'action.hover',
+                    borderRadius: 3,
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    minWidth: 140,
+                    transition: 'all 0.2s ease',
+                    '&:hover': {
+                      borderColor: 'secondary.main',
+                      bgcolor: 'rgba(124, 58, 237, 0.05)'
+                    }
+                  }}>
+                    <Camera size={24} color="#7c3aed" />
+                    <Box sx={{ textAlign: 'left' }}>
+                      <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                        Media Submitted
+                      </Typography>
+                      <Typography variant="h5" color="secondary" sx={{ fontWeight: 'bold' }}>
+                        {userStats ? userStats.mediaSubmitted : dataLoading ? '...' : '0'}
+                      </Typography>
+                    </Box>
                   </Box>
-                  <Box sx={{ textAlign: 'center' }}>
-                    <Typography variant="h6" color="info.main" sx={{ fontWeight: 'bold' }}>
-                      {userStats ? userStats.likesReceived : dataLoading ? '...' : '0'}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Likes Received
-                    </Typography>
+                  
+                  <Box sx={{ 
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 2,
+                    px: 3,
+                    py: 2,
+                    bgcolor: 'action.hover',
+                    borderRadius: 3,
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    minWidth: 140,
+                    transition: 'all 0.2s ease',
+                    '&:hover': {
+                      borderColor: 'info.main',
+                      bgcolor: 'rgba(25, 118, 210, 0.05)'
+                    }
+                  }}>
+                    <BookOpen size={24} color="#1976d2" />
+                    <Box sx={{ textAlign: 'left' }}>
+                      <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                        Likes Received
+                      </Typography>
+                      <Typography variant="h5" color="info.main" sx={{ fontWeight: 'bold' }}>
+                        {userStats ? userStats.likesReceived : dataLoading ? '...' : '0'}
+                      </Typography>
+                    </Box>
+                  </Box>
+                  
+                  <Box sx={{ 
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 2,
+                    px: 3,
+                    py: 2,
+                    bgcolor: 'action.hover',
+                    borderRadius: 3,
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    minWidth: 140,
+                    transition: 'all 0.2s ease',
+                    '&:hover': {
+                      borderColor: 'success.main',
+                      bgcolor: 'rgba(56, 142, 60, 0.05)'
+                    }
+                  }}>
+                    <Calendar size={24} color="#388e3c" />
+                    <Box sx={{ textAlign: 'left' }}>
+                      <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                        Joined
+                      </Typography>
+                      <Typography variant="h6" color="success.main" sx={{ fontWeight: 'bold', fontSize: '1.1rem' }}>
+                        {user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-US', { 
+                          month: 'short', 
+                          year: 'numeric' 
+                        }) : 'Unknown'}
+                      </Typography>
+                    </Box>
                   </Box>
                 </Box>
 
-                {/* Reading Progress Section */}
-                <Box sx={{ mt: 3 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                    <BookOpen size={20} />
-                    <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
+                {/* Improved Reading Progress Section */}
+                <Box sx={{ 
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 2,
+                  px: 3,
+                  py: 2,
+                  bgcolor: 'action.hover',
+                  borderRadius: 3,
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  mt: 2,
+                  transition: 'all 0.2s ease',
+                  '&:hover': {
+                    borderColor: 'success.main',
+                    bgcolor: 'rgba(56, 142, 60, 0.05)'
+                  }
+                }}>
+                  <BookOpen size={24} color="#388e3c" />
+                  <Box sx={{ flex: 1 }}>
+                    <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
                       Reading Progress
                     </Typography>
-                    <Typography variant="body2" color="text.secondary">
+                    <Typography variant="h6" color="success.main" sx={{ fontWeight: 'bold', mb: 1 }}>
                       Chapter {userProgress} of 539 ({Math.round((userProgress / 539) * 100)}%)
                     </Typography>
-                  </Box>
-                  
-                  <LinearProgress
-                    variant="determinate"
-                    value={(userProgress / 539) * 100}
-                    sx={{
-                      height: 10,
-                      borderRadius: 5,
-                      backgroundColor: 'action.hover',
-                      '& .MuiLinearProgress-bar': {
+                    <LinearProgress
+                      variant="determinate"
+                      value={(userProgress / 539) * 100}
+                      sx={{
+                        height: 10,
                         borderRadius: 5,
-                        background: 'linear-gradient(90deg, #1976d2 0%, #9c27b0 100%)',
-                      },
-                      mb: 2
-                    }}
-                  />
-                  
-                  {currentChapterInfo?.title && (
-                    <Typography 
-                      variant="body2" 
-                      color="text.secondary" 
-                      sx={{ 
-                        fontStyle: 'italic',
-                        textAlign: 'center'
+                        backgroundColor: 'action.hover',
+                        '& .MuiLinearProgress-bar': {
+                          borderRadius: 5,
+                          background: 'linear-gradient(90deg, #e11d48 0%, #7c3aed 100%)',
+                        },
+                        mb: currentChapterInfo?.title ? 1 : 0
                       }}
-                    >
-                      &ldquo;{currentChapterInfo.title}&rdquo;
-                    </Typography>
-                  )}
+                    />
+                    {currentChapterInfo?.title && (
+                      <Typography 
+                        variant="body2" 
+                        color="text.secondary" 
+                        sx={{ 
+                          fontStyle: 'italic',
+                          fontSize: '0.875rem'
+                        }}
+                      >
+                        &ldquo;{currentChapterInfo.title}&rdquo;
+                      </Typography>
+                    )}
+                  </Box>
                 </Box>
 
-                {/* Favorites Section */}
+                {/* Enhanced Favorites Section */}
                 {(user.favoriteQuoteId || user.favoriteGambleId) && (
                   <Box sx={{ 
                     mt: 3, 
-                    p: 2, 
+                    p: 3, 
                     bgcolor: 'action.hover', 
-                    borderRadius: 2,
+                    borderRadius: 3,
                     border: '1px solid',
-                    borderColor: 'divider'
+                    borderColor: 'divider',
+                    transition: 'all 0.2s ease',
+                    '&:hover': {
+                      borderColor: 'primary.main',
+                      bgcolor: 'rgba(225, 29, 72, 0.02)'
+                    }
                   }}>
-                    <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 'bold', mb: 2 }}>
-                      Favorites
-                    </Typography>
+                    <Box sx={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: 1, 
+                      mb: 2 
+                    }}>
+                      <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+                        Favorites
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
+                        (Click to change)
+                      </Typography>
+                    </Box>
                     
                     <Box sx={{ 
                       display: 'flex', 
@@ -588,22 +719,34 @@ export default function ProfilePage() {
                       alignItems: { xs: 'flex-start', md: 'flex-start' }
                     }}>
                       {user.favoriteQuoteId && (
-                        <Box sx={{ flex: 1 }}>
+                        <Box sx={{ 
+                          flex: 1,
+                          p: 2,
+                          borderRadius: 2,
+                          border: '1px solid',
+                          borderColor: 'divider',
+                          bgcolor: 'background.paper',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease',
+                          '&:hover': { 
+                            borderColor: 'primary.main',
+                            transform: 'translateY(-2px)',
+                            boxShadow: 2
+                          }
+                        }}
+                        onClick={() => setQuoteSelectionOpen(true)}
+                        >
                           <Box sx={{ 
                             display: 'flex', 
                             alignItems: 'center', 
                             gap: 1, 
-                            mb: 1,
-                            cursor: 'pointer',
-                            '&:hover': { opacity: 0.8 }
-                          }}
-                          onClick={() => setQuoteSelectionOpen(true)}
-                          >
-                            <Quote size={16} />
-                            <Typography variant="body2" color="text.secondary">
+                            mb: 2
+                          }}>
+                            <Quote size={18} color="#00796b" />
+                            <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.primary' }}>
                               Favorite Quote
                             </Typography>
-                            <Edit size={12} />
+                            <Edit size={14} color="#666" />
                           </Box>
                           <Box sx={{ maxWidth: '400px' }}>
                             {(() => {
@@ -612,20 +755,22 @@ export default function ProfilePage() {
                                 <Box>
                                   <Typography variant="body2" sx={{ 
                                     fontStyle: 'italic',
-                                    mb: 1,
+                                    mb: 1.5,
                                     overflow: 'hidden',
                                     display: '-webkit-box',
                                     WebkitLineClamp: 2,
                                     WebkitBoxOrient: 'vertical',
-                                    lineHeight: 1.4
+                                    lineHeight: 1.4,
+                                    color: 'text.primary'
                                   }}>
-                                    "{quote.text}"
+                                    &ldquo;{quote.text}&rdquo;
                                   </Typography>
                                   <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                                     <Chip 
                                       label={quote.character} 
                                       size="small" 
                                       variant="outlined"
+                                      sx={{ bgcolor: 'rgba(0, 121, 107, 0.1)', borderColor: '#00796b' }}
                                     />
                                     <Chip 
                                       label={`Ch. ${quote.chapterNumber}`} 
@@ -644,88 +789,97 @@ export default function ProfilePage() {
                       )}
 
                       {user.favoriteGambleId && (
-                        <Box>
+                        <Box sx={{ 
+                          p: 2,
+                          borderRadius: 2,
+                          border: '1px solid',
+                          borderColor: 'divider',
+                          bgcolor: 'background.paper',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease',
+                          minWidth: { md: 200 },
+                          '&:hover': { 
+                            borderColor: 'primary.main',
+                            transform: 'translateY(-2px)',
+                            boxShadow: 2
+                          }
+                        }}
+                        onClick={() => setGambleSelectionOpen(true)}
+                        >
                           <Box sx={{ 
                             display: 'flex', 
                             alignItems: 'center', 
                             gap: 1, 
-                            mb: 1,
-                            cursor: 'pointer',
-                            '&:hover': { opacity: 0.8 }
-                          }}
-                          onClick={() => setGambleSelectionOpen(true)}
-                          >
-                            <Dices size={16} />
-                            <Typography variant="body2" color="text.secondary">
+                            mb: 2
+                          }}>
+                            <Dices size={18} color="#d32f2f" />
+                            <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.primary' }}>
                               Favorite Gamble
                             </Typography>
-                            <Edit size={12} />
+                            <Edit size={14} color="#666" />
                           </Box>
                           {(() => {
                             const gamble = gambles.find(g => g.id === user.favoriteGambleId)
                             return gamble ? (
-                              <GambleChip gamble={gamble} size="small" />
+                              <GambleChip gamble={gamble} size="medium" />
                             ) : (
                               <Typography variant="body2" color="text.secondary">Loading...</Typography>
                             )
                           })()}
                         </Box>
                       )}
-
-                      {!user.favoriteQuoteId && !user.favoriteGambleId && (
-                        <Box sx={{ display: 'flex', gap: 1 }}>
-                          <Button 
-                            size="small" 
-                            variant="outlined" 
-                            startIcon={<Quote size={16} />}
-                            onClick={() => setQuoteSelectionOpen(true)}
-                          >
-                            Add Quote
-                          </Button>
-                          <Button 
-                            size="small" 
-                            variant="outlined" 
-                            startIcon={<Dices size={16} />}
-                            onClick={() => setGambleSelectionOpen(true)}
-                          >
-                            Add Gamble
-                          </Button>
-                        </Box>
-                      )}
                     </Box>
                   </Box>
                 )}
 
-                {/* Add Favorites Section if none exist */}
+                {/* Enhanced Add Favorites Section if none exist */}
                 {!user.favoriteQuoteId && !user.favoriteGambleId && (
                   <Box sx={{ 
                     mt: 3, 
-                    p: 2, 
-                    bgcolor: 'action.hover', 
-                    borderRadius: 2,
-                    border: '1px dashed',
-                    borderColor: 'divider',
-                    textAlign: 'center'
+                    p: 4, 
+                    bgcolor: 'background.paper', 
+                    borderRadius: 3,
+                    border: '2px dashed',
+                    borderColor: 'primary.main',
+                    textAlign: 'center',
+                    transition: 'all 0.2s ease',
+                    '&:hover': {
+                      borderColor: 'primary.dark',
+                      bgcolor: 'rgba(225, 29, 72, 0.02)'
+                    }
                   }}>
-                    <Typography variant="body2" color="text.secondary" gutterBottom>
-                      No favorites selected yet
+                    <Typography variant="h6" sx={{ color: 'primary.main', fontWeight: 'bold', mb: 1 }}>
+                      Add Your Favorites
                     </Typography>
-                    <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center', mt: 1 }}>
+                    <Typography variant="body2" color="text.secondary" gutterBottom sx={{ mb: 3 }}>
+                      Showcase your favorite quote and gamble on your profile
+                    </Typography>
+                    <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
                       <Button 
-                        size="small" 
-                        variant="outlined" 
-                        startIcon={<Quote size={16} />}
+                        variant="contained" 
+                        startIcon={<Quote size={18} />}
                         onClick={() => setQuoteSelectionOpen(true)}
+                        sx={{
+                          bgcolor: '#00796b',
+                          '&:hover': { bgcolor: '#005a52' },
+                          borderRadius: 2,
+                          px: 3
+                        }}
                       >
-                        Add Quote
+                        Add Favorite Quote
                       </Button>
                       <Button 
-                        size="small" 
-                        variant="outlined" 
-                        startIcon={<Dices size={16} />}
+                        variant="contained" 
+                        startIcon={<Dices size={18} />}
                         onClick={() => setGambleSelectionOpen(true)}
+                        sx={{
+                          bgcolor: '#d32f2f',
+                          '&:hover': { bgcolor: '#b71c1c' },
+                          borderRadius: 2,
+                          px: 3
+                        }}
                       >
-                        Add Gamble
+                        Add Favorite Gamble
                       </Button>
                     </Box>
                   </Box>

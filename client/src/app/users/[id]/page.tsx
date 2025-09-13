@@ -16,7 +16,7 @@ import {
   Avatar,
   LinearProgress
 } from '@mui/material'
-import { ArrowLeft, User, Crown, BookOpen, FileText, Quote, Dices } from 'lucide-react'
+import { ArrowLeft, User, Crown, BookOpen, FileText, Quote, Dices, Calendar } from 'lucide-react'
 import { useTheme } from '@mui/material/styles'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
@@ -173,10 +173,12 @@ export default function UserProfilePage() {
               alignItems: { xs: 'center', sm: 'flex-start' },
               gap: 3
             }}>
-              {/* Profile Image */}
+              {/* Profile Image - Now on the left */}
               <Box sx={{ 
-                position: 'relative',
-                flexShrink: 0
+                flexShrink: 0,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center'
               }}>
                 <UserProfileImage
                   user={user}
@@ -184,46 +186,50 @@ export default function UserProfilePage() {
                   showFallback={true}
                   className="user-profile-avatar-large"
                 />
-                
-                {/* Role Badge */}
-                <Chip
-                  label={user.role === 'admin' ? 'Admin' : 
-                         user.role === 'moderator' ? 'Mod' : 'Member'}
-                  color={user.role === 'admin' ? 'error' : user.role === 'moderator' ? 'warning' : 'primary'}
-                  icon={user.role === 'admin' || user.role === 'moderator' ? <Crown size={14} /> : <User size={14} />}
-                  size="small"
-                  sx={{
-                    position: 'absolute',
-                    bottom: -8,
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    fontWeight: 'bold',
-                    boxShadow: 2
-                  }}
-                />
               </Box>
 
-              {/* User Information */}
+              {/* User Information and Role Chip */}
               <Box sx={{ 
                 flex: 1,
-                textAlign: { xs: 'center', sm: 'left' },
-                minWidth: 0
+                minWidth: 0,
+                display: 'flex',
+                flexDirection: 'column'
               }}>
-                <Typography 
-                  variant="h3" 
-                  component="h1" 
-                  gutterBottom
-                  sx={{ 
-                    fontWeight: 700,
-                    background: `linear-gradient(135deg, ${theme.palette.text.primary} 0%, ${theme.palette.primary.main} 100%)`,
-                    backgroundClip: 'text',
-                    WebkitBackgroundClip: 'text',
-                    color: 'transparent',
-                    mb: 1
-                  }}
-                >
-                  {user.username}
-                </Typography>
+                {/* Username and Role Chip Row */}
+                <Box sx={{ 
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 2,
+                  mb: 2,
+                  flexWrap: 'wrap'
+                }}>
+                  <Typography 
+                    variant="h3" 
+                    component="h1" 
+                    sx={{ 
+                      fontWeight: 700,
+                      background: `linear-gradient(135deg, ${theme.palette.text.primary} 0%, ${theme.palette.primary.main} 100%)`,
+                      backgroundClip: 'text',
+                      WebkitBackgroundClip: 'text',
+                      color: 'transparent',
+                      mb: 0
+                    }}
+                  >
+                    {user.username}
+                  </Typography>
+
+                  <Chip
+                    label={user.role === 'admin' ? 'Admin' : 
+                           user.role === 'moderator' ? 'Mod' : 'Member'}
+                    color={user.role === 'admin' ? 'error' : user.role === 'moderator' ? 'warning' : 'primary'}
+                    icon={user.role === 'admin' || user.role === 'moderator' ? <Crown size={14} /> : <User size={14} />}
+                    size="medium"
+                    sx={{
+                      fontWeight: 'bold',
+                      boxShadow: 1
+                    }}
+                  />
+                </Box>
 
                 <Typography 
                   variant="body1" 
@@ -233,28 +239,36 @@ export default function UserProfilePage() {
                   Member since {new Date(user.createdAt).toLocaleDateString()}
                 </Typography>
 
-                {/* Quick Stats */}
+                {/* Improved Quick Stats */}
                 <Box sx={{ 
                   display: 'flex', 
                   flexDirection: { xs: 'column', sm: 'row' },
-                  gap: 2,
+                  gap: 3,
                   mt: 2
                 }}>
                   <Box sx={{ 
                     display: 'flex', 
                     alignItems: 'center', 
-                    gap: 1,
-                    px: 2,
-                    py: 1,
+                    gap: 2,
+                    px: 3,
+                    py: 2,
                     bgcolor: 'action.hover',
-                    borderRadius: 2
+                    borderRadius: 3,
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    minWidth: 140,
+                    transition: 'all 0.2s ease',
+                    '&:hover': {
+                      borderColor: 'primary.main',
+                      bgcolor: 'rgba(225, 29, 72, 0.05)'
+                    }
                   }}>
-                    <BookOpen size={20} color={theme.palette.primary.main} />
+                    <BookOpen size={24} color={theme.palette.primary.main} />
                     <Box>
-                      <Typography variant="caption" color="text.secondary" display="block">
+                      <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
                         Current Chapter
                       </Typography>
-                      <Typography variant="h6" fontWeight="bold">
+                      <Typography variant="h5" fontWeight="bold" color="primary.main">
                         {user.userProgress}
                       </Typography>
                     </Box>
@@ -263,110 +277,165 @@ export default function UserProfilePage() {
                   <Box sx={{ 
                     display: 'flex', 
                     alignItems: 'center', 
-                    gap: 1,
-                    px: 2,
-                    py: 1,
+                    gap: 2,
+                    px: 3,
+                    py: 2,
                     bgcolor: 'action.hover',
-                    borderRadius: 2
+                    borderRadius: 3,
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    minWidth: 140,
+                    transition: 'all 0.2s ease',
+                    '&:hover': {
+                      borderColor: 'secondary.main',
+                      bgcolor: 'rgba(124, 58, 237, 0.05)'
+                    }
                   }}>
-                    <FileText size={20} color={theme.palette.secondary.main} />
+                    <FileText size={24} color={theme.palette.secondary.main} />
                     <Box>
-                      <Typography variant="caption" color="text.secondary" display="block">
+                      <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
                         Guides Written
                       </Typography>
-                      <Typography variant="h6" fontWeight="bold">
+                      <Typography variant="h5" fontWeight="bold" color="secondary.main">
                         {guides.length}
+                      </Typography>
+                    </Box>
+                  </Box>
+                  
+                  <Box sx={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: 2,
+                    px: 3,
+                    py: 2,
+                    bgcolor: 'action.hover',
+                    borderRadius: 3,
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    minWidth: 140,
+                    transition: 'all 0.2s ease',
+                    '&:hover': {
+                      borderColor: 'success.main',
+                      bgcolor: 'rgba(56, 142, 60, 0.05)'
+                    }
+                  }}>
+                    <Calendar size={24} color={theme.palette.success.main} />
+                    <Box>
+                      <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                        Joined
+                      </Typography>
+                      <Typography variant="h6" fontWeight="bold" color="success.main" sx={{ fontSize: '1.1rem' }}>
+                        {user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-US', { 
+                          month: 'short', 
+                          year: 'numeric' 
+                        }) : 'Unknown'}
                       </Typography>
                     </Box>
                   </Box>
                 </Box>
 
-                {/* Favorites Section */}
+                {/* Enhanced Favorites Section */}
                 {(favoriteQuote || favoriteGamble) && (
-                  <Box sx={{ 
-                    mt: 3, 
-                    p: 2, 
-                    bgcolor: 'action.hover', 
-                    borderRadius: 2,
-                    border: '1px solid',
-                    borderColor: 'divider'
-                  }}>
-                    <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 'bold', mb: 2 }}>
+                  <Box sx={{ mt: 3 }}>
+                    <Typography variant="h6" gutterBottom sx={{ 
+                      fontWeight: 'bold', 
+                      mb: 3,
+                      color: 'primary.main' 
+                    }}>
                       Favorites
                     </Typography>
                     
                     <Box sx={{ 
-                      display: 'flex', 
-                      flexDirection: { xs: 'column', md: 'row' }, 
-                      gap: 3,
-                      alignItems: { xs: 'flex-start', md: 'flex-start' }
+                      display: 'grid', 
+                      gap: 2,
+                      gridTemplateColumns: { xs: '1fr', md: 'repeat(auto-fit, minmax(300px, 1fr))' }
                     }}>
                       {favoriteQuote && (
-                        <Box sx={{ flex: 1 }}>
-                          <Box sx={{ 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            gap: 1, 
-                            mb: 1
-                          }}>
-                            <Quote size={16} />
-                            <Typography variant="body2" color="text.secondary">
+                        <Card sx={{ 
+                          p: 3, 
+                          borderRadius: 3,
+                          border: '1px solid',
+                          borderColor: 'divider',
+                          bgcolor: 'background.paper',
+                          transition: 'all 0.2s ease',
+                          '&:hover': {
+                            borderColor: '#7c3aed',
+                            bgcolor: 'rgba(124, 58, 237, 0.02)',
+                            transform: 'translateY(-2px)',
+                            boxShadow: '0 4px 12px rgba(124, 58, 237, 0.1)'
+                          }
+                        }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
+                            <Quote size={20} color="#7c3aed" />
+                            <Typography variant="subtitle2" sx={{ fontWeight: 'bold', color: '#7c3aed' }}>
                               Favorite Quote
                             </Typography>
                           </Box>
-                          <Box sx={{ maxWidth: '400px' }}>
-                            <Typography variant="body2" sx={{ 
-                              fontStyle: 'italic',
-                              mb: 1,
-                              overflow: 'hidden',
-                              display: '-webkit-box',
-                              WebkitLineClamp: 2,
-                              WebkitBoxOrient: 'vertical',
-                              lineHeight: 1.4
-                            }}>
-                              "{favoriteQuote.text}"
-                            </Typography>
-                            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                          <Typography variant="body2" sx={{ 
+                            fontStyle: 'italic',
+                            mb: 2,
+                            lineHeight: 1.5,
+                            color: 'text.primary'
+                          }}>
+                            "{favoriteQuote.text}"
+                          </Typography>
+                          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
+                            <Chip 
+                              label={favoriteQuote.character?.name || 'Unknown'} 
+                              size="small" 
+                              sx={{
+                                bgcolor: 'rgba(124, 58, 237, 0.1)',
+                                color: '#7c3aed',
+                                fontWeight: 'medium'
+                              }}
+                            />
+                            {favoriteQuote.chapterNumber && (
                               <Chip 
-                                label={favoriteQuote.character?.name || 'Unknown'} 
+                                label={`Ch. ${favoriteQuote.chapterNumber}`} 
                                 size="small" 
-                                variant="outlined"
+                                sx={{
+                                  bgcolor: 'rgba(225, 29, 72, 0.1)',
+                                  color: '#e11d48',
+                                  fontWeight: 'medium'
+                                }}
                               />
-                              {favoriteQuote.chapterNumber && (
-                                <Chip 
-                                  label={`Ch. ${favoriteQuote.chapterNumber}`} 
-                                  size="small" 
-                                  variant="outlined"
-                                  color="primary"
-                                />
-                              )}
-                            </Box>
+                            )}
                           </Box>
-                        </Box>
+                        </Card>
                       )}
 
                       {favoriteGamble && (
-                        <Box>
-                          <Box sx={{ 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            gap: 1, 
-                            mb: 1
-                          }}>
-                            <Dices size={16} />
-                            <Typography variant="body2" color="text.secondary">
+                        <Card sx={{ 
+                          p: 3, 
+                          borderRadius: 3,
+                          border: '1px solid',
+                          borderColor: 'divider',
+                          bgcolor: 'background.paper',
+                          transition: 'all 0.2s ease',
+                          '&:hover': {
+                            borderColor: '#e11d48',
+                            bgcolor: 'rgba(225, 29, 72, 0.02)',
+                            transform: 'translateY(-2px)',
+                            boxShadow: '0 4px 12px rgba(225, 29, 72, 0.1)'
+                          }
+                        }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
+                            <Dices size={20} color="#e11d48" />
+                            <Typography variant="subtitle2" sx={{ fontWeight: 'bold', color: '#e11d48' }}>
                               Favorite Gamble
                             </Typography>
                           </Box>
-                          <GambleChip 
-                            gamble={{
-                              id: favoriteGamble.id,
-                              name: favoriteGamble.name,
-                              rules: favoriteGamble.rules
-                            }} 
-                            size="small" 
-                          />
-                        </Box>
+                          <Box sx={{ mt: 1 }}>
+                            <GambleChip 
+                              gamble={{
+                                id: favoriteGamble.id,
+                                name: favoriteGamble.name,
+                                rules: favoriteGamble.rules
+                              }} 
+                              size="medium" 
+                            />
+                          </Box>
+                        </Card>
                       )}
                     </Box>
                   </Box>
