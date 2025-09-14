@@ -558,7 +558,10 @@ export default function GambleDetailsPage() {
                     pointerEvents: 'none'
                   }
                 }}>
-                  <MediaGallery 
+                  <MediaGallery
+                    ownerType="gamble"
+                    ownerId={gamble.id}
+                    purpose="gallery"
                     limit={12}
                     showTitle={false}
                     compactMode={false}

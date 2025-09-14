@@ -13,12 +13,10 @@ import {
   Pagination,
   CircularProgress,
   Alert,
-  Chip,
-  Avatar
+  Chip
 } from '@mui/material'
-import { Search, Quote, Calendar } from 'lucide-react'
+import { Search, Quote } from 'lucide-react'
 import { useTheme } from '@mui/material/styles'
-import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { motion } from 'motion/react'
 import api from '@/lib/api'
@@ -31,11 +29,6 @@ interface Quote {
   tags: string[]
   chapter?: number
   volume?: number
-  submittedBy: {
-    id: number
-    username: string
-  }
-  createdAt: string
   updatedAt: string
 }
 
@@ -70,11 +63,6 @@ function QuotesPageContent() {
         tags: quote.tags ? (Array.isArray(quote.tags) ? quote.tags : [quote.tags]) : [],
         chapter: quote.chapterNumber,
         volume: quote.volumeNumber,
-        submittedBy: {
-          id: quote.submittedBy?.id || 0,
-          username: quote.submittedBy?.username || 'Unknown'
-        },
-        createdAt: quote.createdAt,
         updatedAt: quote.updatedAt
       }))
       
@@ -267,33 +255,6 @@ function QuotesPageContent() {
                           </Box>
                         )}
 
-                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mt: 'auto' }}>
-                          <Avatar sx={{ width: 20, height: 20, mr: 1, fontSize: '0.75rem' }}>
-                            {quote.submittedBy.username[0].toUpperCase()}
-                          </Avatar>
-                          <Typography 
-                            variant="body2" 
-                            color="text.secondary"
-                            component={Link}
-                            href={`/users/${quote.submittedBy.id}`}
-                            sx={{ 
-                              mr: 1,
-                              textDecoration: 'none',
-                              '&:hover': { 
-                                color: 'primary.main',
-                                textDecoration: 'underline'
-                              }
-                            }}
-                          >
-                            by {quote.submittedBy.username}
-                          </Typography>
-                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                            <Calendar size={12} />
-                            <Typography variant="body2" color="text.secondary" sx={{ ml: 0.5 }}>
-                              {new Date(quote.createdAt).toLocaleDateString()}
-                            </Typography>
-                          </Box>
-                        </Box>
                       </CardContent>
                     </Card>
                   </motion.div>

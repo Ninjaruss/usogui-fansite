@@ -14,6 +14,8 @@
 - Hid 401 unauthenticated error when not logged in
 - Fixed display of user profile pictures in guides
 - Added about page and donate button
+- Pending items counter added for guides/media
+- Cleaned up quotes page and gamble detail page
 
 ## 2025-09-12
 ### Changes 

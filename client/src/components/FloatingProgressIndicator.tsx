@@ -25,6 +25,7 @@ import Link from 'next/link'
 import { useProgress } from '../providers/ProgressProvider'
 import { useAuth } from '../providers/AuthProvider'
 import { motion, AnimatePresence } from 'motion/react'
+import api from '../lib/api'
 
 const Transition = React.forwardRef(function Transition(
   props: TransitionProps & {
@@ -46,12 +47,48 @@ export const FloatingProgressIndicator: React.FC = () => {
   const [isUpdating, setIsUpdating] = useState(false)
   const [error, setError] = useState('')
   const [showSuccess, setShowSuccess] = useState(false)
+  const [chapterTitle, setChapterTitle] = useState<string | null>(null)
+  const [currentChapterTitle, setCurrentChapterTitle] = useState<string | null>(null)
 
   const progressPercentage = Math.round((userProgress / MAX_CHAPTER) * 100)
 
   useEffect(() => {
     setTempProgress(userProgress)
   }, [userProgress])
+
+  // Fetch chapter title for current user progress
+  useEffect(() => {
+    const fetchCurrentChapterTitle = async () => {
+      if (userProgress && userProgress > 0) {
+        try {
+          const chapter = await api.getChapterByNumber(userProgress)
+          setCurrentChapterTitle(chapter.title)
+        } catch (error) {
+          console.error('Failed to fetch current chapter title:', error)
+          setCurrentChapterTitle(null)
+        }
+      }
+    }
+
+    fetchCurrentChapterTitle()
+  }, [userProgress])
+
+  // Fetch chapter title when tempProgress changes
+  useEffect(() => {
+    const fetchChapterTitle = async () => {
+      if (tempProgress && tempProgress > 0) {
+        try {
+          const chapter = await api.getChapterByNumber(tempProgress)
+          setChapterTitle(chapter.title)
+        } catch (error) {
+          console.error('Failed to fetch chapter title:', error)
+          setChapterTitle(null)
+        }
+      }
+    }
+
+    fetchChapterTitle()
+  }, [tempProgress])
 
   const handleOpen = () => {
     setOpen(true)
@@ -150,7 +187,11 @@ export const FloatingProgressIndicator: React.FC = () => {
         }}
       >
         <Tooltip
-          title={`Reading Progress: Chapter ${userProgress} (${progressPercentage}%)`}
+          title={
+            currentChapterTitle
+              ? `Reading Progress: Chapter ${userProgress} - ${currentChapterTitle} (${progressPercentage}%)`
+              : `Reading Progress: Chapter ${userProgress} (${progressPercentage}%)`
+          }
           placement="left"
         >
           <Fab
@@ -266,6 +307,11 @@ export const FloatingProgressIndicator: React.FC = () => {
             <Typography variant="h3" sx={{ fontWeight: 'bold', color: 'primary.main', mb: 1 }}>
               Chapter {tempProgress}
             </Typography>
+            {chapterTitle && (
+              <Typography variant="h6" sx={{ fontWeight: 'medium', color: 'text.primary', mb: 1 }}>
+                {chapterTitle}
+              </Typography>
+            )}
             <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
               Volume {volumeInfo.volume}, Chapter {volumeInfo.chapterInVolume}
             </Typography>
