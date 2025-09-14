@@ -3,7 +3,7 @@
 - Redis based rate limiting with caching middle ware for responses; add cache headers to specific routes
 - Update factions page/data; include members and possibly calculate faction switches based on events
 
-- Add image upload for gambles, events, factions, volumes (need to setup Backblaze + CDN); allow character profile picture choice from characters
+- Add image upload for gambles, events, factions, volumes (need to setup Backblaze + CDN)
 - Update landing page volume showcase to handle other volume covers (single and pairs) 
 - Add proper README at the root of the project; add AGPL v3 license to allow people to copy but force them to open source as well
 
