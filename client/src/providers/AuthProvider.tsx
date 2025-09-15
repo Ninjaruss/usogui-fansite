@@ -394,7 +394,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []) // Remove user dependency to prevent loops
 
   const loginWithDiscord = () => {
-    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'
     
     // Open in popup window instead of new tab for better communication
     const popup = window.open(
@@ -414,8 +414,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const devLogin = async (asAdmin: boolean = false) => {
     try {
-      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
-      const response = await fetch(`${API_BASE_URL}/api/auth/dev-login`, {
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'
+      const response = await fetch(`${API_BASE_URL}/auth/dev-login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
