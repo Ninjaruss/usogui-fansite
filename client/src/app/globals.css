@@ -113,3 +113,16 @@ body {
 .bg-guide { background-color: var(--color-guide); }
 .bg-media { background-color: var(--color-media); }
 .bg-quote { background-color: var(--color-quote); }
+
+/* Component-specific styles */
+.gamble-description-preview p {
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.4;
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+.gamble-description-preview * {
+  color: rgba(255, 255, 255, 0.7) !important;
+  font-size: 0.875rem !important;
+}

@@ -242,18 +242,6 @@ function GamblesPageContent() {
                           <SpoilerMarkdown
                             content={gamble.description || gamble.rules}
                             className="gamble-description-preview"
-                            sx={{
-                              '& p': {
-                                color: 'text.secondary',
-                                lineHeight: 1.4,
-                                fontSize: '0.875rem',
-                                margin: 0
-                              },
-                              '& *': {
-                                color: 'text.secondary !important',
-                                fontSize: '0.875rem !important'
-                              }
-                            }}
                           />
                         </Box>
 
