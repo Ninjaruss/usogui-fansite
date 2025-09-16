@@ -98,6 +98,7 @@ export class MediaService {
     filters: {
       page?: number;
       limit?: number;
+      search?: string;
       status?: string;
       type?: string;
       ownerType?: MediaOwnerType;
@@ -121,6 +122,7 @@ export class MediaService {
     const {
       page = 1,
       limit = 20,
+      search,
       status,
       type,
       ownerType,
@@ -146,6 +148,14 @@ export class MediaService {
       query.where('media.status = :status', { status: MediaStatus.APPROVED });
     }
     // If status === 'all', don't add any status filter to show all media
+
+    // Apply search filter
+    if (search) {
+      query.andWhere(
+        '(media.description ILIKE :search OR submittedBy.username ILIKE :search)',
+        { search: `%${search}%` },
+      );
+    }
 
     if (type) {
       query.andWhere('media.type = :type', { type });

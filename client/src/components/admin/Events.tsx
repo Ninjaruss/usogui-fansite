@@ -28,7 +28,8 @@ import {
   Tab,
   FormTab,
   TabbedForm,
-  FunctionField
+  FunctionField,
+  useListContext
 } from 'react-admin'
 import { Box, Typography } from '@mui/material'
 import EnhancedSpoilerMarkdown from '../EnhancedSpoilerMarkdown'
@@ -78,25 +79,195 @@ const EventListActions = () => (
   </TopToolbar>
 )
 
+const EventFilterToolbar = () => {
+  const { filterValues, setFilters } = useListContext()
+
+  const statusFilters = [
+    { id: 'all', name: 'All Events', color: '#666', icon: '🗂️' },
+    { id: 'draft', name: 'Draft', color: '#2196f3', icon: '📝' },
+    { id: 'pending_review', name: 'Pending Review', color: '#f57c00', icon: '⏳' },
+    { id: 'approved', name: 'Approved', color: '#4caf50', icon: '✅' }
+  ]
+
+  const handleStatusChange = (status: string) => {
+    const newFilters = { ...filterValues }
+    if (status === 'all') {
+      delete newFilters.status
+    } else {
+      newFilters.status = status
+    }
+    setFilters(newFilters, [])
+  }
+
+  const handleTypeChange = (type: string) => {
+    const newFilters = { ...filterValues }
+    if (!type) {
+      delete newFilters.type
+    } else {
+      newFilters.type = type
+    }
+    setFilters(newFilters, [])
+  }
+
+  const handleSearchChange = (search: string) => {
+    const newFilters = { ...filterValues }
+    if (!search) {
+      delete newFilters.q
+    } else {
+      newFilters.q = search
+    }
+    setFilters(newFilters, [])
+  }
+
+  const currentStatus = filterValues?.status || 'all'
+  const currentType = filterValues?.type || ''
+  const currentSearch = filterValues?.q || ''
+
+  return (
+    <Box sx={{
+      p: 2,
+      backgroundColor: 'rgba(10, 10, 10, 0.95)',
+      border: '1px solid rgba(225, 29, 72, 0.2)',
+      borderRadius: '8px 8px 0 0',
+      borderBottom: 'none'
+    }}>
+      <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
+        {/* Search Input */}
+        <Box sx={{ minWidth: 200 }}>
+          <input
+            type="text"
+            placeholder="Search events..."
+            value={currentSearch}
+            onChange={(e) => handleSearchChange(e.target.value)}
+            style={{
+              width: '100%',
+              height: '40px',
+              padding: '8px 12px',
+              backgroundColor: '#0f0f0f',
+              border: '1px solid rgba(225, 29, 72, 0.3)',
+              borderRadius: '4px',
+              color: '#ffffff',
+              fontSize: '14px'
+            }}
+          />
+        </Box>
+
+        {/* Status Filter Buttons */}
+        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+          {statusFilters.map((filter) => (
+            <button
+              key={filter.id}
+              onClick={() => handleStatusChange(filter.id)}
+              style={{
+                padding: '8px 12px',
+                backgroundColor: currentStatus === filter.id
+                  ? 'rgba(225, 29, 72, 0.2)'
+                  : 'rgba(10, 10, 10, 0.8)',
+                border: `1px solid ${currentStatus === filter.id
+                  ? '#e11d48'
+                  : 'rgba(225, 29, 72, 0.3)'}`,
+                borderRadius: '4px',
+                color: currentStatus === filter.id ? '#e11d48' : '#ffffff',
+                fontSize: '12px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}
+            >
+              <span>{filter.icon}</span>
+              {filter.name}
+            </button>
+          ))}
+        </Box>
+
+        {/* Type Filter */}
+        <Box sx={{ minWidth: 120 }}>
+          <select
+            value={currentType}
+            onChange={(e) => handleTypeChange(e.target.value)}
+            style={{
+              width: '100%',
+              height: '40px',
+              padding: '8px 12px',
+              backgroundColor: '#0f0f0f',
+              border: '1px solid rgba(225, 29, 72, 0.3)',
+              borderRadius: '4px',
+              color: '#ffffff',
+              fontSize: '14px'
+            }}
+          >
+            <option value="">All Types</option>
+            {EVENT_TYPE_CHOICES.map((choice) => (
+              <option key={choice.id} value={choice.id}>
+                {choice.name}
+              </option>
+            ))}
+          </select>
+        </Box>
+      </Box>
+    </Box>
+  )
+}
+
 export const EventList = () => (
-  <List 
-    filters={EventFilters} 
-    actions={<EventListActions />}
-    sort={{ field: 'chapterNumber', order: 'DESC' }}
+  <List
+    filterDefaultValues={{ status: 'all' }}
+    perPage={25}
+    sx={{
+      '& .RaList-content': {
+        '& > *:not(:last-child)': {
+          marginBottom: 0
+        }
+      }
+    }}
   >
-    <Datagrid rowClick="show" sx={{ '& .RaDatagrid-headerCell': { fontWeight: 600 } }}>
+    <EventFilterToolbar />
+    <Datagrid
+      rowClick="show"
+      sx={{
+        marginTop: 0,
+        borderRadius: '0 0 8px 8px',
+        border: '1px solid rgba(225, 29, 72, 0.2)',
+        borderTop: 'none',
+        overflow: 'hidden',
+        '& .RaDatagrid-table': {
+          borderRadius: 0,
+        },
+        '& .RaDatagrid-headerCell': {
+          fontWeight: 'bold',
+          fontSize: '0.9rem',
+          backgroundColor: 'rgba(10, 10, 10, 0.95)',
+          color: '#ffffff',
+          borderBottom: '2px solid #e11d48',
+          borderTop: 'none'
+        },
+        '& .RaDatagrid-rowCell': {
+          padding: '14px 10px',
+          backgroundColor: 'rgba(10, 10, 10, 0.8)',
+          color: '#ffffff',
+          borderBottom: '1px solid rgba(225, 29, 72, 0.2)'
+        },
+        '& .RaDatagrid-tbody tr:nth-of-type(even)': {
+          backgroundColor: 'rgba(225, 29, 72, 0.05)'
+        },
+        '& .RaDatagrid-tbody tr:hover': {
+          backgroundColor: 'rgba(225, 29, 72, 0.15) !important'
+        }
+      }}
+    >
       <TextField source="title" sx={{ fontWeight: 500 }} />
       <NumberField source="chapterNumber" label="Ch." />
       <TextField source="type" sx={{ textTransform: 'capitalize' }} />
       <Box component="div">
-        <TextField source="status" 
-          sx={{ 
+        <TextField source="status"
+          sx={{
             textTransform: 'capitalize',
             '& .MuiChip-root': {
               fontSize: '0.75rem',
               height: '24px'
             }
-          }} 
+          }}
         />
       </Box>
       <ReferenceField source="arcId" reference="arcs" label="Arc" emptyText="-">
@@ -111,7 +282,7 @@ export const EventList = () => (
 
 export const EventShow = () => (
   <Show>
-    <Box sx={{ 
+    <Box sx={{
       backgroundColor: '#0a0a0a',
       minHeight: '100vh',
       p: 3,
@@ -155,20 +326,20 @@ export const EventShow = () => (
       }}>
         <Tab label="Overview">
           <Box sx={{ p: 3, backgroundColor: '#0a0a0a' }}>
-            <TextField source="title" 
-              sx={{ 
-                mb: 3, 
-                fontSize: '1.5rem', 
-                fontWeight: 600, 
+            <TextField source="title"
+              sx={{
+                mb: 3,
+                fontSize: '1.5rem',
+                fontWeight: 600,
                 display: 'block',
-                '& .MuiTypography-root': { 
-                  fontSize: '1.5rem', 
+                '& .MuiTypography-root': {
+                  fontSize: '1.5rem',
                   fontWeight: 600,
                   color: '#ffffff'
                 }
-              }} 
+              }}
             />
-            
+
             <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 3, mb: 3 }}>
               <Box sx={{
                 p: 2,
@@ -180,7 +351,7 @@ export const EventShow = () => (
                 <TextField source="type" sx={{ textTransform: 'capitalize', fontWeight: 500, mb: 1, color: '#ffffff' }} />
                 <TextField source="status" sx={{ textTransform: 'capitalize', color: '#ffffff' }} />
               </Box>
-              
+
               <Box sx={{
                 p: 2,
                 backgroundColor: 'rgba(25, 118, 210, 0.05)',
@@ -192,7 +363,7 @@ export const EventShow = () => (
                 <NumberField source="spoilerChapter" label="Spoiler Chapter" emptyText="None" sx={{ color: '#ffffff' }} />
               </Box>
             </Box>
-            
+
             <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 3, mb: 3 }}>
               <Box sx={{
                 p: 2,
@@ -208,7 +379,7 @@ export const EventShow = () => (
                   <TextField source="name" sx={{ fontWeight: 500, color: '#ffffff' }} />
                 </ReferenceField>
               </Box>
-              
+
               <Box sx={{
                 p: 2,
                 backgroundColor: 'rgba(156, 39, 176, 0.05)',
@@ -224,16 +395,16 @@ export const EventShow = () => (
             </Box>
           </Box>
         </Tab>
-        
+
         <Tab label="Description">
           <Box sx={{ p: 3, backgroundColor: '#0a0a0a' }}>
-            <FunctionField 
+            <FunctionField
               source="description"
-              render={(record: any) => 
+              render={(record: any) =>
                 record.description ? (
                   <Box sx={{
-                    p: 2, 
-                    bgcolor: '#0f0f0f', 
+                    p: 2,
+                    bgcolor: '#0f0f0f',
                     borderRadius: 1,
                     border: '1px solid rgba(245, 124, 0, 0.3)',
                   }}>
@@ -253,32 +424,32 @@ export const EventShow = () => (
             />
           </Box>
         </Tab>
-        
+
         <Tab label="Related Data">
           <Box sx={{ p: 3, backgroundColor: '#0a0a0a' }}>
             <Typography variant="h6" gutterBottom sx={{ color: '#ffffff', fontWeight: 'bold' }}>Characters</Typography>
             <ArrayField source="characters" label={false}>
               <SingleFieldList linkType={false}>
-                <ChipField 
-                  source="name" 
-                  sx={{ 
-                    mr: 1, 
+                <ChipField
+                  source="name"
+                  sx={{
+                    mr: 1,
                     mb: 1,
                     '& .MuiChip-root': {
                       backgroundColor: 'rgba(25, 118, 210, 0.2)',
                       color: '#ffffff',
                       border: '1px solid rgba(25, 118, 210, 0.5)'
                     }
-                  }} 
+                  }}
                 />
               </SingleFieldList>
             </ArrayField>
-            
+
             <Typography variant="h6" gutterBottom sx={{ mt: 3, color: '#ffffff', fontWeight: 'bold' }}>Tags</Typography>
             <ArrayField source="tags" label={false}>
-              <Datagrid 
-                bulkActionButtons={false} 
-                sx={{ 
+              <Datagrid
+                bulkActionButtons={false}
+                sx={{
                   boxShadow: 'none',
                   backgroundColor: '#0f0f0f',
                   border: '1px solid rgba(245, 124, 0, 0.3)',
@@ -306,7 +477,7 @@ export const EventShow = () => (
 
 export const EventEdit = () => (
   <Edit>
-    <Box sx={{ 
+    <Box sx={{
       backgroundColor: '#0a0a0a',
       minHeight: '100vh',
       p: 3,
@@ -314,8 +485,8 @@ export const EventEdit = () => (
         backgroundColor: 'transparent'
       }
     }}>
-      <TabbedForm 
-        toolbar={<EditToolbar 
+      <TabbedForm
+        toolbar={<EditToolbar
           resource="events"
           confirmTitle="Delete Event"
           confirmMessage="Are you sure you want to delete this event? This will remove all associated data and cannot be undone."
@@ -388,14 +559,14 @@ export const EventEdit = () => (
         <FormTab label="Basic Info">
           <Box sx={{ maxWidth: 600, p: 3, backgroundColor: '#0a0a0a' }}>
             <Typography variant="h6" gutterBottom sx={{ color: '#f57c00', mb: 2, fontWeight: 'bold' }}>Event Details</Typography>
-            <TextInput 
-              source="title" 
-              required 
-              fullWidth 
+            <TextInput
+              source="title"
+              required
+              fullWidth
               sx={{ mb: 3 }}
               helperText="Descriptive title for this event"
             />
-            
+
             <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, mb: 3 }}>
               <SelectInput
                 source="type"
@@ -411,41 +582,41 @@ export const EventEdit = () => (
                 helperText="Review status"
               />
             </Box>
-            
+
             <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, mb: 3 }}>
-              <NumberInput 
-                source="chapterNumber" 
-                required 
-                max={539} 
+              <NumberInput
+                source="chapterNumber"
+                required
+                max={539}
                 min={1}
                 helperText="Chapter (1-539)"
               />
-              <NumberInput 
-                source="spoilerChapter" 
-                max={539} 
-                min={1} 
+              <NumberInput
+                source="spoilerChapter"
+                max={539}
+                min={1}
                 helperText="Spoiler chapter (optional)"
               />
             </Box>
-            
+
             <Typography variant="subtitle1" gutterBottom sx={{ mt: 3, mb: 1, color: '#ffffff', fontWeight: 'bold' }}>Description</Typography>
-            <TextInput 
-              source="description" 
-              multiline 
-              rows={6} 
-              required 
+            <TextInput
+              source="description"
+              multiline
+              rows={6}
+              required
               fullWidth
               helperText="Detailed description of what happens in this event. Supports Markdown formatting."
             />
           </Box>
         </FormTab>
-        
+
         <FormTab label="Context & Relations">
           <Box sx={{ maxWidth: 600, p: 3, backgroundColor: '#0a0a0a' }}>
             <Typography variant="h6" gutterBottom sx={{ color: '#f57c00', mb: 2, fontWeight: 'bold' }}>Story Context</Typography>
             <ReferenceInput source="arcId" reference="arcs" label="Arc" sx={{ mb: 3 }}>
-              <AutocompleteInput 
-                optionText="name" 
+              <AutocompleteInput
+                optionText="name"
                 helperText="Which story arc does this event belong to?"
                 sx={{
                   '& .MuiAutocomplete-root .MuiOutlinedInput-root': {
@@ -454,10 +625,10 @@ export const EventEdit = () => (
                 }}
               />
             </ReferenceInput>
-            
+
             <ReferenceInput source="gambleId" reference="gambles" label="Associated Gamble" sx={{ mb: 3 }}>
-              <AutocompleteInput 
-                optionText="name" 
+              <AutocompleteInput
+                optionText="name"
                 helperText="Link to a specific gamble if relevant"
                 sx={{
                   '& .MuiAutocomplete-root .MuiOutlinedInput-root': {
@@ -466,12 +637,12 @@ export const EventEdit = () => (
                 }}
               />
             </ReferenceInput>
-            
+
             <Typography variant="subtitle1" gutterBottom sx={{ mt: 3, mb: 1, color: '#ffffff', fontWeight: 'bold' }}>Participants & Tags</Typography>
             <Box sx={{ mb: 3 }}>
               <ReferenceArrayInput source="characterIds" reference="characters" label="Characters">
-                <AutocompleteArrayInput 
-                  optionText="name" 
+                <AutocompleteArrayInput
+                  optionText="name"
                   helperText="Characters involved in this event"
                   sx={{
                     '& .MuiAutocomplete-root .MuiOutlinedInput-root': {
@@ -481,10 +652,10 @@ export const EventEdit = () => (
                 />
               </ReferenceArrayInput>
             </Box>
-            
+
             <ReferenceArrayInput source="tagIds" reference="tags" label="Tags">
-              <AutocompleteArrayInput 
-                optionText="name" 
+              <AutocompleteArrayInput
+                optionText="name"
                 helperText="Relevant tags for categorization"
                 sx={{
                   '& .MuiAutocomplete-root .MuiOutlinedInput-root': {
@@ -502,7 +673,7 @@ export const EventEdit = () => (
 
 export const EventCreate = () => (
   <Create>
-    <Box sx={{ 
+    <Box sx={{
       backgroundColor: '#0a0a0a',
       minHeight: '100vh',
       p: 3,
@@ -578,14 +749,14 @@ export const EventCreate = () => (
         <FormTab label="Basic Info">
           <Box sx={{ maxWidth: 600, p: 3, backgroundColor: '#0a0a0a' }}>
             <Typography variant="h6" gutterBottom sx={{ color: '#16a34a', mb: 2, fontWeight: 'bold' }}>New Event</Typography>
-            <TextInput 
-              source="title" 
-              required 
-              fullWidth 
+            <TextInput
+              source="title"
+              required
+              fullWidth
               sx={{ mb: 3 }}
               helperText="Descriptive title for this event"
             />
-            
+
             <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, mb: 3 }}>
               <SelectInput
                 source="type"
@@ -602,41 +773,41 @@ export const EventCreate = () => (
                 helperText="Review status"
               />
             </Box>
-            
+
             <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, mb: 3 }}>
-              <NumberInput 
-                source="chapterNumber" 
-                required 
-                max={539} 
+              <NumberInput
+                source="chapterNumber"
+                required
+                max={539}
                 min={1}
                 helperText="Chapter (1-539)"
               />
-              <NumberInput 
-                source="spoilerChapter" 
-                max={539} 
-                min={1} 
+              <NumberInput
+                source="spoilerChapter"
+                max={539}
+                min={1}
                 helperText="Spoiler chapter (optional)"
               />
             </Box>
-            
+
             <Typography variant="subtitle1" gutterBottom sx={{ mt: 3, mb: 1, color: '#ffffff', fontWeight: 'bold' }}>Description</Typography>
-            <TextInput 
-              source="description" 
-              multiline 
-              rows={6} 
-              required 
+            <TextInput
+              source="description"
+              multiline
+              rows={6}
+              required
               fullWidth
               helperText="Detailed description of what happens in this event. Supports Markdown formatting."
             />
           </Box>
         </FormTab>
-        
+
         <FormTab label="Context & Relations">
           <Box sx={{ maxWidth: 600, p: 3, backgroundColor: '#0a0a0a' }}>
             <Typography variant="h6" gutterBottom sx={{ color: '#16a34a', mb: 2, fontWeight: 'bold' }}>Story Context</Typography>
             <ReferenceInput source="arcId" reference="arcs" label="Arc" sx={{ mb: 3 }}>
-              <AutocompleteInput 
-                optionText="name" 
+              <AutocompleteInput
+                optionText="name"
                 helperText="Which story arc does this event belong to?"
                 sx={{
                   '& .MuiAutocomplete-root .MuiOutlinedInput-root': {
@@ -645,10 +816,10 @@ export const EventCreate = () => (
                 }}
               />
             </ReferenceInput>
-            
+
             <ReferenceInput source="gambleId" reference="gambles" label="Associated Gamble" sx={{ mb: 3 }}>
-              <AutocompleteInput 
-                optionText="name" 
+              <AutocompleteInput
+                optionText="name"
                 helperText="Link to a specific gamble if relevant"
                 sx={{
                   '& .MuiAutocomplete-root .MuiOutlinedInput-root': {
@@ -657,12 +828,12 @@ export const EventCreate = () => (
                 }}
               />
             </ReferenceInput>
-            
+
             <Typography variant="subtitle1" gutterBottom sx={{ mt: 3, mb: 1, color: '#ffffff', fontWeight: 'bold' }}>Participants & Tags</Typography>
             <Box sx={{ mb: 3 }}>
               <ReferenceArrayInput source="characterIds" reference="characters" label="Characters">
-                <AutocompleteArrayInput 
-                  optionText="name" 
+                <AutocompleteArrayInput
+                  optionText="name"
                   helperText="Characters involved in this event"
                   sx={{
                     '& .MuiAutocomplete-root .MuiOutlinedInput-root': {
@@ -672,10 +843,10 @@ export const EventCreate = () => (
                 />
               </ReferenceArrayInput>
             </Box>
-            
+
             <ReferenceArrayInput source="tagIds" reference="tags" label="Tags">
-              <AutocompleteArrayInput 
-                optionText="name" 
+              <AutocompleteArrayInput
+                optionText="name"
                 helperText="Relevant tags for categorization"
                 sx={{
                   '& .MuiAutocomplete-root .MuiOutlinedInput-root': {

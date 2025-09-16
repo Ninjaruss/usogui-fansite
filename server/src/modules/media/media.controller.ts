@@ -358,6 +358,12 @@ export class MediaController {
     type: 'number',
   })
   @ApiQuery({
+    name: 'search',
+    required: false,
+    description: 'Search by description or author username',
+    type: 'string',
+  })
+  @ApiQuery({
     name: 'status',
     required: false,
     description: 'Filter by status',
@@ -436,6 +442,7 @@ export class MediaController {
   async findAll(
     @Query('page') page = '1',
     @Query('limit') limit = '20',
+    @Query('search') search?: string,
     @Query('status') status?: string,
     @Query('type') type?: string,
     @Query('ownerType') ownerType?: MediaOwnerType,
@@ -463,6 +470,7 @@ export class MediaController {
     const result = await this.mediaService.findAll({
       page: pageNum,
       limit: limitNum,
+      search,
       status,
       type,
       ownerType,

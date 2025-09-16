@@ -142,7 +142,7 @@ export class GuidesService {
     // Apply filters
     if (search) {
       queryBuilder.andWhere(
-        '(guide.title ILIKE :search OR guide.description ILIKE :search)',
+        '(guide.title ILIKE :search OR guide.description ILIKE :search OR author.username ILIKE :search)',
         { search: `%${search}%` },
       );
     }
@@ -302,7 +302,7 @@ export class GuidesService {
     // Apply filters
     if (search) {
       queryBuilder.andWhere(
-        '(guide.title ILIKE :search OR guide.description ILIKE :search)',
+        '(guide.title ILIKE :search OR guide.description ILIKE :search OR author.username ILIKE :search)',
         { search: `%${search}%` },
       );
     }

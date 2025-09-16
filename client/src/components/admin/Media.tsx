@@ -581,6 +581,11 @@ const MediaFilterToolbar = () => {
                           selectedEntities.gambles.length > 0 ||
                           selectedEntities.factions.length > 0
 
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newFilters = { ...filterValues, search: e.target.value || undefined }
+    setFilters(newFilters, filterValues)
+  }
+
   return (
     <Box sx={{
       backgroundColor: 'rgba(10, 10, 10, 0.95)',
@@ -591,6 +596,33 @@ const MediaFilterToolbar = () => {
       p: 2,
       backdropFilter: 'blur(8px)'
     }}>
+      {/* Search Bar */}
+      <Box sx={{ mb: 2 }}>
+        <Typography variant="subtitle2" sx={{
+          color: '#e11d48',
+          fontWeight: 'bold',
+          mb: 1,
+          fontSize: '0.9rem'
+        }}>
+          🔍 Search Media
+        </Typography>
+        <MuiTextField
+          label="Search by description or author..."
+          value={filterValues?.search || ''}
+          onChange={handleSearch}
+          fullWidth
+          size="small"
+          sx={{
+            '& .MuiOutlinedInput-root': {
+              backgroundColor: 'rgba(225, 29, 72, 0.05)',
+              '& fieldset': { borderColor: 'rgba(225, 29, 72, 0.3)' },
+              '&:hover fieldset': { borderColor: '#e11d48' },
+              '&.Mui-focused fieldset': { borderColor: '#e11d48' }
+            }
+          }}
+        />
+      </Box>
+
       {/* Status Filters */}
       <Box sx={{ mb: 2 }}>
         <Typography variant="subtitle2" sx={{ 

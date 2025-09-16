@@ -460,7 +460,7 @@ const GuideFilterToolbar = () => {
       {/* General Text Search */}
       <Box sx={{ mb: 3 }}>
         <Typography variant="subtitle2" sx={{
-          color: '#10b981',
+          color: '#e11d48',
           fontWeight: 'bold',
           mb: 1,
           fontSize: '0.9rem'
@@ -473,14 +473,14 @@ const GuideFilterToolbar = () => {
           size="small"
           sx={{
             '& .MuiOutlinedInput-root': {
-              backgroundColor: 'rgba(16, 185, 129, 0.05)',
-              '& fieldset': { borderColor: 'rgba(16, 185, 129, 0.3)' },
-              '&:hover fieldset': { borderColor: '#10b981' },
-              '&.Mui-focused fieldset': { borderColor: '#10b981' }
+              backgroundColor: 'rgba(225, 29, 72, 0.05)',
+              '& fieldset': { borderColor: 'rgba(225, 29, 72, 0.3)' },
+              '&:hover fieldset': { borderColor: '#e11d48' },
+              '&.Mui-focused fieldset': { borderColor: '#e11d48' }
             }
           }}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-            const newFilters = { ...filterValues, q: e.target.value || undefined }
+            const newFilters = { ...filterValues, search: e.target.value || undefined }
             setFilters(newFilters, filterValues)
           }}
         />
