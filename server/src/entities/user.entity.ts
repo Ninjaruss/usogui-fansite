@@ -140,11 +140,11 @@ export class User {
   selectedCharacterMediaId: number | null;
 
   @ApiPropertyOptional({
-    description: 'Custom title displayed under username (for active supporters)',
+    description: 'Custom cosmetic role displayed alongside username (for active supporters)',
     example: 'Usogui Superfan',
   })
   @Column({ type: 'varchar', nullable: true, length: 50 })
-  customTitle: string | null;
+  customRole: string | null;
 
   @ApiPropertyOptional({
     description: "User's favorite quote object",

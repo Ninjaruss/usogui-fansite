@@ -58,12 +58,15 @@ export class RevokeBadgeDto {
   reason: string;
 }
 
-export class UpdateCustomTitleDto {
+export class UpdateCustomRoleDto {
   @ApiProperty({
-    description: 'Custom title to display under username',
+    description: 'Custom cosmetic role to display alongside username',
     example: 'Usogui Superfan',
     maxLength: 50,
+    required: false,
+    nullable: true,
   })
+  @IsOptional()
   @IsString()
-  customTitle: string;
+  customRole: string | null;
 }

@@ -1,14 +1,84 @@
 'use client';
 
 import React from 'react';
-import { Tooltip, Chip } from '@mui/material';
+import { Tooltip, Chip, Box } from '@mui/material';
+import { Crown } from 'lucide-react';
 import { UserBadge, BadgeType } from '../types';
+import CustomRoleDisplay from './CustomRoleDisplay';
 
 interface BadgeDisplayProps {
   userBadge: UserBadge;
   size?: 'sm' | 'md' | 'lg';
   showTooltip?: boolean;
   className?: string;
+}
+
+interface UserRoleDisplayProps {
+  userRole: 'admin' | 'moderator' | 'user';
+  customRole?: string | null;
+  userBadges?: UserBadge[];
+  size?: 'small' | 'medium';
+  spacing?: number;
+}
+
+// Component to properly display user roles and custom roles with hierarchy
+export function UserRoleDisplay({ 
+  userRole, 
+  customRole, 
+  userBadges = [], 
+  size = 'medium',
+  spacing = 1 
+}: UserRoleDisplayProps) {
+  return (
+    <Box sx={{ 
+      display: 'flex', 
+      alignItems: 'flex-start', // Change to flex-start to handle multi-line content better
+      justifyContent: 'center',
+      gap: spacing, 
+      flexWrap: 'wrap',
+      // Ensure consistent alignment when items wrap
+      '& > *': {
+        flexShrink: 0, // Prevent items from shrinking
+        alignSelf: 'center', // Center individual items vertically
+      }
+    }}>
+      {/* Functional Roles First - Admin/Moderator with Crown */}
+      {(userRole === 'admin' || userRole === 'moderator') && (
+        <Chip
+          icon={<Crown size={size === 'small' ? 12 : 14} />}
+          label={userRole === 'admin' ? 'Admin' : 'Moderator'}
+          size={size}
+          sx={{
+            backgroundColor: userRole === 'admin' ? '#d32f2f' : '#f57c00',
+            color: 'white',
+            fontWeight: 600,
+            '& .MuiChip-icon': {
+              color: 'white',
+            },
+          }}
+        />
+      )}
+      
+      {/* Custom Cosmetic Role Second - Only for Active Supporters */}
+      {customRole && (
+        <CustomRoleDisplay 
+          customRole={customRole} 
+          size={size}
+          showIcon={true}
+        />
+      )}
+      
+      {/* Regular Badges Third */}
+      {userBadges.map((userBadge) => (
+        <BadgeDisplay
+          key={userBadge.id}
+          userBadge={userBadge}
+          size={size === 'small' ? 'sm' : 'md'}
+          showTooltip={true}
+        />
+      ))}
+    </Box>
+  );
 }
 
 export default function BadgeDisplay({

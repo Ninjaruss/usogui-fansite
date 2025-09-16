@@ -15,8 +15,7 @@ import {
   Pagination,
   CircularProgress,
   Alert,
-  Chip,
-  Avatar
+  Chip
 } from '@mui/material'
 import { Search, FileText, Eye, Calendar, ThumbsUp, Heart, X, Users, BookOpen, Dice6 } from 'lucide-react'
 import { useTheme } from '@mui/material/styles'
@@ -26,6 +25,7 @@ import { api } from '../../lib/api'
 import { motion } from 'motion/react'
 import { useAuth } from '../../providers/AuthProvider'
 import AuthorProfileImage from '../../components/AuthorProfileImage'
+import { UserRoleDisplay } from '../../components/BadgeDisplay'
 
 interface Guide {
   id: number
@@ -37,6 +37,7 @@ interface Guide {
     id: number
     username: string
     role?: string
+    customRole?: string
     // Note: Public guides API may not return full profile data
     // We'll use initials as fallback if profile data is missing
     profilePictureType?: 'discord' | 'character_media' | null
@@ -67,20 +68,6 @@ interface Guide {
   viewCount: number
   createdAt: string
   updatedAt: string
-}
-
-// Helper function to get role badge styling
-const getRoleBadge = (role?: string) => {
-  if (!role) return null
-
-  switch (role) {
-    case 'admin':
-      return { label: 'Admin', color: '#f44336' as const, bgcolor: 'rgba(244, 67, 54, 0.1)' }
-    case 'moderator':
-      return { label: 'Mod', color: '#ff9800' as const, bgcolor: 'rgba(255, 152, 0, 0.1)' }
-    default:
-      return null
-  }
 }
 
 function GuidesPageContent() {
@@ -309,23 +296,11 @@ function GuidesPageContent() {
                             >
                               by {guide.author.username}
                             </Typography>
-                            {getRoleBadge(guide.author.role) && (
-                              <Chip
-                                label={getRoleBadge(guide.author.role)!.label}
-                                size="small"
-                                sx={{
-                                  height: '16px',
-                                  fontSize: '0.6rem',
-                                  fontWeight: 'bold',
-                                  color: getRoleBadge(guide.author.role)!.color,
-                                  backgroundColor: getRoleBadge(guide.author.role)!.bgcolor,
-                                  border: `1px solid ${getRoleBadge(guide.author.role)!.color}`,
-                                  '& .MuiChip-label': {
-                                    px: 0.5
-                                  }
-                                }}
-                              />
-                            )}
+                            <UserRoleDisplay
+                              userRole={guide.author.role as 'admin' | 'moderator' | 'user' || 'user'}
+                              customRole={guide.author.customRole}
+                              size="small"
+                            />
                           </Box>
                           <Box sx={{ display: 'flex', alignItems: 'center', ml: 'auto' }}>
                             <Calendar size={14} />

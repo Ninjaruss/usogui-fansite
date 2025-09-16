@@ -28,7 +28,7 @@ interface User {
   // Profile picture fields
   profilePictureType?: 'discord' | 'character_media' | 'premium_character_media' | 'animated_avatar' | 'custom_frame' | 'exclusive_artwork' | null
   selectedCharacterMediaId?: number | null
-  customTitle?: string | null
+  customRole?: string | null
   // Full relation objects
   selectedCharacterMedia?: {
     id: number
@@ -45,6 +45,7 @@ interface AuthContextType {
   devLogin: (asAdmin?: boolean) => Promise<void>
   logout: () => Promise<void>
   refreshUser: () => Promise<void>
+  updateUserField: (field: keyof User, value: any) => void
   // Legacy methods (keep for compatibility)
   login: (username: string, password: string) => Promise<void>
   register: (username: string, email: string, password: string) => Promise<void>
@@ -492,6 +493,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }
 
+  const updateUserField = (field: keyof User, value: any) => {
+    if (user) {
+      setUser({
+        ...user,
+        [field]: value
+      })
+    }
+  }
+
   const value = {
     user,
     loading,
@@ -499,6 +509,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     devLogin,
     logout,
     refreshUser,
+    updateUserField,
     // Legacy methods
     login,
     register,

@@ -12,6 +12,8 @@
 - Replaced all markdown components into enhanced version (support for entity embeds and spoilers)
 - Embedded entity support editing added to guide admin page
 - Added badge system with support for Ko-fi and expiration of badge
+- Fixed issues with badge system from admin pages
+- Added custom role display to user profile if active supporter badge is active
 
 ## 2025-09-14
 ### Changes

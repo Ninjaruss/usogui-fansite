@@ -201,6 +201,7 @@ class ApiClient {
       username: string
       email: string
       role: string
+      customRole?: string | null
       isEmailVerified: boolean
       userProgress: number
       profileImageId?: string
@@ -660,6 +661,14 @@ class ApiClient {
       mediaSubmitted: number
       likesReceived: number
     }>('/users/profile/stats')
+  }
+
+  async updateCustomRole(customRole: string | null) {
+    return this.patch<{ message: string }>('/users/profile/custom-role', { customRole })
+  }
+
+  async removeCustomRole() {
+    return this.delete<{ message: string }>('/users/profile/custom-role')
   }
 
   // Chapter methods

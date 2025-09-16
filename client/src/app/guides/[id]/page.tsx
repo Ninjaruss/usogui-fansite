@@ -38,6 +38,7 @@ import EnhancedSpoilerMarkdown from '../../../components/EnhancedSpoilerMarkdown
 import EntityEmbedHelperWithSearch from '../../../components/EntityEmbedHelperWithSearch'
 import { usePageView } from '../../../hooks/usePageView'
 import AuthorProfileImage from '../../../components/AuthorProfileImage'
+import { UserRoleDisplay } from '../../../components/BadgeDisplay'
 import { useTheme } from '@mui/material/styles'
 
 interface Guide {
@@ -53,6 +54,7 @@ interface Guide {
     id: number
     username: string
     role?: string
+    customRole?: string | null
     // Note: Public guides API may not return full profile data
     // We'll use initials as fallback if profile data is missing
     profilePictureType?: 'discord' | 'character_media' | null
@@ -177,23 +179,12 @@ const GuideHeader = memo(({ guide, canUserEdit, handleEditClick, formattedDate, 
           >
             by {guide.author.username}
           </Typography>
-          {roleBadge && (
-            <Chip
-              label={roleBadge.label}
-              size="small"
-              sx={{
-                height: '18px',
-                fontSize: '0.65rem',
-                fontWeight: 'bold',
-                color: roleBadge.color,
-                backgroundColor: roleBadge.bgcolor,
-                border: `1px solid ${roleBadge.color}`,
-                '& .MuiChip-label': {
-                  px: 0.5
-                }
-              }}
-            />
-          )}
+          <UserRoleDisplay
+            userRole={guide.author.role as 'admin' | 'moderator' | 'user' || 'user'}
+            customRole={guide.author.customRole}
+            size="small"
+            spacing={0.5}
+          />
         </Box>
       </Box>
 

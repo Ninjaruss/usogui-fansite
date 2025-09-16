@@ -128,6 +128,7 @@ export class GuidesService {
         'guide.updatedAt',
         'author.id',
         'author.username',
+        'author.customRole',
         'tags.id',
         'tags.name',
         'characters.id',
@@ -292,6 +293,7 @@ export class GuidesService {
         'guide.updatedAt',
         'author.id',
         'author.username',
+        'author.customRole',
         'tags.id',
         'tags.name',
       ])
@@ -449,6 +451,7 @@ export class GuidesService {
         author: {
           id: true,
           username: true,
+          customRole: true,
         },
         tags: {
           id: true,

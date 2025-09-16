@@ -44,7 +44,7 @@ export default function UserBadges({
 
   if (loading) {
     return (
-      <div className={`flex gap-1 ${className}`}>
+      <div className={`flex gap-2 ${className}`}>
         {Array.from({ length: 3 }).map((_, i) => (
           <div
             key={i}
@@ -78,7 +78,7 @@ export default function UserBadges({
   const remainingCount = badges.length - maxDisplay;
 
   return (
-    <div className={`flex items-center gap-1 ${className}`}>
+    <div className={`flex items-center gap-2 ${className}`}>
       {visibleBadges.map((userBadge) => (
         <BadgeDisplay
           key={userBadge.id}

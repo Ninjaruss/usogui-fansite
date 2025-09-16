@@ -41,6 +41,9 @@ import GambleChip from '../../components/GambleChip'
 import QuoteSelectionPopup from '../../components/QuoteSelectionPopup'
 import GambleSelectionPopup from '../../components/GambleSelectionPopup'
 import UserBadges from '../../components/UserBadges'
+import CustomRoleEditor from '../../components/CustomRoleEditor'
+import CustomRoleDisplay from '../../components/CustomRoleDisplay'
+import { UserRoleDisplay } from '../../components/BadgeDisplay'
 
 // Profile Picture Spoiler Wrapper - matches CharacterTimeline spoiler behavior
 function ProfilePictureSpoilerWrapper({ 
@@ -166,7 +169,7 @@ function ProfilePictureSpoilerWrapper({
 }
 
 export default function ProfilePage() {
-  const { user, refreshUser, loading: authLoading } = useAuth()
+  const { user, refreshUser, updateUserField, loading: authLoading } = useAuth()
   const { userProgress } = useProgress()
   const [selectedQuote, setSelectedQuote] = useState<number | null>(null)
   const [selectedGamble, setSelectedGamble] = useState<number | null>(null)
@@ -192,6 +195,15 @@ export default function ProfilePage() {
     mediaSubmitted: number
     likesReceived: number
   } | null>(null)
+  const [userBadges, setUserBadges] = useState<Array<{
+    id: number
+    badge: {
+      type: string
+      name: string
+    }
+    isActive: boolean
+    expiresAt: string | null
+  }>>([])
   const [loading, setLoading] = useState(false)
   const [dataLoading, setDataLoading] = useState(true)
   const [error, setError] = useState('')
@@ -201,6 +213,23 @@ export default function ProfilePage() {
   const [gambleSelectionOpen, setGambleSelectionOpen] = useState(false)
   const [characterSearchTerm, setCharacterSearchTerm] = useState('')
   const [selectedTab, setSelectedTab] = useState(0) // 0 = Discord, 1 = Character Media
+
+  // Helper function to check if user has active supporter badge
+  const hasActiveSupporterBadge = () => {
+    return userBadges.some(userBadge => 
+      userBadge.badge.type === 'active_supporter' &&
+      userBadge.isActive &&
+      (!userBadge.expiresAt || new Date(userBadge.expiresAt) > new Date())
+    )
+  }
+
+  // Handler for custom role updates
+  const handleCustomRoleUpdate = async (newRole: string | null) => {
+    if (user) {
+      // Update the user's custom role immediately in the UI
+      updateUserField('customRole', newRole)
+    }
+  }
 
   useEffect(() => {
     const fetchData = async () => {
@@ -304,6 +333,20 @@ export default function ProfilePage() {
             mediaSubmitted: 0,
             likesReceived: 0
           })
+        }
+
+        // Fetch user badges to check for Active Supporter status
+        if (user?.id) {
+          try {
+            const badgesResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/${user.id}/badges`)
+            if (badgesResponse.ok) {
+              const badgesData = await badgesResponse.json()
+              const badgesArray = Array.isArray(badgesData) ? badgesData : (badgesData.data || [])
+              setUserBadges(badgesArray)
+            }
+          } catch (error) {
+            console.error('Failed to fetch user badges:', error)
+          }
         }
       } catch (error) {
         console.error('Failed to fetch profile data:', error)
@@ -505,10 +548,23 @@ export default function ProfilePage() {
                   />
                 </Box>
 
-                {/* User Badges */}
+                {/* User Role Display - Shows functional roles, custom roles, and badges in proper hierarchy */}
                 <Box sx={{ mb: 2 }}>
-                  <UserBadges userId={user.id} size="md" maxDisplay={6} />
+                  <UserRoleDisplay
+                    userRole={user.role as 'admin' | 'moderator' | 'user'}
+                    customRole={user.customRole}
+                    userBadges={userBadges as any[]}
+                    size="medium"
+                    spacing={1}
+                  />
                 </Box>
+
+                {/* Custom Role Editor */}
+                <CustomRoleEditor
+                  currentRole={user.customRole || null}
+                  isActiveSupporterUser={hasActiveSupporterBadge()}
+                  onUpdate={handleCustomRoleUpdate}
+                />
                 
                 {/* Improved Quick Stats */}
                 <Box sx={{ 

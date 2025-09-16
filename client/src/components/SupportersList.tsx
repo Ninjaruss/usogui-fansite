@@ -3,14 +3,14 @@
 import React, { useState, useEffect } from 'react';
 import { UserBadge, BadgeType } from '../types';
 import BadgeDisplay from './BadgeDisplay';
-import CustomTitleDisplay from './CustomTitleDisplay';
+import CustomRoleDisplay from './CustomRoleDisplay';
 import UserProfileImage from './UserProfileImage';
 
 interface SupporterData {
   user: {
     id: number;
     username: string;
-    customTitle: string | null;
+    customRole: string | null;
     discordAvatar: string | null;
     profilePictureType: 'discord' | 'character_media' | 'premium_character_media' | 'animated_avatar' | 'custom_frame' | 'exclusive_artwork' | null;
     selectedCharacterMediaId: number | null;
@@ -156,13 +156,15 @@ export default function SupportersList() {
                   />
 
                   <div className="flex-1 min-w-0">
-                    <CustomTitleDisplay
-                      customTitle={supporter.user.customTitle}
-                      username={supporter.user.username}
-                    />
-                    {!supporter.user.customTitle && (
-                      <div className="font-medium text-gray-900 dark:text-white">
-                        {supporter.user.username}
+                    <div className="font-medium text-gray-900 dark:text-white mb-1">
+                      {supporter.user.username}
+                    </div>
+                    {supporter.user.customRole && (
+                      <div className="mb-1">
+                        <CustomRoleDisplay
+                          customRole={supporter.user.customRole}
+                          size="small"
+                        />
                       </div>
                     )}
                     <div className="text-sm text-gray-500 dark:text-gray-400">

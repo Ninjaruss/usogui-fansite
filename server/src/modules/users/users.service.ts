@@ -694,9 +694,9 @@ export class UsersService {
     };
   }
 
-  async updateCustomTitle(userId: number, customTitle: string | null): Promise<User> {
+  async updateCustomRole(userId: number, customRole: string | null): Promise<User> {
     const user = await this.findOne(userId);
-    user.customTitle = customTitle;
+    user.customRole = customRole;
     return this.repo.save(user);
   }
 

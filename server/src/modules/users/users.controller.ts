@@ -33,7 +33,7 @@ import {
 } from '@nestjs/swagger';
 
 import { BadgesService } from '../badges/badges.service';
-import { UpdateCustomTitleDto } from '../badges/dto/award-badge.dto';
+import { UpdateCustomRoleDto } from '../badges/dto/award-badge.dto';
 
 @ApiTags('users')
 @Controller('users')
@@ -65,6 +65,7 @@ export class UsersController {
               id: { type: 'number', example: 1 },
               username: { type: 'string', example: 'john_doe' },
               role: { type: 'string', example: 'USER' },
+              customRole: { type: 'string', nullable: true, example: 'Usogui Superfan' },
               userProgress: { type: 'number', example: 42 },
               profileImageId: {
                 type: 'string',
@@ -123,6 +124,7 @@ export class UsersController {
       id: user.id,
       username: user.username,
       role: user.role,
+      customRole: user.customRole,
       userProgress: user.userProgress,
       profilePictureType: user.profilePictureType,
       selectedCharacterMediaId: user.selectedCharacterMediaId,
@@ -167,6 +169,7 @@ export class UsersController {
         id: { type: 'number', example: 1 },
         username: { type: 'string', example: 'john_doe' },
         role: { type: 'string', example: 'USER' },
+        customRole: { type: 'string', nullable: true, example: 'Usogui Superfan' },
         userProgress: { type: 'number', example: 42 },
         profileImageId: { type: 'string', format: 'uuid', nullable: true },
         profileImage: { type: 'object', nullable: true },
@@ -199,6 +202,7 @@ export class UsersController {
       id: user.id,
       username: user.username,
       role: user.role,
+      customRole: user.customRole,
       userProgress: user.userProgress,
       profilePictureType: user.profilePictureType,
       selectedCharacterMediaId: user.selectedCharacterMediaId,
@@ -935,44 +939,44 @@ export class UsersController {
     return this.badgesService.getAllUserBadges(id);
   }
 
-  @Patch('profile/custom-title')
+  @Patch('profile/custom-role')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.USER, UserRole.MODERATOR, UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({
-    summary: 'Update custom title',
-    description: 'Update custom title (requires active supporter badge)',
+    summary: 'Update custom cosmetic role',
+    description: 'Update custom cosmetic role (requires active supporter badge)',
   })
-  @ApiBody({ type: UpdateCustomTitleDto })
-  @ApiResponse({ status: 200, description: 'Custom title updated successfully' })
+  @ApiBody({ type: UpdateCustomRoleDto })
+  @ApiResponse({ status: 200, description: 'Custom role updated successfully' })
   @ApiResponse({ status: 403, description: 'Active supporter badge required' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async updateCustomTitle(
+  async updateCustomRole(
     @CurrentUser() user: User,
-    @Body() updateCustomTitleDto: UpdateCustomTitleDto,
+    @Body() updateCustomRoleDto: UpdateCustomRoleDto,
   ) {
     const hasActiveBadge = await this.badgesService.hasActiveSupporterBadge(user.id);
     
     if (!hasActiveBadge) {
-      throw new NotFoundException('Active supporter badge required to set custom title');
+      throw new NotFoundException('Active supporter badge required to set custom role');
     }
 
-    await this.service.updateCustomTitle(user.id, updateCustomTitleDto.customTitle);
-    return { message: 'Custom title updated successfully' };
+    await this.service.updateCustomRole(user.id, updateCustomRoleDto.customRole);
+    return { message: 'Custom role updated successfully' };
   }
 
-  @Delete('profile/custom-title')
+  @Delete('profile/custom-role')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.USER, UserRole.MODERATOR, UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({
-    summary: 'Remove custom title',
-    description: 'Remove the current custom title',
+    summary: 'Remove custom cosmetic role',
+    description: 'Remove the current custom cosmetic role',
   })
-  @ApiResponse({ status: 200, description: 'Custom title removed successfully' })
+  @ApiResponse({ status: 200, description: 'Custom role removed successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async removeCustomTitle(@CurrentUser() user: User) {
-    await this.service.updateCustomTitle(user.id, null);
-    return { message: 'Custom title removed successfully' };
+  async removeCustomRole(@CurrentUser() user: User) {
+    await this.service.updateCustomRole(user.id, null);
+    return { message: 'Custom role removed successfully' };
   }
 }

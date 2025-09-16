@@ -390,7 +390,7 @@ export const UserList = () => (
           }
 
           return (
-            <div className="flex gap-1">
+            <div className="flex gap-2">
               {userBadges.slice(0, 3).map((userBadge: any) => {
                 if (!userBadge.badge) return null;
 

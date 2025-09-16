@@ -302,15 +302,15 @@ export class BadgesService {
 
         this.logger.log(`Expired badge ${userBadge.badge?.name} for user ${userBadge.user?.username} (${userBadge.userId})`);
 
-        // If it's an Active Supporter badge, clear custom title
+        // If it's an Active Supporter badge, clear custom role
         if (userBadge.badge?.type === BadgeType.ACTIVE_SUPPORTER) {
           const user = await this.userRepository.findOne({
             where: { id: userBadge.userId },
           });
-          if (user && user.customTitle) {
-            user.customTitle = null;
+          if (user && user.customRole) {
+            user.customRole = null;
             await this.userRepository.save(user);
-            this.logger.log(`Cleared custom title for user ${user.username} due to expired Active Supporter badge`);
+            this.logger.log(`Cleared custom role for user ${user.username} due to expired Active Supporter badge`);
           }
         }
       }

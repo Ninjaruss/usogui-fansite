@@ -13,7 +13,7 @@ import {
   Alert,
   LinearProgress
 } from '@mui/material'
-import { ArrowLeft, Crown, FileText, Quote, Dices, Calendar, BookOpen, Camera } from 'lucide-react'
+import { ArrowLeft, FileText, Quote, Dices, Calendar, BookOpen, Camera } from 'lucide-react'
 import { useTheme } from '@mui/material/styles'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
@@ -23,11 +23,13 @@ import { usePageView } from '../../../hooks/usePageView'
 import UserProfileImage from '../../../components/UserProfileImage'
 import GambleChip from '../../../components/GambleChip'
 import UserBadges from '../../../components/UserBadges'
+import { UserRoleDisplay } from '../../../components/BadgeDisplay'
 
 interface PublicUser {
   id: number
   username: string
   role: string
+  customRole?: string | null
   userProgress: number
   profilePictureType?: 'discord' | 'character_media' | null
   selectedCharacterMediaId?: number | null
@@ -240,7 +242,7 @@ export default function UserProfilePage() {
                 display: 'flex',
                 flexDirection: 'column'
               }}>
-                {/* Username and Role Chip Row */}
+                {/* Username and Role Display Row */}
                 <Box sx={{ 
                   display: 'flex',
                   alignItems: 'center',
@@ -263,16 +265,11 @@ export default function UserProfilePage() {
                     {user.username}
                   </Typography>
                   
-                  <Chip
-                    label={user.role === 'admin' ? 'Admin' :
-                           user.role === 'moderator' ? 'Mod' : 'Member'}
-                    color={user.role === 'admin' ? 'error' : user.role === 'moderator' ? 'warning' : 'primary'}
-                    icon={user.role === 'admin' || user.role === 'moderator' ? <Crown size={14} /> : undefined}
+                  <UserRoleDisplay
+                    userRole={user.role as 'admin' | 'moderator' | 'user'}
+                    customRole={user.customRole}
                     size="medium"
-                    sx={{
-                      fontWeight: 'bold',
-                      boxShadow: 1
-                    }}
+                    spacing={1}
                   />
                 </Box>
 

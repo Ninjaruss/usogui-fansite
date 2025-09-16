@@ -14,20 +14,21 @@ import {
   Alert,
   Pagination,
   InputAdornment,
-  Avatar,
   LinearProgress
 } from '@mui/material'
-import { Search, User, Crown, Users, BookOpen } from 'lucide-react'
+import { Search, Users, BookOpen } from 'lucide-react'
 import Link from 'next/link'
 import { api } from '../../lib/api'
 import { motion } from 'motion/react'
 import UserProfileImage from '../../components/UserProfileImage'
 import UserBadges from '../../components/UserBadges'
+import { UserRoleDisplay } from '../../components/BadgeDisplay'
 
 interface PublicUser {
   id: number
   username: string
   role: string
+  customRole?: string | null
   userProgress: number
   profilePictureType?: 'discord' | 'character_media' | null
   selectedCharacterMediaId?: number | null
@@ -173,8 +174,8 @@ export default function UsersPage() {
                             className="user-profile-avatar"
                           />
                           
-                          <Typography 
-                            variant="h6" 
+                          <Typography
+                            variant="h6"
                             component={Link}
                             href={`/users/${user.id}`}
                             sx={{ 
@@ -189,22 +190,20 @@ export default function UsersPage() {
                             {user.username}
                           </Typography>
 
-                          <Box sx={{ mb: 2 }}>
-                            <Chip
-                              label={user.role === 'admin' ? 'Admin' :
-                                     user.role === 'moderator' ? 'Mod' : 'Member'}
+                          {/* User Role Display with Custom Roles */}
+                          <Box sx={{ mb: 2, display: 'flex', justifyContent: 'center' }}>
+                            <UserRoleDisplay
+                              userRole={user.role as 'admin' | 'moderator' | 'user'}
+                              customRole={user.customRole}
                               size="small"
-                              color={user.role === 'admin' ? 'error' : user.role === 'moderator' ? 'warning' : 'default'}
-                              icon={user.role === 'admin' || user.role === 'moderator' ? <Crown size={14} /> : <User size={14} />}
+                              spacing={0.5}
                             />
                           </Box>
 
                           {/* User Badges */}
                           <Box sx={{ mb: 2, display: 'flex', justifyContent: 'center' }}>
                             <UserBadges userId={user.id} size="sm" maxDisplay={4} />
-                          </Box>
-
-                          <Box sx={{ width: '100%', mb: 2 }}>
+                          </Box>                          <Box sx={{ width: '100%', mb: 2 }}>
                             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
                               <Typography variant="caption" color="text.secondary">
                                 Reading Progress
