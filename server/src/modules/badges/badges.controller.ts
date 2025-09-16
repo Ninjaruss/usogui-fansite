@@ -22,7 +22,11 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from '../../entities/user.entity';
-import { AwardBadgeDto, RevokeBadgeDto, UpdateCustomRoleDto } from './dto/award-badge.dto';
+import {
+  AwardBadgeDto,
+  RevokeBadgeDto,
+  UpdateCustomRoleDto,
+} from './dto/award-badge.dto';
 
 @ApiTags('badges')
 @Controller('badges')
@@ -58,10 +62,14 @@ export class BadgesController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Award badge to user (admin only)' })
   @ApiResponse({ status: 201, description: 'Badge awarded successfully' })
-  @ApiResponse({ status: 400, description: 'User already has badge or invalid data' })
+  @ApiResponse({
+    status: 400,
+    description: 'User already has badge or invalid data',
+  })
   @ApiResponse({ status: 404, description: 'User or badge not found' })
   async awardBadge(@Body() awardBadgeDto: AwardBadgeDto, @Request() req) {
-    const { userId, badgeId, reason, metadata, year, expiresAt } = awardBadgeDto;
+    const { userId, badgeId, reason, metadata, year, expiresAt } =
+      awardBadgeDto;
     const awardedByUserId = req.user.userId;
 
     return this.badgesService.awardBadge(
@@ -93,7 +101,12 @@ export class BadgesController {
     const { reason } = revokeBadgeDto;
     const revokedByUserId = req.user.userId;
 
-    await this.badgesService.revokeBadge(userId, badgeId, reason, revokedByUserId);
+    await this.badgesService.revokeBadge(
+      userId,
+      badgeId,
+      reason,
+      revokedByUserId,
+    );
     return { message: 'Badge revoked successfully' };
   }
 
@@ -101,13 +114,15 @@ export class BadgesController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Manually trigger badge expiration check (admin only)' })
+  @ApiOperation({
+    summary: 'Manually trigger badge expiration check (admin only)',
+  })
   @ApiResponse({ status: 200, description: 'Badge expiration completed' })
   async expireBadges() {
     const expiredCount = await this.badgesService.expireUserBadges();
-    return { 
+    return {
       message: 'Badge expiration check completed',
-      expiredCount 
+      expiredCount,
     };
   }
 

@@ -93,7 +93,7 @@ Sometimes the best strategy is to let opponents think they've read you correctly
 ## Conclusion
 
 Mastering poker psychology requires years of practice and keen observation. Start with basic tell recognition and gradually develop your own unique style.`,
-        status: GuideStatus.PUBLISHED,
+        status: GuideStatus.APPROVED,
         tagNames: ['poker', 'psychology', 'strategy', 'advanced'],
       },
       {
@@ -135,7 +135,7 @@ Try calculating the expected value for these scenarios:
 2. A poker hand with 30% chance to win a $100 pot
 
 Remember: The house always has an edge, but understanding game theory helps you minimize losses and maximize wins when you do have an advantage.`,
-        status: GuideStatus.PUBLISHED,
+        status: GuideStatus.APPROVED,
         tagNames: ['theory', 'game-rules', 'beginner', 'strategy'],
       },
       {
@@ -194,7 +194,7 @@ While we can't all be Baku, there are practical lessons:
 ## Conclusion
 
 Baku Madarame represents the idealized gambler—one who combines mathematical precision with psychological insight and absolute fearlessness.`,
-        status: GuideStatus.PUBLISHED,
+        status: GuideStatus.APPROVED,
         tagNames: ['character-analysis', 'psychology', 'strategy', 'advanced'],
       },
       {
@@ -261,7 +261,7 @@ While Kakerou games are fictional, remember:
 - Seek help if gambling becomes a problem
 
 This is entertainment, not a guide to real gambling!`,
-        status: GuideStatus.PUBLISHED,
+        status: GuideStatus.APPROVED,
         tagNames: ['beginner', 'game-rules', 'theory'],
       },
       {
@@ -291,7 +291,7 @@ This guide will cover advanced bluffing techniques... (work in progress)
 ## Conclusion
 
 (Draft - needs completion)`,
-        status: GuideStatus.DRAFT,
+        status: GuideStatus.PENDING,
         tagNames: ['strategy', 'poker', 'advanced'],
       },
     ];
@@ -325,7 +325,7 @@ This guide will cover advanced bluffing techniques... (work in progress)
         const savedGuide = await guideRepository.save(guide);
 
         // Create some likes for published guides
-        if (data.status === GuideStatus.PUBLISHED) {
+        if (data.status === GuideStatus.APPROVED) {
           const likeCount =
             Math.floor(Math.random() * Math.min(users.length, 15)) + 2;
           const likingUsers = users

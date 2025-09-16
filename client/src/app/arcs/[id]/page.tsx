@@ -27,6 +27,7 @@ import MediaGallery from '../../../components/MediaGallery'
 import ArcTimeline from '../../../components/ArcTimeline'
 import TimelineSpoilerWrapper from '../../../components/TimelineSpoilerWrapper'
 import MediaThumbnail from '../../../components/MediaThumbnail'
+import { ArcStructuredData } from '../../../components/StructuredData'
 
 interface Arc {
   id: number
@@ -153,6 +154,18 @@ export default function ArcDetailPage() {
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
+      {arc && (
+        <ArcStructuredData
+          arc={{
+            id: arc.id,
+            name: arc.name,
+            description: arc.description,
+            startChapter: arc.startChapter,
+            endChapter: arc.endChapter,
+            imageUrl: arc.imageFileName ? `/api/media/arc/${arc.imageFileName}` : undefined
+          }}
+        />
+      )}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

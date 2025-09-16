@@ -104,32 +104,6 @@ const faqData: FAQItem[] = [
       </>
     )
   },
-  {
-    question: "What makes Usogui special?",
-    answer: "Usogui stands out for its incredibly detailed gambling games, complex psychological warfare, intricate plot threads, and masterful artwork. It's considered one of the most intellectually challenging manga series, combining elements of thriller, psychological drama, and strategic gaming."
-  },
-  {
-    question: "Are there content warnings I should know about?",
-    answer: "Yes, Usogui contains mature content including violence, psychological manipulation, gambling addiction themes, and occasional adult situations. The series is intended for mature audiences and deals with heavy psychological themes."
-  },
-  {
-    question: "How can I contact the L-file team?",
-    answer: (
-      <>
-        You can reach us via email at{' '}
-        <Link href="mailto:ninjarussyt@gmail.com" color="primary">ninjarussyt@gmail.com</Link>{' '}
-        or join our{' '}
-        <Link href="https://discord.gg/JXeRhV2qpY" target="_blank" rel="noopener noreferrer" color="primary">
-          Discord community
-        </Link>{' '}
-        for discussions and support.
-      </>
-    )
-  },
-  {
-    question: "Is L-file mobile-friendly?",
-    answer: "Yes, L-file is designed to work seamlessly across all devices including smartphones, tablets, and desktops. The interface adapts to your screen size for optimal browsing experience."
-  }
 ]
 
 interface FAQProps {

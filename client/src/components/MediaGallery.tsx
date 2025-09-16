@@ -25,6 +25,7 @@ import {
 } from '@mui/material'
 import { Image, Play, ExternalLink, X, ZoomIn, ChevronLeft, ChevronRight, Maximize2 } from 'lucide-react'
 import { useTheme } from '@mui/material/styles'
+import NextImage from 'next/image'
 import { api } from '../lib/api'
 
 interface MediaItem {
@@ -401,14 +402,14 @@ export default function MediaGallery({
                   }}
                 >
                   {thumbnail ? (
-                    <img
+                    <NextImage
                       src={thumbnail}
                       alt={mediaItem.description}
+                      fill
                       style={{
-                        width: '100%',
-                        height: '100%',
                         objectFit: 'cover'
                       }}
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
                       onError={(e) => {
                         const target = e.target as HTMLImageElement
                         target.style.display = 'none'
@@ -752,18 +753,18 @@ export default function MediaGallery({
                               color: 'white',
                               border: '2px solid rgba(255,255,255,0.1)'
                             }}>
-                              <Box sx={{ mb: 3 }}>
+                              <Box sx={{ mb: 3, position: 'relative', width: '320px', height: '180px', mx: 'auto' }}>
                                 {getMediaThumbnail(selectedMedia) && (
-                                  <img
+                                  <NextImage
                                     src={getMediaThumbnail(selectedMedia)!}
                                     alt="Video thumbnail"
+                                    fill
                                     style={{
-                                      maxWidth: '320px',
-                                      maxHeight: '180px',
                                       objectFit: 'cover',
                                       borderRadius: '12px',
                                       boxShadow: '0 8px 32px rgba(0,0,0,0.4)'
                                     }}
+                                    sizes="320px"
                                   />
                                 )}
                               </Box>

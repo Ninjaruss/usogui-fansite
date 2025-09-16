@@ -37,10 +37,24 @@ export interface Event {
   title: string;
   description: string;
   chapterNumber: number;
+  spoilerChapter?: number;
   type: 'gamble' | 'decision' | 'reveal' | 'shift' | 'resolution';
-  status: 'draft' | 'pending_review' | 'approved';
+  status: EventStatus;
   gambleId?: number;
   gamble?: Gamble;
+  arcId?: number;
+  arc?: {
+    id: number;
+    name: string;
+  };
+  characters: Array<{
+    id: number;
+    name: string;
+  }>;
+  tags?: Array<{
+    id: number;
+    name: string;
+  }>;
   createdAt: string;
   updatedAt: string;
 }
@@ -132,11 +146,23 @@ export interface Gamble {
   updatedAt: string;
 }
 
+export enum GuideStatus {
+  PENDING = 'pending',
+  APPROVED = 'approved',
+  REJECTED = 'rejected',
+}
+export enum EventStatus {
+  PENDING = 'pending',
+  APPROVED = 'approved',
+  REJECTED = 'rejected',
+}
+
 export interface Guide {
   id: number;
   title: string;
   description: string;
   content: string;
+  status: GuideStatus;
   author: {
     id: number;
     username: string;
@@ -149,6 +175,7 @@ export interface Guide {
   likeCount: number;
   createdAt: string;
   updatedAt: string;
+  rejectionReason?: string | null;
 }
 
 export interface Media {

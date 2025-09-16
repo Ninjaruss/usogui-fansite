@@ -34,11 +34,9 @@ import {
   Users,
   Hash,
   Volume2,
-  Quote,
-  Eye
+  Quote
 } from 'lucide-react'
 import { useTheme } from '@mui/material/styles'
-import EnhancedSpoilerMarkdown from './EnhancedSpoilerMarkdown'
 
 interface EntityEmbedHelperProps {
   onInsertEmbed?: (embedCode: string) => void
@@ -47,8 +45,6 @@ interface EntityEmbedHelperProps {
 const EntityEmbedHelper: React.FC<EntityEmbedHelperProps> = ({ onInsertEmbed }) => {
   const theme = useTheme()
   const [open, setOpen] = useState(false)
-  const [previewContent, setPreviewContent] = useState('')
-  const [showPreview, setShowPreview] = useState(false)
 
   const entityTypes = [
     {
@@ -183,14 +179,6 @@ For more details, see {{guide:3:Gambling Rules Guide}} and {{chapter:150}}.`
               </Typography>
             </Box>
             <Box sx={{ display: 'flex', gap: 1 }}>
-              <Button
-                variant="outlined"
-                size="small"
-                startIcon={<Eye size={16} />}
-                onClick={() => setShowPreview(!showPreview)}
-              >
-                {showPreview ? 'Hide Preview' : 'Show Preview'}
-              </Button>
               <Button
                 variant="outlined"
                 size="small"

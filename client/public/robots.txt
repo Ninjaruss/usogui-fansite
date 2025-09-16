@@ -1,0 +1,16 @@
+# *
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /auth
+Disallow: /submit-guide
+Disallow: /submit-media
+Disallow: /profile
+Disallow: /test-*
+Disallow: /debug-*
+
+# Host
+Host: https://l-file.com
+
+# Sitemaps
+Sitemap: https://l-file.com/sitemap.xml

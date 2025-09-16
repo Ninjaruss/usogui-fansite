@@ -6,7 +6,169 @@ const nextConfig = {
   },
   typescript: {
     ignoreBuildErrors: false,
-  }
+  },
+
+  // Enable experimental features for better performance
+  experimental: {
+    optimizePackageImports: ['@mui/material', '@mui/icons-material', 'lucide-react'],
+  },
+
+  // Image optimization
+  images: {
+    formats: ['image/webp', 'image/avif'],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    domains: [
+      'localhost',
+      'l-file.com',
+      // Add your Backblaze B2 domain here
+      'f005.backblazeb2.com', // Replace with your actual B2 domain
+      'www.deviantart.com',
+      'www.pixiv.net',
+      'i.imgur.com',
+      'imgur.com',
+      'cdn.discordapp.com',
+      'media.discordapp.net',
+    ],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**.backblazeb2.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '3001',
+        pathname: '/api/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.deviantart.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.deviantart.net',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.pixiv.net',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.pximg.net',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'i.imgur.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'imgur.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'cdn.discordapp.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'media.discordapp.net',
+        port: '',
+        pathname: '/**',
+      }
+    ],
+    minimumCacheTTL: 31536000, // 1 year for static images
+  },
+
+  // Performance optimizations
+  compress: true,
+  poweredByHeader: false,
+
+  // Headers for better caching and security
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
+          },
+          {
+            key: 'X-Frame-Options',
+            value: 'DENY',
+          },
+          {
+            key: 'X-XSS-Protection',
+            value: '1; mode=block',
+          },
+          {
+            key: 'Referrer-Policy',
+            value: 'strict-origin-when-cross-origin',
+          },
+        ],
+      },
+      {
+        source: '/static/(.*)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      {
+        source: '/_next/image(.*)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+    ]
+  },
+
+  // Webpack configuration for better performance
+  webpack: (config, { dev, isServer }) => {
+    // Production optimizations
+    if (!dev && !isServer) {
+      config.optimization.splitChunks = {
+        chunks: 'all',
+        cacheGroups: {
+          vendor: {
+            test: /[\\/]node_modules[\\/]/,
+            name: 'vendors',
+            priority: 10,
+            enforce: true,
+          },
+          mui: {
+            test: /[\\/]node_modules[\\/]@mui[\\/]/,
+            name: 'mui',
+            priority: 20,
+            enforce: true,
+          },
+        },
+      }
+    }
+
+    return config
+  },
 }
 
 module.exports = nextConfig

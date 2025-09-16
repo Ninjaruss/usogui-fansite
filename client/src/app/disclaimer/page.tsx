@@ -1,7 +1,21 @@
-'use client'
-
 import { Container, Typography, Box, Paper, Divider } from '@mui/material'
 import { Shield, AlertTriangle, Copyright, ExternalLink } from 'lucide-react'
+import { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Legal Disclaimer - L-File Usogui Database',
+  description: 'Legal disclaimer and terms of use for L-File, the Usogui manga fan database. Copyright information and fair use policy.',
+  keywords: ['disclaimer', 'legal', 'copyright', 'fair use', 'terms', 'Usogui'],
+  openGraph: {
+    title: 'Legal Disclaimer - L-File Usogui Database',
+    description: 'Legal disclaimer and terms of use for L-File, the Usogui manga fan database.',
+    type: 'website'
+  },
+  robots: {
+    index: false,
+    follow: true
+  }
+}
 
 export default function DisclaimerPage() {
   return (

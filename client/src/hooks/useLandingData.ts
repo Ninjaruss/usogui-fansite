@@ -37,10 +37,13 @@ interface LandingData {
     }>
   }
   stats: {
-    totalGuides: number
     totalCharacters: number
     totalEvents: number
+    totalGuides: number
     totalGambles: number
+    totalArcs?: number
+    totalMedia?: number
+    totalUsers?: number
   }
 }
 

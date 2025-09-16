@@ -50,8 +50,8 @@ export class CreateEventDto {
   @ApiPropertyOptional({
     description: 'Status of the event',
     enum: EventStatus,
-    default: EventStatus.DRAFT,
-    example: EventStatus.DRAFT,
+    default: EventStatus.PENDING,
+    example: EventStatus.PENDING,
   })
   status?: EventStatus;
 

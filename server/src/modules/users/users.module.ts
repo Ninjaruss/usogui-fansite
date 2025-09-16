@@ -8,10 +8,7 @@ import { Gamble } from '../../entities/gamble.entity';
 import { BadgesModule } from '../badges/badges.module';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([User, Quote, Gamble]),
-    BadgesModule,
-  ],
+  imports: [TypeOrmModule.forFeature([User, Quote, Gamble]), BadgesModule],
   providers: [UsersService],
   controllers: [UsersController],
   exports: [UsersService],

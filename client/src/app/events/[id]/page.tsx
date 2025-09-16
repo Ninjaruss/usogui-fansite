@@ -22,38 +22,8 @@ import { api } from '../../../lib/api'
 import { motion } from 'motion/react'
 import { usePageView } from '../../../hooks/usePageView'
 import TimelineSpoilerWrapper from '../../../components/TimelineSpoilerWrapper'
-
-interface Event {
-  id: number
-  title: string
-  description: string
-  chapterNumber: number
-  spoilerChapter?: number
-  type: 'gamble' | 'decision' | 'reveal' | 'shift' | 'resolution'
-  status: 'draft' | 'pending_review' | 'approved'
-  arcId?: number
-  gambleId?: number
-  arc?: {
-    id: number
-    name: string
-  }
-  gamble?: {
-    id: number
-    name: string
-    rules: string
-    winCondition?: string
-  }
-  characters: Array<{
-    id: number
-    name: string
-  }>
-  tags?: Array<{
-    id: number
-    name: string
-  }>
-  createdAt: string
-  updatedAt: string
-}
+import type { Event } from '../../../types'
+import { EventStatus } from '../../../types'
 
 export default function EventDetailsPage() {
   const theme = useTheme()
@@ -388,7 +358,7 @@ export default function EventDetailsPage() {
                     <Chip
                       label={event.status.replace('_', ' ').toUpperCase()}
                       size="small"
-                      color={event.status === 'approved' ? 'success' : event.status === 'pending_review' ? 'warning' : 'default'}
+                      color={event.status === EventStatus.APPROVED ? 'success' : event.status === EventStatus.PENDING ? 'warning' : 'default'}
                       variant="outlined"
                     />
                   </Box>

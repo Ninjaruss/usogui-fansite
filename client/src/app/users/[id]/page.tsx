@@ -109,7 +109,7 @@ export default function UserProfilePage() {
         } else {
           // Fetch user's public guides for fallback stats calculation
           try {
-            const guidesResponse = await api.getGuides({ limit: 100 })
+            const guidesResponse = await api.getGuides({ limit: 100, status: 'approved' })
             // Filter guides by author on the client side for now
             const userGuides = guidesResponse.data?.filter(guide => guide.author?.id === userIdNum) || []
             setGuides(userGuides)
@@ -133,7 +133,7 @@ export default function UserProfilePage() {
 
         // Fetch user's guides separately for display (regardless of stats source)
         try {
-          const guidesResponse = await api.getGuides({ limit: 10 })
+          const guidesResponse = await api.getGuides({ limit: 10, status: 'approved' })
           const userGuides = guidesResponse.data?.filter(guide => guide.author?.id === userIdNum) || []
           setGuides(userGuides)
         } catch (guidesError) {

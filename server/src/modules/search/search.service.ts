@@ -81,7 +81,11 @@ export class SearchService {
         total = gambleResults.total;
         break;
       case SearchType.ORGANIZATIONS:
-        const organizationResults = await this.searchOrganizations(query, offset, limit);
+        const organizationResults = await this.searchOrganizations(
+          query,
+          offset,
+          limit,
+        );
         results = organizationResults.results;
         total = organizationResults.total;
         break;
@@ -113,156 +117,167 @@ export class SearchService {
     const suggestions: string[] = [];
 
     // Get suggestions from all entity types in priority order: characters, organizations, arcs, gambles, events, chapters
-    const [characters, organizations, arcs, gambles, events, chapters] = await Promise.all([
-      // Characters
-      this.characterRepository
-        .createQueryBuilder('character')
-        .where('character.name ILIKE :query', { query: `%${query}%` })
-        .orderBy(
-          `CASE 
+    const [characters, organizations, arcs, gambles, events, chapters] =
+      await Promise.all([
+        // Characters
+        this.characterRepository
+          .createQueryBuilder('character')
+          .where('character.name ILIKE :query', { query: `%${query}%` })
+          .orderBy(
+            `CASE 
             WHEN character.name ILIKE :exactQuery THEN 1
             WHEN character.name ILIKE :startQuery THEN 2
             ELSE 3
           END`,
-          'ASC',
-        )
-        .addOrderBy('character.name', 'ASC')
-        .setParameters({ 
-          query: `%${query}%`, 
-          exactQuery: query, 
-          startQuery: `${query}%` 
-        })
-        .limit(2)
-        .getMany(),
-      
-      // Organizations
-      this.organizationRepository
-        .createQueryBuilder('organization')
-        .where('organization.name ILIKE :query', { query: `%${query}%` })
-        .orderBy(
-          `CASE 
+            'ASC',
+          )
+          .addOrderBy('character.name', 'ASC')
+          .setParameters({
+            query: `%${query}%`,
+            exactQuery: query,
+            startQuery: `${query}%`,
+          })
+          .limit(2)
+          .getMany(),
+
+        // Organizations
+        this.organizationRepository
+          .createQueryBuilder('organization')
+          .where('organization.name ILIKE :query', { query: `%${query}%` })
+          .orderBy(
+            `CASE 
             WHEN organization.name ILIKE :exactQuery THEN 1
             WHEN organization.name ILIKE :startQuery THEN 2
             ELSE 3
           END`,
-          'ASC',
-        )
-        .addOrderBy('organization.name', 'ASC')
-        .setParameters({ 
-          query: `%${query}%`, 
-          exactQuery: query, 
-          startQuery: `${query}%` 
-        })
-        .limit(2)
-        .getMany(),
-      
-      // Arcs
-      this.arcRepository
-        .createQueryBuilder('arc')
-        .where('arc.name ILIKE :query', { query: `%${query}%` })
-        .orderBy(
-          `CASE 
+            'ASC',
+          )
+          .addOrderBy('organization.name', 'ASC')
+          .setParameters({
+            query: `%${query}%`,
+            exactQuery: query,
+            startQuery: `${query}%`,
+          })
+          .limit(2)
+          .getMany(),
+
+        // Arcs
+        this.arcRepository
+          .createQueryBuilder('arc')
+          .where('arc.name ILIKE :query', { query: `%${query}%` })
+          .orderBy(
+            `CASE 
             WHEN arc.name ILIKE :exactQuery THEN 1
             WHEN arc.name ILIKE :startQuery THEN 2
             ELSE 3
           END`,
-          'ASC',
-        )
-        .addOrderBy('arc.name', 'ASC')
-        .setParameters({ 
-          query: `%${query}%`, 
-          exactQuery: query, 
-          startQuery: `${query}%` 
-        })
-        .limit(2)
-        .getMany(),
-      
-      // Gambles
-      this.gambleRepository
-        .createQueryBuilder('gamble')
-        .where('gamble.name ILIKE :query', { query: `%${query}%` })
-        .orderBy(
-          `CASE 
+            'ASC',
+          )
+          .addOrderBy('arc.name', 'ASC')
+          .setParameters({
+            query: `%${query}%`,
+            exactQuery: query,
+            startQuery: `${query}%`,
+          })
+          .limit(2)
+          .getMany(),
+
+        // Gambles
+        this.gambleRepository
+          .createQueryBuilder('gamble')
+          .where('gamble.name ILIKE :query', { query: `%${query}%` })
+          .orderBy(
+            `CASE 
             WHEN gamble.name ILIKE :exactQuery THEN 1
             WHEN gamble.name ILIKE :startQuery THEN 2
             ELSE 3
           END`,
-          'ASC',
-        )
-        .addOrderBy('gamble.name', 'ASC')
-        .setParameters({ 
-          query: `%${query}%`, 
-          exactQuery: query, 
-          startQuery: `${query}%` 
-        })
-        .limit(1)
-        .getMany(),
-      
-      // Events
-      this.eventRepository
-        .createQueryBuilder('event')
-        .where('event.title ILIKE :query', { query: `%${query}%` })
-        .orderBy(
-          `CASE 
+            'ASC',
+          )
+          .addOrderBy('gamble.name', 'ASC')
+          .setParameters({
+            query: `%${query}%`,
+            exactQuery: query,
+            startQuery: `${query}%`,
+          })
+          .limit(1)
+          .getMany(),
+
+        // Events
+        this.eventRepository
+          .createQueryBuilder('event')
+          .where('event.title ILIKE :query', { query: `%${query}%` })
+          .orderBy(
+            `CASE 
             WHEN event.title ILIKE :exactQuery THEN 1
             WHEN event.title ILIKE :startQuery THEN 2
             ELSE 3
           END`,
-          'ASC',
-        )
-        .addOrderBy('event.title', 'ASC')
-        .setParameters({ 
-          query: `%${query}%`, 
-          exactQuery: query, 
-          startQuery: `${query}%` 
-        })
-        .limit(1)
-        .getMany(),
-      
-      // Chapters
-      this.chapterRepository
-        .createQueryBuilder('chapter')
-        .where('chapter.title ILIKE :query', { query: `%${query}%` })
-        .orderBy(
-          `CASE 
+            'ASC',
+          )
+          .addOrderBy('event.title', 'ASC')
+          .setParameters({
+            query: `%${query}%`,
+            exactQuery: query,
+            startQuery: `${query}%`,
+          })
+          .limit(1)
+          .getMany(),
+
+        // Chapters
+        this.chapterRepository
+          .createQueryBuilder('chapter')
+          .where('chapter.title ILIKE :query', { query: `%${query}%` })
+          .orderBy(
+            `CASE 
             WHEN chapter.title ILIKE :exactQuery THEN 1
             WHEN chapter.title ILIKE :startQuery THEN 2
             ELSE 3
           END`,
-          'ASC',
-        )
-        .addOrderBy('chapter.title', 'ASC')
-        .setParameters({ 
-          query: `%${query}%`, 
-          exactQuery: query, 
-          startQuery: `${query}%` 
-        })
-        .limit(1)
-        .getMany(),
-    ]);
+            'ASC',
+          )
+          .addOrderBy('chapter.title', 'ASC')
+          .setParameters({
+            query: `%${query}%`,
+            exactQuery: query,
+            startQuery: `${query}%`,
+          })
+          .limit(1)
+          .getMany(),
+      ]);
 
     // Add suggestions in priority order
     characters.forEach((char) => suggestions.push(char.name));
-    organizations.forEach((organization) => suggestions.push(organization.name));
+    organizations.forEach((organization) =>
+      suggestions.push(organization.name),
+    );
     arcs.forEach((arc) => suggestions.push(arc.name));
     gambles.forEach((gamble) => suggestions.push(gamble.name));
     events.forEach((event) => suggestions.push(event.title || 'Unknown Event'));
-    chapters.forEach((chapter) => suggestions.push(chapter.title || `Chapter ${chapter.number}`));
+    chapters.forEach((chapter) =>
+      suggestions.push(chapter.title || `Chapter ${chapter.number}`),
+    );
 
     // Remove duplicates and limit to 8 suggestions
     return Array.from(new Set(suggestions)).slice(0, 8);
   }
 
   async getContentTypes(): Promise<{ type: string; count: number }[]> {
-    const [chapterCount, characterCount, eventCount, arcCount, gambleCount, organizationCount] =
-      await Promise.all([
-        this.chapterRepository.count(),
-        this.characterRepository.count(),
-        this.eventRepository.count(),
-        this.arcRepository.count(),
-        this.gambleRepository.count(),
-        this.organizationRepository.count(),
-      ]);
+    const [
+      chapterCount,
+      characterCount,
+      eventCount,
+      arcCount,
+      gambleCount,
+      organizationCount,
+    ] = await Promise.all([
+      this.chapterRepository.count(),
+      this.characterRepository.count(),
+      this.eventRepository.count(),
+      this.arcRepository.count(),
+      this.gambleRepository.count(),
+      this.organizationRepository.count(),
+    ]);
 
     return [
       { type: 'characters', count: characterCount },
@@ -304,10 +319,10 @@ export class SearchService {
         'ASC',
       )
       .addOrderBy('chapter.number', 'ASC')
-      .setParameters({ 
-        query: `%${query}%`, 
-        exactQuery: query, 
-        startQuery: `${query}%` 
+      .setParameters({
+        query: `%${query}%`,
+        exactQuery: query,
+        startQuery: `${query}%`,
       })
       .offset(offset)
       .limit(limit)
@@ -358,11 +373,11 @@ export class SearchService {
         'ASC',
       )
       .addOrderBy('character.name', 'ASC')
-      .setParameters({ 
-        query, 
-        likeQuery: `%${query}%`, 
-        exactQuery: query, 
-        startQuery: `${query}%` 
+      .setParameters({
+        query,
+        likeQuery: `%${query}%`,
+        exactQuery: query,
+        startQuery: `${query}%`,
       })
       .offset(offset)
       .limit(limit)
@@ -419,10 +434,10 @@ export class SearchService {
         'ASC',
       )
       .addOrderBy('event.title', 'ASC')
-      .setParameters({ 
-        query: `%${query}%`, 
-        exactQuery: query, 
-        startQuery: `${query}%` 
+      .setParameters({
+        query: `%${query}%`,
+        exactQuery: query,
+        startQuery: `${query}%`,
       })
       .offset(offset)
       .limit(limit)
@@ -472,11 +487,11 @@ export class SearchService {
         'ASC',
       )
       .addOrderBy('arc.name', 'ASC')
-      .setParameters({ 
-        query, 
-        likeQuery: `%${query}%`, 
-        exactQuery: query, 
-        startQuery: `${query}%` 
+      .setParameters({
+        query,
+        likeQuery: `%${query}%`,
+        exactQuery: query,
+        startQuery: `${query}%`,
       })
       .offset(offset)
       .limit(limit)
@@ -531,11 +546,11 @@ export class SearchService {
         'ASC',
       )
       .addOrderBy('gamble.name', 'ASC')
-      .setParameters({ 
-        query, 
-        likeQuery: `%${query}%`, 
-        exactQuery: query, 
-        startQuery: `${query}%` 
+      .setParameters({
+        query,
+        likeQuery: `%${query}%`,
+        exactQuery: query,
+        startQuery: `${query}%`,
       })
       .offset(offset)
       .limit(limit)
@@ -559,7 +574,11 @@ export class SearchService {
     return { results, total };
   }
 
-  private async searchOrganizations(query: string, offset: number, limit: number) {
+  private async searchOrganizations(
+    query: string,
+    offset: number,
+    limit: number,
+  ) {
     const [organizations, total] = await this.organizationRepository
       .createQueryBuilder('organization')
       .where(
@@ -584,26 +603,28 @@ export class SearchService {
         'ASC',
       )
       .addOrderBy('organization.name', 'ASC')
-      .setParameters({ 
-        query, 
-        likeQuery: `%${query}%`, 
-        exactQuery: query, 
-        startQuery: `${query}%` 
+      .setParameters({
+        query,
+        likeQuery: `%${query}%`,
+        exactQuery: query,
+        startQuery: `${query}%`,
       })
       .offset(offset)
       .limit(limit)
       .getManyAndCount();
 
-    const results: SearchResultItemDto[] = organizations.map((organization) => ({
-      id: organization.id,
-      type: 'organization',
-      title: organization.name || 'Unknown Organization',
-      description: organization.description ?? undefined,
-      score: 1.0,
-      hasSpoilers: false, // Organizations don't typically have spoiler flags
-      slug: `organization-${organization.id}`,
-      metadata: {},
-    }));
+    const results: SearchResultItemDto[] = organizations.map(
+      (organization) => ({
+        id: organization.id,
+        type: 'organization',
+        title: organization.name || 'Unknown Organization',
+        description: organization.description ?? undefined,
+        score: 1.0,
+        hasSpoilers: false, // Organizations don't typically have spoiler flags
+        slug: `organization-${organization.id}`,
+        metadata: {},
+      }),
+    );
 
     return { results, total };
   }

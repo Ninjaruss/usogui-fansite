@@ -29,7 +29,8 @@ export class BadgeSeeder implements Seeder {
       },
       {
         name: 'Active Supporter',
-        description: 'Active supporter with donation in the last year - can set custom titles',
+        description:
+          'Active supporter with donation in the last year - can set custom titles',
         type: BadgeType.ACTIVE_SUPPORTER,
         icon: '⭐',
         color: '#00FF00',
@@ -40,7 +41,8 @@ export class BadgeSeeder implements Seeder {
       },
       {
         name: 'Sponsor',
-        description: 'Generous sponsor with $25+ in total donations - access to exclusive content',
+        description:
+          'Generous sponsor with $25+ in total donations - access to exclusive content',
         type: BadgeType.SPONSOR,
         icon: '👑',
         color: '#FF6B35',

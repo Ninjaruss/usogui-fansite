@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { Box, IconButton, Typography, CircularProgress, Tooltip, useTheme } from '@mui/material'
 import { ChevronLeft, ChevronRight, Image as ImageIcon, AlertTriangle } from 'lucide-react'
 import { motion, AnimatePresence } from 'motion/react'
+import Image from 'next/image'
 import { useProgress } from '../providers/ProgressProvider'
 import { useSpoilerSettings } from '../hooks/useSpoilerSettings'
 import { api } from '../lib/api'
@@ -135,15 +136,15 @@ export default function MediaThumbnail({
   const renderMediaContent = (media: MediaItem) => {
     if (media.type === 'image') {
       return (
-        <img
+        <Image
           src={media.url}
           alt={media.description || `${entityName} image`}
+          fill
           style={{
-            width: '100%',
-            height: '100%',
             objectFit: 'cover',
             borderRadius: '8px',
           }}
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           onError={(e) => {
             console.error('Image failed to load:', media.url)
             setError('Failed to load image')
@@ -299,6 +300,7 @@ export default function MediaThumbnail({
     <Box
       component={inline ? "span" : "div"}
       sx={{
+        position: 'relative',
         width: '100%',
         height: '100%',
       }}

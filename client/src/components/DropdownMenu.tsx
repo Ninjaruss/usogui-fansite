@@ -35,6 +35,8 @@ export const DropdownMenu: React.FC<DropdownMenuProps> = ({
       key={item.href}
       component={Link}
       href={item.href}
+      onMouseEnter={handlers.onDropdownEnter}
+      onMouseLeave={handlers.onDropdownEnter}
       sx={{
         pl: isCategorized ? 3 : 2,
         backgroundColor: isActivePath(item.href) ? 'action.selected' : 'transparent',
@@ -56,6 +58,8 @@ export const DropdownMenu: React.FC<DropdownMenuProps> = ({
         <MenuItem
           key={`header-${category.name}`}
           disabled
+          onMouseEnter={handlers.onDropdownEnter}
+          onMouseLeave={handlers.onDropdownEnter}
           sx={{
             fontWeight: 'bold',
             opacity: '1 !important',
@@ -78,7 +82,17 @@ export const DropdownMenu: React.FC<DropdownMenuProps> = ({
       })
 
       if (index < array.length - 1) {
-        items.push(<Divider key={`divider-${category.name}`} sx={{ my: 0.5 }} />)
+        items.push(
+          <Divider
+            key={`divider-${category.name}`}
+            sx={{
+              my: 0.5,
+              pointerEvents: 'none'
+            }}
+            onMouseEnter={handlers.onDropdownEnter}
+            onMouseLeave={handlers.onDropdownEnter}
+          />
+        )
       }
     })
 
@@ -110,7 +124,8 @@ export const DropdownMenu: React.FC<DropdownMenuProps> = ({
       sx={{
         '& .MuiPaper-root': {
           marginTop: '4px',
-          boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)'
+          boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
+          padding: '4px'
         }
       }}
     >

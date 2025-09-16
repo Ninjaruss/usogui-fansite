@@ -1,4 +1,10 @@
-import { IsNumber, IsOptional, IsString, IsNotEmpty, IsDateString } from 'class-validator';
+import {
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsNotEmpty,
+  IsDateString,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class AwardBadgeDto {
@@ -33,7 +39,8 @@ export class AwardBadgeDto {
   year?: number;
 
   @ApiPropertyOptional({
-    description: 'Expiration date for the badge (ISO string). Note: Active Supporter badges automatically expire after 1 year regardless of this value.',
+    description:
+      'Expiration date for the badge (ISO string). Note: Active Supporter badges automatically expire after 1 year regardless of this value.',
     example: '2025-01-01T00:00:00.000Z',
   })
   @IsOptional()

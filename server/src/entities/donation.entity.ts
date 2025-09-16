@@ -42,7 +42,7 @@ export class Donation {
 
   @ApiProperty({
     description: 'Donation amount in USD',
-    example: 25.00,
+    example: 25.0,
   })
   @Column({ type: 'decimal', precision: 10, scale: 2 })
   amount: number;
@@ -80,7 +80,11 @@ export class Donation {
     enum: DonationStatus,
     example: DonationStatus.COMPLETED,
   })
-  @Column({ type: 'enum', enum: DonationStatus, default: DonationStatus.PENDING })
+  @Column({
+    type: 'enum',
+    enum: DonationStatus,
+    default: DonationStatus.PENDING,
+  })
   status: DonationStatus;
 
   @ApiPropertyOptional({

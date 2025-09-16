@@ -21,7 +21,8 @@ export class CharactersService {
   constructor(
     @InjectRepository(Character) private repo: Repository<Character>,
     @InjectRepository(Gamble) private gamblesRepository: Repository<Gamble>,
-    @InjectRepository(Organization) private organizationRepository: Repository<Organization>,
+    @InjectRepository(Organization)
+    private organizationRepository: Repository<Organization>,
     private readonly pageViewsService: PageViewsService,
     private readonly mediaService: MediaService,
   ) {}
@@ -129,9 +130,12 @@ export class CharactersService {
 
     // Handle organization relations if provided
     if (organizationIds && organizationIds.length > 0) {
-      const organizations = await this.organizationRepository.findByIds(organizationIds);
+      const organizations =
+        await this.organizationRepository.findByIds(organizationIds);
       if (organizations.length !== organizationIds.length) {
-        throw new BadRequestException('One or more organization IDs are invalid');
+        throw new BadRequestException(
+          'One or more organization IDs are invalid',
+        );
       }
       character.organizations = organizations;
     }
@@ -160,9 +164,12 @@ export class CharactersService {
     // Handle organization relations if provided
     if (organizationIds !== undefined) {
       if (organizationIds.length > 0) {
-        const organizations = await this.organizationRepository.findByIds(organizationIds);
+        const organizations =
+          await this.organizationRepository.findByIds(organizationIds);
         if (organizations.length !== organizationIds.length) {
-          throw new BadRequestException('One or more organization IDs are invalid');
+          throw new BadRequestException(
+            'One or more organization IDs are invalid',
+          );
         }
         character.organizations = organizations;
       } else {
@@ -375,7 +382,7 @@ export class CharactersService {
       FROM guide g
       LEFT JOIN "user" u ON g."authorId" = u.id
       INNER JOIN guide_characters gc ON g.id = gc."guideId"
-      WHERE g.status = 'published' 
+      WHERE g.status = 'approved' 
         AND gc."characterId" = $1
       ORDER BY g."likeCount" DESC, g."createdAt" DESC
       LIMIT $2 OFFSET $3

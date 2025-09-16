@@ -37,10 +37,11 @@ import {
   AppBar,
   TextField as MuiTextField
 } from '@mui/material'
-import { 
-  Check, 
-  X, 
-  Image, 
+import Image from 'next/image'
+import {
+  Check,
+  X,
+  Image as ImageIcon, 
   User, 
   BookOpen, 
   Calendar, 
@@ -132,7 +133,7 @@ const MediaStatusField = ({ source }: { source: string }) => {
     switch(status) {
       case 'approved': return 'success'
       case 'rejected': return 'error'
-      case 'draft': return 'info'
+      case 'pending': return 'warning'
       default: return 'warning'
     }
   }
@@ -141,7 +142,6 @@ const MediaStatusField = ({ source }: { source: string }) => {
     switch(status) {
       case 'approved': return '✅'
       case 'rejected': return '❌'
-      case 'draft': return '📝'
       case 'pending': return '⏳'
       default: return '❓'
     }
@@ -194,13 +194,13 @@ const MediaPreviewField = ({ source }: { source: string }) => {
   switch (record.type) {
     case 'image':
       return (
-        <Box sx={{ width: '80px', display: 'flex', justifyContent: 'center' }}>
-          <img
+        <Box sx={{ width: '80px', height: '60px', position: 'relative', display: 'flex', justifyContent: 'center' }}>
+          <Image
             src={record.url}
             alt="Media preview"
+            width={60}
+            height={60}
             style={{
-              width: '60px',
-              height: '60px',
               objectFit: 'cover',
               borderRadius: '4px',
               border: '2px solid #e11d48'
@@ -510,8 +510,13 @@ const MediaFilterToolbar = () => {
 
   const handleStatusFilter = (status: string) => {
     const newFilters = status === 'all' 
-      ? { ...filterValues, status: 'all' }
+      ? { ...filterValues }
       : { ...filterValues, status }
+    
+    if (status === 'all') {
+      delete newFilters.status
+    }
+    
     setFilters(newFilters, filterValues)
   }
 
@@ -1281,7 +1286,6 @@ const EntityNameDisplay = () => {
 
 export const MediaList = () => (
   <List 
-    filterDefaultValues={{ status: 'all' }}
     perPage={25}
     sx={{
       '& .RaList-content': {
@@ -1551,7 +1555,7 @@ export const MediaApprovalQueue = () => (
 
 export const MediaDraftManager = () => (
   <List
-    filter={{ status: 'draft' }}
+    filter={{ status: 'pending' }}
     title="Draft Media Submissions"
     perPage={50}
   >
@@ -1720,16 +1724,19 @@ export const MediaShow = () => {
             borderRadius: 2,
             border: '2px dashed rgba(225, 29, 72, 0.3)'
           }}>
-            <img 
-              src={record.url} 
-              alt={record.description || 'Media content'} 
-              style={{ 
-                maxWidth: '100%', 
+            <Image
+              src={record.url}
+              alt={record.description || 'Media content'}
+              width={800}
+              height={600}
+              style={{
+                maxWidth: '100%',
                 height: 'auto',
                 borderRadius: '8px',
                 boxShadow: '0 8px 32px rgba(225, 29, 72, 0.3)',
                 border: '1px solid rgba(225, 29, 72, 0.2)'
               }}
+              sizes="(max-width: 768px) 100vw, 800px"
             />
           </Box>
         )
@@ -1846,7 +1853,7 @@ export const MediaShow = () => {
                 backdropFilter: 'blur(10px)',
                 border: '1px solid rgba(255,255,255,0.2)'
               }}>
-                <Image size={32} color="white" />
+                <ImageIcon size={32} color="white" />
               </Box>
               <Box sx={{ flex: 1 }}>
                 <Typography variant="h4" sx={{ 
@@ -1930,7 +1937,7 @@ export const MediaShow = () => {
                 p: 2
               }}>
                 <Typography variant="h5" sx={{ fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <Image size={24} />
+                  <ImageIcon size={24} />
                   Media Content
                 </Typography>
               </Box>
@@ -2073,7 +2080,7 @@ export const MediaShow = () => {
                       height: 36,
                       border: `2px solid rgba(${record?.purpose === 'entity_display' ? '156, 39, 176' : '76, 175, 80'}, 0.5)`
                     }}>
-                      <Image size={20} />
+                      <ImageIcon size={20} />
                     </Avatar>
                     <MediaPurposeField source="purpose" />
                   </Box>

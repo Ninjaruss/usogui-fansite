@@ -29,8 +29,9 @@ import {
   useTheme,
   LinearProgress
 } from '@mui/material'
-import { User, Crown, Save, X, Camera, Search, AlertTriangle, Quote, Dices, Edit, BookOpen, FileText, Calendar } from 'lucide-react'
+import { User, Crown, Save, X, Camera, Search, AlertTriangle, Quote, Dices, Edit, BookOpen, FileText, Calendar, Heart, Eye } from 'lucide-react'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
+import Link from 'next/link'
 import { useAuth } from '../../providers/AuthProvider'
 import { useProgress } from '../../providers/ProgressProvider'
 import { useSpoilerSettings } from '../../hooks/useSpoilerSettings'
@@ -44,6 +45,7 @@ import UserBadges from '../../components/UserBadges'
 import CustomRoleEditor from '../../components/CustomRoleEditor'
 import CustomRoleDisplay from '../../components/CustomRoleDisplay'
 import { UserRoleDisplay } from '../../components/BadgeDisplay'
+import { GuideStatus } from '../../types'
 
 // Profile Picture Spoiler Wrapper - matches CharacterTimeline spoiler behavior
 function ProfilePictureSpoilerWrapper({ 
@@ -204,6 +206,16 @@ export default function ProfilePage() {
     isActive: boolean
     expiresAt: string | null
   }>>([])
+  const [userGuides, setUserGuides] = useState<Array<{
+    id: number
+    title: string
+    description: string
+    status: string
+    likeCount: number
+    viewCount: number
+    createdAt: string
+    updatedAt: string
+  }>>([])
   const [loading, setLoading] = useState(false)
   const [dataLoading, setDataLoading] = useState(true)
   const [error, setError] = useState('')
@@ -346,6 +358,21 @@ export default function ProfilePage() {
             }
           } catch (error) {
             console.error('Failed to fetch user badges:', error)
+          }
+        }
+
+        // Fetch user's guides
+        if (user?.id) {
+          try {
+            const guidesResponse = await api.getGuidesAdmin({ 
+              authorId: user.id, 
+              limit: 100 // Get all user's guides
+            })
+            setUserGuides(guidesResponse.data || [])
+          } catch (error) {
+            console.error('Failed to fetch user guides:', error)
+            // Fallback to empty array
+            setUserGuides([])
           }
         }
       } catch (error) {
@@ -971,6 +998,138 @@ export default function ProfilePage() {
             {success}
           </Alert>
         )}
+
+        {/* User Guides Section */}
+        <Card className="gambling-card" sx={{ mb: 4 }}>
+          <CardContent>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+              <BookOpen size={24} />
+              <Typography variant="h5" sx={{ ml: 1 }}>
+                My Guides ({userGuides.length})
+              </Typography>
+            </Box>
+
+            {userGuides.length > 0 ? (
+              <Grid container spacing={3}>
+                {userGuides.map((guide) => (
+                  <Grid item xs={12} key={guide.id}>
+                    <Card 
+                      className="gambling-card"
+                      sx={{ 
+                        border: '1px solid',
+                        borderColor: guide.status === GuideStatus.PENDING ? 'warning.main' : 'divider',
+                        backgroundColor: guide.status === GuideStatus.PENDING ? 'rgba(255, 152, 0, 0.05)' : 'background.paper',
+                        transition: 'all 0.2s ease',
+                        '&:hover': {
+                          borderColor: 'primary.main',
+                          boxShadow: 2,
+                          transform: 'translateY(-2px)'
+                        }
+                      }}
+                    >
+                      <CardContent>
+                        {/* Pending indicator banner */}
+                        {guide.status === GuideStatus.PENDING && (
+                          <Box sx={{ 
+                            mb: 2, 
+                            p: 1.5, 
+                            backgroundColor: 'rgba(255, 152, 0, 0.1)',
+                            borderRadius: 1,
+                            border: '1px solid rgba(255, 152, 0, 0.3)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1
+                          }}>
+                            <BookOpen size={16} color="#ff9800" />
+                            <Typography variant="body2" color="warning.main" sx={{ fontWeight: 'medium' }}>
+                              This guide is under review and will be visible to others once approved.
+                            </Typography>
+                          </Box>
+                        )}
+                        
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+                          <Box sx={{ flex: 1 }}>
+                            <Typography 
+                              variant="h6" 
+                              component={Link}
+                              href={`/guides/${guide.id}`}
+                              sx={{
+                                textDecoration: 'none',
+                                color: 'inherit',
+                                '&:hover': {
+                                  color: 'primary.main'
+                                }
+                              }}
+                            >
+                              {guide.title}
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                              {guide.description}
+                            </Typography>
+                          </Box>
+                          <Box sx={{ ml: 2 }}>
+                            <Chip
+                              label={guide.status === GuideStatus.PENDING ? 'Under Review' : guide.status}
+                              size="small"
+                              color={
+                                guide.status === GuideStatus.APPROVED ? 'success' :
+                                guide.status === GuideStatus.PENDING ? 'warning' : 'error'
+                              }
+                              sx={{
+                                textTransform: 'capitalize',
+                                fontWeight: guide.status === GuideStatus.PENDING ? 'bold' : 'normal'
+                              }}
+                            />
+                          </Box>
+                        </Box>
+                        
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, color: 'text.secondary' }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                            <Heart size={16} />
+                            <Typography variant="body2">{guide.likeCount}</Typography>
+                          </Box>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                            <Eye size={16} />
+                            <Typography variant="body2">{guide.viewCount}</Typography>
+                          </Box>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                            <Calendar size={16} />
+                            <Typography variant="body2">
+                              {new Date(guide.createdAt).toLocaleDateString()}
+                            </Typography>
+                          </Box>
+                        </Box>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                ))}
+              </Grid>
+            ) : (
+              <Box sx={{
+                textAlign: 'center',
+                py: 4,
+                color: 'text.secondary'
+              }}>
+                <FileText size={48} style={{ opacity: 0.5, marginBottom: 16 }} />
+                <Typography variant="h6" gutterBottom>
+                  No guides yet
+                </Typography>
+                <Typography variant="body2" color="text.secondary" gutterBottom>
+                  You haven't written any guides yet.
+                </Typography>
+                <Button
+                  component={Link}
+                  href="/submit-guide"
+                  variant="contained"
+                  startIcon={<Edit size={18} />}
+                  sx={{ mt: 2 }}
+                >
+                  Write Your First Guide
+                </Button>
+              </Box>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Account Information - Centered */}
         <Box sx={{ display: 'flex', justifyContent: 'center', mb: 4 }}>

@@ -11,6 +11,9 @@ import { Guide, GuideStatus } from './entities/guide.entity';
 import { Character } from './entities/character.entity';
 import { Event } from './entities/event.entity';
 import { Gamble } from './entities/gamble.entity';
+import { Arc } from './entities/arc.entity';
+import { Media } from './entities/media.entity';
+import { User } from './entities/user.entity';
 import { UsersService } from './modules/users/users.service';
 
 @ApiTags('app')
@@ -27,6 +30,12 @@ export class AppController {
     private readonly eventRepository: Repository<Event>,
     @InjectRepository(Gamble)
     private readonly gambleRepository: Repository<Gamble>,
+    @InjectRepository(Arc)
+    private readonly arcRepository: Repository<Arc>,
+    @InjectRepository(Media)
+    private readonly mediaRepository: Repository<Media>,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
   ) {}
 
   @Get()
@@ -49,10 +58,12 @@ export class AppController {
         stats: {
           type: 'object',
           properties: {
-            totalGuides: { type: 'number' },
             totalCharacters: { type: 'number' },
+            totalArcs: { type: 'number' },
             totalEvents: { type: 'number' },
-            totalGambles: { type: 'number' },
+            totalGuides: { type: 'number' },
+            totalMedia: { type: 'number' },
+            totalUsers: { type: 'number' },
           },
         },
       },
@@ -83,15 +94,23 @@ export class AppController {
     );
 
     // Get basic stats
-    const [totalGuides, totalCharacters, totalEvents, totalGambles] =
-      await Promise.all([
-        this.guideRepository.count({
-          where: { status: GuideStatus.PUBLISHED },
-        }),
-        this.characterRepository.count(),
-        this.eventRepository.count(),
-        this.gambleRepository.count(),
-      ]);
+    const [
+      totalCharacters,
+      totalArcs,
+      totalEvents,
+      totalGuides,
+      totalMedia,
+      totalUsers,
+    ] = await Promise.all([
+      this.characterRepository.count(),
+      this.arcRepository.count(),
+      this.eventRepository.count(),
+      this.guideRepository.count({
+        where: { status: GuideStatus.APPROVED },
+      }),
+      this.mediaRepository.count(),
+      this.userRepository.count(),
+    ]);
 
     return {
       trending: {
@@ -101,10 +120,12 @@ export class AppController {
         gambles: trendingGambles,
       },
       stats: {
-        totalGuides,
         totalCharacters,
+        totalArcs,
         totalEvents,
-        totalGambles,
+        totalGuides,
+        totalMedia,
+        totalUsers,
       },
     };
   }
@@ -184,7 +205,7 @@ export class AppController {
 
     const guideIds = trendingPages.map((p) => p.pageId);
     const guides = await this.guideRepository.find({
-      where: { id: In(guideIds), status: GuideStatus.PUBLISHED },
+      where: { id: In(guideIds), status: GuideStatus.APPROVED },
       relations: ['author'],
     });
 

@@ -8,9 +8,7 @@ import { User } from '../../entities/user.entity';
 import { Donation } from '../../entities/donation.entity';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([Badge, UserBadge, User, Donation]),
-  ],
+  imports: [TypeOrmModule.forFeature([Badge, UserBadge, User, Donation])],
   providers: [BadgesService],
   controllers: [BadgesController],
   exports: [BadgesService],

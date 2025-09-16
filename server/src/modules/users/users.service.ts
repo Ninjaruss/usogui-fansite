@@ -63,9 +63,10 @@ export class UsersService {
       // Filter to show only active, non-expired badges in the list view
       if (user.badges) {
         const now = new Date();
-        user.badges = user.badges.filter(userBadge => 
-          userBadge.isActive && 
-          (!userBadge.expiresAt || userBadge.expiresAt > now)
+        user.badges = user.badges.filter(
+          (userBadge) =>
+            userBadge.isActive &&
+            (!userBadge.expiresAt || userBadge.expiresAt > now),
         );
       }
 
@@ -94,9 +95,14 @@ export class UsersService {
   }
 
   async findOne(id: number): Promise<User> {
-    const user = await this.repo.findOne({ 
+    const user = await this.repo.findOne({
       where: { id },
-      relations: ['badges', 'badges.badge', 'badges.awardedBy', 'badges.revokedBy']
+      relations: [
+        'badges',
+        'badges.badge',
+        'badges.awardedBy',
+        'badges.revokedBy',
+      ],
     });
     if (!user) throw new NotFoundException('User not found');
     return user;
@@ -164,12 +170,12 @@ export class UsersService {
       throw new NotFoundException(`User with id ${id} not found`);
     }
 
-    // Get guides written count (published only)
+    // Get guides written count (approved only)
     const guideRepo = this.repo.manager.getRepository(Guide);
     const guidesWritten = await guideRepo
       .createQueryBuilder('guide')
       .where('guide.authorId = :userId', { userId: id })
-      .andWhere('guide.status = :status', { status: GuideStatus.PUBLISHED })
+      .andWhere('guide.status = :status', { status: GuideStatus.APPROVED })
       .getCount();
 
     // Get media submitted count
@@ -185,7 +191,7 @@ export class UsersService {
       .createQueryBuilder('guideLike')
       .innerJoin('guideLike.guide', 'guide')
       .where('guide.authorId = :userId', { userId: id })
-      .andWhere('guide.status = :status', { status: GuideStatus.PUBLISHED })
+      .andWhere('guide.status = :status', { status: GuideStatus.APPROVED })
       .getCount();
 
     return {
@@ -694,7 +700,10 @@ export class UsersService {
     };
   }
 
-  async updateCustomRole(userId: number, customRole: string | null): Promise<User> {
+  async updateCustomRole(
+    userId: number,
+    customRole: string | null,
+  ): Promise<User> {
     const user = await this.findOne(userId);
     user.customRole = customRole;
     return this.repo.save(user);

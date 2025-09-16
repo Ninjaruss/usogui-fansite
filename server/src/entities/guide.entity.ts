@@ -20,9 +20,8 @@ import { Arc } from './arc.entity';
 import { Gamble } from './gamble.entity';
 
 export enum GuideStatus {
-  DRAFT = 'draft',
   PENDING = 'pending',
-  PUBLISHED = 'published',
+  APPROVED = 'approved',
   REJECTED = 'rejected',
 }
 
@@ -61,12 +60,12 @@ export class Guide {
   @ApiProperty({
     description: 'Current status of the guide',
     enum: GuideStatus,
-    example: GuideStatus.PUBLISHED,
+    example: GuideStatus.APPROVED,
   })
   @Column({
     type: 'enum',
     enum: GuideStatus,
-    default: GuideStatus.DRAFT,
+    default: GuideStatus.PENDING,
   })
   status: GuideStatus;
 

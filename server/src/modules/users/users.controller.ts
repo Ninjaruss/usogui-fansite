@@ -65,7 +65,11 @@ export class UsersController {
               id: { type: 'number', example: 1 },
               username: { type: 'string', example: 'john_doe' },
               role: { type: 'string', example: 'USER' },
-              customRole: { type: 'string', nullable: true, example: 'Usogui Superfan' },
+              customRole: {
+                type: 'string',
+                nullable: true,
+                example: 'Usogui Superfan',
+              },
               userProgress: { type: 'number', example: 42 },
               profileImageId: {
                 type: 'string',
@@ -169,7 +173,11 @@ export class UsersController {
         id: { type: 'number', example: 1 },
         username: { type: 'string', example: 'john_doe' },
         role: { type: 'string', example: 'USER' },
-        customRole: { type: 'string', nullable: true, example: 'Usogui Superfan' },
+        customRole: {
+          type: 'string',
+          nullable: true,
+          example: 'Usogui Superfan',
+        },
         userProgress: { type: 'number', example: 42 },
         profileImageId: { type: 'string', format: 'uuid', nullable: true },
         profileImage: { type: 'object', nullable: true },
@@ -822,7 +830,7 @@ export class UsersController {
         guidesWritten: {
           type: 'number',
           example: 5,
-          description: 'Number of published guides written by the user',
+          description: 'Number of approved guides written by the user',
         },
         mediaSubmitted: {
           type: 'number',
@@ -832,7 +840,7 @@ export class UsersController {
         likesReceived: {
           type: 'number',
           example: 28,
-          description: 'Total number of likes received on all published guides',
+          description: 'Total number of likes received on all approved guides',
         },
       },
     },
@@ -929,9 +937,14 @@ export class UsersController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Get all user badges including revoked ones (Admin only)' })
+  @ApiOperation({
+    summary: 'Get all user badges including revoked ones (Admin only)',
+  })
   @ApiParam({ name: 'id', description: 'User ID' })
-  @ApiResponse({ status: 200, description: 'List of all user badges including revoked ones' })
+  @ApiResponse({
+    status: 200,
+    description: 'List of all user badges including revoked ones',
+  })
   @ApiResponse({ status: 404, description: 'User not found' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden - Admin role required' })
@@ -945,7 +958,8 @@ export class UsersController {
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Update custom cosmetic role',
-    description: 'Update custom cosmetic role (requires active supporter badge)',
+    description:
+      'Update custom cosmetic role (requires active supporter badge)',
   })
   @ApiBody({ type: UpdateCustomRoleDto })
   @ApiResponse({ status: 200, description: 'Custom role updated successfully' })
@@ -955,13 +969,20 @@ export class UsersController {
     @CurrentUser() user: User,
     @Body() updateCustomRoleDto: UpdateCustomRoleDto,
   ) {
-    const hasActiveBadge = await this.badgesService.hasActiveSupporterBadge(user.id);
-    
+    const hasActiveBadge = await this.badgesService.hasActiveSupporterBadge(
+      user.id,
+    );
+
     if (!hasActiveBadge) {
-      throw new NotFoundException('Active supporter badge required to set custom role');
+      throw new NotFoundException(
+        'Active supporter badge required to set custom role',
+      );
     }
 
-    await this.service.updateCustomRole(user.id, updateCustomRoleDto.customRole);
+    await this.service.updateCustomRole(
+      user.id,
+      updateCustomRoleDto.customRole,
+    );
     return { message: 'Custom role updated successfully' };
   }
 

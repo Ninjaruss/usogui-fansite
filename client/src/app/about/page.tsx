@@ -1,5 +1,3 @@
-'use client'
-
 import React from 'react'
 import {
   Container,
@@ -16,23 +14,36 @@ import {
   Link as MuiLink
 } from '@mui/material'
 import { Heart, Mail, Coffee, Github, Twitter } from 'lucide-react'
-import { motion } from 'motion/react'
+import { Metadata } from 'next'
+
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    title: 'About L-File - The Ultimate Usogui Database',
+    description: 'Learn about L-File, the comprehensive fan-made database dedicated to the manga series Usogui (The Lie Eater). Created by fans, for fans.',
+    keywords: ['Usogui', 'Lie Eater', 'manga', 'database', 'characters', 'gambles', 'about'],
+    openGraph: {
+      title: 'About L-File - The Ultimate Usogui Database',
+      description: 'Learn about L-File, the comprehensive fan-made database dedicated to the manga series Usogui (The Lie Eater).',
+      type: 'website'
+    },
+    twitter: {
+      card: 'summary',
+      title: 'About L-File - The Ultimate Usogui Database',
+      description: 'Learn about L-File, the comprehensive fan-made database dedicated to the manga series Usogui (The Lie Eater).'
+    }
+  }
+}
 
 const AboutPage: React.FC = () => {
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <Typography variant="h3" component="h1" gutterBottom align="center" sx={{ mb: 4 }}>
-          About L-File
-        </Typography>
+      <Typography variant="h3" component="h1" gutterBottom align="center" sx={{ mb: 4 }}>
+        About L-File
+      </Typography>
 
-        <Grid container spacing={4}>
-          {/* About Section */}
-          <Grid item xs={12}>
+      <Grid container spacing={4}>
+        {/* About Section */}
+        <Grid item xs={12}>
             <Card elevation={2}>
               <CardContent>
                 <Typography variant="h4" component="h2" gutterBottom color="primary">
@@ -186,7 +197,6 @@ const AboutPage: React.FC = () => {
             </Card>
           </Grid>
         </Grid>
-      </motion.div>
     </Container>
   )
 }

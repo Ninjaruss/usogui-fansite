@@ -29,7 +29,9 @@ import MediaThumbnail from '../../../components/MediaThumbnail'
 import { useProgress } from '../../../providers/ProgressProvider'
 import { useSpoilerSettings } from '../../../hooks/useSpoilerSettings'
 import TimelineSpoilerWrapper from '../../../components/TimelineSpoilerWrapper'
+import { CharacterStructuredData } from '../../../components/StructuredData'
 import type { Arc, Event, Gamble, Guide, Quote } from '../../../types'
+import { GuideStatus } from '../../../types'
 
 interface Character {
   id: number
@@ -92,7 +94,7 @@ export default function CharacterDetailPage() {
           api.getCharacter(characterId),
           api.getCharacterGambles(characterId, { limit: 5 }),
           api.getCharacterEvents(characterId), // Remove limit to get all events
-          api.getCharacterGuides(characterId, { limit: 5 }),
+          api.getCharacterGuides(characterId, { limit: 5, status: GuideStatus.APPROVED }),
           api.getCharacterQuotes(characterId, { limit: 10 }),
           api.getArcs() // Get all arcs with full data including startChapter/endChapter
         ])
@@ -150,6 +152,18 @@ export default function CharacterDetailPage() {
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
+      {character && (
+        <CharacterStructuredData
+          character={{
+            id: character.id,
+            name: character.name,
+            alternateNames: character.alternateNames,
+            description: character.description,
+            firstAppearanceChapter: character.firstAppearanceChapter,
+            imageUrl: character.imageFileName ? `/api/media/character/${character.imageFileName}` : undefined
+          }}
+        />
+      )}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

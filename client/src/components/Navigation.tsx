@@ -67,6 +67,7 @@ export const Navigation: React.FC = () => {
   const { userProgress } = useProgress()
   const router = useRouter()
   const pathname = usePathname()
+  const [mounted, setMounted] = useState(false)
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const [mobileMenuAnchor, setMobileMenuAnchor] = useState<null | HTMLElement>(null)
   const [searchValue, setSearchValue] = useState('')
@@ -76,17 +77,23 @@ export const Navigation: React.FC = () => {
   const [showSearchResults, setShowSearchResults] = useState(false)
   const searchTimeout = useRef<NodeJS.Timeout | null>(null)
 
+  // Track when component is mounted (client-side only)
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
   // Use refactored dropdown hooks
   const dropdowns = useNavDropdowns()
 
   // Enhanced mouse tracking for auto-close
   const anyDropdownOpen = dropdowns.browse[0].isOpen || dropdowns.community[0].isOpen || dropdowns.submit[0].isOpen
-  useMouseTracking({
-    isActive: anyDropdownOpen,
-    onOutsideArea: dropdowns.closeAll,
-    selector: '[data-testid="navigation-bar"]',
-    padding: { left: 50, right: 50, top: 50, bottom: 300 }
-  })
+  // Temporarily disable aggressive mouse tracking to test if it's interfering
+  // useMouseTracking({
+  //   isActive: anyDropdownOpen,
+  //   onOutsideArea: dropdowns.closeAll,
+  //   selector: '[data-testid="navigation-bar"]',
+  //   padding: { left: 80, right: 80, top: 80, bottom: 400 }
+  // })
 
 
   const handleProfileMenuEnter = (event: React.MouseEvent<HTMLElement>) => {
@@ -335,11 +342,17 @@ export const Navigation: React.FC = () => {
     }
   }, [anyDropdownOpen, dropdowns])
 
+  // Don't render until mounted to prevent hydration issues
+  if (!mounted) {
+    return <div style={{ height: '64px' }} /> // Placeholder to prevent layout shift
+  }
+
   return (
     <AppBar 
       position="sticky" 
       sx={{ mb: 4 }}
       data-testid="navigation-bar"
+      suppressHydrationWarning
     >
       <Toolbar>
         {/* Logo - Left Side */}
@@ -755,28 +768,32 @@ export const Navigation: React.FC = () => {
           <Divider />
 
           {/* User Section - Moved to top */}
-          {user ? [
-            <MenuItem key="profile" component={Link} href="/profile">
-              <User size={16} style={{ marginRight: 8 }} />
-              Profile
-            </MenuItem>,
-            <MenuItem key="donate" component={Link} href="/about">
-              <Heart size={16} style={{ marginRight: 8 }} />
-              Donate
-            </MenuItem>,
-            ...(user.role === 'admin' || user.role === 'moderator' ? [
-              <MenuItem key="admin" component={Link} href="/admin">
-                <Crown size={16} style={{ marginRight: 8 }} />
-                Admin
-              </MenuItem>
-            ] : []),
-            <Divider key="user-divider" />
-          ] : [
-            <MenuItem key="login" component={Link} href="/login">
-              Login
-            </MenuItem>,
-            <Divider key="login-divider" />
-          ]}
+          {user ? (
+            [
+              <MenuItem key="profile" component={Link} href="/profile">
+                <User size={16} style={{ marginRight: 8 }} />
+                Profile
+              </MenuItem>,
+              <MenuItem key="donate" component={Link} href="/about">
+                <Heart size={16} style={{ marginRight: 8 }} />
+                Donate
+              </MenuItem>,
+              ...(user.role === 'admin' || user.role === 'moderator' ? [
+                <MenuItem key="admin" component={Link} href="/admin">
+                  <Crown size={16} style={{ marginRight: 8 }} />
+                  Admin
+                </MenuItem>
+              ] : []),
+              <Divider key="user-divider" />
+            ]
+          ) : (
+            [
+              <MenuItem key="login" component={Link} href="/login">
+                Login
+              </MenuItem>,
+              <Divider key="login-divider" />
+            ]
+          )}
 
           {/* Browse Section */}
           {navigationData.browse.map((category) => (
@@ -877,15 +894,13 @@ export const Navigation: React.FC = () => {
           ))}
 
           {/* Logout at very bottom */}
-          {user && (
-            <>
-              <Divider />
-              <MenuItem onClick={handleLogout}>
-                <LogOut size={16} style={{ marginRight: 8 }} />
-                Logout
-              </MenuItem>
-            </>
-          )}
+          {user && [
+            <Divider key="logout-divider" />,
+            <MenuItem key="logout" onClick={handleLogout}>
+              <LogOut size={16} style={{ marginRight: 8 }} />
+              Logout
+            </MenuItem>
+          ]}
         </Menu>
       </Toolbar>
     </AppBar>

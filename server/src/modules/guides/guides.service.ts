@@ -258,7 +258,7 @@ export class GuidesService {
     };
   }
 
-  async findPublished(
+  async findApproved(
     query: GuideQueryDto,
     currentUser?: User,
   ): Promise<{
@@ -297,7 +297,7 @@ export class GuidesService {
         'tags.id',
         'tags.name',
       ])
-      .where('guide.status = :status', { status: GuideStatus.PUBLISHED });
+      .where('guide.status = :status', { status: GuideStatus.APPROVED });
 
     // Apply filters
     if (search) {
@@ -410,7 +410,7 @@ export class GuidesService {
     }
 
     // Check if user can view this guide
-    if (guide.status === GuideStatus.DRAFT) {
+    if (guide.status === GuideStatus.PENDING) {
       if (
         !currentUser ||
         (currentUser.id !== guide.authorId &&
@@ -436,7 +436,7 @@ export class GuidesService {
     currentUser?: User,
   ): Promise<Guide & { userHasLiked?: boolean; viewCount?: number }> {
     const guide = await this.guideRepository.findOne({
-      where: { id, status: GuideStatus.PUBLISHED },
+      where: { id, status: GuideStatus.APPROVED },
       relations: ['author', 'tags', 'characters', 'arc', 'gambles'],
       select: {
         id: true,
@@ -729,7 +729,7 @@ export class GuidesService {
       throw new BadRequestException('Only pending guides can be approved');
     }
 
-    guide.status = GuideStatus.PUBLISHED;
+    guide.status = GuideStatus.APPROVED;
     guide.rejectionReason = null; // Clear any previous rejection reason
 
     return await this.guideRepository.save(guide);
@@ -832,7 +832,7 @@ export class GuidesService {
     user: User,
   ): Promise<{ liked: boolean; likeCount: number }> {
     const guide = await this.guideRepository.findOne({
-      where: { id, status: GuideStatus.PUBLISHED },
+      where: { id, status: GuideStatus.APPROVED },
     });
 
     if (!guide) {
@@ -888,7 +888,7 @@ export class GuidesService {
       })
       .leftJoinAndSelect('guide.author', 'author')
       .leftJoinAndSelect('guide.tags', 'tags')
-      .where('guide.status = :status', { status: GuideStatus.PUBLISHED })
+      .where('guide.status = :status', { status: GuideStatus.APPROVED })
       .orderBy('guideLike.createdAt', 'DESC');
 
     const skip = (page - 1) * limit;

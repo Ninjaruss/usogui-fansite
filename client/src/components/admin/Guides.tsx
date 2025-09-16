@@ -31,6 +31,7 @@ import {
   FunctionField
 } from 'react-admin'
 import { useFormContext } from 'react-hook-form'
+import { GuideStatus } from '../../types'
 import {
   Box,
   Chip,
@@ -76,19 +77,18 @@ const GuideStatusField = ({ source }: { source: string }) => {
   const status = record[source]
   const getStatusColor = (status: string) => {
     switch(status) {
-      case 'published': return 'success'
-      case 'rejected': return 'error'
-      case 'draft': return 'info'
+      case GuideStatus.APPROVED: return 'success'
+      case GuideStatus.REJECTED: return 'error'
+      case GuideStatus.PENDING: return 'warning'
       default: return 'warning'
     }
   }
 
   const getStatusIcon = (status: string) => {
     switch(status) {
-      case 'published': return '✅'
-      case 'rejected': return '❌'
-      case 'draft': return '📝'
-      case 'pending': return '⏳'
+      case GuideStatus.APPROVED: return '✅'
+      case GuideStatus.REJECTED: return '❌'
+      case GuideStatus.PENDING: return '⏳'
       default: return '❓'
     }
   }
@@ -350,10 +350,9 @@ const GuideFilterToolbar = () => {
   
   const statusFilters = [
     { id: 'all', name: 'All', color: '#666', icon: '🗂️' },
-    { id: 'pending', name: 'Pending Review', color: '#f57c00', icon: '⏳' },
-    { id: 'published', name: 'Published', color: '#4caf50', icon: '✅' },
-    { id: 'draft', name: 'Draft', color: '#2196f3', icon: '📝' },
-    { id: 'rejected', name: 'Rejected', color: '#f44336', icon: '❌' }
+    { id: GuideStatus.PENDING, name: 'Pending Review', color: '#f57c00', icon: '⏳' },
+    { id: GuideStatus.APPROVED, name: 'Approved', color: '#4caf50', icon: '✅' },
+    { id: GuideStatus.REJECTED, name: 'Rejected', color: '#f44336', icon: '❌' }
   ]
   
   const [entitySearch, setEntitySearch] = useState('')
@@ -767,7 +766,7 @@ const ApproveGuideButton = () => {
     }
   }
   
-  if (record?.status === 'published') return null
+  if (record?.status === GuideStatus.APPROVED) return null
   
   return (
     <Button 
@@ -801,7 +800,7 @@ const RejectGuideButton = () => {
     }
   }
   
-  if (record?.status === 'rejected') return null
+  if (record?.status === GuideStatus.REJECTED) return null
   
   return (
     <Button 
@@ -815,7 +814,6 @@ const RejectGuideButton = () => {
 
 export const GuideList = () => (
   <List 
-    filterDefaultValues={{ status: 'all' }}
     perPage={25}
     sx={{
       '& .RaList-content': {
@@ -846,7 +844,7 @@ export const GuideList = () => (
           borderTop: 'none'
         },
         '& .RaDatagrid-rowCell': {
-          padding: '14px 10px',
+          padding: '8px 10px',
           backgroundColor: 'rgba(10, 10, 10, 0.8)',
           color: '#ffffff',
           borderBottom: '1px solid rgba(225, 29, 72, 0.2)'
@@ -882,10 +880,10 @@ export const GuideList = () => (
         source="description"
         sortable
         sx={{
-          maxWidth: '250px',
+          maxWidth: '180px',
           '& span': {
             display: '-webkit-box',
-            WebkitLineClamp: 2,
+            WebkitLineClamp: 1,
             WebkitBoxOrient: 'vertical',
             overflow: 'hidden',
             fontSize: '0.8rem',
@@ -966,7 +964,7 @@ export const GuideList = () => (
 )
 
 export const GuideApprovalQueue = () => (
-  <List filter={{ status: 'pending' }} title="Guide Approval Queue" perPage={25}>
+  <List filter={{ status: GuideStatus.PENDING }} title="Guide Approval Queue" perPage={25}>
     <Datagrid 
       rowClick="show"
       sx={{
@@ -981,7 +979,7 @@ export const GuideApprovalQueue = () => (
           borderBottom: '2px solid #f57c00'
         },
         '& .RaDatagrid-rowCell': {
-          padding: '14px 10px',
+          padding: '8px 10px',
           backgroundColor: 'rgba(10, 10, 10, 0.8)',
           color: '#ffffff',
           borderBottom: '1px solid rgba(245, 124, 0, 0.2)'
@@ -1033,10 +1031,10 @@ export const GuideApprovalQueue = () => (
         source="description" 
         sortable
         sx={{ 
-          maxWidth: '280px',
+          maxWidth: '200px',
           '& span': {
             display: '-webkit-box',
-            WebkitLineClamp: 3,
+            WebkitLineClamp: 1,
             WebkitBoxOrient: 'vertical',
             overflow: 'hidden',
             fontSize: '0.8rem',
@@ -1113,8 +1111,8 @@ export const GuideApprovalQueue = () => (
 
 export const GuideDraftManager = () => (
   <List
-    filter={{ status: 'draft' }}
-    title="Draft Guide Submissions"
+    filter={{ status: GuideStatus.PENDING }}
+    title="Pending Guide Submissions"
     perPage={50}
   >
     <Datagrid
@@ -1131,7 +1129,7 @@ export const GuideDraftManager = () => (
           borderBottom: '2px solid #2196f3'
         },
         '& .RaDatagrid-rowCell': {
-          padding: '12px 10px',
+          padding: '8px 10px',
           backgroundColor: 'rgba(10, 10, 10, 0.8)',
           color: '#ffffff',
           borderBottom: '1px solid rgba(33, 150, 243, 0.2)'
@@ -1182,10 +1180,10 @@ export const GuideDraftManager = () => (
         source="description" 
         sortable
         sx={{ 
-          maxWidth: '250px',
+          maxWidth: '180px',
           '& span': {
             display: '-webkit-box',
-            WebkitLineClamp: 3,
+            WebkitLineClamp: 1,
             WebkitBoxOrient: 'vertical',
             overflow: 'hidden',
             fontSize: '0.8rem',
@@ -2186,10 +2184,9 @@ export const GuideEdit = () => {
                     <SelectInput 
                       source="status" 
                       choices={[
-                        { id: 'draft', name: 'Draft' },
-                        { id: 'pending', name: 'Pending Review' },
-                        { id: 'published', name: 'Published' },
-                        { id: 'rejected', name: 'Rejected' }
+                        { id: GuideStatus.PENDING, name: 'Pending Review' },
+                        { id: GuideStatus.APPROVED, name: 'Approved' },
+                        { id: GuideStatus.REJECTED, name: 'Rejected' }
                       ]} 
                       fullWidth
                       sx={{
@@ -2389,11 +2386,10 @@ export const GuideCreate = () => (
                     <AutocompleteInput optionText="username" />
                   </ReferenceInput>
                   <SelectInput source="status" choices={[
-                    { id: 'draft', name: 'Draft' },
-                    { id: 'pending', name: 'Pending Review' },
-                    { id: 'published', name: 'Published' },
-                    { id: 'rejected', name: 'Rejected' }
-                  ]} defaultValue="pending" />
+                    { id: GuideStatus.PENDING, name: 'Pending Review' },
+                    { id: GuideStatus.APPROVED, name: 'Approved' },
+                    { id: GuideStatus.REJECTED, name: 'Rejected' }
+                  ]} defaultValue={GuideStatus.PENDING} />
                   <TextInput source="rejectionReason" multiline rows={3} label="Rejection Reason" helperText="Required when status is rejected" />
                 </Box>
               </Grid>

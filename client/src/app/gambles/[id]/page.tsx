@@ -28,6 +28,7 @@ import TimelineSpoilerWrapper from '../../../components/TimelineSpoilerWrapper'
 import GambleTimeline from '../../../components/GambleTimeline'
 import MediaGallery from '../../../components/MediaGallery'
 import MediaThumbnail from '../../../components/MediaThumbnail'
+import { GambleStructuredData } from '../../../components/StructuredData'
 
 interface Gamble {
   id: number
@@ -191,6 +192,15 @@ export default function GambleDetailsPage() {
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
+      {gamble && (
+        <GambleStructuredData
+          gamble={{
+            id: gamble.id,
+            name: gamble.name,
+            description: gamble.description
+          }}
+        />
+      )}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

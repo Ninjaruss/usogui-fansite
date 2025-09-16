@@ -1,8 +1,17 @@
-import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  Logger,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
 import { Repository } from 'typeorm';
-import { Donation, DonationStatus, DonationProvider } from '../../entities/donation.entity';
+import {
+  Donation,
+  DonationStatus,
+  DonationProvider,
+} from '../../entities/donation.entity';
 import { User } from '../../entities/user.entity';
 import { BadgesService } from '../badges/badges.service';
 import { KofiWebhookDto } from '../badges/dto/kofi-webhook.dto';
@@ -48,13 +57,17 @@ export class DonationsService {
   }
 
   async processKofiWebhook(webhookData: KofiWebhookDto): Promise<any> {
-    this.logger.log(`Processing Ko-fi webhook for message ID: ${webhookData.message_id}`);
-    
+    this.logger.log(
+      `Processing Ko-fi webhook for message ID: ${webhookData.message_id}`,
+    );
+
     try {
       // Verify webhook authenticity (Ko-fi provides verification_token)
       const isVerified = this.verifyKofiWebhook(webhookData);
       if (!isVerified) {
-        this.logger.warn(`Invalid Ko-fi webhook verification for message ID: ${webhookData.message_id}`);
+        this.logger.warn(
+          `Invalid Ko-fi webhook verification for message ID: ${webhookData.message_id}`,
+        );
         throw new BadRequestException('Invalid webhook verification');
       }
 
@@ -67,49 +80,69 @@ export class DonationsService {
       });
 
       if (existingDonation) {
-        this.logger.log(`Donation already processed for message ID: ${webhookData.message_id}`);
-        return { message: 'Donation already processed', donation: existingDonation };
+        this.logger.log(
+          `Donation already processed for message ID: ${webhookData.message_id}`,
+        );
+        return {
+          message: 'Donation already processed',
+          donation: existingDonation,
+        };
       }
 
       // Try to find user by Ko-fi email or name
       const user = await this.findUserByKofiData(webhookData);
       if (!user) {
-        this.logger.warn(`User not found for Ko-fi donation from: ${webhookData.from_name} (${webhookData.email})`);
+        this.logger.warn(
+          `User not found for Ko-fi donation from: ${webhookData.from_name} (${webhookData.email})`,
+        );
         // Create a pending donation that admin can assign later
         const pendingDonation = await this.createPendingDonation(webhookData);
         return {
-          message: 'Donation recorded but user not found. Admin action required.',
-          donation: pendingDonation
+          message:
+            'Donation recorded but user not found. Admin action required.',
+          donation: pendingDonation,
         };
       }
 
-      this.logger.log(`Found user ${user.username} for Ko-fi donation from: ${webhookData.from_name}`);
+      this.logger.log(
+        `Found user ${user.username} for Ko-fi donation from: ${webhookData.from_name}`,
+      );
 
       // Create and save the donation
       const donation = await this.createDonation(user.id, webhookData);
 
       // Process badges automatically
       if (donation.status === DonationStatus.COMPLETED) {
-        this.logger.log(`Processing badges for donation ID: ${donation.id}, User: ${user.username}, Amount: $${donation.amount}`);
-        const badges = await this.badgesService.processAutomaticBadges(donation);
+        this.logger.log(
+          `Processing badges for donation ID: ${donation.id}, User: ${user.username}, Amount: $${donation.amount}`,
+        );
+        const badges =
+          await this.badgesService.processAutomaticBadges(donation);
 
         // Mark badges as processed
         donation.badgesProcessed = true;
         await this.donationRepository.save(donation);
 
-        this.logger.log(`Successfully awarded ${badges.length} badges: ${badges.map(b => b.badge?.name).join(', ')}`);
+        this.logger.log(
+          `Successfully awarded ${badges.length} badges: ${badges.map((b) => b.badge?.name).join(', ')}`,
+        );
 
         return {
           message: 'Donation processed and badges awarded',
           donation,
-          badges: badges.map(b => b.badge?.name),
+          badges: badges.map((b) => b.badge?.name),
         };
       }
 
       return { message: 'Donation recorded', donation };
     } catch (error) {
-      this.logger.error(`Failed to process Ko-fi webhook: ${error.message}`, error.stack);
-      throw new BadRequestException(`Failed to process Ko-fi webhook: ${error.message}`);
+      this.logger.error(
+        `Failed to process Ko-fi webhook: ${error.message}`,
+        error.stack,
+      );
+      throw new BadRequestException(
+        `Failed to process Ko-fi webhook: ${error.message}`,
+      );
     }
   }
 
@@ -146,7 +179,9 @@ export class DonationsService {
 
     // Validate amount is reasonable (between $1 and $10,000)
     if (webhookData.amount < 1 || webhookData.amount > 10000) {
-      this.logger.warn(`Ko-fi webhook has suspicious amount: $${webhookData.amount}`);
+      this.logger.warn(
+        `Ko-fi webhook has suspicious amount: $${webhookData.amount}`,
+      );
       return false;
     }
 
@@ -154,21 +189,27 @@ export class DonationsService {
     const webhookTime = new Date(webhookData.timestamp);
     const now = new Date();
     const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
-    
+
     if (webhookTime < oneHourAgo || webhookTime > now) {
-      this.logger.warn(`Ko-fi webhook has suspicious timestamp: ${webhookData.timestamp}`);
+      this.logger.warn(
+        `Ko-fi webhook has suspicious timestamp: ${webhookData.timestamp}`,
+      );
       return false;
     }
 
     // TODO: In production, verify Ko-fi signature using their webhook secret
     // This would involve checking a signature header against the request body
-    
+
     return true;
   }
 
-  private async findUserByKofiData(webhookData: KofiWebhookDto): Promise<User | null> {
-    this.logger.debug(`Attempting to find user for Ko-fi donation from: ${webhookData.from_name}, email: ${webhookData.email}`);
-    
+  private async findUserByKofiData(
+    webhookData: KofiWebhookDto,
+  ): Promise<User | null> {
+    this.logger.debug(
+      `Attempting to find user for Ko-fi donation from: ${webhookData.from_name}, email: ${webhookData.email}`,
+    );
+
     // Try to find user by email first
     if (webhookData.email) {
       const userByEmail = await this.userRepository.findOne({
@@ -194,7 +235,9 @@ export class DonationsService {
       where: { discordUsername: webhookData.from_name },
     });
     if (userByDiscordName) {
-      this.logger.debug(`Found user by Discord username: ${userByDiscordName.username}`);
+      this.logger.debug(
+        `Found user by Discord username: ${userByDiscordName.username}`,
+      );
       return userByDiscordName;
     }
 
@@ -202,7 +245,10 @@ export class DonationsService {
     return null;
   }
 
-  private async createDonation(userId: number, webhookData: KofiWebhookDto): Promise<Donation> {
+  private async createDonation(
+    userId: number,
+    webhookData: KofiWebhookDto,
+  ): Promise<Donation> {
     const donation = this.donationRepository.create({
       userId,
       amount: webhookData.amount,
@@ -210,7 +256,10 @@ export class DonationsService {
       donationDate: new Date(webhookData.timestamp),
       provider: DonationProvider.KOFI,
       externalId: webhookData.message_id,
-      status: webhookData.type === 'Donation' ? DonationStatus.COMPLETED : DonationStatus.PENDING,
+      status:
+        webhookData.type === 'Donation'
+          ? DonationStatus.COMPLETED
+          : DonationStatus.PENDING,
       message: webhookData.message,
       donorName: webhookData.from_name,
       donorEmail: webhookData.email,
@@ -221,7 +270,9 @@ export class DonationsService {
     return this.donationRepository.save(donation);
   }
 
-  private async createPendingDonation(webhookData: KofiWebhookDto): Promise<Donation> {
+  private async createPendingDonation(
+    webhookData: KofiWebhookDto,
+  ): Promise<Donation> {
     const donation = this.donationRepository.create({
       userId: null, // Will be assigned by admin later
       amount: webhookData.amount,
@@ -241,9 +292,12 @@ export class DonationsService {
     return this.donationRepository.save(donation);
   }
 
-  async assignDonationToUser(donationId: number, userId: number): Promise<Donation> {
+  async assignDonationToUser(
+    donationId: number,
+    userId: number,
+  ): Promise<Donation> {
     this.logger.log(`Admin assigning donation ${donationId} to user ${userId}`);
-    
+
     const donation = await this.findDonationById(donationId);
     const user = await this.userRepository.findOne({ where: { id: userId } });
 
@@ -257,13 +311,17 @@ export class DonationsService {
 
     // Process badges if not already done
     if (!donation.badgesProcessed) {
-      this.logger.log(`Processing badges for manually assigned donation ${donationId}`);
+      this.logger.log(
+        `Processing badges for manually assigned donation ${donationId}`,
+      );
       await this.badgesService.processAutomaticBadges(savedDonation);
       savedDonation.badgesProcessed = true;
       await this.donationRepository.save(savedDonation);
     }
 
-    this.logger.log(`Successfully assigned donation ${donationId} to user ${user.username}`);
+    this.logger.log(
+      `Successfully assigned donation ${donationId} to user ${user.username}`,
+    );
     return savedDonation;
   }
 
@@ -272,7 +330,9 @@ export class DonationsService {
       .createQueryBuilder('donation')
       .select('SUM(donation.amount)', 'total')
       .where('donation.userId = :userId', { userId })
-      .andWhere('donation.status = :status', { status: DonationStatus.COMPLETED })
+      .andWhere('donation.status = :status', {
+        status: DonationStatus.COMPLETED,
+      })
       .getRawOne();
 
     return parseFloat(result.total) || 0;

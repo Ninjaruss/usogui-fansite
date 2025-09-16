@@ -10,7 +10,16 @@ import { Gamble } from '../../entities/gamble.entity';
 import { Organization } from '../../entities/organization.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Chapter, Character, Event, Arc, Gamble, Organization])],
+  imports: [
+    TypeOrmModule.forFeature([
+      Chapter,
+      Character,
+      Event,
+      Arc,
+      Gamble,
+      Organization,
+    ]),
+  ],
   controllers: [SearchController],
   providers: [SearchService],
   exports: [SearchService],

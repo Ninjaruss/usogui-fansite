@@ -34,6 +34,7 @@ import {
 import { Box, Typography } from '@mui/material'
 import EnhancedSpoilerMarkdown from '../EnhancedSpoilerMarkdown'
 import { EditToolbar } from './EditToolbar'
+import { EventStatus } from '../../types'
 
 const EVENT_TYPE_CHOICES = [
   { id: 'gamble', name: 'Gamble' },
@@ -44,9 +45,9 @@ const EVENT_TYPE_CHOICES = [
 ]
 
 const STATUS_CHOICES = [
-  { id: 'draft', name: 'Draft' },
-  { id: 'pending_review', name: 'Pending Review' },
-  { id: 'approved', name: 'Approved' },
+  { id: EventStatus.PENDING, name: 'Pending' },
+  { id: EventStatus.APPROVED, name: 'Approved' },
+  { id: EventStatus.REJECTED, name: 'Rejected' },
 ]
 
 const EventFilters = [
@@ -84,9 +85,9 @@ const EventFilterToolbar = () => {
 
   const statusFilters = [
     { id: 'all', name: 'All Events', color: '#666', icon: '🗂️' },
-    { id: 'draft', name: 'Draft', color: '#2196f3', icon: '📝' },
-    { id: 'pending_review', name: 'Pending Review', color: '#f57c00', icon: '⏳' },
-    { id: 'approved', name: 'Approved', color: '#4caf50', icon: '✅' }
+    { id: EventStatus.PENDING, name: 'Pending', color: '#f57c00', icon: '⏳' },
+    { id: EventStatus.APPROVED, name: 'Approved', color: '#4caf50', icon: '✅' },
+    { id: EventStatus.REJECTED, name: 'Rejected', color: '#f44336', icon: '❌' }
   ]
 
   const handleStatusChange = (status: string) => {
@@ -212,7 +213,6 @@ const EventFilterToolbar = () => {
 
 export const EventList = () => (
   <List
-    filterDefaultValues={{ status: 'all' }}
     perPage={25}
     sx={{
       '& .RaList-content': {
@@ -578,7 +578,7 @@ export const EventEdit = () => (
                 source="status"
                 choices={STATUS_CHOICES}
                 required
-                defaultValue="draft"
+                defaultValue={EventStatus.PENDING}
                 helperText="Review status"
               />
             </Box>
@@ -769,7 +769,7 @@ export const EventCreate = () => (
                 source="status"
                 choices={STATUS_CHOICES}
                 required
-                defaultValue="draft"
+                defaultValue={EventStatus.PENDING}
                 helperText="Review status"
               />
             </Box>

@@ -53,9 +53,9 @@ export class GuidesController {
   @Get('public')
   @UseGuards(OptionalJwtAuthGuard)
   @ApiOperation({
-    summary: 'Get published guides (public)',
+    summary: 'Get approved guides (public)',
     description:
-      'Retrieves a paginated list of all published guides accessible to everyone. Supports searching, filtering, and sorting options. If authenticated, includes user-specific data like like status.',
+      'Retrieves a paginated list of all approved guides accessible to everyone. Supports searching, filtering, and sorting options. If authenticated, includes user-specific data like like status.',
   })
   @ApiQuery({
     name: 'search',
@@ -123,8 +123,8 @@ export class GuidesController {
               },
               status: {
                 type: 'string',
-                enum: ['published'],
-                example: 'published',
+                enum: ['approved'],
+                example: 'approved',
               },
               viewCount: { type: 'number', example: 190 },
               likeCount: { type: 'number', example: 5 },
@@ -171,15 +171,15 @@ export class GuidesController {
     },
   })
   findPublicGuides(@Query() query: GuideQueryDto, @CurrentUser() user?: User) {
-    return this.guidesService.findPublished(query, user);
+    return this.guidesService.findApproved(query, user);
   }
 
   @Get('public/:id')
   @UseGuards(OptionalJwtAuthGuard)
   @ApiOperation({
-    summary: 'Get published guide by ID (public)',
+    summary: 'Get approved guide by ID (public)',
     description:
-      'Retrieves a specific published guide by its ID and automatically increments the view count. Only published guides are accessible through this endpoint. If authenticated, includes user-specific data like like status.',
+      'Retrieves a specific approved guide by its ID and automatically increments the view count. Only approved guides are accessible through this endpoint. If authenticated, includes user-specific data like like status.',
   })
   @ApiParam({
     name: 'id',
@@ -207,7 +207,7 @@ export class GuidesController {
           example:
             '# Mastering Poker Psychology in Usogui\\n\\n## Introduction...',
         },
-        status: { type: 'string', enum: ['published'], example: 'published' },
+        status: { type: 'string', enum: ['approved'], example: 'approved' },
         viewCount: { type: 'number', example: 191 },
         likeCount: { type: 'number', example: 5 },
         userHasLiked: {
@@ -247,7 +247,7 @@ export class GuidesController {
     },
   })
   @ApiNotFoundResponse({
-    description: 'Guide not found or not published',
+    description: 'Guide not found or not approved',
     schema: {
       example: {
         statusCode: 404,
@@ -314,7 +314,7 @@ export class GuidesController {
         },
         status: {
           type: 'string',
-          enum: ['draft', 'published'],
+          enum: ['draft', 'approved'],
           example: 'draft',
         },
         viewCount: { type: 'number', example: 0 },
@@ -355,7 +355,7 @@ export class GuidesController {
   @ApiOperation({
     summary: 'Get all guides (authenticated)',
     description:
-      'Retrieves all guides with access control. Users can see their own drafts and all published guides. Supports comprehensive filtering and sorting options.',
+      'Retrieves all guides with access control. Users can see their own drafts and all approved guides. Supports comprehensive filtering and sorting options.',
   })
   @ApiQuery({
     name: 'search',
@@ -366,9 +366,9 @@ export class GuidesController {
   @ApiQuery({
     name: 'status',
     required: false,
-    enum: ['draft', 'published'],
-    description: 'Filter by status (draft, published)',
-    example: 'published',
+    enum: ['draft', 'approved'],
+    description: 'Filter by status (draft, approved)',
+    example: 'approved',
   })
   @ApiQuery({
     name: 'authorId',
@@ -430,8 +430,8 @@ export class GuidesController {
               },
               status: {
                 type: 'string',
-                enum: ['draft', 'published'],
-                example: 'published',
+                enum: ['draft', 'approved'],
+                example: 'approved',
               },
               viewCount: { type: 'number', example: 190 },
               likeCount: { type: 'number', example: 5 },
@@ -473,13 +473,13 @@ export class GuidesController {
   @ApiOperation({
     summary: "Get current user's guides",
     description:
-      'Retrieves all guides created by the currently authenticated user, including both drafts and published guides.',
+      'Retrieves all guides created by the currently authenticated user, including both drafts and approved guides.',
   })
   @ApiQuery({
     name: 'status',
     required: false,
-    enum: ['draft', 'published'],
-    description: 'Filter by status (draft, published)',
+    enum: ['draft', 'approved'],
+    description: 'Filter by status (draft, approved)',
     example: 'draft',
   })
   @ApiQuery({
@@ -516,7 +516,7 @@ export class GuidesController {
               },
               status: {
                 type: 'string',
-                enum: ['draft', 'published'],
+                enum: ['draft', 'approved'],
                 example: 'draft',
               },
               viewCount: { type: 'number', example: 42 },
@@ -552,7 +552,7 @@ export class GuidesController {
   @ApiOperation({
     summary: "Get user's liked guides",
     description:
-      'Retrieves all guides that the currently authenticated user has liked. Only returns published guides.',
+      'Retrieves all guides that the currently authenticated user has liked. Only returns approved guides.',
   })
   @ApiQuery({
     name: 'page',
@@ -588,8 +588,8 @@ export class GuidesController {
               },
               status: {
                 type: 'string',
-                enum: ['published'],
-                example: 'published',
+                enum: ['approved'],
+                example: 'approved',
               },
               viewCount: { type: 'number', example: 190 },
               likeCount: { type: 'number', example: 5 },
@@ -636,7 +636,7 @@ export class GuidesController {
   @ApiOperation({
     summary: 'Get guide by ID (authenticated)',
     description:
-      'Get a specific guide by its ID. Can access own drafts and all published guides.',
+      'Get a specific guide by its ID. Can access own drafts and all approved guides.',
   })
   @ApiParam({ name: 'id', description: 'Guide ID', example: 1 })
   @ApiResponse({
@@ -681,8 +681,8 @@ export class GuidesController {
         },
         status: {
           type: 'string',
-          enum: ['draft', 'published'],
-          example: 'published',
+          enum: ['draft', 'approved'],
+          example: 'approved',
         },
         viewCount: { type: 'number', example: 195 },
         likeCount: { type: 'number', example: 5 },
@@ -814,7 +814,7 @@ export class GuidesController {
   @ApiOperation({
     summary: 'Like or unlike a guide',
     description:
-      'Toggles like status for a guide. If the user has already liked the guide, it will be unliked. If not liked, it will be liked. Only published guides can be liked.',
+      'Toggles like status for a guide. If the user has already liked the guide, it will be unliked. If not liked, it will be liked. Only approved guides can be liked.',
   })
   @ApiParam({ name: 'id', description: 'Guide ID', example: 1 })
   @ApiOkResponse({
@@ -846,21 +846,21 @@ export class GuidesController {
     },
   })
   @ApiNotFoundResponse({
-    description: 'Guide not found or not published',
+    description: 'Guide not found or not approved',
     schema: {
       example: {
         statusCode: 404,
-        message: 'Guide not found or not published',
+        message: 'Guide not found or not approved',
         error: 'Not Found',
       },
     },
   })
   @ApiBadRequestResponse({
-    description: 'Cannot like unpublished guides',
+    description: 'Cannot like unapproved guides',
     schema: {
       example: {
         statusCode: 400,
-        message: 'Cannot like unpublished guides',
+        message: 'Cannot like unapproved guides',
         error: 'Bad Request',
       },
     },
@@ -947,7 +947,7 @@ export class GuidesController {
       properties: {
         id: { type: 'number', example: 1 },
         title: { type: 'string', example: 'Approved Guide Title' },
-        status: { type: 'string', enum: ['published'], example: 'published' },
+        status: { type: 'string', enum: ['approved'], example: 'approved' },
         rejectionReason: { type: 'null', example: null },
         createdAt: { type: 'string', format: 'date-time' },
         updatedAt: { type: 'string', format: 'date-time' },

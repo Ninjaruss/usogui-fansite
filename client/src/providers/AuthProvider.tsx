@@ -1,6 +1,6 @@
 'use client'
 
-import React, { createContext, useContext, useState, useEffect } from 'react'
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react'
 import { api } from '../lib/api'
 
 // Extend Window interface to include authPopup
@@ -65,8 +65,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [isInitializing, setIsInitializing] = useState(false)
+  const [mounted, setMounted] = useState(false)
+  const hasInitialized = useRef(false)
+  const initializeAuthRef = useRef<(() => Promise<void>) | null>(null)
 
-  const initializeAuth = async () => {
+  // Track when component is mounted (client-side only)
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  const initializeAuth = useCallback(async () => {
+    // Only initialize on client side
+    if (!mounted || typeof window === 'undefined') {
+      return
+    }
+
     // Prevent multiple simultaneous initialization attempts
     if (isInitializing) {
       console.log('[AUTH PROVIDER] Already initializing, skipping...')
@@ -173,19 +186,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoading(false)
       setIsInitializing(false)
     }
-  }
+  }, [mounted])  // Only depend on mounted state
+
+  // Update the ref when the function changes
+  useEffect(() => {
+    initializeAuthRef.current = initializeAuth
+  }, [initializeAuth])
 
   useEffect(() => {
+    // Only initialize auth once when component is mounted (client-side)
+    if (!mounted || hasInitialized.current) return
+
+    hasInitialized.current = true
     initializeAuth()
+  }, [mounted]) // Only depend on mounted state
+
+  useEffect(() => {
+    // Only start polling when component is mounted (client-side)
+    if (!mounted) return
     
     // Simplified polling for auth callback detection only
     const pollForAuth = setInterval(() => {
+      if (typeof window === 'undefined') return
+      
       const authCallback = localStorage.getItem('authCallback')
       
       // Check if authCallback flag was set (indicates callback completed)
       if (authCallback) {
         console.log('[AUTH PROVIDER] Auth callback flag detected, refreshing auth state')
-        initializeAuth()
+        initializeAuthRef.current?.()
         localStorage.removeItem('authCallback')
       }
     }, 1000) // Check every 1 second for faster response
@@ -200,9 +229,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       clearInterval(pollForAuth)
       clearTimeout(clearPolling)
     }
-  }, []) // Remove user dependency to prevent loops
+  }, [mounted]) // Only depend on mounted state
 
   useEffect(() => {
+    // Only add event listeners when component is mounted (client-side)
+    if (!mounted || typeof window === 'undefined') return
+
     // Listen for storage changes to detect when auth tokens are added from another tab
     const handleStorageChange = (event: StorageEvent) => {
       console.log('[AUTH PROVIDER] Storage event:', event.key, event.newValue)
@@ -210,13 +242,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (event.key === 'accessToken' && event.newValue && !user) {
         console.log('[AUTH PROVIDER] New access token detected, refreshing auth state')
         // New auth token detected, refresh auth state
-        initializeAuth()
+        initializeAuthRef.current?.()
       }
       
       if (event.key === 'authCallback' && event.newValue) {
         console.log('[AUTH PROVIDER] Auth callback flag detected, refreshing auth state')
         // Auth callback completed, refresh auth state
-        initializeAuth()
+        initializeAuthRef.current?.()
       }
     }
 
@@ -392,7 +424,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       window.removeEventListener('message', handleMessage)
       window.removeEventListener('discord-auth-success', handleCustomEvent)
     }
-  }, []) // Remove user dependency to prevent loops
+  }, [mounted, user]) // Remove initializeAuth dependency
 
   const loginWithDiscord = () => {
     const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'

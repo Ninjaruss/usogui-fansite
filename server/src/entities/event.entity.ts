@@ -30,9 +30,9 @@ export enum EventType {
   RESOLUTION = 'resolution',
 }
 export enum EventStatus {
-  DRAFT = 'draft',
-  PENDING_REVIEW = 'pending_review',
+  PENDING = 'pending',
   APPROVED = 'approved',
+  REJECTED = 'rejected',
 }
 
 @Entity()
@@ -93,13 +93,13 @@ export class Event {
   @ApiProperty({
     description: 'Status of the event',
     enum: EventStatus,
-    default: EventStatus.DRAFT,
+    default: EventStatus.PENDING,
     example: EventStatus.APPROVED,
   })
   @Column({
     type: 'enum',
     enum: EventStatus,
-    default: EventStatus.DRAFT,
+    default: EventStatus.PENDING,
   })
   status: EventStatus;
 

@@ -329,7 +329,7 @@ class ApiClient {
     }>(`/characters/${characterId}/events${query ? `?${query}` : ''}`)
   }
 
-  async getCharacterGuides(characterId: number, params?: { page?: number; limit?: number }) {
+  async getCharacterGuides(characterId: number, params?: { page?: number; limit?: number; status?: string }) {
     const searchParams = new URLSearchParams()
     if (params) {
       Object.entries(params).forEach(([key, value]) => {
@@ -450,10 +450,10 @@ class ApiClient {
     }>(`/events${query ? `?${query}` : ''}`)
   }
 
-  async getEventsGroupedByArc(params?: { 
-    userProgress?: number; 
-    type?: string; 
-    status?: 'draft' | 'pending_review' | 'approved' 
+  async getEventsGroupedByArc(params?: {
+    userProgress?: number;
+    type?: string;
+    status?: string
   }) {
     const searchParams = new URLSearchParams()
     if (params) {
@@ -502,7 +502,7 @@ class ApiClient {
     }>(`/search?${params.toString()}`)
   }
 
-  async getGuides(params?: { page?: number; limit?: number; title?: string; authorId?: string }) {
+  async getGuides(params?: { page?: number; limit?: number; title?: string; authorId?: string; status?: string }) {
     const searchParams = new URLSearchParams()
     if (params) {
       // Map title to search parameter to match backend API
@@ -517,6 +517,9 @@ class ApiClient {
       }
       if (params.authorId) {
         searchParams.append('authorId', params.authorId)
+      }
+      if (params.status) {
+        searchParams.append('status', params.status)
       }
     }
     const query = searchParams.toString()

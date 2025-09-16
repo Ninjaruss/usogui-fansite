@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  Logger,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, MoreThan, IsNull } from 'typeorm';
 import { Badge, BadgeType } from '../../entities/badge.entity';
@@ -73,8 +78,10 @@ export class BadgesService {
     year?: number,
     expiresAt?: string | Date,
   ): Promise<UserBadge> {
-    this.logger.log(`Awarding badge ${badgeId} to user ${userId}. Reason: ${reason || 'Not specified'}`);
-    
+    this.logger.log(
+      `Awarding badge ${badgeId} to user ${userId}. Reason: ${reason || 'Not specified'}`,
+    );
+
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) {
       throw new NotFoundException(`User with ID ${userId} not found`);
@@ -87,8 +94,14 @@ export class BadgesService {
       where: { userId, badgeId, isActive: true },
     });
 
-    if (existingBadge && badge.type !== BadgeType.SUPPORTER && badge.type !== BadgeType.ACTIVE_SUPPORTER) {
-      this.logger.warn(`User ${userId} already has active badge ${badgeId} (${badge.name})`);
+    if (
+      existingBadge &&
+      badge.type !== BadgeType.SUPPORTER &&
+      badge.type !== BadgeType.ACTIVE_SUPPORTER
+    ) {
+      this.logger.warn(
+        `User ${userId} already has active badge ${badgeId} (${badge.name})`,
+      );
       throw new BadRequestException('User already has this active badge');
     }
 
@@ -98,8 +111,12 @@ export class BadgesService {
         where: { userId, badgeId, year, isActive: true },
       });
       if (existingSupporterBadge) {
-        this.logger.warn(`User ${userId} already has ${badge.name} badge for year ${year}`);
-        throw new BadRequestException(`User already has this badge for year ${year}`);
+        this.logger.warn(
+          `User ${userId} already has ${badge.name} badge for year ${year}`,
+        );
+        throw new BadRequestException(
+          `User already has this badge for year ${year}`,
+        );
       }
     }
 
@@ -111,15 +128,17 @@ export class BadgesService {
       // Active Supporter badges MUST have 1 year expiration - override any provided expiration
       finalExpiresAt = new Date();
       finalExpiresAt.setFullYear(finalExpiresAt.getFullYear() + 1);
-      
+
       // For Active Supporter badges, we need to delete the old record completely
       // because the unique constraint doesn't allow duplicate userId+badgeId combinations
       const existingActiveBadge = await this.userBadgeRepository.findOne({
         where: { userId, badgeId },
       });
-      
+
       if (existingActiveBadge) {
-        this.logger.log(`Removing existing Active Supporter badge for user ${userId} before awarding new one`);
+        this.logger.log(
+          `Removing existing Active Supporter badge for user ${userId} before awarding new one`,
+        );
         await this.userBadgeRepository.remove(existingActiveBadge);
       }
     } else if (expiresAt) {
@@ -137,12 +156,19 @@ export class BadgesService {
     });
 
     const savedBadge = await this.userBadgeRepository.save(userBadge);
-    this.logger.log(`Successfully awarded badge ${badge.name} to user ${user.username} (${userId})`);
-    
+    this.logger.log(
+      `Successfully awarded badge ${badge.name} to user ${user.username} (${userId})`,
+    );
+
     return savedBadge;
   }
 
-  async revokeBadge(userId: number, badgeId: number, reason?: string, revokedByUserId?: number): Promise<void> {
+  async revokeBadge(
+    userId: number,
+    badgeId: number,
+    reason?: string,
+    revokedByUserId?: number,
+  ): Promise<void> {
     const userBadge = await this.userBadgeRepository.findOne({
       where: { userId, badgeId, isActive: true },
     });
@@ -165,7 +191,9 @@ export class BadgesService {
     const userId = donation.userId;
 
     if (!userId) {
-      throw new BadRequestException('Donation must have a valid userId to process badges');
+      throw new BadRequestException(
+        'Donation must have a valid userId to process badges',
+      );
     }
 
     // Award Supporter badge (permanent with year)
@@ -262,7 +290,9 @@ export class BadgesService {
       .createQueryBuilder('donation')
       .select('SUM(donation.amount)', 'total')
       .where('donation.userId = :userId', { userId })
-      .andWhere('donation.status = :status', { status: DonationStatus.COMPLETED })
+      .andWhere('donation.status = :status', {
+        status: DonationStatus.COMPLETED,
+      })
       .getRawOne();
 
     const total = parseFloat(totalDonations.total) || 0;
@@ -300,7 +330,9 @@ export class BadgesService {
         await this.userBadgeRepository.save(userBadge);
         expiredCount++;
 
-        this.logger.log(`Expired badge ${userBadge.badge?.name} for user ${userBadge.user?.username} (${userBadge.userId})`);
+        this.logger.log(
+          `Expired badge ${userBadge.badge?.name} for user ${userBadge.user?.username} (${userBadge.userId})`,
+        );
 
         // If it's an Active Supporter badge, clear custom role
         if (userBadge.badge?.type === BadgeType.ACTIVE_SUPPORTER) {
@@ -310,13 +342,17 @@ export class BadgesService {
           if (user && user.customRole) {
             user.customRole = null;
             await this.userRepository.save(user);
-            this.logger.log(`Cleared custom role for user ${user.username} due to expired Active Supporter badge`);
+            this.logger.log(
+              `Cleared custom role for user ${user.username} due to expired Active Supporter badge`,
+            );
           }
         }
       }
     }
 
-    this.logger.log(`Badge expiration check completed. Expired ${expiredCount} badges.`);
+    this.logger.log(
+      `Badge expiration check completed. Expired ${expiredCount} badges.`,
+    );
     return expiredCount;
   }
 
@@ -363,14 +399,17 @@ export class BadgesService {
 
   async getBadgeStatistics(): Promise<any> {
     this.logger.log('Generating badge statistics...');
-    
+
     // Get total badges by type
     const badgeStats = await this.userBadgeRepository
       .createQueryBuilder('userBadge')
       .leftJoin('userBadge.badge', 'badge')
       .select('badge.type', 'type')
       .addSelect('COUNT(userBadge.id)', 'count')
-      .addSelect('COUNT(CASE WHEN userBadge.isActive = true THEN 1 END)', 'activeCount')
+      .addSelect(
+        'COUNT(CASE WHEN userBadge.isActive = true THEN 1 END)',
+        'activeCount',
+      )
       .where('userBadge.isActive = :isActive', { isActive: true })
       .groupBy('badge.type')
       .getRawMany();

@@ -54,7 +54,15 @@ export class TranslationsController {
   @ApiParam({
     name: 'entityType',
     description: 'Type of entity to get translations for',
-    enum: ['chapter', 'character', 'arc', 'event', 'gamble', 'organization', 'tag'],
+    enum: [
+      'chapter',
+      'character',
+      'arc',
+      'event',
+      'gamble',
+      'organization',
+      'tag',
+    ],
     example: 'chapter',
   })
   @ApiParam({
@@ -159,7 +167,15 @@ export class TranslationsController {
   @ApiParam({
     name: 'entityType',
     description: 'Type of entity to create translation for',
-    enum: ['chapter', 'character', 'arc', 'event', 'gamble', 'organization', 'tag'],
+    enum: [
+      'chapter',
+      'character',
+      'arc',
+      'event',
+      'gamble',
+      'organization',
+      'tag',
+    ],
     example: 'chapter',
   })
   @ApiParam({
@@ -279,7 +295,15 @@ export class TranslationsController {
   @ApiParam({
     name: 'entityType',
     description: 'Type of entity the translation belongs to',
-    enum: ['chapter', 'character', 'arc', 'event', 'gamble', 'organization', 'tag'],
+    enum: [
+      'chapter',
+      'character',
+      'arc',
+      'event',
+      'gamble',
+      'organization',
+      'tag',
+    ],
     example: 'chapter',
   })
   @ApiParam({
@@ -343,7 +367,15 @@ export class TranslationsController {
   @ApiParam({
     name: 'entityType',
     description: 'Type of entity the translation belongs to',
-    enum: ['chapter', 'character', 'arc', 'event', 'gamble', 'organization', 'tag'],
+    enum: [
+      'chapter',
+      'character',
+      'arc',
+      'event',
+      'gamble',
+      'organization',
+      'tag',
+    ],
     example: 'chapter',
   })
   @ApiParam({

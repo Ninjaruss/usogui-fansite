@@ -262,7 +262,7 @@ export class EventsService {
     const cleanedData = {
       ...eventData,
       type: data.type || EventType.DECISION,
-      status: data.status || EventStatus.DRAFT,
+      status: data.status || EventStatus.PENDING,
       chapterNumber: Number(eventData.chapterNumber) || 1,
       spoilerChapter:
         eventData.spoilerChapter && !isNaN(Number(eventData.spoilerChapter))

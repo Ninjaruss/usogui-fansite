@@ -40,13 +40,14 @@ import { usePageView } from '../../../hooks/usePageView'
 import AuthorProfileImage from '../../../components/AuthorProfileImage'
 import { UserRoleDisplay } from '../../../components/BadgeDisplay'
 import { useTheme } from '@mui/material/styles'
+import { GuideStatus } from '../../../types'
 
 interface Guide {
   id: number
   title: string
   description: string
   content: string
-  status: string
+  status: GuideStatus
   viewCount: number
   likeCount: number
   userHasLiked?: boolean
@@ -119,19 +120,41 @@ const GuideHeader = memo(({ guide, canUserEdit, handleEditClick, formattedDate, 
       flexDirection: { xs: 'column', sm: 'row' },
       gap: { xs: 2, sm: 0 }
     }}>
-      <Typography 
-        variant="h3" 
-        component="h1" 
-        sx={{ 
-          flex: 1,
-          fontSize: { xs: '1.75rem', sm: '2.125rem', md: '2.5rem' },
-          fontWeight: 'bold',
-          lineHeight: 1.2,
-          mb: { xs: 1, sm: 0 }
-        }}
-      >
-        {guide.title}
-      </Typography>
+      <Box sx={{ flex: 1 }}>
+        <Typography 
+          variant="h3" 
+          component="h1" 
+          sx={{ 
+            fontSize: { xs: '1.75rem', sm: '2.125rem', md: '2.5rem' },
+            fontWeight: 'bold',
+            lineHeight: 1.2,
+            mb: { xs: 1, sm: 0 }
+          }}
+        >
+          {guide.title}
+        </Typography>
+        
+        {/* Status Chip for rejected/pending guides */}
+        {(guide.status === GuideStatus.REJECTED || guide.status === GuideStatus.PENDING) && (
+          <Box sx={{ mt: 1 }}>
+            <Chip
+              label={guide.status === GuideStatus.REJECTED ? 'Rejected' : 'Pending Approval'}
+              size="medium"
+              color={guide.status === GuideStatus.REJECTED ? 'error' : 'warning'}
+              sx={{
+                textTransform: 'capitalize',
+                fontWeight: 'bold'
+              }}
+            />
+            {guide.status === GuideStatus.REJECTED && (
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                This guide is only visible to you as its author.
+              </Typography>
+            )}
+          </Box>
+        )}
+      </Box>
+      
       {canUserEdit && (
         <Button
           variant="outlined"
@@ -415,7 +438,7 @@ export default function GuideDetailsPage() {
     title: '',
     description: '',
     content: '',
-    status: 'draft' as string,
+    status: GuideStatus.PENDING,
     tagNames: [] as string[],
     characterIds: [] as number[],
     arcId: null as number | null,
@@ -527,7 +550,7 @@ export default function GuideDetailsPage() {
         title: editForm.title,
         description: editForm.description,
         content: editForm.content,
-        status: editForm.status,
+        status: GuideStatus.PENDING, // Always set to pending when user edits
         tagNames: editForm.tagNames,
         characterIds: editForm.characterIds.length > 0 ? editForm.characterIds : undefined,
         arcId: editForm.arcId || undefined,
@@ -550,7 +573,7 @@ export default function GuideDetailsPage() {
       title: '',
       description: '',
       content: '',
-      status: 'draft',
+      status: GuideStatus.PENDING,
       tagNames: [],
       characterIds: [],
       arcId: null,
@@ -584,18 +607,38 @@ export default function GuideDetailsPage() {
         }
         
         let response
-        if (user) {
-          // Try authenticated endpoint first to get full guide data including status
-          try {
-            response = await api.getGuideAdmin(numericId)
-          } catch {
-            // If authenticated request fails, fall back to public endpoint
-            response = await api.getGuide(numericId)
-          }
-        } else {
-          // Use public endpoint for non-authenticated users
+        let isOwnerViewingRejected = false
+        
+        try {
+          // First try to get the guide via the public API (only returns approved guides)
           response = await api.getGuide(numericId)
+        } catch (publicError) {
+          // If public API fails, guide might be pending or rejected
+          // Try admin API if user is authenticated
+          if (user) {
+            try {
+              response = await api.getGuideAdmin(numericId)
+              
+              // Check if user is viewing their own rejected guide
+              if (response.status === GuideStatus.REJECTED && response.author.id !== user.id) {
+                setError('This guide has been rejected and is not publicly accessible')
+                return
+              } else if (response.status === GuideStatus.REJECTED && response.author.id === user.id) {
+                isOwnerViewingRejected = true
+              } else if (response.status === GuideStatus.PENDING && response.author.id !== user.id) {
+                setError('This guide is pending approval and is not yet publicly accessible')
+                return
+              }
+            } catch (adminError) {
+              setError('Guide not found')
+              return
+            }
+          } else {
+            setError('Guide not found')
+            return
+          }
         }
+        
         setGuide(response)
         // Set user like status if it's provided by the API
         if (response.userHasLiked !== undefined) {
@@ -985,7 +1028,7 @@ export default function GuideDetailsPage() {
                     />
                   </Grid>
                   
-                  <Grid item xs={12} md={8}>
+                  <Grid item xs={12}>
                     <TextField
                       label="Description"
                       value={editForm.description}
@@ -1007,31 +1050,6 @@ export default function GuideDetailsPage() {
                         '& .MuiFormHelperText-root': { color: 'rgba(255, 255, 255, 0.5)' }
                       }}
                     />
-                  </Grid>
-                  
-                  <Grid item xs={12} md={4}>
-                    <FormControl fullWidth sx={{
-                      '& .MuiOutlinedInput-root': {
-                        backgroundColor: '#0f0f0f',
-                        '& fieldset': { borderColor: 'rgba(225, 29, 72, 0.3)' },
-                        '&:hover fieldset': { borderColor: 'rgba(225, 29, 72, 0.5)' },
-                        '&.Mui-focused fieldset': { borderColor: '#e11d48' }
-                      },
-                      '& .MuiInputLabel-root': { color: 'rgba(255, 255, 255, 0.7)' },
-                      '& .MuiSelect-icon': { color: 'rgba(255, 255, 255, 0.7)' }
-                    }}>
-                      <InputLabel>Status</InputLabel>
-                      <Select
-                        value={editForm.status}
-                        label="Status"
-                        onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
-                        sx={{ color: '#ffffff' }}
-                      >
-                        <MenuItem value="draft">Draft</MenuItem>
-                        <MenuItem value="pending">Submit for Review</MenuItem>
-                        <MenuItem value="published">Published</MenuItem>
-                      </Select>
-                    </FormControl>
                   </Grid>
                 </Grid>
               </Paper>
@@ -1327,43 +1345,50 @@ export default function GuideDetailsPage() {
             py: 3, 
             backgroundColor: '#0a0a0a',
             borderTop: '1px solid rgba(225, 29, 72, 0.2)',
-            gap: 2
+            gap: 2,
+            flexDirection: 'column',
+            alignItems: 'stretch'
           }}>
-            <Button
-              onClick={handleCancelEdit}
-              startIcon={<X size={16} />}
-              disabled={saving}
-              sx={{
-                color: 'rgba(255, 255, 255, 0.7)',
-                borderColor: 'rgba(255, 255, 255, 0.3)',
-                '&:hover': {
-                  backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                  borderColor: 'rgba(255, 255, 255, 0.5)'
-                }
-              }}
-              variant="outlined"
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleSaveEdit}
-              variant="contained"
-              startIcon={<Save size={16} />}
-              disabled={saving || !editForm.title || !editForm.description || !editForm.content}
-              sx={{
-                backgroundColor: '#e11d48',
-                color: 'white',
-                '&:hover': {
-                  backgroundColor: '#be123c'
-                },
-                '&:disabled': {
-                  backgroundColor: 'rgba(225, 29, 72, 0.3)',
-                  color: 'rgba(255, 255, 255, 0.5)'
-                }
-              }}
-            >
-              {saving ? 'Saving...' : 'Save Changes'}
-            </Button>
+            <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', mb: 1 }}>
+              Your guide will be submitted for review when you save changes.
+            </Typography>
+            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+              <Button
+                onClick={handleCancelEdit}
+                startIcon={<X size={16} />}
+                disabled={saving}
+                sx={{
+                  color: 'rgba(255, 255, 255, 0.7)',
+                  borderColor: 'rgba(255, 255, 255, 0.3)',
+                  '&:hover': {
+                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                    borderColor: 'rgba(255, 255, 255, 0.5)'
+                  }
+                }}
+                variant="outlined"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleSaveEdit}
+                variant="contained"
+                startIcon={<Save size={16} />}
+                disabled={saving || !editForm.title || !editForm.description || !editForm.content}
+                sx={{
+                  backgroundColor: '#e11d48',
+                  color: 'white',
+                  '&:hover': {
+                    backgroundColor: '#be123c'
+                  },
+                  '&:disabled': {
+                    backgroundColor: 'rgba(225, 29, 72, 0.3)',
+                    color: 'rgba(255, 255, 255, 0.5)'
+                  }
+                }}
+              >
+                {saving ? 'Saving...' : 'Save Changes'}
+              </Button>
+            </Box>
           </DialogActions>
         </Dialog>
       </motion.div>

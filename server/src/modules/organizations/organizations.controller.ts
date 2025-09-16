@@ -218,7 +218,10 @@ export class OrganizationsController {
     schema: {
       type: 'object',
       properties: {
-        message: { type: 'string', example: 'Organization deleted successfully' },
+        message: {
+          type: 'string',
+          example: 'Organization deleted successfully',
+        },
       },
     },
   })

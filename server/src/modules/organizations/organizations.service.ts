@@ -154,7 +154,10 @@ export class OrganizationsService {
    * Get the current entity display media for organization thumbnail
    * Default changes to the one with the latest chapter number within user progress
    */
-  async getOrganizationCurrentThumbnail(organizationId: number, userProgress?: number) {
+  async getOrganizationCurrentThumbnail(
+    organizationId: number,
+    userProgress?: number,
+  ) {
     const organization = await this.findOne(organizationId);
 
     // Get all entity display media for this organization

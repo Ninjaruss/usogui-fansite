@@ -29,6 +29,9 @@ import { Guide } from './entities/guide.entity';
 import { Character } from './entities/character.entity';
 import { Event } from './entities/event.entity';
 import { Gamble } from './entities/gamble.entity';
+import { Arc } from './entities/arc.entity';
+import { Media } from './entities/media.entity';
+import { User } from './entities/user.entity';
 import { Logger } from '@nestjs/common';
 
 @Module({
@@ -65,7 +68,15 @@ import { Logger } from '@nestjs/common';
       inject: [ConfigService],
     }),
 
-    TypeOrmModule.forFeature([Guide, Character, Event, Gamble]),
+    TypeOrmModule.forFeature([
+      Guide,
+      Character,
+      Event,
+      Gamble,
+      Arc,
+      Media,
+      User,
+    ]),
 
     ArcsModule,
     CharactersModule,

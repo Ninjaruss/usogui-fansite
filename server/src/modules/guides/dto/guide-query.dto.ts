@@ -15,7 +15,7 @@ export class GuideQueryDto {
   @ApiPropertyOptional({
     description: 'Filter guides by status',
     enum: GuideStatus,
-    example: GuideStatus.PUBLISHED,
+    example: GuideStatus.APPROVED,
   })
   @IsOptional()
   @IsEnum(GuideStatus)

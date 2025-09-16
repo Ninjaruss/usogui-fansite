@@ -2,13 +2,16 @@
 
 import { Box, Container, Typography, Grid, Card, CardContent, Button, Skeleton, Alert, Chip } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
-import { Users, BookOpen, Dices, CalendarSearch, TrendingUp, Book, Shield, FileText, Quote, ChevronRight, Sparkles } from 'lucide-react'
+import { Users, BookOpen, Dices, CalendarSearch, TrendingUp, Book, Shield, FileText, Quote, ChevronRight, Sparkles, MessageCircle, ExternalLink, Image } from 'lucide-react'
 import Link from 'next/link'
 import { SearchBar } from '../components/SearchBar'
 import { TrendingSection } from '../components/TrendingSection'
 import { VolumeCoverSection } from '../components/VolumeCoverSection'
+import { FavoritesSection } from '../components/FavoritesSection'
 import { useLandingData } from '../hooks/useLandingData'
 import { motion } from 'motion/react'
+import Script from 'next/script'
+import { FAQ } from '@/components/FAQ'
 
 export default function HomePage() {
   const theme = useTheme()
@@ -17,74 +20,83 @@ export default function HomePage() {
   // Primary features - most important content
   const primaryFeatures = [
     {
-      icon: <Users className="w-8 h-8" color={theme.palette.usogui.character} />,
+      icon: <Users className="w-8 h-8" style={{ color: theme.palette.usogui.character }} />,
       title: 'Characters',
       description: 'Explore detailed profiles of all Usogui characters',
       href: '/characters',
-      color: 'primary'
+      color: theme.palette.usogui.character
     },
     {
-      icon: <BookOpen className="w-8 h-8" />,
+      icon: <BookOpen className="w-8 h-8" style={{ color: theme.palette.usogui.arc }} />,
       title: 'Story Arcs',
       description: 'Dive into the major arcs and storylines',
       href: '/arcs',
-      color: 'secondary'
+      color: theme.palette.usogui.arc
     },
     {
-      icon: <Dices className="w-8 h-8" />,
+      icon: <Dices className="w-8 h-8" style={{ color: theme.palette.usogui.gamble }} />,
       title: 'Gambles',
       description: 'Details on every gambling game and competition',
       href: '/gambles',
-      color: 'error'
+      color: theme.palette.usogui.gamble
     },
     {
-      icon: <FileText className="w-8 h-8" />,
+      icon: <FileText className="w-8 h-8" style={{ color: theme.palette.usogui.guide }} />,
       title: 'Guides',
       description: 'In-depth analysis and insights from the community',
       href: '/guides',
-      color: 'info'
+      color: theme.palette.usogui.guide
     }
   ]
 
-  // Secondary features - supporting content
-  const secondaryFeatures = [
-    {
-      icon: <CalendarSearch className="w-8 h-8" />,
-      title: 'Events',
-      description: 'Key events and plot points',
-      href: '/events',
-      color: 'warning'
+
+  // Structured data for SEO
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "L-File - Usogui Database",
+    "alternateName": "L-File",
+    "url": "https://l-file.com",
+    "description": "The complete fan-made database for Usogui (Lie Eater) manga. Explore characters, story arcs, gambling mechanics, guides, and community content.",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": {
+        "@type": "EntryPoint",
+        "urlTemplate": "https://l-file.com/search?q={search_term_string}"
+      },
+      "query-input": "required name=search_term_string"
     },
-    {
-      icon: <Quote className="w-8 h-8" />,
-      title: 'Quotes',
-      description: 'Memorable lines from Usogui',
-      href: '/quotes',
-      color: 'success'
-    },
-    {
-      icon: <Book className="w-8 h-8" />,
-      title: 'Volumes',
-      description: 'Browse volume collections and covers',
-      href: '/volumes',
-      color: 'success'
-    },
-    {
-      icon: <Shield className="w-8 h-8" />,
-      title: 'Organizations',
-      description: 'Groups and organizations',
-      href: '/organizations',
-      color: 'secondary'
+    "mainEntity": {
+      "@type": "CreativeWork",
+      "@id": "https://l-file.com",
+      "name": "Usogui Database",
+      "description": "Comprehensive database for the Usogui manga series",
+      "genre": ["Manga", "Database", "Fan Resource"],
+      "about": {
+        "@type": "ComicSeries",
+        "name": "Usogui",
+        "alternateName": "Lie Eater",
+        "creator": {
+          "@type": "Person",
+          "name": "Sako Toshio"
+        }
+      }
     }
-  ]
+  }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
+    <>
+      <Script
+        id="structured-data"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
         {/* Hero Section */}
         <Box textAlign="center" mb={8}>
           <Typography
@@ -120,29 +132,74 @@ export default function HomePage() {
                 sx={{
                   display: 'flex',
                   justifyContent: 'center',
-                  gap: { xs: 2, sm: 4 },
+                  gap: { xs: 1.5, sm: 2 },
                   flexWrap: 'wrap',
                   mb: 2
                 }}
               >
-                <Chip
-                  icon={<FileText className="w-4 h-4" />}
-                  label={`${landingData.stats.totalGuides.toLocaleString()} Guides`}
-                  variant="outlined"
-                  color="primary"
-                />
-                <Chip
-                  icon={<Users className="w-4 h-4" />}
-                  label={`${landingData.stats.totalCharacters.toLocaleString()} Characters`}
-                  variant="outlined"
-                  color="secondary"
-                />
-                <Chip
-                  icon={<Dices className="w-4 h-4" />}
-                  label={`${landingData.stats.totalGambles.toLocaleString()} Gambles`}
-                  variant="outlined"
-                  color="error"
-                />
+                {landingData.stats.totalCharacters && (
+                  <Chip
+                    icon={<Users className="w-4 h-4" style={{ color: theme.palette.usogui.character }} />}
+                    label={`${landingData.stats.totalCharacters.toLocaleString()} Characters`}
+                    variant="outlined"
+                    size="small"
+                    sx={{ borderColor: theme.palette.usogui.character, color: theme.palette.usogui.character }}
+                  />
+                )}
+                {landingData.stats.totalArcs && (
+                  <Chip
+                    icon={<BookOpen className="w-4 h-4" style={{ color: theme.palette.usogui.arc }} />}
+                    label={`${landingData.stats.totalArcs.toLocaleString()} Arcs`}
+                    variant="outlined"
+                    size="small"
+                    sx={{ borderColor: theme.palette.usogui.arc, color: theme.palette.usogui.arc }}
+                  />
+                )}
+                {landingData.stats.totalEvents && (
+                  <Chip
+                    icon={<CalendarSearch className="w-4 h-4" style={{ color: theme.palette.usogui.event }} />}
+                    label={`${landingData.stats.totalEvents.toLocaleString()} Events`}
+                    variant="outlined"
+                    size="small"
+                    sx={{ borderColor: theme.palette.usogui.event, color: theme.palette.usogui.event }}
+                  />
+                )}
+                {landingData.stats.totalGuides && (
+                  <Chip
+                    icon={<FileText className="w-4 h-4" style={{ color: theme.palette.usogui.guide }} />}
+                    label={`${landingData.stats.totalGuides.toLocaleString()} Guides`}
+                    variant="outlined"
+                    size="small"
+                    sx={{ borderColor: theme.palette.usogui.guide, color: theme.palette.usogui.guide }}
+                  />
+                )}
+                {landingData.stats.totalGambles && (
+                  <Chip
+                    icon={<Dices className="w-4 h-4" style={{ color: theme.palette.usogui.gamble }} />}
+                    label={`${landingData.stats.totalGambles.toLocaleString()} Gambles`}
+                    variant="outlined"
+                    size="small"
+                    sx={{ borderColor: theme.palette.usogui.gamble, color: theme.palette.usogui.gamble }}
+                  />
+                )}
+{landingData.stats.totalMedia && (
+                  <Chip
+                    icon={<Image className="w-4 h-4" style={{ color: theme.palette.usogui.media }} />}
+                    label={`${landingData.stats.totalMedia.toLocaleString()} Media`}
+                    variant="outlined"
+                    size="small"
+                    sx={{ borderColor: theme.palette.usogui.media, color: theme.palette.usogui.media }}
+                  />
+                )}
+                {landingData.stats.totalUsers && (
+                  <Chip
+                    icon={<Shield className="w-4 h-4" style={{ color: theme.palette.secondary.main }} />}
+                    label={`${landingData.stats.totalUsers.toLocaleString()} Users`}
+                    variant="outlined"
+                    size="small"
+                    sx={{ borderColor: theme.palette.secondary.main, color: theme.palette.secondary.main }}
+                  />
+                )}
               </Box>
             </motion.div>
           )}
@@ -187,6 +244,7 @@ export default function HomePage() {
                       flexDirection: 'column',
                       transition: 'all 0.3s ease',
                       cursor: 'pointer',
+                      textDecoration: 'none',
                       '&:hover': {
                         transform: 'translateY(-12px)',
                         boxShadow: theme.shadows[12]
@@ -200,8 +258,7 @@ export default function HomePage() {
                         sx={{
                           display: 'flex',
                           justifyContent: 'center',
-                          mb: 2,
-                          color: `${feature.color}.main`
+                          mb: 2
                         }}
                       >
                         {feature.icon}
@@ -213,10 +270,10 @@ export default function HomePage() {
                         {feature.description}
                       </Typography>
                       <Box display="flex" alignItems="center" justifyContent="center" gap={1}>
-                        <Typography variant="button" color={`${feature.color}.main`} sx={{ fontWeight: 'bold' }}>
+                        <Typography variant="button" sx={{ fontWeight: 'bold', color: feature.color }}>
                           Explore
                         </Typography>
-                        <ChevronRight className="w-4 h-4" style={{ color: theme.palette[feature.color as 'primary' | 'secondary' | 'error' | 'info'].main }} />
+                        <ChevronRight className="w-4 h-4" style={{ color: feature.color }} />
                       </Box>
                     </CardContent>
                   </Card>
@@ -225,6 +282,9 @@ export default function HomePage() {
             ))}
           </Grid>
         </Box>
+
+        {/* Community Favorites Section */}
+        <FavoritesSection />
 
         {/* Featured Trending Content */}
         {landingData && (
@@ -280,61 +340,10 @@ export default function HomePage() {
           </Box>
         )}
 
-        {/* More Content Section - Compact */}
-        <Box mb={8}>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.9 }}
-          >
-            <Box textAlign="center" mb={4}>
-              <Typography variant="h5" component="h2" sx={{ fontWeight: 'bold' }} mb={1}>
-                More to Discover
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Additional content and features
-              </Typography>
-            </Box>
+        <FAQ />
 
-            <Grid container spacing={2} justifyContent="center">
-              {secondaryFeatures.map((feature) => (
-                <Grid item xs={6} sm={4} md={3} key={feature.title}>
-                  <Button
-                    component={Link}
-                    href={feature.href}
-                    variant="outlined"
-                    fullWidth
-                    startIcon={feature.icon}
-                    sx={{
-                      p: 2,
-                      height: '100%',
-                      textAlign: 'left',
-                      justifyContent: 'flex-start',
-                      borderColor: `${feature.color}.main`,
-                      color: `${feature.color}.main`,
-                      '&:hover': {
-                        borderColor: `${feature.color}.main`,
-                        backgroundColor: `${feature.color}.main`,
-                        color: 'white'
-                      }
-                    }}
-                  >
-                    <Box>
-                      <Typography variant="body2" component="div" sx={{ fontWeight: 'bold' }}>
-                        {feature.title}
-                      </Typography>
-                      <Typography variant="caption" sx={{ opacity: 0.8 }}>
-                        {feature.description}
-                      </Typography>
-                    </Box>
-                  </Button>
-                </Grid>
-              ))}
-            </Grid>
-          </motion.div>
-        </Box>
-
-        {/* Call to Action Section */}
+        {/* Discord CTA Section */}
+        <Box mb={6} />
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -344,38 +353,107 @@ export default function HomePage() {
             textAlign="center"
             p={6}
             sx={{
-              background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.action.hover} 100%)`,
-              borderRadius: 3,
-              border: `1px solid ${theme.palette.divider}`
+              background: `linear-gradient(135deg, #5865F2 0%, #4752C4 50%, #3C45A5 100%)`,
+              borderRadius: 4,
+              border: `2px solid ${theme.palette.divider}`,
+              color: 'white',
+              position: 'relative',
+              overflow: 'hidden',
+              '&::before': {
+                content: '""',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                background: 'linear-gradient(45deg, transparent 40%, rgba(255,255,255,0.1) 50%, transparent 60%)',
+                animation: 'shimmer 3s ease-in-out infinite',
+                pointerEvents: 'none'
+              },
+              '@keyframes shimmer': {
+                '0%': { transform: 'translateX(-100%)' },
+                '100%': { transform: 'translateX(100%)' }
+              }
             }}
           >
-            <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold' }}>
-              Join the L-File Community
+            <Box display="flex" alignItems="center" justifyContent="center" gap={2} mb={2}>
+              <MessageCircle className="w-8 h-8" />
+              <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
+                Join Our Discord Community
+              </Typography>
+            </Box>
+            <Typography variant="h6" sx={{ opacity: 0.9, mb: 4, fontWeight: 'normal' }}>
+              Connect with fellow Usogui fans, discuss theories, share insights, and stay updated on the latest content
             </Typography>
-            <Typography variant="body1" color="text.secondary" mb={4}>
-              Connect with fellow fans, contribute guides, and track your reading journey
-            </Typography>
+
+            <Grid container spacing={3} justifyContent="center" sx={{ mb: 4 }}>
+              <Grid item xs={12} sm={4}>
+                <Box textAlign="center">
+                  <Users className="w-6 h-6 mx-auto mb-2" style={{ opacity: 0.9 }} />
+                  <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>
+                    Active Community
+                  </Typography>
+                  <Typography variant="body2" sx={{ opacity: 0.8 }}>
+                    Chat with passionate fans
+                  </Typography>
+                </Box>
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <Box textAlign="center">
+                  <Sparkles className="w-6 h-6 mx-auto mb-2" style={{ opacity: 0.9 }} />
+                  <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>
+                    Latest Updates
+                  </Typography>
+                  <Typography variant="body2" sx={{ opacity: 0.8 }}>
+                    Be first to know about new content
+                  </Typography>
+                </Box>
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <Box textAlign="center">
+                  <BookOpen className="w-6 h-6 mx-auto mb-2" style={{ opacity: 0.9 }} />
+                  <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>
+                    Theory Discussions
+                  </Typography>
+                  <Typography variant="body2" sx={{ opacity: 0.8 }}>
+                    Dive deep into Usogui lore
+                  </Typography>
+                </Box>
+              </Grid>
+            </Grid>
+
             <Button
-              component={Link}
-              href="/login"
+              component="a"
+              href="https://discord.gg/JXeRhV2qpY"
+              target="_blank"
+              rel="noopener noreferrer"
               variant="contained"
               size="large"
-              sx={{ mr: 2, mb: { xs: 2, sm: 0 } }}
+              startIcon={<MessageCircle className="w-5 h-5" />}
+              endIcon={<ExternalLink className="w-4 h-4" />}
+              sx={{
+                bgcolor: 'white',
+                color: '#5865F2',
+                fontWeight: 'bold',
+                fontSize: '1.1rem',
+                px: 4,
+                py: 1.5,
+                borderRadius: 2,
+                boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+                '&:hover': {
+                  bgcolor: '#f8f9fa',
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 6px 16px rgba(0,0,0,0.4)'
+                },
+                transition: 'all 0.3s ease'
+              }}
             >
-              Get Started
-            </Button>
-            <Button
-              component={Link}
-              href="/users"
-              variant="outlined"
-              size="large"
-              startIcon={<Users className="w-4 h-4" />}
-            >
-              Browse Community
+              Join Discord Server
             </Button>
           </Box>
         </motion.div>
       </motion.div>
     </Container>
+    </>
   )
 }
