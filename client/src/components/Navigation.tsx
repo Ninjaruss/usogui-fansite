@@ -240,19 +240,19 @@ export const Navigation: React.FC = () => {
   const handleBrowseButtonLeave = () => {
     browseTimeout.current = setTimeout(() => {
       setBrowseMenuAnchor(null)
-    }, 300)
+    }, 150) // Reduced timeout for faster closing
   }
 
   const handleCommunityButtonLeave = () => {
     communityTimeout.current = setTimeout(() => {
       setCommunityMenuAnchor(null)
-    }, 300)
+    }, 150) // Reduced timeout for faster closing
   }
 
   const handleSubmitButtonLeave = () => {
     submitTimeout.current = setTimeout(() => {
       setSubmitMenuAnchor(null)
-    }, 300)
+    }, 150) // Reduced timeout for faster closing
   }
 
   // Search helper functions
@@ -485,6 +485,57 @@ export const Navigation: React.FC = () => {
     document.addEventListener('click', handleClickOutside)
     return () => {
       document.removeEventListener('click', handleClickOutside)
+    }
+  }, [browseMenuAnchor, communityMenuAnchor, submitMenuAnchor])
+
+  // More robust mouse leave detection for navbar dropdowns
+  useEffect(() => {
+    const handleGlobalMouseMove = (event: MouseEvent) => {
+      // Only check if we have open dropdowns
+      if (!browseMenuAnchor && !communityMenuAnchor && !submitMenuAnchor) {
+        return
+      }
+
+      // Get the navbar element
+      const navbar = document.querySelector('[data-testid="navigation-bar"]')
+      if (!navbar) return
+
+      // Get all open dropdown elements
+      const dropdownElements = document.querySelectorAll('.MuiPaper-root[role="menu"]')
+      
+      // Check if mouse is over navbar or any open dropdown
+      const rect = navbar.getBoundingClientRect()
+      const isOverNavbar = event.clientX >= rect.left && 
+                          event.clientX <= rect.right && 
+                          event.clientY >= rect.top && 
+                          event.clientY <= rect.bottom
+
+      let isOverDropdown = false
+      dropdownElements.forEach(dropdown => {
+        const dropdownRect = dropdown.getBoundingClientRect()
+        if (event.clientX >= dropdownRect.left && 
+            event.clientX <= dropdownRect.right && 
+            event.clientY >= dropdownRect.top && 
+            event.clientY <= dropdownRect.bottom) {
+          isOverDropdown = true
+        }
+      })
+
+      // If mouse is not over navbar or any dropdown, close all dropdowns
+      if (!isOverNavbar && !isOverDropdown) {
+        setBrowseMenuAnchor(null)
+        setCommunityMenuAnchor(null)
+        setSubmitMenuAnchor(null)
+      }
+    }
+
+    // Add mousemove listener when dropdowns are open
+    if (browseMenuAnchor || communityMenuAnchor || submitMenuAnchor) {
+      document.addEventListener('mousemove', handleGlobalMouseMove)
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleGlobalMouseMove)
     }
   }, [browseMenuAnchor, communityMenuAnchor, submitMenuAnchor])
 
@@ -906,9 +957,14 @@ export const Navigation: React.FC = () => {
           onClick={handleDropdownClose}
           onMouseEnter={handleBrowseDropdownEnter}
           onMouseLeave={handleBrowseDropdownLeave}
+          autoFocus={false}
+          disableAutoFocusItem={true}
           MenuListProps={{
             onMouseEnter: handleBrowseDropdownEnter,
-            onMouseLeave: handleBrowseDropdownLeave
+            onMouseLeave: handleBrowseDropdownLeave,
+            disablePadding: false,
+            autoFocus: false,
+            autoFocusItem: false
           }}
           transformOrigin={{ horizontal: 'left', vertical: 'top' }}
           anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
@@ -919,7 +975,7 @@ export const Navigation: React.FC = () => {
             }
           }}
         >
-          {Object.entries(browseItems).map(([category, items]) => (
+          {Object.entries(browseItems).map(([category, items], index, array) => (
             <Box key={category}>
               <MenuItem disabled sx={{ 
                 fontWeight: 'bold', 
@@ -952,7 +1008,7 @@ export const Navigation: React.FC = () => {
                   {item.label}
                 </MenuItem>
               ))}
-              <Divider sx={{ my: 0.5 }} />
+              {index < array.length - 1 && <Divider sx={{ my: 0.5 }} />}
             </Box>
           ))}
         </Menu>
@@ -965,9 +1021,14 @@ export const Navigation: React.FC = () => {
           onClick={handleDropdownClose}
           onMouseEnter={handleCommunityDropdownEnter}
           onMouseLeave={handleCommunityDropdownLeave}
+          autoFocus={false}
+          disableAutoFocusItem={true}
           MenuListProps={{
             onMouseEnter: handleCommunityDropdownEnter,
-            onMouseLeave: handleCommunityDropdownLeave
+            onMouseLeave: handleCommunityDropdownLeave,
+            disablePadding: false,
+            autoFocus: false,
+            autoFocusItem: false
           }}
           transformOrigin={{ horizontal: 'left', vertical: 'top' }}
           anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
@@ -1004,9 +1065,14 @@ export const Navigation: React.FC = () => {
           onClick={handleDropdownClose}
           onMouseEnter={handleSubmitDropdownEnter}
           onMouseLeave={handleSubmitDropdownLeave}
+          autoFocus={false}
+          disableAutoFocusItem={true}
           MenuListProps={{
             onMouseEnter: handleSubmitDropdownEnter,
-            onMouseLeave: handleSubmitDropdownLeave
+            onMouseLeave: handleSubmitDropdownLeave,
+            disablePadding: false,
+            autoFocus: false,
+            autoFocusItem: false
           }}
           transformOrigin={{ horizontal: 'left', vertical: 'top' }}
           anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
