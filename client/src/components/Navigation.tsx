@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useCallback, useRef } from 'react'
+import React, { useState, useCallback, useRef, useEffect } from 'react'
 import {
   AppBar,
   Toolbar,
@@ -74,7 +74,9 @@ export const Navigation: React.FC = () => {
   const [searchLoading, setSearchLoading] = useState(false)
   const [showSearchResults, setShowSearchResults] = useState(false)
   const searchTimeout = useRef<NodeJS.Timeout | null>(null)
-  const dropdownTimeout = useRef<NodeJS.Timeout | null>(null)
+  const browseTimeout = useRef<NodeJS.Timeout | null>(null)
+  const communityTimeout = useRef<NodeJS.Timeout | null>(null)
+  const submitTimeout = useRef<NodeJS.Timeout | null>(null)
 
 
   const handleProfileMenuEnter = (event: React.MouseEvent<HTMLElement>) => {
@@ -104,53 +106,153 @@ export const Navigation: React.FC = () => {
 
   // Dropdown menu handlers
   const handleBrowseMenuEnter = (event: React.MouseEvent<HTMLElement>) => {
-    if (dropdownTimeout.current) {
-      clearTimeout(dropdownTimeout.current)
+    // Clear any pending timeouts
+    if (browseTimeout.current) {
+      clearTimeout(browseTimeout.current)
+    }
+    if (communityTimeout.current) {
+      clearTimeout(communityTimeout.current)
+    }
+    if (submitTimeout.current) {
+      clearTimeout(submitTimeout.current)
     }
     // Close other dropdowns first
     setCommunityMenuAnchor(null)
     setSubmitMenuAnchor(null)
+    // Use the current target (the Box element) as the anchor
     setBrowseMenuAnchor(event.currentTarget)
   }
 
   const handleCommunityMenuEnter = (event: React.MouseEvent<HTMLElement>) => {
-    if (dropdownTimeout.current) {
-      clearTimeout(dropdownTimeout.current)
+    // Clear any pending timeouts
+    if (browseTimeout.current) {
+      clearTimeout(browseTimeout.current)
+    }
+    if (communityTimeout.current) {
+      clearTimeout(communityTimeout.current)
+    }
+    if (submitTimeout.current) {
+      clearTimeout(submitTimeout.current)
     }
     // Close other dropdowns first
     setBrowseMenuAnchor(null)
     setSubmitMenuAnchor(null)
+    // Use the current target (the Box element) as the anchor
     setCommunityMenuAnchor(event.currentTarget)
   }
 
   const handleSubmitMenuEnter = (event: React.MouseEvent<HTMLElement>) => {
-    if (dropdownTimeout.current) {
-      clearTimeout(dropdownTimeout.current)
+    // Clear any pending timeouts
+    if (browseTimeout.current) {
+      clearTimeout(browseTimeout.current)
+    }
+    if (communityTimeout.current) {
+      clearTimeout(communityTimeout.current)
+    }
+    if (submitTimeout.current) {
+      clearTimeout(submitTimeout.current)
     }
     // Close other dropdowns first
     setBrowseMenuAnchor(null)
     setCommunityMenuAnchor(null)
+    // Use the current target (the Box element) as the anchor
     setSubmitMenuAnchor(event.currentTarget)
   }
 
   const handleDropdownClose = () => {
+    // Clear any pending timeouts
+    if (browseTimeout.current) {
+      clearTimeout(browseTimeout.current)
+    }
+    if (communityTimeout.current) {
+      clearTimeout(communityTimeout.current)
+    }
+    if (submitTimeout.current) {
+      clearTimeout(submitTimeout.current)
+    }
     setBrowseMenuAnchor(null)
     setCommunityMenuAnchor(null)
     setSubmitMenuAnchor(null)
   }
 
   const handleDropdownLeave = () => {
-    dropdownTimeout.current = setTimeout(() => {
+    // Add a slightly longer delay to allow moving between button and dropdown
+    browseTimeout.current = setTimeout(() => {
       setBrowseMenuAnchor(null)
       setCommunityMenuAnchor(null)
       setSubmitMenuAnchor(null)
-    }, 50) // Very short delay to allow movement between button and menu
+    }, 250) // Increased from 150ms to 250ms for better UX
   }
 
+  // Dropdown menu mouse handlers - these handle the actual dropdown closing
   const handleDropdownEnter = () => {
-    if (dropdownTimeout.current) {
-      clearTimeout(dropdownTimeout.current)
+    // Clear any pending timeouts when entering the dropdown
+    if (browseTimeout.current) {
+      clearTimeout(browseTimeout.current)
     }
+    if (communityTimeout.current) {
+      clearTimeout(communityTimeout.current)
+    }
+    if (submitTimeout.current) {
+      clearTimeout(submitTimeout.current)
+    }
+  }
+
+  // Specific dropdown enter handlers to clear their specific timeouts
+  const handleBrowseDropdownEnter = () => {
+    if (browseTimeout.current) {
+      clearTimeout(browseTimeout.current)
+    }
+  }
+
+  const handleCommunityDropdownEnter = () => {
+    if (communityTimeout.current) {
+      clearTimeout(communityTimeout.current)
+    }
+  }
+
+  const handleSubmitDropdownEnter = () => {
+    if (submitTimeout.current) {
+      clearTimeout(submitTimeout.current)
+    }
+  }
+
+  // Specific dropdown leave handlers
+  const handleBrowseDropdownLeave = () => {
+    browseTimeout.current = setTimeout(() => {
+      setBrowseMenuAnchor(null)
+    }, 200)
+  }
+
+  const handleCommunityDropdownLeave = () => {
+    communityTimeout.current = setTimeout(() => {
+      setCommunityMenuAnchor(null)
+    }, 200)
+  }
+
+  const handleSubmitDropdownLeave = () => {
+    submitTimeout.current = setTimeout(() => {
+      setSubmitMenuAnchor(null)
+    }, 200)
+  }
+
+  // Individual button leave handlers - close specific dropdown when leaving button
+  const handleBrowseButtonLeave = () => {
+    browseTimeout.current = setTimeout(() => {
+      setBrowseMenuAnchor(null)
+    }, 300)
+  }
+
+  const handleCommunityButtonLeave = () => {
+    communityTimeout.current = setTimeout(() => {
+      setCommunityMenuAnchor(null)
+    }, 300)
+  }
+
+  const handleSubmitButtonLeave = () => {
+    submitTimeout.current = setTimeout(() => {
+      setSubmitMenuAnchor(null)
+    }, 300)
   }
 
   // Search helper functions
@@ -351,8 +453,47 @@ export const Navigation: React.FC = () => {
 
   const avatarSrc = getAvatarSrc()
 
+  // Cleanup timeouts on unmount
+  useEffect(() => {
+    return () => {
+      if (searchTimeout.current) {
+        clearTimeout(searchTimeout.current)
+      }
+      if (browseTimeout.current) {
+        clearTimeout(browseTimeout.current)
+      }
+      if (communityTimeout.current) {
+        clearTimeout(communityTimeout.current)
+      }
+      if (submitTimeout.current) {
+        clearTimeout(submitTimeout.current)
+      }
+    }
+  }, [])
+
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      // Only close if we have open dropdowns
+      if (browseMenuAnchor || communityMenuAnchor || submitMenuAnchor) {
+        setBrowseMenuAnchor(null)
+        setCommunityMenuAnchor(null)
+        setSubmitMenuAnchor(null)
+      }
+    }
+
+    document.addEventListener('click', handleClickOutside)
+    return () => {
+      document.removeEventListener('click', handleClickOutside)
+    }
+  }, [browseMenuAnchor, communityMenuAnchor, submitMenuAnchor])
+
   return (
-    <AppBar position="sticky" sx={{ mb: 4 }}>
+    <AppBar 
+      position="sticky" 
+      sx={{ mb: 4 }}
+      data-testid="navigation-bar"
+    >
       <Toolbar>
         {/* Logo - Left Side */}
         <Typography
@@ -373,60 +514,123 @@ export const Navigation: React.FC = () => {
         </Typography>
 
         {/* Desktop Navigation */}
-        <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 3, flexGrow: 1 }}>
+        <Box 
+          sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 3, flexGrow: 1 }}
+          data-testid="nav-buttons-container"
+        >
           {/* Browse Dropdown */}
-          <Button
-            color="inherit"
+          <Box 
+            sx={{ position: 'relative' }}
             onMouseEnter={handleBrowseMenuEnter}
-            onMouseLeave={handleDropdownLeave}
-            endIcon={<ChevronDown size={16} />}
-            sx={{
-              '&:hover': {
-                backgroundColor: 'rgba(255, 255, 255, 0.1)'
-              },
-              backgroundColor: Boolean(browseMenuAnchor) ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
-              cursor: 'default'
-            }}
-            disableRipple
+            onMouseLeave={handleBrowseButtonLeave}
           >
-            Browse
-          </Button>
+            <Button
+              color="inherit"
+              sx={{
+                '&:hover': {
+                  backgroundColor: 'rgba(255, 255, 255, 0.1)'
+                },
+                backgroundColor: Boolean(browseMenuAnchor) ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
+                cursor: 'default'
+              }}
+              disableRipple
+            >
+              Browse
+            </Button>
+            {/* Arrow indicator */}
+            <Box
+              sx={{
+                position: 'absolute',
+                bottom: -2,
+                left: '50%',
+                transform: 'translateX(-50%)',
+                width: 0,
+                height: 0,
+                borderLeft: '4px solid transparent',
+                borderRight: '4px solid transparent',
+                borderTop: Boolean(browseMenuAnchor) ? '4px solid white' : 'none',
+                borderBottom: Boolean(browseMenuAnchor) ? 'none' : '4px solid rgba(255, 255, 255, 0.4)',
+                opacity: 1,
+                transition: 'all 0.2s ease-in-out'
+              }}
+            />
+          </Box>
 
           {/* Community Dropdown */}
-          <Button
-            color="inherit"
+          <Box 
+            sx={{ position: 'relative' }}
             onMouseEnter={handleCommunityMenuEnter}
-            onMouseLeave={handleDropdownLeave}
-            endIcon={<ChevronDown size={16} />}
-            sx={{
-              '&:hover': {
-                backgroundColor: 'rgba(255, 255, 255, 0.1)'
-              },
-              backgroundColor: Boolean(communityMenuAnchor) ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
-              cursor: 'default'
-            }}
-            disableRipple
+            onMouseLeave={handleCommunityButtonLeave}
           >
-            Community
-          </Button>
+            <Button
+              color="inherit"
+              sx={{
+                '&:hover': {
+                  backgroundColor: 'rgba(255, 255, 255, 0.1)'
+                },
+                backgroundColor: Boolean(communityMenuAnchor) ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
+                cursor: 'default'
+              }}
+              disableRipple
+            >
+              Community
+            </Button>
+            {/* Arrow indicator */}
+            <Box
+              sx={{
+                position: 'absolute',
+                bottom: -2,
+                left: '50%',
+                transform: 'translateX(-50%)',
+                width: 0,
+                height: 0,
+                borderLeft: '4px solid transparent',
+                borderRight: '4px solid transparent',
+                borderTop: Boolean(communityMenuAnchor) ? '4px solid white' : 'none',
+                borderBottom: Boolean(communityMenuAnchor) ? 'none' : '4px solid rgba(255, 255, 255, 0.4)',
+                opacity: 1,
+                transition: 'all 0.2s ease-in-out'
+              }}
+            />
+          </Box>
 
           {/* Submit Dropdown */}
-          <Button
-            color="inherit"
+          <Box 
+            sx={{ position: 'relative' }}
             onMouseEnter={handleSubmitMenuEnter}
-            onMouseLeave={handleDropdownLeave}
-            endIcon={<ChevronDown size={16} />}
-            sx={{
-              '&:hover': {
-                backgroundColor: 'rgba(255, 255, 255, 0.1)'
-              },
-              backgroundColor: Boolean(submitMenuAnchor) ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
-              cursor: 'default'
-            }}
-            disableRipple
+            onMouseLeave={handleSubmitButtonLeave}
           >
-            Submit
-          </Button>
+            <Button
+              color="inherit"
+              sx={{
+                '&:hover': {
+                  backgroundColor: 'rgba(255, 255, 255, 0.1)'
+                },
+                backgroundColor: Boolean(submitMenuAnchor) ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
+                cursor: 'default'
+              }}
+              disableRipple
+            >
+              Submit
+            </Button>
+            {/* Arrow indicator */}
+            <Box
+              sx={{
+                position: 'absolute',
+                bottom: -2,
+                left: '50%',
+                transform: 'translateX(-50%)',
+                width: 0,
+                height: 0,
+                borderLeft: '4px solid transparent',
+                borderRight: '4px solid transparent',
+                borderTop: Boolean(submitMenuAnchor) ? '4px solid white' : 'none',
+                borderBottom: Boolean(submitMenuAnchor) ? 'none' : '4px solid rgba(255, 255, 255, 0.4)',
+                opacity: 1,
+                transition: 'all 0.2s ease-in-out'
+              }}
+            />
+          </Box>
         </Box>
 
         {/* Search Bar - Desktop */}
@@ -700,15 +904,20 @@ export const Navigation: React.FC = () => {
           open={Boolean(browseMenuAnchor)}
           onClose={handleDropdownClose}
           onClick={handleDropdownClose}
-          onMouseEnter={handleDropdownEnter}
-          onMouseLeave={handleDropdownLeave}
+          onMouseEnter={handleBrowseDropdownEnter}
+          onMouseLeave={handleBrowseDropdownLeave}
           MenuListProps={{
-            onMouseEnter: handleDropdownEnter,
-            onMouseLeave: handleDropdownLeave
+            onMouseEnter: handleBrowseDropdownEnter,
+            onMouseLeave: handleBrowseDropdownLeave
           }}
           transformOrigin={{ horizontal: 'left', vertical: 'top' }}
           anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
-          sx={{ mt: 1 }}
+          sx={{ 
+            '& .MuiPaper-root': {
+              marginTop: '4px', // Small gap to allow leaving button area
+              boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)'
+            }
+          }}
         >
           {Object.entries(browseItems).map(([category, items]) => (
             <Box key={category}>
@@ -754,15 +963,20 @@ export const Navigation: React.FC = () => {
           open={Boolean(communityMenuAnchor)}
           onClose={handleDropdownClose}
           onClick={handleDropdownClose}
-          onMouseEnter={handleDropdownEnter}
-          onMouseLeave={handleDropdownLeave}
+          onMouseEnter={handleCommunityDropdownEnter}
+          onMouseLeave={handleCommunityDropdownLeave}
           MenuListProps={{
-            onMouseEnter: handleDropdownEnter,
-            onMouseLeave: handleDropdownLeave
+            onMouseEnter: handleCommunityDropdownEnter,
+            onMouseLeave: handleCommunityDropdownLeave
           }}
           transformOrigin={{ horizontal: 'left', vertical: 'top' }}
           anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
-          sx={{ mt: 1 }}
+          sx={{ 
+            '& .MuiPaper-root': {
+              marginTop: '4px', // Small gap to allow leaving button area
+              boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)'
+            }
+          }}
         >
           {communityItems.map((item) => (
             <MenuItem
@@ -788,15 +1002,20 @@ export const Navigation: React.FC = () => {
           open={Boolean(submitMenuAnchor)}
           onClose={handleDropdownClose}
           onClick={handleDropdownClose}
-          onMouseEnter={handleDropdownEnter}
-          onMouseLeave={handleDropdownLeave}
+          onMouseEnter={handleSubmitDropdownEnter}
+          onMouseLeave={handleSubmitDropdownLeave}
           MenuListProps={{
-            onMouseEnter: handleDropdownEnter,
-            onMouseLeave: handleDropdownLeave
+            onMouseEnter: handleSubmitDropdownEnter,
+            onMouseLeave: handleSubmitDropdownLeave
           }}
           transformOrigin={{ horizontal: 'left', vertical: 'top' }}
           anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
-          sx={{ mt: 1 }}
+          sx={{ 
+            '& .MuiPaper-root': {
+              marginTop: '4px', // Small gap to allow leaving button area
+              boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)'
+            }
+          }}
         >
           {submitItems.map((item) => (
             <MenuItem
