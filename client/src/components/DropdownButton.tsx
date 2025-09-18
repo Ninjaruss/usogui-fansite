@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Button, Box, Menu } from '@mantine/core'
 import Link from 'next/link'
 import { DropdownHandlers, DropdownState } from '../hooks/useDropdown'
@@ -34,22 +34,47 @@ export const DropdownButton: React.FC<DropdownButtonProps> = ({
   isCategorized = false,
   children
 }) => {
-  const renderMenuItem = (item: MenuItemData) => (
-    <Menu.Item
-      key={item.href}
-      component={Link}
-      href={item.href}
-      onMouseEnter={handlers.onDropdownEnter}
-      onMouseLeave={handlers.onDropdownLeave}
-      style={{
-        paddingLeft: isCategorized ? 24 : 16,
-        borderLeft: isActivePath?.(item.href) ? '3px solid #e11d48' : '3px solid transparent'
-      }}
-      leftSection={<Box style={{ display: 'flex' }}>{item.icon}</Box>}
-    >
-      {item.label}
-    </Menu.Item>
-  )
+  const accentColor = '#e11d48'
+  const hoverOutline = 'rgba(225, 29, 72, 0.55)'
+  const [highlightedItem, setHighlightedItem] = useState<string | null>(null)
+
+  const renderMenuItem = (item: MenuItemData) => {
+    const isActive = isActivePath?.(item.href) ?? false
+    const isHighlighted = highlightedItem === item.href || isActive
+    const outlineColor = isActive ? accentColor : hoverOutline
+
+    return (
+      <Menu.Item
+        key={item.href}
+        component={Link}
+        href={item.href}
+        onMouseEnter={() => {
+          setHighlightedItem(item.href)
+          handlers.onDropdownEnter()
+        }}
+        onMouseLeave={() => {
+          setHighlightedItem((current) => (current === item.href ? null : current))
+          handlers.onDropdownLeave()
+        }}
+        onFocus={() => setHighlightedItem(item.href)}
+        onBlur={() => {
+          setHighlightedItem((current) => (current === item.href ? null : current))
+        }}
+        style={{
+          paddingLeft: isCategorized ? 24 : 16,
+          borderLeft: isActive ? `3px solid ${accentColor}` : '3px solid transparent',
+          color: '#f8fafc',
+          borderRadius: 6,
+          transition: 'box-shadow 0.2s ease, border-left-color 0.2s ease',
+          backgroundColor: 'transparent',
+          boxShadow: isHighlighted ? `inset 0 0 0 1px ${outlineColor}` : 'none'
+        }}
+        leftSection={<Box style={{ display: 'flex' }}>{item.icon}</Box>}
+      >
+        {item.label}
+      </Menu.Item>
+    )
+  }
 
   const renderCategorizedItems = (categories: MenuCategory[]) => {
     const menuItems: React.ReactNode[] = []
@@ -127,14 +152,16 @@ export const DropdownButton: React.FC<DropdownButtonProps> = ({
             variant="subtle"
             color="gray"
             style={{
-              backgroundColor: state.isOpen ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
+              backgroundColor: 'transparent',
               cursor: 'default',
-              color: 'white'
+              color: 'white',
+              boxShadow: state.isOpen ? `inset 0 0 0 1px ${accentColor}` : 'none'
             }}
             styles={{
               root: {
                 '&:hover': {
-                  backgroundColor: 'rgba(255, 255, 255, 0.1)'
+                  backgroundColor: 'transparent',
+                  boxShadow: `inset 0 0 0 1px rgba(225, 29, 72, 0.55)`
                 }
               }
             }}

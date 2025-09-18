@@ -20,8 +20,8 @@ The site now uses Discord as the primary (and only) authentication method. Users
 ### 2. Configure OAuth2
 1. Go to "OAuth2" tab in your application
 2. Add redirect URIs:
-   - Development: `http://localhost:3001/auth/discord/callback`
-   - Production: `https://yourdomain.com/auth/discord/callback`
+   - Development: `http://localhost:3001/api/auth/discord/callback`
+   - Production: `https://yourdomain.com/api/auth/discord/callback`
 3. Save changes
 
 ### 3. Get Credentials
@@ -36,7 +36,7 @@ The site now uses Discord as the primary (and only) authentication method. Users
 # Discord OAuth2 Authentication
 DISCORD_CLIENT_ID=your_discord_application_client_id
 DISCORD_CLIENT_SECRET=your_discord_application_client_secret
-DISCORD_CALLBACK_URL=http://localhost:3001/auth/discord/callback
+DISCORD_CALLBACK_URL=http://localhost:3001/api/auth/discord/callback
 ADMIN_DISCORD_ID=your_discord_user_id_for_admin_access
 
 # Other existing config...
@@ -46,7 +46,7 @@ FRONTEND_URL=http://localhost:3000
 
 ### Frontend (.env.local)
 ```bash
-NEXT_PUBLIC_API_URL=http://localhost:3001
+NEXT_PUBLIC_API_URL=http://localhost:3001/api
 ```
 
 ## Get Your Discord User ID (for Admin Access)
@@ -100,11 +100,11 @@ The old email/password authentication has been moved to `/auth/legacy/*` endpoin
 ## API Endpoints
 
 ### New Discord Endpoints
-- `GET /auth/discord` - Start Discord OAuth flow
-- `GET /auth/discord/callback` - Handle Discord callback
-- `POST /auth/dev-login` - Development bypass (dev only)
-- `POST /auth/refresh` - Refresh access token
-- `POST /auth/logout` - Logout user
+- `GET /api/auth/discord` - Start Discord OAuth flow
+- `GET /api/auth/discord/callback` - Handle Discord callback
+- `POST /api/auth/dev-login` - Development bypass (dev only)
+- `POST /api/auth/refresh` - Refresh access token
+- `POST /api/auth/logout` - Logout user
 
 ### Legacy Endpoints (Preserved)
 - `POST /auth/legacy/register` - Legacy registration

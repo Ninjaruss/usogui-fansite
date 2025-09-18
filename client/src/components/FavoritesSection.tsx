@@ -1,19 +1,45 @@
 'use client'
 
-import { Box, Card, CardContent, Typography, Grid, Chip, Avatar, Stack, Skeleton, Alert } from '@mui/material'
-import { useTheme } from '@mui/material/styles'
+import {
+  Box,
+  Card,
+  Text,
+  Grid,
+  Badge,
+  Avatar,
+  Stack,
+  Skeleton,
+  Alert,
+  Group,
+  useMantineTheme
+} from '@mantine/core'
 import { Quote, Dices, User, TrendingUp } from 'lucide-react'
 import Link from 'next/link'
 import { motion } from 'motion/react'
 import { useFavoritesData } from '../hooks/useFavoritesData'
 
 export function FavoritesSection() {
-  const theme = useTheme()
+  const theme = useMantineTheme()
   const { data: favoritesData, loading, error } = useFavoritesData()
+
+  const accent = theme.other?.usogui?.red || theme.colors.red[5]
+  const surface = theme.other?.usogui?.black || '#0a0a0a'
+
+  const withAlpha = (color: string, alpha: number, fallback: string) => {
+    try {
+      return theme.fn?.rgba?.(color, alpha) ?? fallback
+    } catch (error) {
+      return fallback
+    }
+  }
+
+  const borderColor = withAlpha(accent, 0.22, 'rgba(225, 29, 72, 0.22)')
+  const softSurface = withAlpha(surface, 0.92, surface)
+  const subtleText = withAlpha('#ffffff', 0.7, 'rgba(255, 255, 255, 0.7)')
 
   if (error) {
     return (
-      <Alert severity="info" sx={{ mb: 3 }}>
+      <Alert color="red" variant="light" style={{ marginBottom: '1.5rem' }}>
         Unable to load favorites data. Please check your connection and try again.
       </Alert>
     )
@@ -22,18 +48,18 @@ export function FavoritesSection() {
   if (loading) {
     return (
       <Box>
-        <Skeleton variant="text" width={300} height={40} sx={{ mb: 3 }} />
-        <Grid container spacing={3}>
+        <Skeleton height={40} width={300} style={{ marginBottom: '1.5rem' }} />
+        <Grid gutter="xl">
           {[1, 2, 3].map((i) => (
-            <Grid item xs={12} md={4} key={i}>
-              <Card>
-                <CardContent>
-                  <Skeleton variant="text" width="80%" height={32} />
-                  <Skeleton variant="text" width="100%" height={60} sx={{ mt: 1 }} />
-                  <Skeleton variant="rectangular" width="40%" height={24} sx={{ mt: 2 }} />
-                </CardContent>
+            <Grid.Col span={{ base: 12, md: 4 }} key={i}>
+              <Card style={{ backgroundColor: softSurface, border: `1px solid ${borderColor}` }}>
+                <Stack gap="sm">
+                  <Skeleton height={24} width="80%" />
+                  <Skeleton height={60} />
+                  <Skeleton height={24} width="40%" />
+                </Stack>
               </Card>
-            </Grid>
+            </Grid.Col>
           ))}
         </Grid>
       </Box>
@@ -46,38 +72,49 @@ export function FavoritesSection() {
 
   const { favoriteQuotes, favoriteGambles, favoriteCharacterMedia } = favoritesData
 
+  const renderCounter = (count: number) => (
+    <Text size="xs" style={{ color: subtleText }}>
+      {count} user{count !== 1 ? 's' : ''}
+    </Text>
+  )
+
   return (
-    <Box mb={6}>
+    <Box style={{ marginBottom: '3rem' }}>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.8 }}
       >
-        <Box textAlign="center" mb={4}>
-          <Box display="flex" alignItems="center" justifyContent="center" gap={1} mb={2}>
-            <TrendingUp className="w-6 h-6" color={theme.palette.secondary.main} />
-            <Typography variant="h4" component="h2" sx={{ fontWeight: 'bold' }}>
+        <Box style={{ textAlign: 'center', marginBottom: '2rem' }}>
+          <Group justify="center" gap="xs" style={{ marginBottom: '0.75rem' }}>
+            <TrendingUp className="w-6 h-6" color={theme.other?.usogui?.purple || accent} />
+            <Text fw={700} size="xl">
               Community Favorites
-            </Typography>
-          </Box>
-          <Typography variant="body1" color="text.secondary">
+            </Text>
+          </Group>
+          <Text size="md" style={{ color: subtleText }}>
             The most beloved content from our community
-          </Typography>
+          </Text>
         </Box>
 
-        <Grid container spacing={4}>
-          {/* Top 3 Favorite Quotes */}
+        <Grid gutter="xl">
           {favoriteQuotes.length > 0 && (
-            <Grid item xs={12} md={4}>
-              <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-                <CardContent sx={{ flexGrow: 1 }}>
-                  <Box display="flex" alignItems="center" gap={1} mb={2}>
-                    <Quote className="w-5 h-5" color={theme.palette.success.main} />
-                    <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-                      Top Quotes
-                    </Typography>
-                  </Box>
-                  <Stack spacing={2}>
+            <Grid.Col span={{ base: 12, md: 4 }}>
+              <Card
+                style={{
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  backgroundColor: softSurface,
+                  border: `1px solid ${borderColor}`
+                }}
+              >
+                <Box style={{ flexGrow: 1 }}>
+                  <Group gap="xs" style={{ marginBottom: '0.75rem' }}>
+                    <Quote className="w-5 h-5" color={theme.other?.usogui?.quote || theme.colors.green?.[5] || '#4ade80'} />
+                    <Text fw={700}>Top Quotes</Text>
+                  </Group>
+                  <Stack gap="sm">
                     {favoriteQuotes.map((item, index) => (
                       <motion.div
                         key={item.quote.id}
@@ -85,54 +122,63 @@ export function FavoritesSection() {
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 0.3, delay: index * 0.1 }}
                       >
-                        <Card variant="outlined" sx={{ bgcolor: 'background.default' }}>
-                          <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-                            <Typography variant="body2" sx={{ 
-                              fontStyle: 'italic', 
-                              mb: 1,
+                        <Card
+                          withBorder
+                          padding="sm"
+                          style={{
+                            backgroundColor: withAlpha(surface, 0.86, surface),
+                            border: `1px solid ${borderColor}`
+                          }}
+                        >
+                          <Text
+                            size="sm"
+                            style={{
+                              fontStyle: 'italic',
+                              marginBottom: '0.5rem',
+                              color: '#ffffff',
                               overflow: 'hidden',
                               textOverflow: 'ellipsis',
                               display: '-webkit-box',
                               WebkitLineClamp: 3,
-                              WebkitBoxOrient: 'vertical',
-                            }}>
-                              "{item.quote.text}"
-                            </Typography>
-                            <Box display="flex" justifyContent="space-between" alignItems="center">
-                              <Link href={`/characters/${item.quote.character.id}`} style={{ textDecoration: 'none' }}>
-                                <Chip 
-                                  label={item.quote.character.name} 
-                                  size="small" 
-                                  color="primary"
-                                  sx={{ cursor: 'pointer' }}
-                                />
-                              </Link>
-                              <Typography variant="caption" color="text.secondary">
-                                {item.userCount} user{item.userCount !== 1 ? 's' : ''}
-                              </Typography>
-                            </Box>
-                          </CardContent>
+                              WebkitBoxOrient: 'vertical'
+                            }}
+                          >
+                            “{item.quote.text}”
+                          </Text>
+                          <Group justify="space-between" align="center">
+                            <Link href={`/characters/${item.quote.character.id}`} style={{ textDecoration: 'none' }}>
+                              <Badge color="red" variant="light" size="sm" style={{ cursor: 'pointer' }}>
+                                {item.quote.character.name}
+                              </Badge>
+                            </Link>
+                            {renderCounter(item.userCount)}
+                          </Group>
                         </Card>
                       </motion.div>
                     ))}
                   </Stack>
-                </CardContent>
+                </Box>
               </Card>
-            </Grid>
+            </Grid.Col>
           )}
 
-          {/* Top 3 Favorite Gambles */}
           {favoriteGambles.length > 0 && (
-            <Grid item xs={12} md={4}>
-              <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-                <CardContent sx={{ flexGrow: 1 }}>
-                  <Box display="flex" alignItems="center" gap={1} mb={2}>
-                    <Dices className="w-5 h-5" color={theme.palette.error.main} />
-                    <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-                      Top Gambles
-                    </Typography>
-                  </Box>
-                  <Stack spacing={2}>
+            <Grid.Col span={{ base: 12, md: 4 }}>
+              <Card
+                style={{
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  backgroundColor: softSurface,
+                  border: `1px solid ${borderColor}`
+                }}
+              >
+                <Box style={{ flexGrow: 1 }}>
+                  <Group gap="xs" style={{ marginBottom: '0.75rem' }}>
+                    <Dices className="w-5 h-5" color={theme.other?.usogui?.gamble || accent} />
+                    <Text fw={700}>Top Gambles</Text>
+                  </Group>
+                  <Stack gap="sm">
                     {favoriteGambles.map((item, index) => (
                       <motion.div
                         key={item.gamble.id}
@@ -140,56 +186,65 @@ export function FavoritesSection() {
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 0.3, delay: index * 0.1 }}
                       >
-                        <Card variant="outlined" sx={{ bgcolor: 'background.default' }}>
-                          <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-                            <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1 }}>
-                              {item.gamble.name}
-                            </Typography>
-                            <Typography variant="body2" sx={{ 
-                              mb: 1,
+                        <Card
+                          withBorder
+                          padding="sm"
+                          style={{
+                            backgroundColor: withAlpha(surface, 0.86, surface),
+                            border: `1px solid ${borderColor}`
+                          }}
+                        >
+                          <Text fw={700} size="sm" style={{ marginBottom: '0.35rem' }}>
+                            {item.gamble.name}
+                          </Text>
+                          <Text
+                            size="sm"
+                            style={{
+                              color: subtleText,
+                              marginBottom: '0.5rem',
                               overflow: 'hidden',
                               textOverflow: 'ellipsis',
                               display: '-webkit-box',
                               WebkitLineClamp: 2,
-                              WebkitBoxOrient: 'vertical',
-                            }}>
-                              {item.gamble.rules}
-                            </Typography>
-                            <Box display="flex" justifyContent="space-between" alignItems="center">
-                              <Link href={`/gambles/${item.gamble.id}`} style={{ textDecoration: 'none' }}>
-                                <Chip 
-                                  label="View Details" 
-                                  size="small" 
-                                  color="error"
-                                  sx={{ cursor: 'pointer' }}
-                                />
-                              </Link>
-                              <Typography variant="caption" color="text.secondary">
-                                {item.userCount} user{item.userCount !== 1 ? 's' : ''}
-                              </Typography>
-                            </Box>
-                          </CardContent>
+                              WebkitBoxOrient: 'vertical'
+                            }}
+                          >
+                            {item.gamble.rules}
+                          </Text>
+                          <Group justify="space-between" align="center">
+                            <Link href={`/gambles/${item.gamble.id}`} style={{ textDecoration: 'none' }}>
+                              <Badge color="red" variant="light" size="sm" style={{ cursor: 'pointer' }}>
+                                View Details
+                              </Badge>
+                            </Link>
+                            {renderCounter(item.userCount)}
+                          </Group>
                         </Card>
                       </motion.div>
                     ))}
                   </Stack>
-                </CardContent>
+                </Box>
               </Card>
-            </Grid>
+            </Grid.Col>
           )}
 
-          {/* Top 3 Character Media */}
           {favoriteCharacterMedia.length > 0 && (
-            <Grid item xs={12} md={4}>
-              <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-                <CardContent sx={{ flexGrow: 1 }}>
-                  <Box display="flex" alignItems="center" gap={1} mb={2}>
-                    <User className="w-5 h-5" color={theme.palette.usogui.character} />
-                    <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-                      Popular Profile Pics
-                    </Typography>
-                  </Box>
-                  <Stack spacing={2}>
+            <Grid.Col span={{ base: 12, md: 4 }}>
+              <Card
+                style={{
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  backgroundColor: softSurface,
+                  border: `1px solid ${borderColor}`
+                }}
+              >
+                <Box style={{ flexGrow: 1 }}>
+                  <Group gap="xs" style={{ marginBottom: '0.75rem' }}>
+                    <User className="w-5 h-5" color={theme.other?.usogui?.character || theme.colors.blue?.[6] || accent} />
+                    <Text fw={700}>Popular Profile Pics</Text>
+                  </Group>
+                  <Stack gap="sm">
                     {favoriteCharacterMedia.map((item, index) => (
                       <motion.div
                         key={item.media.id}
@@ -197,55 +252,50 @@ export function FavoritesSection() {
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 0.3, delay: index * 0.1 }}
                       >
-                        <Card variant="outlined" sx={{ bgcolor: 'background.default' }}>
-                          <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-                            <Box display="flex" alignItems="center" gap={2} mb={1}>
-                              <Avatar 
-                                src={item.media.url} 
-                                alt={item.media.character.name}
-                                sx={{ width: 40, height: 40 }}
-                              />
-                              <Box>
-                                <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>
-                                  {item.media.character.name}
-                                </Typography>
-                                {item.media.description && (
-                                  <Typography variant="caption" color="text.secondary">
-                                    {item.media.description}
-                                  </Typography>
-                                )}
-                              </Box>
+                        <Card
+                          withBorder
+                          padding="sm"
+                          style={{
+                            backgroundColor: withAlpha(surface, 0.86, surface),
+                            border: `1px solid ${borderColor}`
+                          }}
+                        >
+                          <Group align="center" gap="sm" style={{ marginBottom: '0.5rem' }}>
+                            <Avatar src={item.media.url} alt={item.media.character.name} size={40} radius="xl" />
+                            <Box>
+                              <Text fw={600} size="sm">
+                                {item.media.character.name}
+                              </Text>
+                              {item.media.description && (
+                                <Text size="xs" style={{ color: subtleText }}>
+                                  {item.media.description}
+                                </Text>
+                              )}
                             </Box>
-                            <Box display="flex" justifyContent="space-between" alignItems="center">
-                              <Link href={`/characters/${item.media.character.id}`} style={{ textDecoration: 'none' }}>
-                                <Chip 
-                                  label={`Ch. ${item.media.chapterNumber || 'N/A'}`} 
-                                  size="small" 
-                                  color="primary"
-                                  sx={{ cursor: 'pointer' }}
-                                />
-                              </Link>
-                              <Typography variant="caption" color="text.secondary">
-                                {item.userCount} user{item.userCount !== 1 ? 's' : ''}
-                              </Typography>
-                            </Box>
-                          </CardContent>
+                          </Group>
+                          <Group justify="space-between" align="center">
+                            <Link href={`/characters/${item.media.character.id}`} style={{ textDecoration: 'none' }}>
+                              <Badge color="red" variant="light" size="sm" style={{ cursor: 'pointer' }}>
+                                Ch. {item.media.chapterNumber || 'N/A'}
+                              </Badge>
+                            </Link>
+                            {renderCounter(item.userCount)}
+                          </Group>
                         </Card>
                       </motion.div>
                     ))}
                   </Stack>
-                </CardContent>
+                </Box>
               </Card>
-            </Grid>
+            </Grid.Col>
           )}
         </Grid>
 
-        {/* Show message if no data */}
         {favoriteQuotes.length === 0 && favoriteGambles.length === 0 && favoriteCharacterMedia.length === 0 && (
-          <Box textAlign="center" py={4}>
-            <Typography variant="body1" color="text.secondary">
+          <Box style={{ textAlign: 'center', padding: '2rem 0' }}>
+            <Text size="md" style={{ color: subtleText }}>
               No favorites data available yet. Be the first to set your favorites!
-            </Typography>
+            </Text>
           </Box>
         )}
       </motion.div>

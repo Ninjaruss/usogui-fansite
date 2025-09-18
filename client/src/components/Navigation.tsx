@@ -69,6 +69,19 @@ const Navigation: React.FC = () => {
   const [searchLoading, setSearchLoading] = useState(false)
   const [showSearchResults, setShowSearchResults] = useState(false)
   const searchTimeout = useRef<NodeJS.Timeout | null>(null)
+  const accentColor = '#e11d48'
+  const hoverOutline = 'rgba(225, 29, 72, 0.55)'
+  const [accountMenuHighlight, setAccountMenuHighlight] = useState<string | null>(null)
+  const [mobileAccountHighlight, setMobileAccountHighlight] = useState<string | null>(null)
+  const [loginButtonHighlighted, setLoginButtonHighlighted] = useState(false)
+
+  const getOutlineShadow = (isActive: boolean, isHighlighted: boolean) => {
+    if (isActive) {
+      return `inset 0 0 0 1px ${accentColor}`
+    }
+
+    return isHighlighted ? `inset 0 0 0 1px ${hoverOutline}` : 'none'
+  }
 
   // Use refactored dropdown hooks
   const dropdowns = useNavDropdowns()
@@ -79,7 +92,10 @@ const Navigation: React.FC = () => {
   const trimmedSearchValue = searchValue.trim()
   const shouldShowSearchDropdown = searchFocused && (showSearchResults || trimmedSearchValue.length < 2)
 
-  const handleMobileMenuClose = () => setMobileMenuOpen(false)
+  const handleMobileMenuClose = () => {
+    setMobileMenuOpen(false)
+    setMobileAccountHighlight(null)
+  }
 
   const handleLogout = async () => {
     await logout()
@@ -575,6 +591,7 @@ const Navigation: React.FC = () => {
                 withArrow
                 arrowPosition="center"
                 offset={4}
+                onClose={() => setAccountMenuHighlight(null)}
               >
                 <Menu.Target>
                   <ActionIcon
@@ -597,6 +614,20 @@ const Navigation: React.FC = () => {
                   component={Link}
                   href="/profile"
                   leftSection={<User size={16} />}
+                  onMouseEnter={() => setAccountMenuHighlight('profile')}
+                  onMouseLeave={() => {
+                    setAccountMenuHighlight((current) => (current === 'profile' ? null : current))
+                  }}
+                  onFocus={() => setAccountMenuHighlight('profile')}
+                  onBlur={() => {
+                    setAccountMenuHighlight((current) => (current === 'profile' ? null : current))
+                  }}
+                  style={{
+                    backgroundColor: 'transparent',
+                    borderRadius: 6,
+                    transition: 'box-shadow 0.2s ease',
+                    boxShadow: getOutlineShadow(isActivePath('/profile'), accountMenuHighlight === 'profile')
+                  }}
                 >
                   Profile
                 </Menu.Item>
@@ -604,6 +635,20 @@ const Navigation: React.FC = () => {
                   component={Link}
                   href="/about"
                   leftSection={<Heart size={16} />}
+                  onMouseEnter={() => setAccountMenuHighlight('donate')}
+                  onMouseLeave={() => {
+                    setAccountMenuHighlight((current) => (current === 'donate' ? null : current))
+                  }}
+                  onFocus={() => setAccountMenuHighlight('donate')}
+                  onBlur={() => {
+                    setAccountMenuHighlight((current) => (current === 'donate' ? null : current))
+                  }}
+                  style={{
+                    backgroundColor: 'transparent',
+                    borderRadius: 6,
+                    transition: 'box-shadow 0.2s ease',
+                    boxShadow: getOutlineShadow(isActivePath('/about'), accountMenuHighlight === 'donate')
+                  }}
                 >
                   Donate
                 </Menu.Item>
@@ -612,6 +657,20 @@ const Navigation: React.FC = () => {
                   onClick={handleLogout}
                   leftSection={<LogOut size={16} />}
                   color="red"
+                  onMouseEnter={() => setAccountMenuHighlight('logout')}
+                  onMouseLeave={() => {
+                    setAccountMenuHighlight((current) => (current === 'logout' ? null : current))
+                  }}
+                  onFocus={() => setAccountMenuHighlight('logout')}
+                  onBlur={() => {
+                    setAccountMenuHighlight((current) => (current === 'logout' ? null : current))
+                  }}
+                  style={{
+                    backgroundColor: 'transparent',
+                    borderRadius: 6,
+                    transition: 'box-shadow 0.2s ease',
+                    boxShadow: getOutlineShadow(false, accountMenuHighlight === 'logout')
+                  }}
                 >
                   Logout
                 </Menu.Item>
@@ -619,7 +678,29 @@ const Navigation: React.FC = () => {
             </Menu>
             </>
           ) : (
-            <Button component={Link} href="/login" variant="subtle" color="white">
+            <Button
+              component={Link}
+              href="/login"
+              variant="subtle"
+              color="white"
+              onMouseEnter={() => setLoginButtonHighlighted(true)}
+              onMouseLeave={() => setLoginButtonHighlighted(false)}
+              onFocus={() => setLoginButtonHighlighted(true)}
+              onBlur={() => setLoginButtonHighlighted(false)}
+              style={{
+                backgroundColor: 'transparent',
+                color: 'white',
+                transition: 'box-shadow 0.2s ease',
+                boxShadow: getOutlineShadow(isActivePath('/login'), loginButtonHighlighted)
+              }}
+              styles={{
+                root: {
+                  '&:hover': {
+                    backgroundColor: 'transparent'
+                  }
+                }
+              }}
+            >
               Login
             </Button>
           )}
@@ -682,6 +763,20 @@ const Navigation: React.FC = () => {
                   href="/profile"
                   leftSection={<User size={16} />}
                   onClick={handleMobileMenuClose}
+                  onMouseEnter={() => setMobileAccountHighlight('profile')}
+                  onMouseLeave={() => {
+                    setMobileAccountHighlight((current) => (current === 'profile' ? null : current))
+                  }}
+                  onFocus={() => setMobileAccountHighlight('profile')}
+                  onBlur={() => {
+                    setMobileAccountHighlight((current) => (current === 'profile' ? null : current))
+                  }}
+                  style={{
+                    backgroundColor: 'transparent',
+                    borderRadius: 6,
+                    transition: 'box-shadow 0.2s ease',
+                    boxShadow: getOutlineShadow(isActivePath('/profile'), mobileAccountHighlight === 'profile')
+                  }}
                 >
                   Profile
                 </Menu.Item>
@@ -690,6 +785,20 @@ const Navigation: React.FC = () => {
                   href="/about"
                   leftSection={<Heart size={16} />}
                   onClick={handleMobileMenuClose}
+                  onMouseEnter={() => setMobileAccountHighlight('donate')}
+                  onMouseLeave={() => {
+                    setMobileAccountHighlight((current) => (current === 'donate' ? null : current))
+                  }}
+                  onFocus={() => setMobileAccountHighlight('donate')}
+                  onBlur={() => {
+                    setMobileAccountHighlight((current) => (current === 'donate' ? null : current))
+                  }}
+                  style={{
+                    backgroundColor: 'transparent',
+                    borderRadius: 6,
+                    transition: 'box-shadow 0.2s ease',
+                    boxShadow: getOutlineShadow(isActivePath('/about'), mobileAccountHighlight === 'donate')
+                  }}
                 >
                   Donate
                 </Menu.Item>
@@ -711,6 +820,20 @@ const Navigation: React.FC = () => {
                   component={Link}
                   href="/login"
                   onClick={handleMobileMenuClose}
+                  onMouseEnter={() => setMobileAccountHighlight('login')}
+                  onMouseLeave={() => {
+                    setMobileAccountHighlight((current) => (current === 'login' ? null : current))
+                  }}
+                  onFocus={() => setMobileAccountHighlight('login')}
+                  onBlur={() => {
+                    setMobileAccountHighlight((current) => (current === 'login' ? null : current))
+                  }}
+                  style={{
+                    backgroundColor: 'transparent',
+                    borderRadius: 6,
+                    transition: 'box-shadow 0.2s ease',
+                    boxShadow: getOutlineShadow(isActivePath('/login'), mobileAccountHighlight === 'login')
+                  }}
                 >
                   Login
                 </Menu.Item>
@@ -818,6 +941,20 @@ const Navigation: React.FC = () => {
                   onClick={handleLogout}
                   leftSection={<LogOut size={16} />}
                   color="red"
+                  onMouseEnter={() => setMobileAccountHighlight('logout')}
+                  onMouseLeave={() => {
+                    setMobileAccountHighlight((current) => (current === 'logout' ? null : current))
+                  }}
+                  onFocus={() => setMobileAccountHighlight('logout')}
+                  onBlur={() => {
+                    setMobileAccountHighlight((current) => (current === 'logout' ? null : current))
+                  }}
+                  style={{
+                    backgroundColor: 'transparent',
+                    borderRadius: 6,
+                    transition: 'box-shadow 0.2s ease',
+                    boxShadow: getOutlineShadow(false, mobileAccountHighlight === 'logout')
+                  }}
                 >
                   Logout
                 </Menu.Item>
