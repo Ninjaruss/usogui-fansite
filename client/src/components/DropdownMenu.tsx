@@ -1,5 +1,5 @@
 import React from 'react'
-import { Menu, MenuItem, Box, Divider } from '@mui/material'
+import { Menu, Box, Divider } from '@mantine/core'
 import Link from 'next/link'
 import { DropdownHandlers, DropdownState } from '../hooks/useDropdown'
 
@@ -31,23 +31,20 @@ export const DropdownMenu: React.FC<DropdownMenuProps> = ({
   isCategorized = false
 }) => {
   const renderMenuItem = (item: MenuItemData) => (
-    <MenuItem
+    <Menu.Item
       key={item.href}
       component={Link}
       href={item.href}
       onMouseEnter={handlers.onDropdownEnter}
-      onMouseLeave={handlers.onDropdownEnter}
-      sx={{
-        pl: isCategorized ? 3 : 2,
-        backgroundColor: isActivePath(item.href) ? 'action.selected' : 'transparent',
-        '&:hover': {
-          backgroundColor: 'action.hover'
-        }
+      onMouseLeave={handlers.onDropdownLeave}
+      style={{
+        paddingLeft: isCategorized ? 24 : 16,
+        borderLeft: isActivePath(item.href) ? '3px solid #e11d48' : '3px solid transparent'
       }}
+      leftSection={<Box style={{ display: 'flex' }}>{item.icon}</Box>}
     >
-      <Box sx={{ mr: 1, display: 'flex' }}>{item.icon}</Box>
       {item.label}
-    </MenuItem>
+    </Menu.Item>
   )
 
   const renderCategorizedItems = (categories: MenuCategory[]) => {
@@ -55,26 +52,18 @@ export const DropdownMenu: React.FC<DropdownMenuProps> = ({
 
     categories.forEach((category, index, array) => {
       items.push(
-        <MenuItem
+        <Menu.Label
           key={`header-${category.name}`}
-          disabled
-          onMouseEnter={handlers.onDropdownEnter}
-          onMouseLeave={handlers.onDropdownEnter}
-          sx={{
+          style={{
             fontWeight: 'bold',
-            opacity: '1 !important',
-            color: `${category.color || '#2196f3'} !important`,
+            color: category.color || '#2196f3',
             fontSize: '0.9rem',
             textTransform: 'uppercase',
-            letterSpacing: '0.5px',
-            '&.Mui-disabled': {
-              color: `${category.color || '#2196f3'} !important`,
-              opacity: '1 !important'
-            }
+            letterSpacing: '0.5px'
           }}
         >
           {category.name}
-        </MenuItem>
+        </Menu.Label>
       )
 
       category.items.forEach((item) => {
@@ -83,14 +72,11 @@ export const DropdownMenu: React.FC<DropdownMenuProps> = ({
 
       if (index < array.length - 1) {
         items.push(
-          <Divider
+          <Menu.Divider
             key={`divider-${category.name}`}
-            sx={{
-              my: 0.5,
+            style={{
               pointerEvents: 'none'
             }}
-            onMouseEnter={handlers.onDropdownEnter}
-            onMouseLeave={handlers.onDropdownEnter}
           />
         )
       }
@@ -104,35 +90,27 @@ export const DropdownMenu: React.FC<DropdownMenuProps> = ({
 
   return (
     <Menu
-      anchorEl={state.anchorEl}
-      open={state.isOpen}
+      opened={state.isOpen}
       onClose={handlers.onClose}
-      onClick={handlers.onClose}
-      onMouseEnter={handlers.onDropdownEnter}
-      onMouseLeave={handlers.onDropdownLeave}
-      autoFocus={false}
-      disableAutoFocusItem={true}
-      MenuListProps={{
-        onMouseEnter: handlers.onDropdownEnter,
-        onMouseLeave: handlers.onDropdownLeave,
-        disablePadding: false,
-        autoFocus: false,
-        autoFocusItem: false
-      }}
-      transformOrigin={{ horizontal: 'left', vertical: 'top' }}
-      anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
-      sx={{
-        '& .MuiPaper-root': {
-          marginTop: '4px',
+      position="bottom-start"
+      offset={4}
+      styles={{
+        dropdown: {
           boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
           padding: '4px'
         }
       }}
     >
-      {isCategorized
-        ? renderCategorizedItems(items as MenuCategory[])
-        : renderSimpleItems(items as MenuItemData[])
-      }
+      <Menu.Dropdown
+        onMouseEnter={handlers.onDropdownEnter}
+        onMouseLeave={handlers.onDropdownLeave}
+        onClick={handlers.onClose}
+      >
+        {isCategorized
+          ? renderCategorizedItems(items as MenuCategory[])
+          : renderSimpleItems(items as MenuItemData[])
+        }
+      </Menu.Dropdown>
     </Menu>
   )
 }

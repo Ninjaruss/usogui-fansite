@@ -15,6 +15,8 @@ export function useNavDropdowns(): NavDropdowns {
   }
 
   const browse = useDropdown({
+    buttonLeaveDelay: 500,
+    dropdownLeaveDelay: 300,
     closeOthers: () => {
       community[1].onClose()
       submit[1].onClose()
@@ -22,6 +24,8 @@ export function useNavDropdowns(): NavDropdowns {
   })
 
   const community = useDropdown({
+    buttonLeaveDelay: 500,
+    dropdownLeaveDelay: 300,
     closeOthers: () => {
       browse[1].onClose()
       submit[1].onClose()
@@ -29,6 +33,8 @@ export function useNavDropdowns(): NavDropdowns {
   })
 
   const submit = useDropdown({
+    buttonLeaveDelay: 500,
+    dropdownLeaveDelay: 300,
     closeOthers: () => {
       browse[1].onClose()
       community[1].onClose()

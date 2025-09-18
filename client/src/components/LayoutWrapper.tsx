@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { usePathname } from 'next/navigation'
-import { Box } from '@mui/material'
+import { Box } from '@mantine/core'
 import { Footer } from './Footer'
 
 interface LayoutWrapperProps {
@@ -15,13 +15,13 @@ export const LayoutWrapper: React.FC<LayoutWrapperProps> = ({ children }) => {
 
   return (
     <Box
-      sx={{
+      style={{
         display: 'flex',
         flexDirection: 'column',
         minHeight: '100vh'
       }}
     >
-      <Box sx={{ flex: 1 }}>
+      <Box style={{ flex: 1 }}>
         {children}
       </Box>
       {!isAdminPage && <Footer />}

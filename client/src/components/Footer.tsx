@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { Box, Typography, Link, Stack, Grid, Divider } from '@mui/material'
+import { Box, Text, Anchor, Stack, Grid, Divider, Group } from '@mantine/core'
 import { MessageCircle, Mail, Heart } from 'lucide-react'
 import NextLink from 'next/link'
 
@@ -15,92 +15,94 @@ export const Footer: React.FC = () => {
   return (
     <Box
       component="footer"
-      sx={{
-        mt: 'auto',
-        py: 4,
-        px: 3,
-        backgroundColor: 'background.paper',
-        borderTop: 1,
-        borderColor: 'divider'
+      style={{
+        marginTop: 'auto',
+        paddingTop: '2rem',
+        paddingBottom: '2rem',
+        paddingLeft: '1.5rem',
+        paddingRight: '1.5rem',
+        backgroundColor: 'rgba(10, 10, 10, 0.95)',
+        borderTop: '1px solid rgba(255, 255, 255, 0.1)'
       }}
     >
-      <Box maxWidth="lg" mx="auto">
-        <Grid container spacing={4} justifyContent="center">
+      <Box style={{ maxWidth: '1024px', margin: '0 auto' }}>
+        <Grid justify="center">
           {/* Brand & Legal Section */}
-          <Grid item xs={12} md={6}>
-            <Stack spacing={2}>
-              <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+          <Grid.Col span={{ base: 12, md: 6 }}>
+            <Stack gap="md">
+              <Text size="xl" style={{ fontWeight: 'bold', color: '#e11d48' }}>
                 L-File
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
+              </Text>
+              <Text size="sm" c="dimmed">
                 The ultimate database for Usogui (Lie Eater) - connecting fans worldwide through comprehensive content and community.
-              </Typography>
-              <Link component={NextLink} href="/disclaimer" color="primary" sx={{ textDecoration: 'none' }}>
-                <Typography variant="body2">
+              </Text>
+              <Anchor component={NextLink} href="/disclaimer" c="red" style={{ textDecoration: 'none' }}>
+                <Text size="sm">
                   Disclaimer & Legal Information
-                </Typography>
-              </Link>
+                </Text>
+              </Anchor>
             </Stack>
-          </Grid>
+          </Grid.Col>
 
           {/* Connect Section */}
-          <Grid item xs={12} md={6}>
-            <Stack spacing={2}>
-              <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+          <Grid.Col span={{ base: 12, md: 6 }}>
+            <Stack gap="md">
+              <Text size="xl" style={{ fontWeight: 'bold' }}>
                 Connect With Us
-              </Typography>
-              <Stack spacing={1.5}>
-                <Box display="flex" alignItems="center" gap={1}>
+              </Text>
+              <Stack gap="sm">
+                <Group gap="xs">
                   <Mail className="w-4 h-4" />
-                  <Link href="mailto:ninjarussyt@gmail.com" color="primary" sx={{ textDecoration: 'none' }}>
-                    <Typography variant="body2">ninjarussyt@gmail.com</Typography>
-                  </Link>
-                </Box>
-                <Box display="flex" alignItems="center" gap={1}>
+                  <Anchor href="mailto:ninjarussyt@gmail.com" c="red" style={{ textDecoration: 'none' }}>
+                    <Text size="sm">ninjarussyt@gmail.com</Text>
+                  </Anchor>
+                </Group>
+                <Group gap="xs">
                   <MessageCircle className="w-4 h-4" />
-                  <Link
+                  <Anchor
                     href="https://discord.gg/JXeRhV2qpY"
                     target="_blank"
                     rel="noopener noreferrer"
-                    color="primary"
-                    sx={{ textDecoration: 'none' }}
+                    c="red"
+                    style={{ textDecoration: 'none' }}
                   >
-                    <Typography variant="body2">Discord Community</Typography>
-                  </Link>
-                </Box>
-                <Box display="flex" alignItems="center" gap={1}>
+                    <Text size="sm">Discord Community</Text>
+                  </Anchor>
+                </Group>
+                <Group gap="xs">
                   <Heart className="w-4 h-4" />
-                  <Link
+                  <Anchor
                     href="https://ko-fi.com/ninjaruss"
                     target="_blank"
                     rel="noopener noreferrer"
-                    color="primary"
-                    sx={{ textDecoration: 'none' }}
+                    c="red"
+                    style={{ textDecoration: 'none' }}
                   >
-                    <Typography variant="body2">Support on Ko-fi</Typography>
-                  </Link>
-                </Box>
+                    <Text size="sm">Support on Ko-fi</Text>
+                  </Anchor>
+                </Group>
               </Stack>
             </Stack>
-          </Grid>
+          </Grid.Col>
         </Grid>
 
-        <Divider sx={{ my: 3 }} />
+        <Divider style={{ margin: '1.5rem 0' }} />
 
         {/* Bottom Section */}
         <Stack
-          direction={{ xs: 'column', sm: 'row' }}
-          justifyContent="space-between"
-          alignItems="center"
-          spacing={2}
-          textAlign={{ xs: 'center', sm: 'left' }}
+          gap="md"
+          style={{
+            flexDirection: 'column',
+            alignItems: 'center',
+            textAlign: 'center'
+          }}
         >
-          <Typography variant="body2" color="text.secondary">
+          <Text size="sm" c="dimmed">
             L-file is an independent fan resource. Usogui © Sako Toshio/Shueisha.
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
+          </Text>
+          <Text size="sm" c="dimmed">
             © {currentYear} L-File. Made for the Usogui community.
-          </Typography>
+          </Text>
         </Stack>
       </Box>
     </Box>

@@ -1,4 +1,9 @@
+/* Font imports must be first */
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@300;400;500;600;700&display=swap');
+
+/* Mantine CSS imports */
+@import '@mantine/core/styles.css';
+@import '@mantine/notifications/styles.css';
 
 @font-face {
   font-family: 'OPTI Goudy Text';

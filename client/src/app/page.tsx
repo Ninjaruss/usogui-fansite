@@ -1,7 +1,7 @@
 'use client'
 
-import { Box, Container, Typography, Grid, Card, CardContent, Button, Skeleton, Alert, Chip } from '@mui/material'
-import { useTheme } from '@mui/material/styles'
+import { Box, Container, Title, Text, Grid, Card, Button, Skeleton, Alert, Badge, Group } from '@mantine/core'
+import { useMantineTheme } from '@mantine/core'
 import { Users, BookOpen, Dices, CalendarSearch, TrendingUp, Book, Shield, FileText, Quote, ChevronRight, Sparkles, MessageCircle, ExternalLink, Image } from 'lucide-react'
 import Link from 'next/link'
 import { SearchBar } from '../components/SearchBar'
@@ -14,38 +14,38 @@ import Script from 'next/script'
 import { FAQ } from '@/components/FAQ'
 
 export default function HomePage() {
-  const theme = useTheme()
+  const theme = useMantineTheme()
   const { data: landingData, loading: landingLoading, error: landingError } = useLandingData()
-  
+
   // Primary features - most important content
   const primaryFeatures = [
     {
-      icon: <Users className="w-8 h-8" style={{ color: theme.palette.usogui.character }} />,
+      icon: <Users className="w-8 h-8" style={{ color: theme.other?.usogui?.character || '#1976d2' }} />,
       title: 'Characters',
       description: 'Explore detailed profiles of all Usogui characters',
       href: '/characters',
-      color: theme.palette.usogui.character
+      color: theme.other?.usogui?.character || '#1976d2'
     },
     {
-      icon: <BookOpen className="w-8 h-8" style={{ color: theme.palette.usogui.arc }} />,
+      icon: <BookOpen className="w-8 h-8" style={{ color: theme.other?.usogui?.arc || '#dc004e' }} />,
       title: 'Story Arcs',
       description: 'Dive into the major arcs and storylines',
       href: '/arcs',
-      color: theme.palette.usogui.arc
+      color: theme.other?.usogui?.arc || '#dc004e'
     },
     {
-      icon: <Dices className="w-8 h-8" style={{ color: theme.palette.usogui.gamble }} />,
+      icon: <Dices className="w-8 h-8" style={{ color: theme.other?.usogui?.gamble || '#d32f2f' }} />,
       title: 'Gambles',
       description: 'Details on every gambling game and competition',
       href: '/gambles',
-      color: theme.palette.usogui.gamble
+      color: theme.other?.usogui?.gamble || '#d32f2f'
     },
     {
-      icon: <FileText className="w-8 h-8" style={{ color: theme.palette.usogui.guide }} />,
+      icon: <FileText className="w-8 h-8" style={{ color: theme.other?.usogui?.guide || '#388e3c' }} />,
       title: 'Guides',
       description: 'In-depth analysis and insights from the community',
       href: '/guides',
-      color: theme.palette.usogui.guide
+      color: theme.other?.usogui?.guide || '#388e3c'
     }
   ]
 
@@ -91,33 +91,32 @@ export default function HomePage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Container size="lg" style={{ paddingTop: '2rem', paddingBottom: '2rem' }}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
         {/* Hero Section */}
-        <Box textAlign="center" mb={8}>
-          <Typography
-            variant="h2"
-            component="h1"
-            gutterBottom
-            sx={{
+        <Box style={{ textAlign: 'center', marginBottom: '4rem' }}>
+          <Title
+            order={1}
+            style={{
               fontWeight: 'bold',
-              background: `linear-gradient(45deg, ${theme.palette.usogui.character}, ${theme.palette.usogui.arc})`,
+              background: `linear-gradient(45deg, ${theme.other?.usogui?.character || '#1976d2'}, ${theme.other?.usogui?.arc || '#dc004e'})`,
               backgroundClip: 'text',
               WebkitBackgroundClip: 'text',
-              color: 'transparent'
+              color: 'transparent',
+              marginBottom: '1rem'
             }}
           >
             Welcome to the L-File
-          </Typography>
-          <Typography variant="h5" color="text.secondary" mb={4}>
+          </Title>
+          <Text size="xl" c="dimmed" style={{ marginBottom: '2rem' }}>
             The ultimate database for the gambling manga masterpiece - Usogui (Lie Eater)
-          </Typography>
+          </Text>
 
-          <Box sx={{ maxWidth: 600, mx: 'auto', mb: 6 }}>
+          <Box style={{ maxWidth: 600, margin: '0 auto 3rem auto' }}>
             <SearchBar />
           </Box>
 
@@ -128,79 +127,78 @@ export default function HomePage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
             >
-              <Box
-                sx={{
-                  display: 'flex',
-                  justifyContent: 'center',
-                  gap: { xs: 1.5, sm: 2 },
-                  flexWrap: 'wrap',
-                  mb: 2
-                }}
-              >
+              <Group justify="center" gap="md" style={{ flexWrap: 'wrap', marginBottom: '1rem' }}>
                 {landingData.stats.totalCharacters && (
-                  <Chip
-                    icon={<Users className="w-4 h-4" style={{ color: theme.palette.usogui.character }} />}
-                    label={`${landingData.stats.totalCharacters.toLocaleString()} Characters`}
-                    variant="outlined"
-                    size="small"
-                    sx={{ borderColor: theme.palette.usogui.character, color: theme.palette.usogui.character }}
-                  />
+                  <Badge
+                    leftSection={<Users className="w-4 h-4" style={{ color: theme.other?.usogui?.character || '#1976d2' }} />}
+                    variant="outline"
+                    style={{ borderColor: theme.other?.usogui?.character || '#1976d2', color: theme.other?.usogui?.character || '#1976d2' }}
+                    size="lg"
+                  >
+                    {landingData.stats.totalCharacters.toLocaleString()} Characters
+                  </Badge>
                 )}
                 {landingData.stats.totalArcs && (
-                  <Chip
-                    icon={<BookOpen className="w-4 h-4" style={{ color: theme.palette.usogui.arc }} />}
-                    label={`${landingData.stats.totalArcs.toLocaleString()} Arcs`}
-                    variant="outlined"
-                    size="small"
-                    sx={{ borderColor: theme.palette.usogui.arc, color: theme.palette.usogui.arc }}
-                  />
+                  <Badge
+                    leftSection={<BookOpen className="w-4 h-4" style={{ color: theme.other?.usogui?.arc || '#dc004e' }} />}
+                    variant="outline"
+                    style={{ borderColor: theme.other?.usogui?.arc || '#dc004e', color: theme.other?.usogui?.arc || '#dc004e' }}
+                    size="lg"
+                  >
+                    {landingData.stats.totalArcs.toLocaleString()} Arcs
+                  </Badge>
                 )}
                 {landingData.stats.totalEvents && (
-                  <Chip
-                    icon={<CalendarSearch className="w-4 h-4" style={{ color: theme.palette.usogui.event }} />}
-                    label={`${landingData.stats.totalEvents.toLocaleString()} Events`}
-                    variant="outlined"
-                    size="small"
-                    sx={{ borderColor: theme.palette.usogui.event, color: theme.palette.usogui.event }}
-                  />
+                  <Badge
+                    leftSection={<CalendarSearch className="w-4 h-4" style={{ color: theme.other?.usogui?.event || '#f57c00' }} />}
+                    variant="outline"
+                    style={{ borderColor: theme.other?.usogui?.event || '#f57c00', color: theme.other?.usogui?.event || '#f57c00' }}
+                    size="lg"
+                  >
+                    {landingData.stats.totalEvents.toLocaleString()} Events
+                  </Badge>
                 )}
                 {landingData.stats.totalGuides && (
-                  <Chip
-                    icon={<FileText className="w-4 h-4" style={{ color: theme.palette.usogui.guide }} />}
-                    label={`${landingData.stats.totalGuides.toLocaleString()} Guides`}
-                    variant="outlined"
-                    size="small"
-                    sx={{ borderColor: theme.palette.usogui.guide, color: theme.palette.usogui.guide }}
-                  />
+                  <Badge
+                    leftSection={<FileText className="w-4 h-4" style={{ color: theme.other?.usogui?.guide || '#388e3c' }} />}
+                    variant="outline"
+                    style={{ borderColor: theme.other?.usogui?.guide || '#388e3c', color: theme.other?.usogui?.guide || '#388e3c' }}
+                    size="lg"
+                  >
+                    {landingData.stats.totalGuides.toLocaleString()} Guides
+                  </Badge>
                 )}
                 {landingData.stats.totalGambles && (
-                  <Chip
-                    icon={<Dices className="w-4 h-4" style={{ color: theme.palette.usogui.gamble }} />}
-                    label={`${landingData.stats.totalGambles.toLocaleString()} Gambles`}
-                    variant="outlined"
-                    size="small"
-                    sx={{ borderColor: theme.palette.usogui.gamble, color: theme.palette.usogui.gamble }}
-                  />
+                  <Badge
+                    leftSection={<Dices className="w-4 h-4" style={{ color: theme.other?.usogui?.gamble || '#d32f2f' }} />}
+                    variant="outline"
+                    style={{ borderColor: theme.other?.usogui?.gamble || '#d32f2f', color: theme.other?.usogui?.gamble || '#d32f2f' }}
+                    size="lg"
+                  >
+                    {landingData.stats.totalGambles.toLocaleString()} Gambles
+                  </Badge>
                 )}
-{landingData.stats.totalMedia && (
-                  <Chip
-                    icon={<Image className="w-4 h-4" style={{ color: theme.palette.usogui.media }} />}
-                    label={`${landingData.stats.totalMedia.toLocaleString()} Media`}
-                    variant="outlined"
-                    size="small"
-                    sx={{ borderColor: theme.palette.usogui.media, color: theme.palette.usogui.media }}
-                  />
+                {landingData.stats.totalMedia && (
+                  <Badge
+                    leftSection={<Image className="w-4 h-4" style={{ color: theme.other?.usogui?.media || '#7b1fa2' }} />}
+                    variant="outline"
+                    style={{ borderColor: theme.other?.usogui?.media || '#7b1fa2', color: theme.other?.usogui?.media || '#7b1fa2' }}
+                    size="lg"
+                  >
+                    {landingData.stats.totalMedia.toLocaleString()} Media
+                  </Badge>
                 )}
                 {landingData.stats.totalUsers && (
-                  <Chip
-                    icon={<Shield className="w-4 h-4" style={{ color: theme.palette.secondary.main }} />}
-                    label={`${landingData.stats.totalUsers.toLocaleString()} Users`}
-                    variant="outlined"
-                    size="small"
-                    sx={{ borderColor: theme.palette.secondary.main, color: theme.palette.secondary.main }}
-                  />
+                  <Badge
+                    leftSection={<Shield className="w-4 h-4" style={{ color: theme.other?.usogui?.purple || '#7c3aed' }} />}
+                    variant="outline"
+                    style={{ borderColor: theme.other?.usogui?.purple || '#7c3aed', color: theme.other?.usogui?.purple || '#7c3aed' }}
+                    size="lg"
+                  >
+                    {landingData.stats.totalUsers.toLocaleString()} Users
+                  </Badge>
                 )}
-              </Box>
+              </Group>
             </motion.div>
           )}
         </Box>
@@ -215,22 +213,22 @@ export default function HomePage() {
         </motion.div>
 
         {/* Primary Features Section */}
-        <Box mb={8}>
-          <Box textAlign="center" mb={5}>
-            <Box display="flex" alignItems="center" justifyContent="center" gap={1} mb={2}>
-              <Sparkles className="w-6 h-6" color={theme.palette.primary.main} />
-              <Typography variant="h4" component="h2" sx={{ fontWeight: 'bold' }}>
+        <Box style={{ marginBottom: '4rem' }}>
+          <Box style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
+            <Group justify="center" gap="xs" style={{ marginBottom: '1rem' }}>
+              <Sparkles className="w-6 h-6" color={theme.colors?.red?.[5] || '#e11d48'} />
+              <Title order={2} style={{ fontWeight: 'bold' }}>
                 Start Exploring
-              </Typography>
-            </Box>
-            <Typography variant="body1" color="text.secondary">
+              </Title>
+            </Group>
+            <Text size="lg" c="dimmed">
               Dive into the world of Usogui with our comprehensive content
-            </Typography>
+            </Text>
           </Box>
 
-          <Grid container spacing={4}>
+          <Grid>
             {primaryFeatures.map((feature, index) => (
-              <Grid item xs={12} sm={6} md={3} key={feature.title}>
+              <Grid.Col span={{ base: 12, sm: 6, md: 3 }} key={feature.title}>
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -238,47 +236,38 @@ export default function HomePage() {
                 >
                   <Card
                     className="gambling-card h-full"
-                    sx={{
+                    style={{
                       height: '100%',
                       display: 'flex',
                       flexDirection: 'column',
                       transition: 'all 0.3s ease',
                       cursor: 'pointer',
                       textDecoration: 'none',
-                      '&:hover': {
-                        transform: 'translateY(-12px)',
-                        boxShadow: theme.shadows[12]
-                      }
+                      padding: '1.5rem'
                     }}
                     component={Link}
                     href={feature.href}
                   >
-                    <CardContent sx={{ flexGrow: 1, textAlign: 'center', p: 3 }}>
-                      <Box
-                        sx={{
-                          display: 'flex',
-                          justifyContent: 'center',
-                          mb: 2
-                        }}
-                      >
+                    <Box style={{ flexGrow: 1, textAlign: 'center' }}>
+                      <Box style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
                         {feature.icon}
                       </Box>
-                      <Typography variant="h6" component="h3" gutterBottom sx={{ fontWeight: 'bold' }}>
+                      <Title order={3} style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>
                         {feature.title}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary" mb={3}>
+                      </Title>
+                      <Text size="sm" c="dimmed" style={{ marginBottom: '1.5rem' }}>
                         {feature.description}
-                      </Typography>
-                      <Box display="flex" alignItems="center" justifyContent="center" gap={1}>
-                        <Typography variant="button" sx={{ fontWeight: 'bold', color: feature.color }}>
+                      </Text>
+                      <Group justify="center" gap="xs">
+                        <Text size="sm" style={{ fontWeight: 'bold', color: feature.color }}>
                           Explore
-                        </Typography>
+                        </Text>
                         <ChevronRight className="w-4 h-4" style={{ color: feature.color }} />
-                      </Box>
-                    </CardContent>
+                      </Group>
+                    </Box>
                   </Card>
                 </motion.div>
-              </Grid>
+              </Grid.Col>
             ))}
           </Grid>
         </Box>
@@ -288,40 +277,40 @@ export default function HomePage() {
 
         {/* Featured Trending Content */}
         {landingData && (
-          <Box mb={8}>
+          <Box style={{ marginBottom: '4rem' }}>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.7 }}
             >
-              <Box textAlign="center" mb={4}>
-                <Box display="flex" alignItems="center" justifyContent="center" gap={1} mb={2}>
-                  <TrendingUp className="w-6 h-6" color={theme.palette.primary.main} />
-                  <Typography variant="h4" component="h2" sx={{ fontWeight: 'bold' }}>
+              <Box style={{ textAlign: 'center', marginBottom: '2rem' }}>
+                <Group justify="center" gap="xs" style={{ marginBottom: '1rem' }}>
+                  <TrendingUp className="w-6 h-6" color={theme.colors?.red?.[5] || '#e11d48'} />
+                  <Title order={2} style={{ fontWeight: 'bold' }}>
                     What&apos;s Popular
-                  </Typography>
-                </Box>
-                <Typography variant="body1" color="text.secondary">
+                  </Title>
+                </Group>
+                <Text size="lg" c="dimmed">
                   Discover the most viewed content this week
-                </Typography>
+                </Text>
               </Box>
 
               {landingError ? (
-                <Alert severity="info" sx={{ mb: 3 }}>
+                <Alert color="blue">
                   Unable to load trending content at this time.
                 </Alert>
               ) : landingLoading ? (
-                <Grid container spacing={3}>
+                <Grid>
                   {[1, 2, 3].map((i) => (
-                    <Grid item xs={12} md={4} key={i}>
+                    <Grid.Col span={{ base: 12, md: 4 }} key={i}>
                       <Card>
-                        <CardContent>
-                          <Skeleton variant="text" width="80%" height={24} />
-                          <Skeleton variant="text" width="100%" height={40} sx={{ mt: 1 }} />
-                          <Skeleton variant="text" width="60%" height={20} sx={{ mt: 1 }} />
-                        </CardContent>
+                        <Box style={{ padding: '1rem' }}>
+                          <Skeleton height={24} style={{ width: '80%' }} />
+                          <Skeleton height={40} style={{ width: '100%', marginTop: '0.5rem' }} />
+                          <Skeleton height={20} style={{ width: '60%', marginTop: '0.5rem' }} />
+                        </Box>
                       </Card>
-                    </Grid>
+                    </Grid.Col>
                   ))}
                 </Grid>
               ) : (
@@ -343,83 +332,68 @@ export default function HomePage() {
         <FAQ />
 
         {/* Discord CTA Section */}
-        <Box mb={6} />
+        <Box style={{ marginBottom: '3rem' }} />
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 1.1 }}
         >
           <Box
-            textAlign="center"
-            p={6}
-            sx={{
+            style={{
+              textAlign: 'center',
+              padding: '3rem',
               background: `linear-gradient(135deg, #5865F2 0%, #4752C4 50%, #3C45A5 100%)`,
-              borderRadius: 4,
-              border: `2px solid ${theme.palette.divider}`,
+              borderRadius: '1rem',
+              border: `2px solid rgba(255, 255, 255, 0.1)`,
               color: 'white',
               position: 'relative',
-              overflow: 'hidden',
-              '&::before': {
-                content: '""',
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                background: 'linear-gradient(45deg, transparent 40%, rgba(255,255,255,0.1) 50%, transparent 60%)',
-                animation: 'shimmer 3s ease-in-out infinite',
-                pointerEvents: 'none'
-              },
-              '@keyframes shimmer': {
-                '0%': { transform: 'translateX(-100%)' },
-                '100%': { transform: 'translateX(100%)' }
-              }
+              overflow: 'hidden'
             }}
           >
-            <Box display="flex" alignItems="center" justifyContent="center" gap={2} mb={2}>
+            <Group justify="center" gap="md" style={{ marginBottom: '1rem' }}>
               <MessageCircle className="w-8 h-8" />
-              <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
+              <Title order={2} style={{ fontWeight: 'bold' }}>
                 Join Our Discord Community
-              </Typography>
-            </Box>
-            <Typography variant="h6" sx={{ opacity: 0.9, mb: 4, fontWeight: 'normal' }}>
+              </Title>
+            </Group>
+            <Text size="xl" style={{ opacity: 0.9, marginBottom: '2rem', fontWeight: 'normal' }}>
               Connect with fellow Usogui fans, discuss theories, share insights, and stay updated on the latest content
-            </Typography>
+            </Text>
 
-            <Grid container spacing={3} justifyContent="center" sx={{ mb: 4 }}>
-              <Grid item xs={12} sm={4}>
-                <Box textAlign="center">
-                  <Users className="w-6 h-6 mx-auto mb-2" style={{ opacity: 0.9 }} />
-                  <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>
+            <Grid justify="center" style={{ marginBottom: '2rem' }}>
+              <Grid.Col span={{ base: 12, sm: 4 }}>
+                <Box style={{ textAlign: 'center' }}>
+                  <Users className="w-6 h-6" style={{ opacity: 0.9, margin: '0 auto 0.5rem auto', display: 'block' }} />
+                  <Text size="sm" style={{ fontWeight: 'bold' }}>
                     Active Community
-                  </Typography>
-                  <Typography variant="body2" sx={{ opacity: 0.8 }}>
+                  </Text>
+                  <Text size="xs" style={{ opacity: 0.8 }}>
                     Chat with passionate fans
-                  </Typography>
+                  </Text>
                 </Box>
-              </Grid>
-              <Grid item xs={12} sm={4}>
-                <Box textAlign="center">
-                  <Sparkles className="w-6 h-6 mx-auto mb-2" style={{ opacity: 0.9 }} />
-                  <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>
+              </Grid.Col>
+              <Grid.Col span={{ base: 12, sm: 4 }}>
+                <Box style={{ textAlign: 'center' }}>
+                  <Sparkles className="w-6 h-6" style={{ opacity: 0.9, margin: '0 auto 0.5rem auto', display: 'block' }} />
+                  <Text size="sm" style={{ fontWeight: 'bold' }}>
                     Latest Updates
-                  </Typography>
-                  <Typography variant="body2" sx={{ opacity: 0.8 }}>
+                  </Text>
+                  <Text size="xs" style={{ opacity: 0.8 }}>
                     Be first to know about new content
-                  </Typography>
+                  </Text>
                 </Box>
-              </Grid>
-              <Grid item xs={12} sm={4}>
-                <Box textAlign="center">
-                  <BookOpen className="w-6 h-6 mx-auto mb-2" style={{ opacity: 0.9 }} />
-                  <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>
+              </Grid.Col>
+              <Grid.Col span={{ base: 12, sm: 4 }}>
+                <Box style={{ textAlign: 'center' }}>
+                  <BookOpen className="w-6 h-6" style={{ opacity: 0.9, margin: '0 auto 0.5rem auto', display: 'block' }} />
+                  <Text size="sm" style={{ fontWeight: 'bold' }}>
                     Theory Discussions
-                  </Typography>
-                  <Typography variant="body2" sx={{ opacity: 0.8 }}>
+                  </Text>
+                  <Text size="xs" style={{ opacity: 0.8 }}>
                     Dive deep into Usogui lore
-                  </Typography>
+                  </Text>
                 </Box>
-              </Grid>
+              </Grid.Col>
             </Grid>
 
             <Button
@@ -427,24 +401,18 @@ export default function HomePage() {
               href="https://discord.gg/JXeRhV2qpY"
               target="_blank"
               rel="noopener noreferrer"
-              variant="contained"
-              size="large"
-              startIcon={<MessageCircle className="w-5 h-5" />}
-              endIcon={<ExternalLink className="w-4 h-4" />}
-              sx={{
-                bgcolor: 'white',
+              variant="filled"
+              size="lg"
+              leftSection={<MessageCircle className="w-5 h-5" />}
+              rightSection={<ExternalLink className="w-4 h-4" />}
+              style={{
+                backgroundColor: 'white',
                 color: '#5865F2',
                 fontWeight: 'bold',
                 fontSize: '1.1rem',
-                px: 4,
-                py: 1.5,
-                borderRadius: 2,
+                padding: '0.75rem 2rem',
+                borderRadius: '0.5rem',
                 boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-                '&:hover': {
-                  bgcolor: '#f8f9fa',
-                  transform: 'translateY(-2px)',
-                  boxShadow: '0 6px 16px rgba(0,0,0,0.4)'
-                },
                 transition: 'all 0.3s ease'
               }}
             >
