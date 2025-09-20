@@ -34,7 +34,8 @@ import {
   Search,
   Info,
   FileText,
-  Zap
+  Zap,
+  ChevronDown
 } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
@@ -42,8 +43,6 @@ import { useAuth } from '../providers/AuthProvider'
 import { useProgress } from '../providers/ProgressProvider'
 import { api } from '../lib/api'
 import { motion, AnimatePresence } from 'motion/react'
-import { useNavDropdowns } from '../hooks/useNavDropdowns'
-import { DropdownButton } from './DropdownButton'
 import { NavigationData, getCategoryColor } from '../types/navigation'
 import { EntityAccentKey, getEntityAccent } from '../lib/mantine-theme'
 
@@ -77,6 +76,9 @@ const Navigation: React.FC = () => {
   const [accountMenuHighlight, setAccountMenuHighlight] = useState<string | null>(null)
   const [mobileAccountHighlight, setMobileAccountHighlight] = useState<string | null>(null)
   const [loginButtonHighlighted, setLoginButtonHighlighted] = useState(false)
+  const [browseOpened, setBrowseOpened] = useState(false)
+  const [communityOpened, setCommunityOpened] = useState(false)
+  const [submitOpened, setSubmitOpened] = useState(false)
 
   const getOutlineShadow = (isActive: boolean, isHighlighted: boolean) => {
     if (isActive) {
@@ -86,11 +88,24 @@ const Navigation: React.FC = () => {
     return isHighlighted ? `inset 0 0 0 1px ${hoverOutline}` : 'none'
   }
 
-  // Use refactored dropdown hooks
-  const dropdowns = useNavDropdowns()
+  // Small helper to convert hex color to rgba string (falls back to provided color)
+  const rgba = (color: string | undefined, alpha = 1) => {
+    if (!color) return `rgba(255,255,255,${alpha})`
+    try {
+      if (color.startsWith('#')) {
+        const hex = color.replace('#', '')
+        const bigint = parseInt(hex.length === 3 ? hex.split('').map(c => c + c).join('') : hex, 16)
+        const r = (bigint >> 16) & 255
+        const g = (bigint >> 8) & 255
+        const b = bigint & 255
+        return `rgba(${r}, ${g}, ${b}, ${alpha})`
+      }
+    } catch (e) {
+      // ignore and fallback
+    }
+    return color
+  }
 
-  // Enhanced mouse tracking for auto-close
-  const anyDropdownOpen = dropdowns.browse[0].isOpen || dropdowns.community[0].isOpen || dropdowns.submit[0].isOpen
 
   const trimmedSearchValue = searchValue.trim()
   const shouldShowSearchDropdown = searchFocused && (showSearchResults || trimmedSearchValue.length < 2)
@@ -103,6 +118,74 @@ const Navigation: React.FC = () => {
   const handleLogout = async () => {
     await logout()
     handleMobileMenuClose()
+  }
+
+  // Helper function to get the appropriate avatar source
+  const getAvatarSrc = () => {
+    if (!user) return null
+
+    // If user has selected character media as profile picture type
+    if (user.profilePictureType === 'character_media' && user.selectedCharacterMedia) {
+      return user.selectedCharacterMedia.url
+    }
+
+    // If user has Discord avatar and either no profile picture type set or discord type
+    if (user.discordId && user.discordAvatar &&
+        (user.profilePictureType === 'discord' || !user.profilePictureType)) {
+      return user.discordAvatar.startsWith('http')
+        ? user.discordAvatar
+        : `https://cdn.discordapp.com/avatars/${user.discordId}/${user.discordAvatar}.png`
+    }
+
+    // Default: no image, show initials
+    return null
+  }
+
+  // Check if current path is active
+  const isActivePath = (path: string) => {
+    return pathname === path || pathname.startsWith(path + '/')
+  }
+
+  // Search functionality helpers
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    setSearchValue(value)
+
+    if (searchTimeout.current) {
+      clearTimeout(searchTimeout.current)
+    }
+
+    searchTimeout.current = setTimeout(() => {
+      performSearch(value)
+    }, 300)
+  }
+
+  const handleSearchResultClick = (result: SearchResult) => {
+    setShowSearchResults(false)
+    setSearchValue('')
+    setSearchFocused(false)
+
+    const path = `/${result.type}s/${result.id}`
+    router.push(path)
+  }
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      setShowSearchResults(false)
+      setSearchValue('')
+      setSearchFocused(false)
+    }
+  }
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    const trimmed = searchValue.trim()
+    if (trimmed) {
+      setShowSearchResults(false)
+      setSearchValue('')
+      setSearchFocused(false)
+      router.push(`/search?q=${encodeURIComponent(trimmed)}`)
+    }
   }
 
   // Search helper functions
@@ -192,73 +275,6 @@ const Navigation: React.FC = () => {
     }
   }, [userProgress])
 
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value
-    setSearchValue(value)
-
-    if (searchTimeout.current) {
-      clearTimeout(searchTimeout.current)
-    }
-
-    searchTimeout.current = setTimeout(() => {
-      performSearch(value)
-    }, 300)
-  }
-
-  const handleSearchResultClick = (result: SearchResult) => {
-    setShowSearchResults(false)
-    setSearchValue('')
-    setSearchFocused(false)
-
-    const path = `/${result.type}s/${result.id}`
-    router.push(path)
-  }
-
-  const handleSearchKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Escape') {
-      setShowSearchResults(false)
-      setSearchValue('')
-      setSearchFocused(false)
-    }
-  }
-
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (trimmedSearchValue) {
-      setShowSearchResults(false)
-      setSearchValue('')
-      setSearchFocused(false)
-      router.push(`/search?q=${encodeURIComponent(trimmedSearchValue)}`)
-    }
-  }
-
-  // Helper function to get the appropriate avatar source
-  const getAvatarSrc = () => {
-    if (!user) return null
-
-    // If user has selected character media as profile picture type
-    if (user.profilePictureType === 'character_media' && user.selectedCharacterMedia) {
-      return user.selectedCharacterMedia.url
-    }
-
-    // If user has Discord avatar and either no profile picture type set or discord type
-    if (user.discordId && user.discordAvatar &&
-        (user.profilePictureType === 'discord' || !user.profilePictureType)) {
-      return user.discordAvatar.startsWith('http')
-        ? user.discordAvatar
-        : `https://cdn.discordapp.com/avatars/${user.discordId}/${user.discordAvatar}.png`
-    }
-
-    // Default: no image, show initials
-    return null
-  }
-
-  // Check if current path is active
-  const isActivePath = (path: string) => {
-    return pathname === path || pathname.startsWith(path + '/')
-  }
-
-  // Navigation data
   const navigationData: NavigationData = {
     browse: [
       {
@@ -330,13 +346,32 @@ const Navigation: React.FC = () => {
           <Title
             order={4}
             style={{
-              color: 'inherit',
-              fontWeight: 'bold',
+              color: '#ffffff',
+              fontWeight: '700',
               cursor: 'pointer',
-              marginRight: rem(24)
+              marginRight: rem(24),
+              fontSize: rem(20),
+              transition: 'color 160ms ease, transform 160ms ease'
             }}
-            onMouseEnter={(e) => (e.target as HTMLElement).style.opacity = '0.8'}
-            onMouseLeave={(e) => (e.target as HTMLElement).style.opacity = '1'}
+            onMouseEnter={(e) => {
+              const el = e.currentTarget as HTMLElement
+              el.style.color = accentColor
+              el.style.transform = 'translateY(-1px)'
+            }}
+            onMouseLeave={(e) => {
+              const el = e.currentTarget as HTMLElement
+              el.style.color = '#ffffff'
+              el.style.transform = 'none'
+            }}
+            onFocus={(e) => {
+              const el = e.currentTarget as HTMLElement
+              el.style.color = accentColor
+            }}
+            onBlur={(e) => {
+              const el = e.currentTarget as HTMLElement
+              el.style.color = '#ffffff'
+            }}
+            tabIndex={0}
           >
             L-File
           </Title>
@@ -353,34 +388,288 @@ const Navigation: React.FC = () => {
           data-testid="nav-buttons-container"
         >
           {/* Browse Dropdown */}
-          <DropdownButton
-            label="Browse"
-            state={dropdowns.browse[0]}
-            handlers={dropdowns.browse[1]}
-            items={navigationData.browse}
-            isActivePath={isActivePath}
-            isCategorized={true}
-          />
+          <Menu
+            trigger="hover"
+            openDelay={0}
+            closeDelay={300}
+            position="bottom"
+            withArrow={false}
+            offset={4}
+            opened={browseOpened}
+            onOpen={() => setBrowseOpened(true)}
+            onClose={() => setBrowseOpened(false)}
+            styles={{
+              dropdown: {
+                backgroundColor: theme.colors.dark[8],
+                border: `1px solid ${theme.colors.dark[6]}`,
+                borderRadius: theme.radius.md,
+                boxShadow: theme.shadows.xl,
+                minWidth: 'unset',
+                width: 'auto',
+                padding: rem(6),
+                backdropFilter: 'blur(10px)'
+              }
+            }}
+          >
+              <Menu.Target>
+                <Button
+                  variant="subtle"
+                  color="gray"
+                  rightSection={
+                    <ChevronDown
+                      size={14}
+                      style={{
+                        transform: browseOpened ? 'rotate(180deg)' : 'rotate(0deg)',
+                        transition: 'transform 200ms ease'
+                      }}
+                    />
+                  }
+                  style={{
+                    backgroundColor: browseOpened ? (rgba(accentColor, 0.1) ?? 'rgba(225, 29, 72, 0.1)') : 'transparent',
+                    color: browseOpened ? accentColor : theme.colors.gray[0],
+                    fontWeight: 500
+                  }}
+                  styles={{
+                    root: {
+                      '&:hover': {
+                        backgroundColor: rgba(theme.colors.white?.[0], 0.1) ?? 'rgba(255, 255, 255, 0.1)',
+                      }
+                    }
+                  }}
+                >
+                  Browse
+                </Button>
+              </Menu.Target>
+              <Menu.Dropdown>
+              {navigationData.browse.map((category, index) => (
+                <Box key={category.name}>
+                  <Menu.Label
+                    style={{
+                      color: category.color,
+                      fontWeight: 'bold',
+                      fontSize: theme.fontSizes.xs,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px',
+                      marginBottom: theme.spacing.xs
+                    }}
+                  >
+                    {category.name}
+                  </Menu.Label>
+                  {category.items.map((item) => (
+                    <Menu.Item
+                      key={item.href}
+                      component={Link}
+                      href={item.href}
+                      leftSection={item.icon}
+                      style={{
+                        borderLeft: isActivePath(item.href) ? `3px solid ${accentColor}` : '3px solid transparent',
+                        borderRadius: theme.radius.sm,
+                        paddingLeft: theme.spacing.md,
+                        color: isActivePath(item.href) ? accentColor : theme.colors.gray[0],
+                        backgroundColor: 'transparent',
+                        transition: 'all 200ms ease'
+                      }}
+                      styles={{
+                        itemLabel: {
+                          fontSize: theme.fontSizes.sm,
+                          fontWeight: isActivePath(item.href) ? 500 : 400,
+                          whiteSpace: 'nowrap'
+                        },
+                        item: {
+                          '&:hover': {
+                            backgroundColor: rgba(accentColor, 0.1) ?? 'rgba(225, 29, 72, 0.1)',
+                            color: accentColor,
+                            boxShadow: `inset 0 0 0 1px ${accentColor}`
+                          }
+                        }
+                      }}
+                    >
+                      {item.label}
+                    </Menu.Item>
+                  ))}
+                  {index < navigationData.browse.length - 1 && <Menu.Divider />}
+                </Box>
+              ))}
+                </Menu.Dropdown>
+          </Menu>
 
           {/* Community Dropdown */}
-          <DropdownButton
-            label="Community"
-            state={dropdowns.community[0]}
-            handlers={dropdowns.community[1]}
-            items={navigationData.community}
-            isActivePath={isActivePath}
-            isCategorized={false}
-          />
+          <Menu
+            trigger="hover"
+            openDelay={0}
+            closeDelay={300}
+            position="bottom"
+            withArrow={false}
+            offset={4}
+            opened={communityOpened}
+            onOpen={() => setCommunityOpened(true)}
+            onClose={() => setCommunityOpened(false)}
+            styles={{
+              dropdown: {
+                backgroundColor: theme.colors.dark[8],
+                border: `1px solid ${theme.colors.dark[6]}`,
+                borderRadius: theme.radius.md,
+                boxShadow: theme.shadows.xl,
+                minWidth: 'unset',
+                width: 'auto',
+                padding: rem(6),
+                backdropFilter: 'blur(10px)'
+              }
+            }}
+          >
+              <Menu.Target>
+                <Button
+                  variant="subtle"
+                  color="gray"
+                  rightSection={
+                    <ChevronDown
+                      size={14}
+                      style={{
+                        transform: communityOpened ? 'rotate(180deg)' : 'rotate(0deg)',
+                        transition: 'transform 200ms ease'
+                      }}
+                    />
+                  }
+                  style={{
+                    backgroundColor: communityOpened ? (rgba(accentColor, 0.1) ?? 'rgba(225, 29, 72, 0.1)') : 'transparent',
+                    color: communityOpened ? accentColor : theme.colors.gray[0],
+                    fontWeight: 500
+                  }}
+                  styles={{
+                    root: {
+                      '&:hover': {
+                        backgroundColor: rgba(theme.colors.white?.[0], 0.1) ?? 'rgba(255, 255, 255, 0.1)',
+                      }
+                    }
+                  }}
+                >
+                  Community
+                </Button>
+              </Menu.Target>
+              <Menu.Dropdown>
+              {navigationData.community.map((item) => (
+                <Menu.Item
+                  key={item.href}
+                  component={Link}
+                  href={item.href}
+                  leftSection={item.icon}
+                  style={{
+                    borderLeft: isActivePath(item.href) ? `3px solid ${accentColor}` : '3px solid transparent',
+                    borderRadius: theme.radius.sm,
+                    paddingLeft: theme.spacing.md,
+                    color: isActivePath(item.href) ? accentColor : theme.colors.gray[0],
+                    backgroundColor: 'transparent',
+                    transition: 'all 200ms ease'
+                  }}
+                  styles={{
+                    itemLabel: {
+                      fontSize: theme.fontSizes.sm,
+                      fontWeight: isActivePath(item.href) ? 500 : 400,
+                      whiteSpace: 'nowrap'
+                    },
+                    item: {
+                      '&:hover': {
+                        backgroundColor: rgba(accentColor, 0.1) ?? 'rgba(225, 29, 72, 0.1)',
+                        color: accentColor,
+                        boxShadow: `inset 0 0 0 1px ${accentColor}`
+                      }
+                    }
+                  }}
+                >
+                  {item.label}
+                </Menu.Item>
+              ))}
+                </Menu.Dropdown>
+          </Menu>
 
           {/* Submit Dropdown */}
-          <DropdownButton
-            label="Submit"
-            state={dropdowns.submit[0]}
-            handlers={dropdowns.submit[1]}
-            items={navigationData.submit}
-            isActivePath={isActivePath}
-            isCategorized={false}
-          />
+          <Menu
+            trigger="hover"
+            openDelay={0}
+            closeDelay={300}
+            position="bottom"
+            withArrow={false}
+            offset={4}
+            opened={submitOpened}
+            onOpen={() => setSubmitOpened(true)}
+            onClose={() => setSubmitOpened(false)}
+            styles={{
+              dropdown: {
+                backgroundColor: theme.colors.dark[8],
+                border: `1px solid ${theme.colors.dark[6]}`,
+                borderRadius: theme.radius.md,
+                boxShadow: theme.shadows.xl,
+                minWidth: 'unset',
+                width: 'auto',
+                padding: rem(6),
+                backdropFilter: 'blur(10px)'
+              }
+            }}
+          >
+              <Menu.Target>
+                <Button
+                  variant="subtle"
+                  color="gray"
+                  rightSection={
+                    <ChevronDown
+                      size={14}
+                      style={{
+                        transform: submitOpened ? 'rotate(180deg)' : 'rotate(0deg)',
+                        transition: 'transform 200ms ease'
+                      }}
+                    />
+                  }
+                  style={{
+                    backgroundColor: submitOpened ? (rgba(accentColor, 0.1) ?? 'rgba(225, 29, 72, 0.1)') : 'transparent',
+                    color: submitOpened ? accentColor : theme.colors.gray[0],
+                    fontWeight: 500
+                  }}
+                  styles={{
+                    root: {
+                      '&:hover': {
+                        backgroundColor: rgba(theme.colors.white?.[0], 0.1) ?? 'rgba(255, 255, 255, 0.1)',
+                      }
+                    }
+                  }}
+                >
+                  Submit
+                </Button>
+              </Menu.Target>
+              <Menu.Dropdown>
+              {navigationData.submit.map((item) => (
+                <Menu.Item
+                  key={item.href}
+                  component={Link}
+                  href={item.href}
+                  leftSection={item.icon}
+                  style={{
+                    borderLeft: isActivePath(item.href) ? `3px solid ${accentColor}` : '3px solid transparent',
+                    borderRadius: theme.radius.sm,
+                    paddingLeft: theme.spacing.md,
+                    color: isActivePath(item.href) ? accentColor : theme.colors.gray[0],
+                    backgroundColor: 'transparent',
+                    transition: 'all 200ms ease'
+                  }}
+                  styles={{
+                    itemLabel: {
+                      fontSize: theme.fontSizes.sm,
+                      fontWeight: isActivePath(item.href) ? 500 : 400,
+                      whiteSpace: 'nowrap'
+                    },
+                    item: {
+                      '&:hover': {
+                        backgroundColor: rgba(accentColor, 0.1) ?? 'rgba(225, 29, 72, 0.1)',
+                        color: accentColor,
+                        boxShadow: `inset 0 0 0 1px ${accentColor}`
+                      }
+                    }
+                  }}
+                >
+                  {item.label}
+                </Menu.Item>
+              ))}
+                </Menu.Dropdown>
+          </Menu>
         </Group>
 
         {/* Right Side - Search + Profile */}
@@ -590,11 +879,23 @@ const Navigation: React.FC = () => {
                 trigger="hover"
                 openDelay={100}
                 closeDelay={400}
-                position="bottom-end"
+                position="bottom"
                 withArrow
                 arrowPosition="center"
                 offset={4}
                 onClose={() => setAccountMenuHighlight(null)}
+                styles={{
+                  dropdown: {
+                    backgroundColor: theme.colors.dark[8],
+                    border: `1px solid ${theme.colors.dark[6]}`,
+                    borderRadius: theme.radius.sm,
+                    boxShadow: theme.shadows.md,
+                    minWidth: 'unset',
+                    width: 'auto',
+                    padding: rem(6),
+                    overflow: 'hidden'
+                  }
+                }}
               >
                 <Menu.Target>
                   <ActionIcon
@@ -629,7 +930,9 @@ const Navigation: React.FC = () => {
                     backgroundColor: 'transparent',
                     borderRadius: 6,
                     transition: 'box-shadow 0.2s ease',
-                    boxShadow: getOutlineShadow(isActivePath('/profile'), accountMenuHighlight === 'profile')
+                    boxShadow: getOutlineShadow(isActivePath('/profile'), accountMenuHighlight === 'profile'),
+                    paddingTop: rem(6),
+                    paddingBottom: rem(6)
                   }}
                 >
                   Profile
@@ -650,7 +953,9 @@ const Navigation: React.FC = () => {
                     backgroundColor: 'transparent',
                     borderRadius: 6,
                     transition: 'box-shadow 0.2s ease',
-                    boxShadow: getOutlineShadow(isActivePath('/about'), accountMenuHighlight === 'donate')
+                    boxShadow: getOutlineShadow(isActivePath('/about'), accountMenuHighlight === 'donate'),
+                    paddingTop: rem(6),
+                    paddingBottom: rem(6)
                   }}
                 >
                   Donate
@@ -672,7 +977,9 @@ const Navigation: React.FC = () => {
                     backgroundColor: 'transparent',
                     borderRadius: 6,
                     transition: 'box-shadow 0.2s ease',
-                    boxShadow: getOutlineShadow(false, accountMenuHighlight === 'logout')
+                    boxShadow: getOutlineShadow(false, accountMenuHighlight === 'logout'),
+                    paddingTop: rem(6),
+                    paddingBottom: rem(6)
                   }}
                 >
                   Logout
@@ -966,21 +1273,6 @@ const Navigation: React.FC = () => {
           </Menu.Dropdown>
         </Menu>
       </Group>
-        {/* Click outside handler for dropdowns */}
-        {anyDropdownOpen && (
-          <div
-            style={{
-              position: 'fixed',
-              inset: 0,
-              zIndex: 30
-          }}
-          onClick={() => {
-            dropdowns.browse[1].close()
-            dropdowns.community[1].close()
-            dropdowns.submit[1].close()
-          }}
-        />
-      )}
     </header>
   )
 }
