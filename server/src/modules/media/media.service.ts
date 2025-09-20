@@ -14,6 +14,7 @@ import {
   MediaPurpose,
 } from '../../entities/media.entity';
 import { User } from '../../entities/user.entity';
+import { Character } from '../../entities/character.entity';
 import { CreateMediaDto } from './dto/create-media.dto';
 import { UploadMediaDto } from './dto/upload-media.dto';
 import { UrlNormalizerService } from './services/url-normalizer.service';
@@ -27,6 +28,8 @@ export class MediaService {
   constructor(
     @InjectRepository(Media)
     private readonly mediaRepo: Repository<Media>,
+    @InjectRepository(Character)
+    private readonly characterRepo: Repository<Character>,
     private readonly urlNormalizer: UrlNormalizerService,
     private readonly emailService: EmailService,
   ) {}
@@ -471,8 +474,29 @@ export class MediaService {
       .take(limit);
 
     const [data, total] = await query.getManyAndCount();
+    
+    // Add character information for media with ownerType 'character'
+    const enrichedData = await Promise.all(
+      data.map(async (media: any) => {
+        if (media.ownerType === MediaOwnerType.CHARACTER && media.ownerId) {
+          try {
+            const character = await this.characterRepo.findOne({
+              where: { id: media.ownerId },
+              select: ['id', 'name'],
+            });
+            if (character) {
+              return { ...media, character };
+            }
+          } catch (error) {
+            console.error(`Failed to fetch character for media ${media.id}:`, error);
+          }
+        }
+        return media;
+      })
+    );
+    
     return {
-      data,
+      data: enrichedData,
       total,
       page,
       perPage: limit,

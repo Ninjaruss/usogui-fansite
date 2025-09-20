@@ -1,4 +1,4 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'
 
 
 class ApiClient {
@@ -84,7 +84,7 @@ class ApiClient {
       
       try {
         const errorResponse = await response.json()
-        errorMessage = errorResponse.message || errorResponse.error || `HTTP ${response.status}: ${response.statusText}`
+        errorMessage = String(errorResponse.message || errorResponse.error || `HTTP ${response.status}: ${response.statusText}`)
         errorDetails = errorResponse
       } catch {
         errorMessage = `HTTP ${response.status}: ${response.statusText}`
@@ -271,6 +271,7 @@ class ApiClient {
     limit?: number
     name?: string
     arc?: string
+    includeOrganizations?: boolean
   }) {
     const searchParams = new URLSearchParams()
     if (params) {

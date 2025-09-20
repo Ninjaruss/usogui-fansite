@@ -11,6 +11,11 @@ interface Character {
   firstAppearanceChapter: number
   imageFileName?: string
   imageDisplayName?: string
+  organizations?: Array<{
+    id: number
+    name: string
+    description?: string
+  }>
 }
 
 interface CharactersPageProps {
@@ -49,7 +54,11 @@ export default async function CharactersPage({ searchParams }: CharactersPagePro
   const search = resolvedSearchParams.search || ''
 
   // Fetch characters server-side
-  const params: { page: number; limit: number; name?: string } = { page, limit: 12 }
+  const params: { page: number; limit: number; name?: string; includeOrganizations: boolean } = { 
+    page, 
+    limit: 12, 
+    includeOrganizations: true 
+  }
   if (search) params.name = search
 
   let characters: Character[] = []
@@ -67,7 +76,7 @@ export default async function CharactersPage({ searchParams }: CharactersPagePro
   }
 
   return (
-    <Container size="xl" py="xl">
+    <Container size="lg" py="xl">
       <CharactersPageContent
         initialCharacters={characters}
         initialTotalPages={totalPages}

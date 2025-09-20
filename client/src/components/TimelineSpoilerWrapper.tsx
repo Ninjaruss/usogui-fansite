@@ -5,6 +5,7 @@ import { Box, Text, Tooltip, useMantineTheme } from '@mantine/core'
 import { AlertTriangle } from 'lucide-react'
 import { useProgress } from '../providers/ProgressProvider'
 import { useSpoilerSettings } from '../hooks/useSpoilerSettings'
+import { getAlphaColor } from '../lib/mantine-theme'
 
 interface TimelineSpoilerWrapperProps {
   chapterNumber?: number
@@ -36,18 +37,12 @@ export default function TimelineSpoilerWrapper({
   }, [theme])
 
   const overlayBase = useMemo(() => {
-    if (theme.fn?.rgba) {
-      return theme.fn.rgba(accentColor, 0.78)
-    }
-    return 'rgba(220, 0, 78, 0.78)'
-  }, [accentColor, theme])
+    return getAlphaColor(accentColor, 0.78)
+  }, [accentColor])
 
   const overlayHover = useMemo(() => {
-    if (theme.fn?.rgba) {
-      return theme.fn.rgba(accentColor, 0.9)
-    }
-    return 'rgba(220, 0, 78, 0.9)'
-  }, [accentColor, theme])
+    return getAlphaColor(accentColor, 0.9)
+  }, [accentColor])
 
   const shouldHideSpoiler = () => {
     // First check if spoiler settings say to show all spoilers
@@ -114,7 +109,7 @@ export default function TimelineSpoilerWrapper({
           cursor: 'pointer',
           border: `1px solid ${accentColor}`,
           zIndex: 100,
-          transition: `background-color ${theme.defaultTransition?.duration ?? 200}ms ${theme.transitionTimingFunction}`
+          transition: `background-color 200ms cubic-bezier(0.4, 0, 0.2, 1)`
         }}
       >
         <Tooltip 

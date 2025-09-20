@@ -244,7 +244,17 @@ export default function SubmitGuidePageContent() {
           </Alert>
         )}
 
-        <Card className="gambling-card" shadow="lg" radius="md" withBorder>
+        <Card
+          className="gambling-card"
+          shadow="lg"
+          radius="md"
+          withBorder
+          style={{
+            backgroundColor: theme.colors.dark?.[7] ?? '#070707',
+            color: theme.colors.gray?.[0] ?? '#fff',
+            borderColor: `${guideAccent}33`
+          }}
+        >
           <form onSubmit={handleSubmit}>
             <Stack gap="xl" p="xl">
               <Stack gap="md">
@@ -260,6 +270,13 @@ export default function SubmitGuidePageContent() {
                       : undefined
                   }
                   description="Choose a clear, descriptive title for your guide (minimum 5 characters)"
+                  styles={{
+                    input: {
+                      backgroundColor: theme.colors.dark?.[5] ?? '#0b0b0b',
+                      color: theme.colors.gray?.[0] ?? '#fff',
+                      borderColor: 'rgba(255,255,255,0.06)'
+                    }
+                  }}
                 />
 
                 <Textarea
@@ -276,14 +293,42 @@ export default function SubmitGuidePageContent() {
                       : undefined
                   }
                   description={`Write a compelling description that summarizes your guide (${formData.description.length}/20+ characters)`}
+                  styles={{
+                    input: {
+                      backgroundColor: theme.colors.dark?.[5] ?? '#0b0b0b',
+                      color: theme.colors.gray?.[0] ?? '#fff',
+                      borderColor: 'rgba(255,255,255,0.06)'
+                    }
+                  }}
                 />
               </Stack>
 
               <Stack gap="md">
-                <EntityEmbedHelperWithSearch onInsertEmbed={handleInsertEmbed} />
+                <EntityEmbedHelperWithSearch
+                  onInsertEmbed={handleInsertEmbed}
+                />
 
-                <Card className="gambling-card" shadow="sm" radius="md" withBorder>
-                  <Tabs value={activeTab} onChange={(value) => setActiveTab(value as 'write' | 'preview')}>
+                <Card
+                  className="gambling-card"
+                  shadow="sm"
+                  radius="md"
+                  withBorder
+                  style={{
+                    backgroundColor: theme.colors.dark?.[6] ?? '#0a0a0a',
+                    color: theme.colors.gray?.[0] ?? '#fff',
+                    borderColor: theme.other?.usogui?.guide ? `${theme.other.usogui.guide}40` : 'rgba(255,255,255,0.06)'
+                  }}
+                >
+                  <Tabs
+                    value={activeTab}
+                    onChange={(value) => setActiveTab(value as 'write' | 'preview')}
+                    styles={{
+                      tab: {
+                        padding: rem(12),
+                        fontSize: rem(14)
+                      }
+                    }}
+                  >
                     <Tabs.List>
                       <Tabs.Tab value="write" leftSection={<FileText size={16} />}>
                         Write
@@ -309,6 +354,15 @@ export default function SubmitGuidePageContent() {
                         }
                         description={`Write your detailed guide content with entity embeds (${formData.content.length}/100+ characters)`}
                         ref={contentRef}
+                        styles={{
+                          input: {
+                            padding: rem(12),
+                            fontSize: rem(14),
+                            backgroundColor: theme.colors.dark?.[5] ?? '#0b0b0b',
+                            color: theme.colors.gray?.[0] ?? '#fff',
+                            borderColor: 'rgba(255,255,255,0.06)'
+                          }
+                        }}
                       />
                     </Tabs.Panel>
 
@@ -317,11 +371,11 @@ export default function SubmitGuidePageContent() {
                         <Title order={4}>Preview</Title>
                         <Box
                           style={{
-                            border: `1px solid ${theme.other?.usogui?.guide ? `${theme.other.usogui.guide}40` : 'rgba(255,255,255,0.12)'}`,
+                            border: `1px solid ${theme.other?.usogui?.guide ? `${theme.other.usogui.guide}40` : 'rgba(255,255,255,0.06)'}`,
                             borderRadius: rem(12),
                             padding: rem(16),
                             minHeight: rem(320),
-                            backgroundColor: 'rgba(10, 10, 10, 0.4)'
+                            backgroundColor: theme.colors.dark?.[7] ?? 'rgba(10, 10, 10, 0.6)'
                           }}
                         >
                           {formData.content ? (
@@ -341,7 +395,7 @@ export default function SubmitGuidePageContent() {
               <Box
                 style={{
                   padding: rem(24),
-                  backgroundColor: 'rgba(56, 142, 60, 0.08)',
+                  backgroundColor: 'rgba(255,255,255,0.02)',
                   borderRadius: rem(12),
                   border: `1px solid ${guideAccent}33`
                 }}
@@ -366,6 +420,16 @@ export default function SubmitGuidePageContent() {
                         clearable
                         nothingFoundMessage="No characters"
                         description="Link to characters featured in your guide"
+                        styles={{
+                          input: {
+                            backgroundColor: theme.colors.dark?.[5] ?? '#0b0b0b',
+                            color: theme.colors.gray?.[0] ?? '#fff',
+                            borderColor: 'rgba(255,255,255,0.06)'
+                          },
+                          dropdown: {
+                            backgroundColor: theme.colors.dark?.[7] ?? '#070707'
+                          }
+                        }}
                       />
                     </Grid.Col>
 
@@ -380,6 +444,16 @@ export default function SubmitGuidePageContent() {
                         clearable
                         nothingFoundMessage="No arcs"
                         description="Link to the story arc your guide covers"
+                        styles={{
+                          input: {
+                            backgroundColor: theme.colors.dark?.[5] ?? '#0b0b0b',
+                            color: theme.colors.gray?.[0] ?? '#fff',
+                            borderColor: 'rgba(255,255,255,0.06)'
+                          },
+                          dropdown: {
+                            backgroundColor: theme.colors.dark?.[7] ?? '#070707'
+                          }
+                        }}
                       />
                     </Grid.Col>
 
@@ -394,6 +468,16 @@ export default function SubmitGuidePageContent() {
                         clearable
                         nothingFoundMessage="No gambles"
                         description="Link to gambles analyzed in your guide"
+                        styles={{
+                          input: {
+                            backgroundColor: theme.colors.dark?.[5] ?? '#0b0b0b',
+                            color: theme.colors.gray?.[0] ?? '#fff',
+                            borderColor: 'rgba(255,255,255,0.06)'
+                          },
+                          dropdown: {
+                            backgroundColor: theme.colors.dark?.[7] ?? '#070707'
+                          }
+                        }}
                       />
                     </Grid.Col>
                   </Grid>

@@ -48,6 +48,11 @@ export class VolumesController {
     description: 'Filter by volume number',
   })
   @ApiQuery({
+    name: 'title',
+    required: false,
+    description: 'Filter by volume title',
+  })
+  @ApiQuery({
     name: 'page',
     required: false,
     description: 'Page number (default: 1)',
@@ -82,6 +87,7 @@ export class VolumesController {
   })
   async findAll(
     @Query('number') number?: number,
+    @Query('title') title?: string,
     @Query('page') page?: number,
     @Query('limit') limit?: number,
     @Query('sort') sort?: string,
@@ -91,6 +97,7 @@ export class VolumesController {
     const limitNum = limit || 20;
     const result = await this.service.findAll({
       number,
+      title,
       page: pageNum,
       limit: limitNum,
       sort,

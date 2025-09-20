@@ -19,6 +19,7 @@ import { AlertTriangle, ArrowRight, Calendar, Crown, Filter, X } from 'lucide-re
 import Link from 'next/link'
 import { useProgress } from '../providers/ProgressProvider'
 import { useSpoilerSettings } from '../hooks/useSpoilerSettings'
+import { getAlphaColor } from '../lib/mantine-theme'
 
 const EVENT_COLOR_KEYS: Record<string, keyof MantineTheme['colors']> = {
   gamble: 'orange',
@@ -443,7 +444,7 @@ function TimelineSpoilerWrapper({ event, children }: { event: GambleTimelineEven
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            background: theme.fn.rgba(theme.colors.red[7], 0.9),
+            background: getAlphaColor(theme.colors.red[7], 0.9),
             cursor: 'pointer',
             zIndex: 10
           }}

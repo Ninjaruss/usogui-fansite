@@ -141,7 +141,7 @@ export default function GamblePageClient({ initialGamble }: GamblePageClientProp
                   <Title order={1}>{initialGamble.name}</Title>
                 </Group>
 
-                <Group gap="sm" wrap>
+                <Group gap="sm" wrap="wrap">
                   <Badge color="red" radius="lg" variant="filled">
                     {chapterInfo}
                   </Badge>
@@ -232,7 +232,7 @@ export default function GamblePageClient({ initialGamble }: GamblePageClientProp
                               <Stack gap={4}>
                                 <Text fw={600}>{participant.name}</Text>
                                 {participant.alternateNames && participant.alternateNames.length > 0 && (
-                                  <Group gap="xs" wrap>
+                                  <Group gap="xs" wrap="wrap">
                                     {participant.alternateNames.slice(0, 2).map((name) => (
                                       <Badge key={name} variant="outline" color="gray" radius="sm">
                                         {name}
@@ -270,7 +270,7 @@ export default function GamblePageClient({ initialGamble }: GamblePageClientProp
                   events={timelineEvents as any}
                   arcs={arcs as any}
                   gambleName={initialGamble.name}
-                  chapterNumber={initialGamble.chapter?.number ?? initialGamble.chapterId}
+                  gambleChapter={initialGamble.chapter?.number ?? initialGamble.chapterId}
                 />
               )}
             </Tabs.Panel>
@@ -282,7 +282,7 @@ export default function GamblePageClient({ initialGamble }: GamblePageClientProp
                   <Text size="sm" c="dimmed">
                     Explore media related to {initialGamble.name}
                   </Text>
-                  <MediaGallery gambleId={initialGamble.id} limit={20} showTitle={false} compactMode={false} />
+                  <MediaGallery ownerType="gamble" ownerId={initialGamble.id} limit={20} showTitle={false} compactMode={false} />
                 </Stack>
               </Card>
             </Tabs.Panel>

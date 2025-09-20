@@ -355,6 +355,15 @@ const EntityEmbedHelperWithSearch: React.FC<EntityEmbedHelperProps> = ({ onInser
     return () => clearTimeout(timer)
   }, [searchQuery, searchEntities])
 
+  // Utility function to generate RGBA color strings
+  function rgba(hex: string, alpha: number): string {
+    const bigint = parseInt(hex.replace('#', ''), 16);
+    const r = (bigint >> 16) & 255;
+    const g = (bigint >> 8) & 255;
+    const b = bigint & 255;
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  }
+
   return (
     <>
       <Paper
@@ -396,59 +405,70 @@ const EntityEmbedHelperWithSearch: React.FC<EntityEmbedHelperProps> = ({ onInser
             onChange={(event) => setSearchQuery(event.currentTarget.value)}
             placeholder="Search for characters, arcs, gambles..."
             size="sm"
-            leftSection={<Search size={16} />}
             rightSection={searchLoading ? <Loader size="xs" /> : undefined}
+            styles={{
+              input: {
+                padding: rem(12),
+                fontSize: rem(14),
+              },
+            }}
           />
 
           {searchQuery.length >= 2 && (
-            <Paper withBorder radius="md" shadow="sm" p="xs">
+            <Paper withBorder radius="md" shadow="sm" p="sm" style={{ maxHeight: rem(360), overflowY: 'auto' }}>
               {searchResults.length === 0 && !searchLoading ? (
                 <Text size="sm" c="dimmed" ta="center" py="sm">
                   No entities found.
                 </Text>
               ) : (
-                <Stack gap={4}>
+                <Stack gap="sm">
                   {searchResults.map((result) => {
-                    const entityColor = entityTypes.find((entity) => entity.type === result.type)?.color ?? '#666'
+                    const entityTypeDef = entityTypes.find((entity) => entity.type === result.type)
+                    const entityColor = entityTypeDef?.color ?? '#666'
 
                     return (
                       <Button
                         key={`${result.type}-${result.id}`}
                         variant="default"
                         fullWidth
-                        size="xs"
+                        size="md"
                         onClick={() => handleInsertEntity(result)}
                         styles={{
                           root: {
                             display: 'flex',
                             justifyContent: 'space-between',
                             alignItems: 'center',
-                            backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[6] : '#fff',
-                            border: `1px solid ${rgba(entityColor, 0.25)}`,
-                            borderRadius: rem(8),
-                            padding: `${rem(10)} ${rem(12)}`,
+                            backgroundColor: theme.colors.dark[6],
+                            border: `1px solid ${rgba(entityColor, 0.22)}`,
+                            borderRadius: rem(10),
+                            padding: `${rem(10)} ${rem(14)}`,
+                            minHeight: rem(56),
                             textAlign: 'left',
-                            color: theme.colorScheme === 'dark' ? theme.colors.gray[2] : theme.black,
+                            color: theme.colors.gray[2],
                             transition: 'background-color 120ms ease',
                             '&:hover': {
-                              backgroundColor: rgba(entityColor, 0.08)
-                            }
-                          }
+                              backgroundColor: rgba(entityColor, 0.06),
+                            },
+                          },
                         }}
                       >
-                        <Box style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                          <Text size="sm" fw={600}>
-                            {result.name}
-                          </Text>
-                          {result.subtitle && (
-                            <Text size="xs" c="dimmed">
-                              {result.subtitle}
+                        <Box style={{ display: 'flex', gap: rem(12), alignItems: 'center', flex: 1 }}>
+                          <Box style={{ width: rem(36), height: rem(36), display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: rem(8), background: rgba(entityColor, 0.08) }}>
+                            {entityTypeDef?.icon}
+                          </Box>
+
+                          <Box style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', overflow: 'hidden' }}>
+                            <Text size="sm" fw={700} style={{ lineHeight: 1.2, whiteSpace: 'normal', overflowWrap: 'break-word' }}>
+                              {result.name}
                             </Text>
-                          )}
+                          </Box>
                         </Box>
-                        <Text size="xs" fw={600} style={{ color: entityColor }}>
-                          {result.type.toUpperCase()}
-                        </Text>
+
+                        <Box style={{ marginLeft: rem(12), display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <Box style={{ backgroundColor: rgba(entityColor, 0.12), color: entityColor, padding: `${rem(6)} ${rem(8)}`, borderRadius: rem(999), fontWeight: 700, fontSize: rem(12) }}>
+                            {entityTypeDef?.label.toUpperCase()}
+                          </Box>
+                        </Box>
                       </Button>
                     )
                   })}
@@ -456,29 +476,6 @@ const EntityEmbedHelperWithSearch: React.FC<EntityEmbedHelperProps> = ({ onInser
               )}
             </Paper>
           )}
-
-          <Box style={{ display: 'flex', flexWrap: 'wrap', gap: rem(8) }}>
-            {entityTypes.slice(0, 4).map((entityType) => (
-              <Button
-                key={entityType.type}
-                variant="outline"
-                size="xs"
-                leftSection={entityType.icon}
-                onClick={() => handleInsertEmbed(`{{${entityType.type}:1}}`)}
-                styles={{
-                  root: {
-                    borderColor: entityType.color,
-                    color: entityType.color,
-                    '&:hover': {
-                      backgroundColor: rgba(entityType.color, 0.08)
-                    }
-                  }
-                }}
-              >
-                {entityType.label}
-              </Button>
-            ))}
-          </Box>
         </Stack>
       </Paper>
 
@@ -525,7 +522,7 @@ const EntityEmbedHelperWithSearch: React.FC<EntityEmbedHelperProps> = ({ onInser
                   </Box>
                 </Accordion.Control>
                 <Accordion.Panel>
-                  <SimpleGrid cols={2} spacing="sm" breakpoints={[{ maxWidth: 'sm', cols: 1 }]}> 
+                  <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm"> 
                     {entityType.examples.map((example, index) => (
                       <Paper key={index} withBorder radius="md" p="sm">
                         <Box

@@ -38,7 +38,7 @@ interface Guide {
   title: string
   content: string
   description: string
-  tags: string[]
+  tags: GuideEntity[]
   author: {
     id: number
     username: string
@@ -152,8 +152,17 @@ export default function GuidesPageContent({
     const newSearch = event.target.value
     setSearchQuery(newSearch)
     setCurrentPage(1)
-    updateUrl(1, newSearch, authorFilter || undefined, authorName || undefined)
   }
+
+  // Debounced search effect
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      updateUrl(currentPage, searchQuery, authorFilter || undefined, authorName || undefined)
+      fetchGuides(currentPage, searchQuery, authorFilter || undefined)
+    }, 300)
+
+    return () => clearTimeout(timeoutId)
+  }, [searchQuery])
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page)
@@ -355,8 +364,8 @@ export default function GuidesPageContent({
                         {guide.tags?.length > 0 && (
                           <Group gap={6} wrap="wrap">
                             {guide.tags.slice(0, 4).map((tag) => (
-                              <Badge key={tag} size="sm" color="gray" variant="outline">
-                                #{tag}
+                              <Badge key={tag.id} size="sm" color="gray" variant="outline">
+                                #{tag.name}
                               </Badge>
                             ))}
                           </Group>

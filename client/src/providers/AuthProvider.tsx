@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react'
 import { api } from '../lib/api'
+import { API_BASE_URL } from '../lib/api'
 
 // Extend Window interface to include authPopup
 declare global {
@@ -46,6 +47,7 @@ interface AuthContextType {
   logout: () => Promise<void>
   refreshUser: () => Promise<void>
   updateUserField: (field: keyof User, value: any) => void
+  isModeratorOrAdmin: boolean
   // Legacy methods (keep for compatibility)
   login: (username: string, password: string) => Promise<void>
   register: (username: string, email: string, password: string) => Promise<void>
@@ -299,8 +301,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setUser(userData)
             console.log('[AUTH PROVIDER] User data fetched and set:', userData.username)
 
-            // Redirect to homepage if currently on login page
-            if (window.location.pathname === '/login') {
+            // Check for return URL, otherwise redirect to homepage if on login page
+            const returnUrl = localStorage.getItem('authReturnUrl')
+            if (returnUrl) {
+              console.log('[AUTH PROVIDER] Redirecting to return URL:', returnUrl)
+              localStorage.removeItem('authReturnUrl')
+              window.location.href = returnUrl
+            } else if (window.location.pathname === '/login') {
               console.log('[AUTH PROVIDER] Redirecting to homepage')
               window.location.href = '/'
             } else if (refreshUser) {
@@ -349,8 +356,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setUser(userData)
             console.log('[AUTH PROVIDER] User data fetched from broadcast:', userData.username, 'Role:', userData.role)
 
-            // Redirect to homepage if currently on login page
-            if (window.location.pathname === '/login') {
+            // Check for return URL, otherwise redirect to homepage if on login page
+            const returnUrl = localStorage.getItem('authReturnUrl')
+            if (returnUrl) {
+              console.log('[AUTH PROVIDER] Redirecting to return URL from broadcast:', returnUrl)
+              localStorage.removeItem('authReturnUrl')
+              window.location.href = returnUrl
+            } else if (window.location.pathname === '/login') {
               console.log('[AUTH PROVIDER] Redirecting to homepage from broadcast')
               window.location.href = '/'
             } else if (refreshUser) {
@@ -387,8 +399,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setUser(userData)
           console.log('[AUTH PROVIDER] User data fetched from custom event:', userData.username)
           
-          // Redirect to homepage if currently on login page
-          if (window.location.pathname === '/login') {
+          // Check for return URL, otherwise redirect to homepage if on login page
+          const returnUrl = localStorage.getItem('authReturnUrl')
+          if (returnUrl) {
+            console.log('[AUTH PROVIDER] Redirecting to return URL from custom event:', returnUrl)
+            localStorage.removeItem('authReturnUrl')
+            window.location.href = returnUrl
+          } else if (window.location.pathname === '/login') {
             console.log('[AUTH PROVIDER] Redirecting to homepage from custom event')
             window.location.href = '/'
           } else if (refreshUser) {
@@ -427,8 +444,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [mounted, user]) // Remove initializeAuth dependency
 
   const loginWithDiscord = () => {
-    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'
-    
     // Open in popup window instead of new tab for better communication
     const popup = window.open(
       `${API_BASE_URL}/auth/discord`, 
@@ -447,7 +462,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const devLogin = async (asAdmin: boolean = false) => {
     try {
-      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'
       const response = await fetch(`${API_BASE_URL}/auth/dev-login`, {
         method: 'POST',
         headers: {
@@ -542,6 +556,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     logout,
     refreshUser,
     updateUserField,
+    isModeratorOrAdmin: user?.role === 'admin' || user?.role === 'moderator',
     // Legacy methods
     login,
     register,

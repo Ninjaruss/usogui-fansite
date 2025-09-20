@@ -66,13 +66,25 @@ export default function AuthCallback() {
         localStorage.setItem('authCallback', Date.now().toString())
         addDebugInfo('Auth callback flag set')
         
-        setStatus('Authentication successful! Redirecting to home page...')
-        addDebugInfo('Authentication completed successfully, redirecting to landing page')
+        // Check for return URL
+        const returnUrl = localStorage.getItem('authReturnUrl')
+        let redirectUrl = '/'
+        
+        if (returnUrl) {
+          redirectUrl = returnUrl
+          localStorage.removeItem('authReturnUrl') // Clean up
+          addDebugInfo(`Return URL found: ${returnUrl}`)
+        } else {
+          addDebugInfo('No return URL found, redirecting to home page')
+        }
+        
+        setStatus('Authentication successful! Redirecting...')
+        addDebugInfo(`Authentication completed successfully, redirecting to ${redirectUrl}`)
 
-        // Redirect to landing page after a brief delay
+        // Redirect to the intended destination after a brief delay
         setTimeout(() => {
-          addDebugInfo('Redirecting to home page...')
-          window.location.href = '/'
+          addDebugInfo(`Redirecting to ${redirectUrl}...`)
+          window.location.href = redirectUrl
         }, 1500)
         
       } catch (error) {
@@ -92,8 +104,8 @@ export default function AuthCallback() {
     <div className="min-h-screen flex items-center justify-center">
       <div className="text-center max-w-md">
         <h1 className="text-2xl font-bold mb-4">Discord Authentication</h1>
-        <p className="text-gray-600 mb-4">{status}</p>
-        <div className="mt-4 animate-spin inline-block w-6 h-6 border-[3px] border-current border-t-transparent text-blue-600 rounded-full mb-4"></div>
+        <p className="text-gray-300 mb-4">{status}</p>
+        <div className="mt-4 animate-spin inline-block w-6 h-6 border-[3px] border-current border-t-transparent text-blue-400 rounded-full mb-4"></div>
         <p className="text-sm text-gray-400 mb-4">
           {status.includes('successful')
             ? "Redirecting you to the home page..."
@@ -102,10 +114,10 @@ export default function AuthCallback() {
         </p>
         
         {/* Debug information */}
-        <div className="text-left bg-gray-100 p-3 rounded text-xs max-h-32 overflow-y-auto">
+        <div className="text-left bg-gray-800 p-3 rounded text-xs max-h-32 overflow-y-auto">
           <p className="font-bold mb-2">Debug Info:</p>
           {debugInfo.map((info, index) => (
-            <p key={index} className="text-gray-600">{info}</p>
+            <p key={index} className="text-gray-300">{info}</p>
           ))}
         </div>
       </div>

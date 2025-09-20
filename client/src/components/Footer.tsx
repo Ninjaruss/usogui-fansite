@@ -36,7 +36,7 @@ export const Footer: React.FC = () => {
               L-File
             </Text>
             <Group gap="sm" align="center">
-              <Text size="xs" c="dimmed">
+              <Text size="xs" c="gray.6">
                 Independent fan resource
               </Text>
               <Text c="gray.6" size="xs">•</Text>
@@ -58,7 +58,7 @@ export const Footer: React.FC = () => {
                 Disclaimer
               </Anchor>
               <Text c="gray.6" size="xs">•</Text>
-              <Text size="xs" c="dimmed">
+              <Text size="xs" c="gray.6">
                 © {currentYear} L-File
               </Text>
             </Group>

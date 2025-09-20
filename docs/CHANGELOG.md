@@ -8,8 +8,14 @@
 - Donation linking to badges; badge system with perks
 
 ## 2025-09-19
+### Changes
 - Finished layout/styling of arcs list page
 - Added detail modal for arcs list page
+- Adjusted styling of all public list pages
+
+### Notes
+- Debouncing is the solution for the search function calling continuous api calls. A simple timeout delay between the first call and subsequent calls limits how many calls are made while typing in search.
+
 ## 2025-09-18
 ### Changes
 - Conversion of all public pages from MUI to Mantine

@@ -1,33 +1,34 @@
 'use client'
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import {
   ActionIcon,
   Alert,
   Badge,
+  Box,
   Button,
   Card,
   FileInput,
-  Image as MantineImage,
-  LoadingOverlay,
-  Paper,
+  Loader,
   Modal,
   Pagination,
+  Paper,
+  Stack,
   Text,
   TextInput,
-  SimpleGrid,
   Title,
   Group,
+  rem,
   useMantineTheme
 } from '@mantine/core'
 import { notifications } from '@mantine/notifications'
-import { AlertCircle, Camera, User, X } from 'lucide-react'
+import { AlertCircle, Camera, User, Search, X } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { motion } from 'motion/react'
+import { motion, AnimatePresence } from 'motion/react'
 import { useAuth } from '../../providers/AuthProvider'
-import { Search } from 'lucide-react'
 import { api } from '../../lib/api'
+import MediaThumbnail from '../../components/MediaThumbnail'
 
 interface Character {
   id: number
@@ -39,6 +40,11 @@ interface Character {
   imageFileName?: string
   imageDisplayName?: string
   tags?: string[]
+  organizations?: Array<{
+    id: number
+    name: string
+    description?: string
+  }>
 }
 
 interface CharactersPageContentProps {
@@ -59,7 +65,7 @@ export default function CharactersPageContent({
   initialError = ''
 }: CharactersPageContentProps) {
   const theme = useMantineTheme()
-  const accentCharacter = 'character' // Use string key for theme colors
+  const accentCharacter = theme.other?.usogui?.character ?? theme.colors.blue?.[5] ?? '#1976d2'
   const [characters, setCharacters] = useState<Character[]>(initialCharacters)
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -78,122 +84,13 @@ export default function CharactersPageContent({
   const [imageDisplayName, setImageDisplayName] = useState('')
   const { isModeratorOrAdmin } = useAuth()
 
-  // Get character colors from theme with fallback
-  const characterColors = theme.colors.character || theme.other?.usogui?.character || ['#eff6ff', '#1976d2']
-  const primaryCharacterColor = characterColors[1] || theme.colors.red[6]
-  const secondaryCharacterColor = characterColors[0] || theme.colors.dark[7]
-  const withAlpha = useCallback((inputColor: string, alpha: number) => {
-    if (!inputColor) return `rgba(0, 0, 0, ${alpha})`
+  // Hover modal state
+  const [hoveredCharacter, setHoveredCharacter] = useState<Character | null>(null)
+  const [hoverModalPosition, setHoverModalPosition] = useState<{ x: number; y: number } | null>(null)
+  const hoverTimeoutRef = useRef<number | null>(null)
+  const hoveredElementRef = useRef<HTMLElement | null>(null)
 
-    const normalizeHex = (hex: string) => {
-      const stripped = hex.replace('#', '')
-      if (stripped.length === 3) {
-        return stripped
-          .split('')
-          .map((char) => char + char)
-          .join('')
-      }
-      return stripped
-    }
-
-    if (inputColor.startsWith('#')) {
-      const hex = normalizeHex(inputColor)
-      if (hex.length !== 6) return inputColor
-      const r = parseInt(hex.slice(0, 2), 16)
-      const g = parseInt(hex.slice(2, 4), 16)
-      const b = parseInt(hex.slice(4, 6), 16)
-      return `rgba(${r}, ${g}, ${b}, ${alpha})`
-    }
-
-    if (inputColor.startsWith('rgba(')) {
-      const values = inputColor
-        .slice(5, -1)
-        .split(',')
-        .map((value) => value.trim())
-
-      if (values.length >= 3) {
-        const [r, g, b] = values
-        return `rgba(${r}, ${g}, ${b}, ${alpha})`
-      }
-    }
-
-    if (inputColor.startsWith('rgb(')) {
-      const values = inputColor
-        .slice(4, -1)
-        .split(',')
-        .map((value) => value.trim())
-
-      if (values.length >= 3) {
-        const [r, g, b] = values
-        return `rgba(${r}, ${g}, ${b}, ${alpha})`
-      }
-    }
-
-    return inputColor
-  }, [])
-
-  const cardBorderColor = withAlpha(primaryCharacterColor, 0.4)
-  const cardHoverBorderColor = withAlpha(primaryCharacterColor, 0.75)
-  const cardBackgroundColor = withAlpha('#0f172a', 0.6)
-  const numberFormatter = useMemo(() => new Intl.NumberFormat(), [])
   const hasSearchQuery = searchQuery.trim().length > 0
-  const featuredCharacter = characters.length > 0 ? characters[0] : null
-  const firstIndexOnPage = useMemo(() => {
-    if (!total || total <= 0) return 0
-    return (currentPage - 1) * PAGE_SIZE + 1
-  }, [total, currentPage])
-
-  const lastIndexOnPage = useMemo(() => {
-    if (!total || total <= 0) return 0
-    return Math.min(currentPage * PAGE_SIZE, total)
-  }, [total, currentPage])
-
-  const summaryStats = useMemo(
-    () => [
-      {
-        label: 'Characters cataloged',
-        value: total > 0 ? numberFormatter.format(total) : '—',
-        hint: total > 0 ? 'Across every documented encounter' : 'Roster syncing'
-      },
-      {
-        label: 'On this page',
-        value: characters.length > 0 ? numberFormatter.format(characters.length) : '—',
-        hint:
-          total > 0 && characters.length > 0
-            ? `${numberFormatter.format(firstIndexOnPage)}–${numberFormatter.format(lastIndexOnPage)} of ${numberFormatter.format(total)}`
-            : hasSearchQuery
-              ? 'Adjust your search or filters to reveal more.'
-              : 'Waiting for characters to display.'
-      },
-      {
-        label: 'Page',
-        value: `${Math.max(currentPage, 1)} / ${Math.max(totalPages, 1)}`,
-        hint: hasSearchQuery ? 'Currently filtered by your search query.' : 'Exploring the full roster.'
-      }
-    ],
-    [
-      characters.length,
-      currentPage,
-      firstIndexOnPage,
-      hasSearchQuery,
-      lastIndexOnPage,
-      numberFormatter,
-      total,
-      totalPages
-    ]
-  )
-
-  const featuredCharacterTags = useMemo(() => {
-    if (!featuredCharacter?.tags) return []
-    return featuredCharacter.tags.slice(0, 3)
-  }, [featuredCharacter])
-
-  const hasAdditionalFeaturedTags =
-    (featuredCharacter?.tags?.length ?? 0) > featuredCharacterTags.length
-
-  const extraFeaturedTags = hasAdditionalFeaturedTags
-    ? (featuredCharacter?.tags?.length ?? 0) - featuredCharacterTags.length
-    : 0
 
   const fetchCharacters = useCallback(async () => {
     setLoading(true)
@@ -203,13 +100,19 @@ export default function CharactersPageContent({
       const params = new URLSearchParams({
         page: currentPage.toString(),
         limit: PAGE_SIZE.toString(),
+        includeOrganizations: 'true',
         ...(searchQuery && { name: searchQuery })
       })
 
-      const response = await api.get(`/characters?${params}`)
-      const data = await response.json()
+      const data = await api.get<{
+        data: Character[]
+        characters: Character[]
+        total: number
+        page: number
+        totalPages: number
+      }>(`/characters?${params}`)
 
-      setCharacters(data.characters || [])
+      setCharacters(data.characters || data.data || [])
       setTotal(data.total || 0)
       setTotalPages(Math.ceil((data.total || 0) / PAGE_SIZE))
     } catch (error) {
@@ -226,16 +129,87 @@ export default function CharactersPageContent({
     }
   }, [currentPage, searchQuery, currentSearch, characters.length, fetchCharacters])
 
+  // Function to update modal position based on hovered element
+  const updateModalPosition = useCallback((character?: Character) => {
+    const currentCharacter = character || hoveredCharacter
+    if (hoveredElementRef.current && currentCharacter) {
+      const rect = hoveredElementRef.current.getBoundingClientRect()
+      const modalWidth = 300 // rem(300) from the modal width
+      const modalHeight = 180 // Approximate modal height
+      const navbarHeight = 60 // Height of the sticky navbar
+      const buffer = 10 // Additional buffer space
+
+      let x = rect.left + rect.width / 2
+      let y = rect.top - modalHeight - buffer
+
+      // Check if modal would overlap with navbar
+      if (y < navbarHeight + buffer) {
+        // Position below the card instead
+        y = rect.bottom + buffer
+      }
+
+      // Ensure modal doesn't go off-screen horizontally
+      const modalLeftEdge = x - modalWidth / 2
+      const modalRightEdge = x + modalWidth / 2
+
+      if (modalLeftEdge < buffer) {
+        x = modalWidth / 2 + buffer
+      } else if (modalRightEdge > window.innerWidth - buffer) {
+        x = window.innerWidth - modalWidth / 2 - buffer
+      }
+
+      setHoverModalPosition({ x, y })
+    }
+  }, [hoveredCharacter])
+
+  useEffect(() => {
+    return () => {
+      if (hoverTimeoutRef.current) {
+        window.clearTimeout(hoverTimeoutRef.current)
+      }
+    }
+  }, [])
+
+  // Add scroll and resize listeners to update modal position
+  useEffect(() => {
+    if (hoveredCharacter && hoveredElementRef.current) {
+      const handleScroll = () => {
+        updateModalPosition()
+      }
+
+      const handleResize = () => {
+        updateModalPosition()
+      }
+
+      window.addEventListener('scroll', handleScroll)
+      document.addEventListener('scroll', handleScroll)
+      window.addEventListener('resize', handleResize)
+
+      return () => {
+        window.removeEventListener('scroll', handleScroll)
+        document.removeEventListener('scroll', handleScroll)
+        window.removeEventListener('resize', handleResize)
+      }
+    }
+  }, [hoveredCharacter, updateModalPosition])
+
   const handleSearchChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const newSearch = event.currentTarget.value
     setSearchQuery(newSearch)
+  }, [])
 
-    const params = new URLSearchParams()
-    if (newSearch) params.set('search', newSearch)
-    params.set('page', '1') // Reset to first page on new search
+  // Debounce search query changes
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      const params = new URLSearchParams()
+      if (searchQuery) params.set('search', searchQuery)
+      params.set('page', '1') // Reset to first page on new search
 
-    router.push(`/characters?${params.toString()}`)
-  }, [router])
+      router.push(`/characters?${params.toString()}`)
+    }, 300)
+
+    return () => clearTimeout(timeoutId)
+  }, [searchQuery, router])
 
   const handleClearSearch = useCallback(() => {
     setSearchQuery('')
@@ -273,7 +247,7 @@ export default function CharactersPageContent({
         formData.append('displayName', imageDisplayName)
       }
 
-      const response = await api.post('/media', formData)
+      const response = await api.post('/media', formData) as Response
 
       if (!response.ok) {
         throw new Error('Upload failed')
@@ -305,7 +279,7 @@ export default function CharactersPageContent({
 
     setUploading(true)
     try {
-      const response = await api.delete(`/media/character/${selectedCharacter.imageFileName}`)
+      const response = await api.delete(`/media/character/${selectedCharacter.imageFileName}`) as Response
       if (!response.ok) {
         throw new Error('Failed to remove image')
       }
@@ -337,387 +311,544 @@ export default function CharactersPageContent({
     setImageDialogOpen(false)
   }
 
+  // Hover modal handlers
+  const handleCharacterMouseEnter = (character: Character, event: React.MouseEvent) => {
+    const element = event.currentTarget as HTMLElement
+    hoveredElementRef.current = element
+
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current)
+    }
+
+    hoverTimeoutRef.current = window.setTimeout(() => {
+      setHoveredCharacter(character)
+      updateModalPosition(character) // Pass character directly to ensure position calculation works immediately
+    }, 500) // 500ms delay before showing
+  }
+
+  const handleCharacterMouseLeave = () => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current)
+    }
+
+    // Small delay before hiding to allow moving to modal
+    hoverTimeoutRef.current = window.setTimeout(() => {
+      setHoveredCharacter(null)
+      setHoverModalPosition(null)
+      hoveredElementRef.current = null
+    }, 200)
+  }
+
+  const handleModalMouseEnter = () => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current)
+    }
+  }
+
+  const handleModalMouseLeave = () => {
+    setHoveredCharacter(null)
+    setHoverModalPosition(null)
+    hoveredElementRef.current = null
+  }
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="relative min-h-screen overflow-hidden"
-      style={{
-        background: `linear-gradient(135deg, ${withAlpha(secondaryCharacterColor, 0.65)} 0%, ${withAlpha(primaryCharacterColor, 0.55)} 100%)`
-      }}
-    >
-      <div
-        className="pointer-events-none absolute inset-0 opacity-25"
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+      {/* Hero Section */}
+      <Box
         style={{
-          backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.22) 1px, transparent 0)',
-          backgroundSize: '40px 40px'
+          background: `linear-gradient(135deg, ${accentCharacter}15, ${accentCharacter}08)`,
+          borderRadius: theme.radius.lg,
+          border: `1px solid ${accentCharacter}25`,
+          marginBottom: rem(24)
         }}
-      />
-      <div className="container relative z-10 mx-auto px-4 py-16">
-        <section
-          className="relative overflow-hidden rounded-3xl border border-white/10 px-6 py-10 shadow-2xl backdrop-blur-md lg:px-12"
-          style={{
-            background: `linear-gradient(120deg, ${withAlpha(secondaryCharacterColor, 0.55)} 0%, ${withAlpha(primaryCharacterColor, 0.45)} 100%)`
-          }}
-        >
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.32),transparent_55%)] opacity-70" />
-          <div className="relative grid items-start gap-10 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
-            <div className="space-y-6 text-left">
-              <Title order={1} className="text-4xl font-bold text-white md:text-5xl lg:text-6xl">
-                Characters
-              </Title>
-              <Text size="lg" c="gray.1" className="max-w-2xl">
-                Explore the rich cast of Usogui characters, from cunning gamblers to mysterious adversaries.
-              </Text>
-              <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="lg">
-                {summaryStats.map((stat) => (
-                  <Paper
-                    key={stat.label}
-                    radius="lg"
-                    p="md"
-                    className="border border-white/15 bg-black/35 backdrop-blur-sm"
-                  >
-                    <Text size="xs" c="gray.4" tt="uppercase" fw={600} mb={6}>
-                      {stat.label}
-                    </Text>
-                    <Text size="xl" fw={600} c="white">
-                      {stat.value}
-                    </Text>
-                    <Text size="xs" c="gray.3" mt={8}>
-                      {stat.hint}
-                    </Text>
-                  </Paper>
-                ))}
-              </SimpleGrid>
-            </div>
-            {featuredCharacter && (
-              <Card
-                radius="xl"
-                padding="lg"
-                className="group border border-white/20 bg-black/45 backdrop-blur-md shadow-xl"
-              >
-                <Card.Section className="relative overflow-hidden rounded-2xl">
-                  <div className="relative h-60 w-full">
-                    {featuredCharacter.imageFileName ? (
-                      <MantineImage
-                        src={`https://f005.backblazeb2.com/file/usogui-media/${featuredCharacter.imageFileName}`}
-                        alt={featuredCharacter.imageDisplayName || featuredCharacter.name}
-                        className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
-                      />
-                    ) : (
-                      <div className="flex h-full items-center justify-center bg-black/60">
-                        <User size={72} color={withAlpha('#f8fafc', 0.8)} />
-                      </div>
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
-                    <Badge
-                      variant="filled"
-                      color={accentCharacter}
-                      className="absolute left-4 top-4"
-                    >
-                      First appearance – Chapter {featuredCharacter.firstAppearanceChapter}
-                    </Badge>
-                  </div>
-                </Card.Section>
-                <div className="mt-5 space-y-3">
-                  <div>
-                    <Text fw={600} size="lg" c="white">
-                      {featuredCharacter.name}
-                    </Text>
-                    {featuredCharacter.alias && (
-                      <Text size="sm" c="gray.3" className="italic">
-                        &ldquo;{featuredCharacter.alias}&rdquo;
-                      </Text>
-                    )}
-                  </div>
-                  {featuredCharacter.description && (
-                    <Text size="sm" c="gray.3" lineClamp={3}>
-                      {featuredCharacter.description}
-                    </Text>
-                  )}
-                  {featuredCharacterTags.length > 0 && (
-                    <Group gap="xs" className="flex-wrap">
-                      {featuredCharacterTags.map((tag) => (
-                        <Badge key={tag} variant="outline" color="gray" radius="sm">
-                          {tag}
-                        </Badge>
-                      ))}
-                      {hasAdditionalFeaturedTags && extraFeaturedTags > 0 && (
-                        <Badge variant="outline" color="gray" radius="sm">
-                          +{extraFeaturedTags}
-                        </Badge>
-                      )}
-                    </Group>
-                  )}
-                  <Button
-                    component={Link}
-                    href={`/characters/${featuredCharacter.id}`}
-                    variant="gradient"
-                    gradient={{ from: primaryCharacterColor, to: cardHoverBorderColor }}
-                    size="sm"
-                    radius="md"
-                    className="mt-2 self-start"
-                  >
-                    View profile
-                  </Button>
-                </div>
-              </Card>
-            )}
-          </div>
-        </section>
-
-        <Paper
-          radius="xl"
-          p="md"
-          className="mt-10 border border-white/10 bg-black/45 backdrop-blur-md"
-        >
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div className="w-full md:max-w-lg">
-              <TextInput
-                value={searchQuery}
-                onChange={handleSearchChange}
-                placeholder="Search characters by name, alias, or tag..."
-                leftSection={<Search size={16} />}
-                rightSection={
-                  hasSearchQuery ? (
-                    <ActionIcon
-                      size="sm"
-                      variant="subtle"
-                      color="gray"
-                      aria-label="Clear search"
-                      onMouseDown={(event) => event.preventDefault()}
-                      onClick={handleClearSearch}
-                    >
-                      <X size={14} />
-                    </ActionIcon>
-                  ) : undefined
-                }
-                rightSectionPointerEvents={hasSearchQuery ? 'auto' : undefined}
-                radius="md"
-                size="md"
-              />
-            </div>
-            <Group gap="xs" className="flex-wrap justify-start md:justify-end">
-              <Badge variant="light" color={accentCharacter}>
-                {total > 0 ? `${numberFormatter.format(total)} total` : 'No characters yet'}
-              </Badge>
-              {hasSearchQuery && (
-                <Badge variant="outline" color="gray">
-                  Searching for &ldquo;{searchQuery}&rdquo;
-                </Badge>
-              )}
-            </Group>
-          </div>
-        </Paper>
-
-        {error && (
-          <Alert
-            icon={<AlertCircle size={16} />}
-            title="Error"
-            color="red"
-            className="mt-8"
+        p="md"
+      >
+        <Stack align="center" gap="xs">
+          <Box
+            style={{
+              background: `linear-gradient(135deg, ${accentCharacter}, ${accentCharacter}CC)`,
+              borderRadius: '50%',
+              width: rem(40),
+              height: rem(40),
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: `0 4px 16px ${accentCharacter}40`
+            }}
           >
-            {error}
-          </Alert>
-        )}
+            <User size={20} color="white" />
+          </Box>
 
-        <div className="relative mt-12">
-          <LoadingOverlay visible={loading} overlayProps={{ radius: 'sm', blur: 2 }} />
-          {characters.length === 0 && !loading ? (
-            <div className="rounded-3xl border border-dashed border-white/20 bg-black/30 py-16 text-center backdrop-blur-sm">
-              <Text size="lg" c="dimmed">
-                {hasSearchQuery ? 'No characters found matching your search.' : 'No characters available yet.'}
+          <Stack align="center" gap="xs">
+            <Title order={1} size="1.5rem" fw={700} ta="center" c={accentCharacter}>
+              Characters
+            </Title>
+            <Text size="md" c="dimmed" ta="center" maw={400}>
+              Explore the rich cast of Usogui characters, from cunning gamblers to mysterious adversaries
+            </Text>
+
+            {total > 0 && (
+              <Badge size="md" variant="light" color="blue" radius="xl" mt="xs">
+                {total} character{total !== 1 ? 's' : ''} available
+              </Badge>
+            )}
+          </Stack>
+        </Stack>
+      </Box>
+
+      {/* Search and Filters */}
+      <Box mb="xl">
+        <Group justify="center" mb="md">
+          <Box style={{ maxWidth: rem(600), width: '100%' }}>
+            <TextInput
+              placeholder="Search characters by name, alias, or tag..."
+              value={searchQuery}
+              onChange={handleSearchChange}
+              leftSection={<Search size={20} />}
+              size="lg"
+              radius="xl"
+              rightSection={
+                hasSearchQuery ? (
+                  <ActionIcon variant="subtle" color="gray" onClick={handleClearSearch} size="sm">
+                    <X size={16} />
+                  </ActionIcon>
+                ) : null
+              }
+              styles={{
+                input: {
+                  fontSize: rem(16),
+                  paddingLeft: rem(50),
+                  paddingRight: hasSearchQuery ? rem(50) : rem(20)
+                }
+              }}
+            />
+          </Box>
+        </Group>
+      </Box>
+
+      {/* Error State */}
+      {error && (
+        <Alert
+          color="red"
+          radius="md"
+          mb="xl"
+          icon={<AlertCircle size={16} />}
+          title="Error loading characters"
+        >
+          {error}
+        </Alert>
+      )}
+
+      {/* Loading State */}
+      {loading ? (
+        <Box style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', paddingBlock: rem(80) }}>
+          <Loader size="xl" color={accentCharacter} mb="md" />
+          <Text size="lg" c="dimmed">Loading characters...</Text>
+        </Box>
+      ) : (
+        <>
+          {/* Empty State */}
+          {characters.length === 0 ? (
+            <Box style={{ textAlign: 'center', paddingBlock: rem(80) }}>
+              <User size={64} color={theme.colors.gray[4]} style={{ marginBottom: rem(20) }} />
+              <Title order={3} c="dimmed" mb="sm">
+                {hasSearchQuery ? 'No characters found' : 'No characters available'}
+              </Title>
+              <Text size="lg" c="dimmed" mb="xl">
+                {hasSearchQuery
+                  ? 'Try adjusting your search terms or filters'
+                  : 'Check back later for new characters'}
               </Text>
               {hasSearchQuery && (
-                <Text size="sm" c="dimmed" mt={8}>
-                  Try clearing the search or exploring a different keyword.
-                </Text>
+                <Button variant="outline" color="blue" onClick={handleClearSearch}>
+                  Clear search
+                </Button>
               )}
-            </div>
+            </Box>
           ) : (
             <>
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-                {characters.map((character) => {
-                  const visibleTags = (character.tags ?? []).slice(0, 3)
-                  const extraTagsCount =
-                    (character.tags?.length ?? 0) > visibleTags.length
-                      ? (character.tags?.length ?? 0) - visibleTags.length
-                      : 0
-
-                  return (
-                    <motion.div
-                      key={character.id}
-                      initial={{ opacity: 0, y: 24 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.35 }}
-                      className="group h-full"
+              {/* Results Grid */}
+              <Box
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                  gap: rem(16),
+                  justifyItems: 'center'
+                }}
+              >
+                {characters.map((character, index) => (
+                  <motion.div
+                    key={character.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: index * 0.05 }}
+                    style={{
+                      width: '200px',
+                      height: '280px' // Playing card aspect ratio: 200px * 1.4 = 280px
+                    }}
+                  >
+                    <Card
+                      component={Link}
+                      href={`/characters/${character.id}`}
+                      withBorder={false}
+                      radius="lg"
+                      shadow="sm"
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        overflow: 'hidden',
+                        transition: 'all 0.2s ease',
+                        cursor: 'pointer',
+                        textDecoration: 'none',
+                        backgroundColor: theme.colors.dark?.[7] ?? theme.white,
+                        border: `1px solid ${theme.colors.dark?.[4] ?? theme.colors.gray?.[2]}`,
+                        width: '100%',
+                        height: '100%'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'translateY(-4px)'
+                        e.currentTarget.style.boxShadow = '0 12px 32px rgba(0,0,0,0.25)'
+                        handleCharacterMouseEnter(character, e)
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'translateY(0)'
+                        e.currentTarget.style.boxShadow = theme.shadows.sm
+                        handleCharacterMouseLeave()
+                      }}
                     >
-                      <Card
-                        shadow="sm"
-                        padding="lg"
-                        radius="lg"
-                        withBorder
-                        component={Link}
-                        href={`/characters/${character.id}`}
-                        className="flex h-full flex-col overflow-hidden border transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
+                      {/* Chapter Badge at Top Left */}
+                      {character.firstAppearanceChapter && (
+                        <Badge
+                          variant="filled"
+                          color="blue"
+                          radius="sm"
+                          size="sm"
+                          style={{
+                            position: 'absolute',
+                            top: rem(8),
+                            left: rem(8),
+                            backgroundColor: 'rgba(25, 118, 210, 0.95)',
+                            color: 'white',
+                            fontSize: rem(10),
+                            fontWeight: 700,
+                            zIndex: 10,
+                            backdropFilter: 'blur(4px)',
+                            maxWidth: isModeratorOrAdmin ? 'calc(100% - 60px)' : 'calc(100% - 16px)'
+                          }}
+                        >
+                          Ch. {character.firstAppearanceChapter}
+                        </Badge>
+                      )}
+
+                      {/* Edit Button at Top Right */}
+                      {isModeratorOrAdmin && (
+                        <ActionIcon
+                          size="xs"
+                          variant="filled"
+                          color="dark"
+                          radius="xl"
+                          style={{
+                            position: 'absolute',
+                            top: rem(8),
+                            right: rem(8),
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            backdropFilter: 'blur(4px)',
+                            zIndex: 10,
+                            width: rem(24),
+                            height: rem(24)
+                          }}
+                          onClick={(e) => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            handleEditImage(character)
+                          }}
+                        >
+                          <Camera size={12} />
+                        </ActionIcon>
+                      )}
+
+                      {/* Main Image Section - Takes up most of the card */}
+                      <Box style={{
+                        position: 'relative',
+                        overflow: 'hidden',
+                        flex: 1,
+                        minHeight: 0
+                      }}>
+                        <MediaThumbnail
+                          entityType="character"
+                          entityId={character.id}
+                          entityName={character.name}
+                          allowCycling={false}
+                          maxWidth="100%"
+                          maxHeight="100%"
+                        />
+                      </Box>
+
+                      {/* Character Name at Bottom */}
+                      <Box
+                        p={rem(6)}
+                        ta="center"
                         style={{
-                          borderColor: cardBorderColor,
-                          background: cardBackgroundColor,
-                          boxShadow: `0 20px 40px -25px ${withAlpha(primaryCharacterColor, 0.55)}`
+                          backgroundColor: 'transparent',
+                          minHeight: rem(40),
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          flexShrink: 0
                         }}
                       >
-                        <Card.Section className="relative overflow-hidden rounded-xl">
-                          <div className="relative h-52 w-full">
-                            {character.imageFileName ? (
-                              <MantineImage
-                                src={`https://f005.backblazeb2.com/file/usogui-media/${character.imageFileName}`}
-                                alt={character.imageDisplayName || character.name}
-                                className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
-                              />
-                            ) : (
-                              <div className="flex h-full items-center justify-center bg-black/60">
-                                <User size={64} color={withAlpha('#f8fafc', 0.85)} />
-                              </div>
-                            )}
-                            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent opacity-90 transition-opacity duration-300 group-hover:opacity-95" />
-                            <Badge
-                              variant="filled"
-                              color={accentCharacter}
-                              className="absolute left-3 top-3"
-                            >
-                              Chapter {character.firstAppearanceChapter}
-                            </Badge>
-                            {isModeratorOrAdmin && (
-                              <ActionIcon
-                                size="lg"
-                                radius="md"
-                                variant="filled"
-                                color={accentCharacter}
-                                className="absolute right-3 top-3 opacity-0 transition-opacity duration-200 group-hover:opacity-100"
-                                onClick={(e) => {
-                                  e.preventDefault()
-                                  e.stopPropagation()
-                                  handleEditImage(character)
-                                }}
-                              >
-                                <Camera size={16} />
-                              </ActionIcon>
-                            )}
-                          </div>
-                        </Card.Section>
-                        <div className="mt-5 flex flex-1 flex-col space-y-3">
-                          <div className="flex flex-col gap-1">
-                            <Text fw={600} size="lg" c="white">
-                              {character.name}
-                            </Text>
-                            {character.alias && (
-                              <Text size="sm" c="gray.4" className="italic">
-                                &ldquo;{character.alias}&rdquo;
-                              </Text>
-                            )}
-                          </div>
-                          {character.description && (
-                            <Text size="sm" c="gray.3" lineClamp={3}>
-                              {character.description}
-                            </Text>
-                          )}
-                          {visibleTags.length > 0 && (
-                            <Group gap="xs" className="flex flex-wrap">
-                              {visibleTags.map((tag) => (
-                                <Badge key={tag} variant="outline" color="gray" radius="sm">
-                                  {tag}
-                                </Badge>
-                              ))}
-                              {extraTagsCount > 0 && (
-                                <Badge variant="outline" color="gray" radius="sm">
-                                  +{extraTagsCount}
-                                </Badge>
-                              )}
-                            </Group>
-                          )}
-                        </div>
-                      </Card>
-                    </motion.div>
-                  )
-                })}
-              </div>
+                        <Text
+                          size="sm"
+                          fw={700}
+                          lineClamp={2}
+                          c={accentCharacter}
+                          ta="center"
+                          style={{
+                            lineHeight: 1.2,
+                            textShadow: '0 2px 4px rgba(0,0,0,0.8), 0 1px 2px rgba(255,255,255,0.2)',
+                            fontSize: rem(13),
+                            background: 'linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05))',
+                            backdropFilter: 'blur(4px)',
+                            borderRadius: rem(6),
+                            padding: `${rem(4)} ${rem(8)}`,
+                            border: `1px solid rgba(255,255,255,0.1)`
+                          }}
+                        >
+                          {character.name}
+                        </Text>
+                      </Box>
+                    </Card>
+                  </motion.div>
+                ))}
+              </Box>
+
+              {/* Pagination */}
               {totalPages > 1 && (
-                <div className="mt-10 flex justify-center">
+                <Box style={{ display: 'flex', justifyContent: 'center', marginTop: rem(48) }}>
                   <Pagination
                     total={totalPages}
                     value={currentPage}
                     onChange={handlePageChange}
-                    size="md"
-                    color={accentCharacter}
-                    radius="md"
+                    color="blue"
+                    size="lg"
+                    radius="xl"
+                    withEdges
                   />
-                </div>
+                </Box>
               )}
             </>
           )}
-        </div>
+        </>
+      )}
 
-        {/* Image Upload Modal */}
-        <Modal
-          opened={imageDialogOpen}
-          onClose={handleCloseImageDialog}
-          title="Edit Character Image"
-          size="md"
-        >
-          <div className="space-y-4">
-            {selectedCharacter && (
-              <>
-                <Text size="lg" fw={500}>
-                  {selectedCharacter.name}
-                </Text>
+      {/* Image Upload Modal */}
+      <Modal
+        opened={imageDialogOpen}
+        onClose={handleCloseImageDialog}
+        title="Edit Character Image"
+        size="md"
+      >
+        <div className="space-y-4">
+          {selectedCharacter && (
+            <>
+              <Text size="lg" fw={500}>
+                {selectedCharacter.name}
+              </Text>
 
-                <TextInput
-                  label="Display Name (optional)"
-                  value={imageDisplayName}
-                  onChange={(e) => setImageDisplayName(e.currentTarget.value)}
-                  placeholder="Enter display name for the image"
+              <TextInput
+                label="Display Name (optional)"
+                value={imageDisplayName}
+                onChange={(e) => setImageDisplayName(e.currentTarget.value)}
+                placeholder="Enter display name for the image"
+              />
+
+              <div>
+                <Text size="sm" mb={8}>Select Image File:</Text>
+                <FileInput
+                  placeholder="Choose image file"
+                  accept="image/*"
+                  onChange={(file) => setSelectedFile(file)}
                 />
+              </div>
 
-                <div>
-                  <Text size="sm" mb={8}>Select Image File:</Text>
-                  <FileInput
-                    placeholder="Choose image file"
-                    accept="image/*"
-                    onChange={(file) => setSelectedFile(file)}
-                  />
-                </div>
+              <div className="flex gap-2 pt-4">
+                <Button
+                  onClick={handleUploadImage}
+                  disabled={!selectedFile || uploading}
+                  loading={uploading}
+                  color="blue"
+                  flex={1}
+                >
+                  Upload
+                </Button>
 
-                <div className="flex gap-2 pt-4">
+                {selectedCharacter.imageFileName && (
                   <Button
-                    onClick={handleUploadImage}
-                    disabled={!selectedFile || uploading}
+                    onClick={handleRemoveImage}
+                    disabled={uploading}
                     loading={uploading}
-                    color={accentCharacter}
+                    color="red"
+                    variant="outline"
                     flex={1}
                   >
-                    Upload
+                    Remove Current
                   </Button>
+                )}
+              </div>
+            </>
+          )}
+        </div>
+      </Modal>
 
-                  {selectedCharacter.imageFileName && (
-                    <Button
-                      onClick={handleRemoveImage}
-                      disabled={uploading}
-                      loading={uploading}
-                      color="red"
-                      variant="outline"
-                      flex={1}
+      {/* Hover Modal */}
+      <AnimatePresence>
+        {hoveredCharacter && hoverModalPosition && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            transition={{ duration: 0.2 }}
+            style={{
+              position: 'fixed',
+              left: hoverModalPosition.x - 150, // Center horizontally (300px width / 2)
+              top: hoverModalPosition.y, // Use calculated position directly
+              zIndex: 1001, // Higher than navbar (which is 1000)
+              pointerEvents: 'auto'
+            }}
+            onMouseEnter={handleModalMouseEnter}
+            onMouseLeave={handleModalMouseLeave}
+          >
+            <Paper
+              shadow="xl"
+              radius="lg"
+              p="md"
+              style={{
+                backgroundColor: theme.colors.dark?.[7] ?? theme.white,
+                border: `2px solid ${accentCharacter}`,
+                backdropFilter: 'blur(10px)',
+                width: rem(300),
+                maxWidth: '90vw'
+              }}
+            >
+              <Stack gap="sm">
+                {/* Character Name */}
+                <Title
+                  order={4}
+                  size="md"
+                  fw={700}
+                  c={accentCharacter}
+                  ta="center"
+                  lineClamp={2}
+                >
+                  {hoveredCharacter.name}
+                </Title>
+
+                {/* Character Alias */}
+                {hoveredCharacter.alias && (
+                  <Text
+                    size="sm"
+                    c="dimmed"
+                    ta="center"
+                    className="italic"
+                  >
+                    &ldquo;{hoveredCharacter.alias}&rdquo;
+                  </Text>
+                )}
+
+                {/* Alternate Names */}
+                {hoveredCharacter.alternateNames && hoveredCharacter.alternateNames.length > 0 && (
+                  <Group justify="center" gap="xs" wrap="wrap">
+                    {hoveredCharacter.alternateNames.map((name, index) => (
+                      <Badge
+                        key={index}
+                        variant="outline"
+                        color="violet"
+                        size="xs"
+                        fw={500}
+                      >
+                        {name}
+                      </Badge>
+                    ))}
+                  </Group>
+                )}
+
+                {/* Start Chapter */}
+                {hoveredCharacter.firstAppearanceChapter && (
+                  <Group justify="center" gap="xs">
+                    <Badge
+                      variant="filled"
+                      color="blue"
+                      size="sm"
+                      fw={600}
                     >
-                      Remove Current
-                    </Button>
-                  )}
-                </div>
-              </>
-            )}
-          </div>
-        </Modal>
+                      Ch. {hoveredCharacter.firstAppearanceChapter}
+                    </Badge>
+                  </Group>
+                )}
 
-      </div>
+                {/* Organizations/Factions */}
+                {hoveredCharacter.organizations && hoveredCharacter.organizations.length > 0 && (
+                  <Group justify="center" gap="xs">
+                    {hoveredCharacter.organizations.slice(0, 2).map((org) => (
+                      <Badge
+                        key={org.id}
+                        variant="light"
+                        color="orange"
+                        size="xs"
+                        fw={500}
+                      >
+                        {org.name}
+                      </Badge>
+                    ))}
+                    {hoveredCharacter.organizations.length > 2 && (
+                      <Badge
+                        variant="light"
+                        color="orange"
+                        size="xs"
+                        fw={500}
+                      >
+                        +{hoveredCharacter.organizations.length - 2}
+                      </Badge>
+                    )}
+                  </Group>
+                )}
+
+                {/* Description */}
+                {hoveredCharacter.description && (
+                  <Text
+                    size="sm"
+                    c="dimmed"
+                    ta="center"
+                    lineClamp={3}
+                    style={{
+                      lineHeight: 1.4,
+                      maxHeight: rem(60)
+                    }}
+                  >
+                    {hoveredCharacter.description}
+                  </Text>
+                )}
+
+                {/* Tags */}
+                {hoveredCharacter.tags && hoveredCharacter.tags.length > 0 && (
+                  <Group justify="center" gap="xs">
+                    {hoveredCharacter.tags.slice(0, 3).map((tag) => (
+                      <Badge key={tag} variant="outline" color="gray" size="xs">
+                        {tag}
+                      </Badge>
+                    ))}
+                    {hoveredCharacter.tags.length > 3 && (
+                      <Badge variant="outline" color="gray" size="xs">
+                        +{hoveredCharacter.tags.length - 3}
+                      </Badge>
+                    )}
+                  </Group>
+                )}
+              </Stack>
+            </Paper>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   )
 }

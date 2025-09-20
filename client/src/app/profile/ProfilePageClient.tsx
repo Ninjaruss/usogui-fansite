@@ -3,64 +3,43 @@
 import React, { useState, useEffect } from 'react'
 import {
   Alert,
-  Avatar,
   Badge,
+  Box,
   Button,
   Card,
   Container,
   Divider,
   Group,
   Loader,
-  Modal,
-  Progress,
   SimpleGrid,
   Stack,
-  Tabs,
   Text,
   TextInput,
-  Textarea,
   Title,
   useMantineTheme,
   ActionIcon,
-  rem,
   Center
 } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
 import { notifications } from '@mantine/notifications'
 import {
   User,
-  Crown,
   BookOpen,
   Edit,
-  Save,
-  Upload,
   X,
-  Camera,
-  Settings,
-  Heart,
-  Quote,
-  Dice6,
-  Eye,
-  Calendar,
   FileText
 } from 'lucide-react'
 import Link from 'next/link'
 import { motion } from 'motion/react'
 import { useAuth } from '../../providers/AuthProvider'
-import { useProgress } from '../../providers/ProgressProvider'
-import { useSpoilerSettings } from '../../hooks/useSpoilerSettings'
 import { api } from '../../lib/api'
 import { GuideStatus } from '../../types'
 import UserProfileImage from '../../components/UserProfileImage'
-import GambleChip from '../../components/GambleChip'
 import QuoteSelectionPopup from '../../components/QuoteSelectionPopup'
 import GambleSelectionPopup from '../../components/GambleSelectionPopup'
+import ProfilePictureSelector from '../../components/ProfilePictureSelector'
 import UserBadges from '../../components/UserBadges'
-import CustomRoleEditor from '../../components/CustomRoleEditor'
 import CustomRoleDisplay from '../../components/CustomRoleDisplay'
-import EnhancedSpoilerMarkdown from '../../components/EnhancedSpoilerMarkdown'
-import MediaGallery from '../../components/MediaGallery'
-import SpoilerSettings from '../../components/SpoilerSettings'
 
 interface UserGuide {
   id: number
@@ -72,34 +51,33 @@ interface UserGuide {
   readingProgress?: number
 }
 
-interface UserSubmission {
-  id: number
-  type: 'guide' | 'media'
-  title: string
-  status: 'pending' | 'approved' | 'rejected'
-  createdAt: string
-}
-
 export default function ProfilePageClient() {
-  const { user, isAuthenticated, loading: authLoading } = useAuth()
-  const { progress } = useProgress()
-  const { spoilerSettings, updateSpoilerSettings } = useSpoilerSettings()
+  const { user, loading: authLoading, refreshUser } = useAuth()
   const theme = useMantineTheme()
 
-  const [isEditing, setIsEditing] = useState(false)
   const [profileData, setProfileData] = useState({
-    bio: '',
     favoriteCharacter: '',
     favoriteQuote: '',
-    favoriteGamble: ''
+    favoriteGamble: '',
+    customRole: ''
   })
   const [userGuides, setUserGuides] = useState<UserGuide[]>([])
-  const [userSubmissions, setUserSubmissions] = useState<UserSubmission[]>([])
+  const [quotes, setQuotes] = useState<any[]>([])
+  const [gambles, setGambles] = useState<any[]>([])
+  const [userBadges, setUserBadges] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
 
   const [quoteModalOpened, { open: openQuoteModal, close: closeQuoteModal }] = useDisclosure(false)
   const [gambleModalOpened, { open: openGambleModal, close: closeGambleModal }] = useDisclosure(false)
+  const [profilePictureSelectorOpened, { open: openProfilePictureSelector, close: closeProfilePictureSelector }] = useDisclosure(false)
+
+  const isAuthenticated = !!user
+
+  // Check if user has active supporter badge
+  const hasActiveSupporterBadge = userBadges.some(userBadge => 
+    userBadge.badge?.type === 'active_supporter'
+  )
 
   useEffect(() => {
     if (isAuthenticated && user) {
@@ -112,22 +90,90 @@ export default function ProfilePageClient() {
   const loadProfileData = async () => {
     try {
       setLoading(true)
-      const [profileResponse, guidesResponse, submissionsResponse] = await Promise.allSettled([
-        api.get('/users/profile'),
+      // Fetch profile first so we can immediately load the user's saved favorites
+      let favoriteQuoteId: number | null = null
+      let favoriteGambleId: number | null = null
+
+      try {
+        const profileResp = await api.get('/users/profile')
+        const responseData = (profileResp as any).data || profileResp
+        setProfileData({
+          favoriteCharacter: responseData.favoriteCharacter || '',
+          favoriteQuote: responseData.favoriteQuoteId?.toString() || '',
+          favoriteGamble: responseData.favoriteGambleId?.toString() || '',
+          customRole: user?.customRole || responseData.customRole || ''
+        })
+        favoriteQuoteId = responseData.favoriteQuoteId ?? null
+        favoriteGambleId = responseData.favoriteGambleId ?? null
+
+        // If user has favorites, fetch them now so UI can show them immediately
+        const favFetches: Promise<any>[] = []
+        if (favoriteQuoteId != null) favFetches.push(api.getQuote(favoriteQuoteId))
+        else favFetches.push(Promise.resolve(null))
+        if (favoriteGambleId != null) favFetches.push(api.getGamble(favoriteGambleId))
+        else favFetches.push(Promise.resolve(null))
+
+        const [favQuoteResp, favGambleResp] = await Promise.all(favFetches)
+        const favQuote = favQuoteResp?.data ?? favQuoteResp
+        const favGamble = favGambleResp?.data ?? favGambleResp
+
+        if (favQuote) {
+          setQuotes(prev => {
+            if (prev.find(q => q.id === favQuote.id)) return prev
+            return [...prev, favQuote]
+          })
+        }
+
+        if (favGamble) {
+          setGambles(prev => {
+            if (prev.find(g => g.id === favGamble.id)) return prev
+            return [...prev, favGamble]
+          })
+        }
+      } catch (err) {
+        console.error('Failed to fetch profile or favorites:', err)
+      }
+
+      // Then fetch other resources concurrently
+      const [guidesResponse, quotesResponse, gamblesResponse, badgesResponse] = await Promise.allSettled([
         api.get('/guides/my-guides'),
-        api.get('/users/my-submissions')
+        api.get('/quotes'),
+        api.get('/gambles'),
+        user?.id ? api.getUserBadges(user.id) : Promise.resolve([])
       ])
 
-      if (profileResponse.status === 'fulfilled') {
-        setProfileData(profileResponse.value.data)
-      }
-
       if (guidesResponse.status === 'fulfilled') {
-        setUserGuides(guidesResponse.value.data)
+        setUserGuides((guidesResponse.value as any).data)
       }
 
-      if (submissionsResponse.status === 'fulfilled') {
-        setUserSubmissions(submissionsResponse.value.data)
+      if (quotesResponse.status === 'fulfilled') {
+        // Merge fetched quotes with any favorites we already added, avoiding duplicates
+        const fetchedQuotes = (quotesResponse.value as any).data || []
+        setQuotes(prev => {
+          const existingIds = new Set(prev.map(q => q.id))
+          const merged = [...prev]
+          for (const q of fetchedQuotes) {
+            if (!existingIds.has(q.id)) merged.push(q)
+          }
+          return merged
+        })
+      }
+
+      if (gamblesResponse.status === 'fulfilled') {
+        const fetchedGambles = (gamblesResponse.value as any).data || []
+        setGambles(prev => {
+          const existingIds = new Set(prev.map(g => g.id))
+          const merged = [...prev]
+          for (const g of fetchedGambles) {
+            if (!existingIds.has(g.id)) merged.push(g)
+          }
+          return merged
+        })
+      }
+
+      if (badgesResponse.status === 'fulfilled') {
+        const badgesData = badgesResponse.value as any
+        setUserBadges(Array.isArray(badgesData) ? badgesData : badgesData?.data || [])
       }
     } catch (error) {
       console.error('Failed to load profile data:', error)
@@ -144,8 +190,7 @@ export default function ProfilePageClient() {
   const handleSave = async () => {
     try {
       setSaving(true)
-      await api.put('/users/profile', profileData)
-      setIsEditing(false)
+      await api.patch('/users/profile', profileData)
       notifications.show({
         title: 'Success',
         message: 'Profile updated successfully',
@@ -163,14 +208,76 @@ export default function ProfilePageClient() {
     }
   }
 
-  const handleQuoteSelect = (quote: any) => {
-    setProfileData(prev => ({ ...prev, favoriteQuote: quote.id }))
-    closeQuoteModal()
+  const handleProfilePictureSelect = async (type: string, mediaId?: number) => {
+    closeProfilePictureSelector()
+    
+    try {
+      const updateData: any = { profilePictureType: type }
+      if (mediaId) {
+        updateData.selectedCharacterMediaId = mediaId
+      }
+      await api.patch('/users/profile', updateData)
+      
+      // Refresh user data to update the profile picture display
+      await refreshUser()
+      
+      notifications.show({
+        title: 'Success',
+        message: 'Profile picture updated successfully',
+        color: 'green'
+      })
+    } catch (error) {
+      console.error('Failed to update profile picture:', error)
+      notifications.show({
+        title: 'Error',
+        message: 'Failed to update profile picture',
+        color: 'red'
+      })
+    }
   }
 
-  const handleGambleSelect = (gamble: any) => {
-    setProfileData(prev => ({ ...prev, favoriteGamble: gamble.id }))
+  const handleQuoteSelect = async (quoteId: number | null) => {
+    const newQuote = quoteId?.toString() || ''
+    setProfileData(prev => ({ ...prev, favoriteQuote: newQuote }))
+    closeQuoteModal()
+    
+    // Auto-save the change
+    try {
+      await api.patch('/users/profile', { favoriteQuoteId: quoteId })
+      notifications.show({
+        title: 'Success',
+        message: 'Favorite quote updated successfully',
+        color: 'green'
+      })
+    } catch (error) {
+      notifications.show({
+        title: 'Error',
+        message: 'Failed to update favorite quote',
+        color: 'red'
+      })
+    }
+  }
+
+  const handleGambleSelect = async (gambleId: number | null) => {
+    const newGamble = gambleId?.toString() || ''
+    setProfileData(prev => ({ ...prev, favoriteGamble: newGamble }))
     closeGambleModal()
+    
+    // Auto-save the change
+    try {
+      await api.patch('/users/profile', { favoriteGambleId: gambleId })
+      notifications.show({
+        title: 'Success',
+        message: 'Favorite gamble updated successfully',
+        color: 'green'
+      })
+    } catch (error) {
+      notifications.show({
+        title: 'Error',
+        message: 'Failed to update favorite gamble',
+        color: 'red'
+      })
+    }
   }
 
   if (authLoading) {
@@ -193,9 +300,13 @@ export default function ProfilePageClient() {
           variant="light"
         >
           <Stack gap="md">
-            <Text c="#ffffff">You need to be logged in to view your profile.</Text>
+            <Text>You need to be logged in to view your profile.</Text>
             <Group>
-              <Button component={Link} href="/login" variant="filled">
+              <Button 
+                component={Link} 
+                href={`/login?returnUrl=${encodeURIComponent('/profile')}`} 
+                variant="filled"
+              >
                 Log In
               </Button>
               <Button component={Link} href="/register" variant="outline">
@@ -218,10 +329,6 @@ export default function ProfilePageClient() {
     )
   }
 
-  const progressValue = progress?.currentChapter && progress?.totalChapters
-    ? (progress.currentChapter / progress.totalChapters) * 100
-    : 0
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -232,149 +339,274 @@ export default function ProfilePageClient() {
         <Stack gap="xl">
           {/* Profile Header */}
           <Card shadow="md" padding="xl" radius="md">
-            <Group justify="space-between" align="flex-start">
-              <Group align="center" gap="lg">
-                <UserProfileImage user={user} size={120} />
-                <Stack gap="sm">
-                  <Group align="center" gap="md">
-                    <Title order={2}>{user?.username}</Title>
-                    <UserBadges user={user} />
-                    <CustomRoleDisplay user={user} />
-                  </Group>
-                  <Text size="sm" c="dimmed">
-                    Member since {new Date(user?.createdAt || '').toLocaleDateString()}
-                  </Text>
-                  {progress && (
-                    <Stack gap="xs">
-                      <Text size="sm" fw={500} c="#ffffff">
-                        Reading Progress: Chapter {progress.currentChapter} of {progress.totalChapters}
-                      </Text>
-                      <Progress value={progressValue} size="sm" radius="md" />
-                    </Stack>
-                  )}
-                </Stack>
-              </Group>
-              <ActionIcon
-                variant="light"
-                size="lg"
-                onClick={() => setIsEditing(!isEditing)}
-                aria-label={isEditing ? "Cancel editing" : "Edit profile"}
+            <Group align="center" gap="lg">
+              <Box
+                style={{
+                  position: 'relative',
+                  cursor: 'pointer',
+                  borderRadius: '50%',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={(e: any) => {
+                  e.currentTarget.style.transform = 'scale(1.05)'
+                  e.currentTarget.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.3)'
+                }}
+                onMouseLeave={(e: any) => {
+                  e.currentTarget.style.transform = 'scale(1)'
+                  e.currentTarget.style.boxShadow = 'none'
+                }}
+                onClick={() => {
+                  if (user?.id) {
+                    openProfilePictureSelector();
+                  } else {
+                    notifications.show({
+                      title: 'Error',
+                      message: 'Unable to load profile options',
+                      color: 'red'
+                    });
+                  }
+                }}
               >
-                {isEditing ? <X size={18} /> : <Edit size={18} />}
-              </ActionIcon>
+                <UserProfileImage user={user} size={120} />
+                <Box
+                  style={{
+                    position: 'absolute',
+                    bottom: 0,
+                    right: 0,
+                    backgroundColor: theme.colors.blue[6],
+                    borderRadius: '50%',
+                    width: '32px',
+                    height: '32px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    border: `2px solid ${theme.white}`,
+                    opacity: 0.8
+                  }}
+                >
+                  <Edit size={16} color="white" />
+                </Box>
+              </Box>
+              <Stack gap="sm">
+                <Group align="center" gap="md">
+                  <Title order={2}>{user?.username}</Title>
+                  <Badge variant="light" color={
+                    user?.role === 'admin' ? 'red' :
+                    user?.role === 'moderator' ? 'orange' : 'blue'
+                  }>
+                    {user?.role?.charAt(0).toUpperCase() + user?.role?.slice(1)}
+                  </Badge>
+                  <UserBadges userId={user?.id} />
+                  <CustomRoleDisplay customRole={user?.customRole || null} />
+                </Group>
+                <Text size="sm" c="dimmed">
+                  Member since {new Date(user?.createdAt || '').toLocaleDateString()}
+                </Text>
+              </Stack>
             </Group>
           </Card>
 
-          {/* Main Content Tabs */}
-          <Tabs defaultValue="overview" variant="outline">
-            <Tabs.List>
-              <Tabs.Tab value="overview" leftSection={<User size={16} />}>
-                Overview
-              </Tabs.Tab>
-              <Tabs.Tab value="guides" leftSection={<BookOpen size={16} />}>
-                My Guides
-              </Tabs.Tab>
-              <Tabs.Tab value="submissions" leftSection={<Upload size={16} />}>
-                Submissions
-              </Tabs.Tab>
-              <Tabs.Tab value="settings" leftSection={<Settings size={16} />}>
-                Settings
-              </Tabs.Tab>
-            </Tabs.List>
-
-            {/* Overview Tab */}
-            <Tabs.Panel value="overview" pt="lg">
-              <SimpleGrid cols={{ base: 1, md: 2 }} spacing="md">
-                {/* Bio Section */}
-                <Card shadow="sm" padding="md" radius="md">
-                  <Stack gap="md">
-                    <Group justify="space-between">
-                      <Text fw={600} size="lg" c="#ffffff">Bio</Text>
-                      {isEditing && (
-                        <ActionIcon size="sm" variant="light" color="blue">
-                          <Edit size={14} />
-                        </ActionIcon>
-                      )}
-                    </Group>
-                    {isEditing ? (
-                      <Textarea
-                        placeholder="Tell us about yourself..."
-                        value={profileData.bio}
-                        onChange={(e) => setProfileData(prev => ({ ...prev, bio: e.target.value }))}
-                        minRows={3}
-                      />
-                    ) : (
-                      <Text size="sm" c={profileData.bio ? undefined : 'dimmed'}>
-                        {profileData.bio || 'No bio yet. Click edit to add one!'}
-                      </Text>
-                    )}
-                  </Stack>
-                </Card>
-
-                {/* Favorites Section */}
-                <Card shadow="sm" padding="md" radius="md">
-                  <Stack gap="md">
-                    <Text fw={600} size="lg" c="#ffffff">Favorites</Text>
-
-                    <Stack gap="sm">
-                      <Group justify="space-between">
-                        <Text size="sm" fw={500} c="#ffffff">Favorite Quote:</Text>
-                        {isEditing && (
-                          <Button size="xs" variant="light" onClick={openQuoteModal}>
-                            <Quote size={14} />
-                          </Button>
-                        )}
-                      </Group>
-                      <Text size="sm" c={profileData.favoriteQuote ? undefined : 'dimmed'}>
-                        {profileData.favoriteQuote || 'No favorite quote selected'}
-                      </Text>
-                    </Stack>
-
-                    <Divider />
-
-                    <Stack gap="sm">
-                      <Group justify="space-between">
-                        <Text size="sm" fw={500} c="#ffffff">Favorite Gamble:</Text>
-                        {isEditing && (
-                          <Button size="xs" variant="light" onClick={openGambleModal}>
-                            <Dice6 size={14} />
-                          </Button>
-                        )}
-                      </Group>
-                      {profileData.favoriteGamble ? (
-                        <GambleChip gambleId={parseInt(profileData.favoriteGamble)} />
-                      ) : (
-                        <Text size="sm" c="dimmed">No favorite gamble selected</Text>
-                      )}
-                    </Stack>
-                  </Stack>
-                </Card>
-              </SimpleGrid>
-
-              {isEditing && (
-                <Group justify="center" mt="xl">
-                  <Button
-                    onClick={handleSave}
-                    loading={saving}
-                    leftSection={<Save size={16} />}
-                  >
-                    Save Changes
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => setIsEditing(false)}
-                  >
-                    Cancel
-                  </Button>
-                </Group>
-              )}
-            </Tabs.Panel>
-
-            {/* Guides Tab */}
-            <Tabs.Panel value="guides" pt="lg">
+          {/* Profile Picture Selector - Inline when opened */}
+          {profilePictureSelectorOpened && user?.id && (
+            <Card shadow="sm" padding="md" radius="md">
               <Stack gap="md">
                 <Group justify="space-between">
-                  <Title order={3}>My Guides</Title>
+                  <Text fw={600} size="lg">Profile Picture Options</Text>
+                  <ActionIcon variant="subtle" onClick={closeProfilePictureSelector}>
+                    <X size={16} />
+                  </ActionIcon>
+                </Group>
+                <ProfilePictureSelector
+                  currentUserId={user.id}
+                  currentProfileType="default"
+                  currentSelectedMediaId={null}
+                  onSelect={handleProfilePictureSelect}
+                />
+              </Stack>
+            </Card>
+          )}
+
+          {/* Main Content - Single Page Layout */}
+          <Stack gap="xl">
+            {/* Favorites Section */}
+            <Card shadow="sm" padding="md" radius="md">
+              <Stack gap="md">
+                <Text fw={600} size="lg">Favorites</Text>
+
+                <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
+                  <Stack gap="sm">
+                    <Text size="sm" fw={500}>Favorite Quote:</Text>
+                    <Box 
+                      style={{ 
+                        cursor: 'pointer',
+                        padding: '8px',
+                        borderRadius: '4px',
+                        transition: 'background-color 0.2s'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.05)'
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = 'transparent'
+                      }}
+                      onClick={() => {
+                        if (quotes.length === 0 && !loading) {
+                          notifications.show({
+                            title: 'No Quotes Available',
+                            message: 'No quotes are currently available to select from',
+                            color: 'yellow'
+                          });
+                        } else {
+                          openQuoteModal();
+                        }
+                      }}
+                    >
+                      <Text size="sm" c={profileData.favoriteQuote ? undefined : 'dimmed'}>
+                        {loading ? 'Loading...' : 
+                         profileData.favoriteQuote ? 
+                          (() => {
+                            const selectedQuote = quotes.find(q => q.id === parseInt(profileData.favoriteQuote));
+                            if (selectedQuote?.text) {
+                              return selectedQuote.text.length > 100 
+                                ? selectedQuote.text.substring(0, 100) + '...'
+                                : selectedQuote.text;
+                            }
+                            return 'Selected quote not found';
+                          })()
+                          : 'Click to select a favorite quote'}
+                      </Text>
+                    </Box>
+                  </Stack>
+
+                  <Stack gap="sm">
+                    <Text size="sm" fw={500}>Favorite Gamble:</Text>
+                    <Box 
+                      style={{ 
+                        cursor: 'pointer',
+                        padding: '8px',
+                        borderRadius: '4px',
+                        transition: 'background-color 0.2s'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.05)'
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = 'transparent'
+                      }}
+                      onClick={() => {
+                        if (gambles.length === 0 && !loading) {
+                          notifications.show({
+                            title: 'No Gambles Available',
+                            message: 'No gambles are currently available to select from',
+                            color: 'yellow'
+                          });
+                        } else {
+                          openGambleModal();
+                        }
+                      }}
+                    >
+                      {loading ? (
+                        <Text size="sm" c="dimmed">Loading...</Text>
+                      ) : profileData.favoriteGamble ? (
+                        (() => {
+                          const selected = gambles.find(g => g.id === parseInt(profileData.favoriteGamble))
+                          return selected ? (
+                            <Link href={`/gambles/${selected.id}`} style={{ textDecoration: 'none', display: 'inline-block' }}>
+                              <Badge radius="lg" variant="outline" size="sm" style={{ borderColor: (theme.colors as any).gamble?.[5] ?? theme.colors.red[6], color: (theme.colors as any).gamble?.[5] ?? theme.colors.red[6], fontWeight: 700 }}>
+                                {selected.name}
+                              </Badge>
+                            </Link>
+                          ) : (
+                            <Text size="sm" c="dimmed">Selected gamble not found</Text>
+                          )
+                        })()
+                      ) : (
+                        <Text size="sm" c="dimmed">Click to select a favorite gamble</Text>
+                      )}
+                    </Box>
+                  </Stack>
+                </SimpleGrid>
+              </Stack>
+            </Card>
+
+            {/* Settings Section */}
+            <Card shadow="sm" padding="md" radius="md">
+              <Stack gap="md">
+                <Text fw={600} size="lg">Settings</Text>
+                
+                {/* Custom Role Editor */}
+                <Stack gap="sm">
+                  <Text fw={500} size="md">Custom Role</Text>
+                  {!hasActiveSupporterBadge ? (
+                    <Alert color="blue" variant="light">
+                      <Stack gap="xs">
+                        <Text size="sm" fw={500}>Custom roles are exclusive to active supporters!</Text>
+                        <Text size="sm">
+                          Support us on Ko-fi to unlock custom role customization and help keep this fansite running.
+                        </Text>
+                        <Button 
+                          component="a" 
+                          href="https://ko-fi.com" 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          size="sm"
+                          color="blue"
+                        >
+                          Support on Ko-fi
+                        </Button>
+                      </Stack>
+                    </Alert>
+                  ) : (
+                    <>
+                      <Text size="sm" c="dimmed">
+                        Customize how your role appears to other users
+                      </Text>
+                      <Group gap="md">
+                        <TextInput
+                          placeholder="Enter custom role (e.g., 'Gambling Expert')"
+                          value={profileData.customRole}
+                          onChange={(e) => setProfileData(prev => ({ ...prev, customRole: e.target.value }))}
+                          style={{ flex: 1 }}
+                          maxLength={50}
+                        />
+                        <Button 
+                          onClick={async () => {
+                            try {
+                              setSaving(true)
+                              await api.patch('/users/profile/custom-role', { customRole: profileData.customRole })
+                              await refreshUser()
+                              notifications.show({
+                                title: 'Success',
+                                message: 'Custom role updated successfully',
+                                color: 'green'
+                              })
+                            } catch (error) {
+                              notifications.show({
+                                title: 'Error',
+                                message: 'Failed to update custom role',
+                                color: 'red'
+                              })
+                            } finally {
+                              setSaving(false)
+                            }
+                          }}
+                          loading={saving}
+                          size="sm"
+                        >
+                          Save
+                        </Button>
+                      </Group>
+                    </>
+                  )}
+                </Stack>
+              </Stack>
+            </Card>
+
+            {/* My Guides Section */}
+            <Card shadow="sm" padding="md" radius="md">
+              <Stack gap="md">
+                <Group justify="space-between">
+                  <Text fw={600} size="lg">My Guides</Text>
                   <Button component={Link} href="/submit-guide" leftSection={<FileText size={16} />}>
                     Create New Guide
                   </Button>
@@ -383,129 +615,65 @@ export default function ProfilePageClient() {
                 {userGuides.length > 0 ? (
                   <SimpleGrid cols={{ base: 1, md: 2, lg: 3 }} spacing="md">
                     {userGuides.map((guide) => (
-                      <Card key={guide.id} shadow="sm" padding="md" radius="md">
-                        <Stack gap="sm">
-                          <Group justify="space-between">
-                            <Text fw={600} size="md" lineClamp={2} c="#ffffff">{guide.title}</Text>
-                            <Badge
-                              variant="light"
-                              color={
-                                guide.status === GuideStatus.APPROVED ? 'green' :
-                                guide.status === GuideStatus.PENDING ? 'yellow' : 'red'
-                              }
-                              size="sm"
-                            >
-                              {guide.status}
-                            </Badge>
-                          </Group>
-                          {guide.description && (
-                            <Text size="sm" c="dimmed" lineClamp={3}>
-                              {guide.description}
-                            </Text>
-                          )}
-                          <Group gap="xs" mt="auto">
-                            <Text size="xs" c="dimmed">
-                              Updated {new Date(guide.updatedAt).toLocaleDateString()}
-                            </Text>
-                          </Group>
-                        </Stack>
-                      </Card>
+                      <Link key={guide.id} href={`/guides/${guide.id}`} style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
+                        <Card shadow="sm" padding="md" radius="md" style={{ cursor: 'pointer' }}>
+                          <Stack gap="sm">
+                            <Group justify="space-between">
+                              <Text fw={600} size="md" lineClamp={2} style={{ flex: 1 }}>{guide.title}</Text>
+                              <Badge
+                                variant="light"
+                                color={
+                                  guide.status === GuideStatus.APPROVED ? 'green' :
+                                  guide.status === GuideStatus.PENDING ? 'yellow' : 'red'
+                                }
+                                size="sm"
+                              >
+                                {guide.status}
+                              </Badge>
+                            </Group>
+                            {guide.description && (
+                              <Text size="sm" c="dimmed" lineClamp={3}>
+                                {guide.description}
+                              </Text>
+                            )}
+                            <Group gap="xs" mt="auto">
+                              <Text size="xs" c="dimmed">
+                                Updated {new Date(guide.updatedAt).toLocaleDateString()}
+                              </Text>
+                            </Group>
+                          </Stack>
+                        </Card>
+                      </Link>
                     ))}
                   </SimpleGrid>
                 ) : (
                   <Alert icon={<BookOpen size={16} />} title="No guides yet" variant="light">
-                    <Text c="#ffffff">You haven&apos;t created any guides yet. Start sharing your knowledge with the community!</Text>
+                    <Text>You haven&apos;t created any guides yet. Start sharing your knowledge with the community!</Text>
                   </Alert>
                 )}
               </Stack>
-            </Tabs.Panel>
-
-            {/* Submissions Tab */}
-            <Tabs.Panel value="submissions" pt="lg">
-              <Stack gap="md">
-                <Group justify="space-between">
-                  <Title order={3}>My Submissions</Title>
-                  <Group>
-                    <Button component={Link} href="/submit-guide" variant="outline" leftSection={<FileText size={16} />}>
-                      Submit Guide
-                    </Button>
-                    <Button component={Link} href="/submit-media" variant="outline" leftSection={<Camera size={16} />}>
-                      Submit Media
-                    </Button>
-                  </Group>
-                </Group>
-
-                {userSubmissions.length > 0 ? (
-                  <Stack gap="sm">
-                    {userSubmissions.map((submission) => (
-                      <Card key={submission.id} shadow="sm" padding="md" radius="md">
-                        <Group justify="space-between">
-                          <Stack gap="xs">
-                            <Group gap="md">
-                              <Text fw={600} c="#ffffff">{submission.title}</Text>
-                              <Badge
-                                variant="light"
-                                color={
-                                  submission.status === 'approved' ? 'green' :
-                                  submission.status === 'pending' ? 'yellow' : 'red'
-                                }
-                                size="sm"
-                              >
-                                {submission.status}
-                              </Badge>
-                              <Badge variant="outline" size="sm">
-                                {submission.type}
-                              </Badge>
-                            </Group>
-                            <Text size="sm" c="dimmed">
-                              Submitted {new Date(submission.createdAt).toLocaleDateString()}
-                            </Text>
-                          </Stack>
-                        </Group>
-                      </Card>
-                    ))}
-                  </Stack>
-                ) : (
-                  <Alert icon={<Upload size={16} />} title="No submissions yet" variant="light">
-                    <Text c="#ffffff">You haven&apos;t made any submissions yet. Share guides or media with the community!</Text>
-                  </Alert>
-                )}
-              </Stack>
-            </Tabs.Panel>
-
-            {/* Settings Tab */}
-            <Tabs.Panel value="settings" pt="lg">
-              <Stack gap="xl">
-                <Card shadow="sm" padding="md" radius="md">
-                  <Stack gap="md">
-                    <Title order={4}>Spoiler Settings</Title>
-                    <SpoilerSettings />
-                  </Stack>
-                </Card>
-
-                <Card shadow="sm" padding="md" radius="md">
-                  <Stack gap="md">
-                    <Title order={4}>Custom Role</Title>
-                    <CustomRoleEditor user={user} />
-                  </Stack>
-                </Card>
-              </Stack>
-            </Tabs.Panel>
-          </Tabs>
+            </Card>
+          </Stack>
         </Stack>
       </Container>
 
       {/* Modals */}
       <QuoteSelectionPopup
-        opened={quoteModalOpened}
+        open={quoteModalOpened}
         onClose={closeQuoteModal}
-        onSelect={handleQuoteSelect}
+        quotes={quotes}
+        selectedQuoteId={profileData.favoriteQuote ? parseInt(profileData.favoriteQuote) : null}
+        onSelectQuote={handleQuoteSelect}
+        loading={loading}
       />
 
       <GambleSelectionPopup
-        opened={gambleModalOpened}
+        open={gambleModalOpened}
         onClose={closeGambleModal}
-        onSelect={handleGambleSelect}
+        gambles={gambles}
+        selectedGambleId={profileData.favoriteGamble ? parseInt(profileData.favoriteGamble) : null}
+        onSelectGamble={handleGambleSelect}
+        loading={loading}
       />
     </motion.div>
   )

@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { API_BASE_URL } from '../../lib/api'
 import BadgeDisplay from '../BadgeDisplay'
 import {
   List,
@@ -180,7 +181,7 @@ const BadgeAwardModal = ({ open, onClose, userId, username }: {
                       <Box sx={{ ml: 1 }}>
                         <div className="font-medium">{badge.name}</div>
                         {badge.description && (
-                          <div className="text-xs text-gray-500">{badge.description}</div>
+                          <div className="text-xs text-gray-400">{badge.description}</div>
                         )}
                       </Box>
                     </Box>
@@ -407,7 +408,7 @@ export const UserList = () => (
                 );
               })}
               {userBadges.length > 3 && (
-                <span className="text-xs text-gray-500 ml-1">+{userBadges.length - 3}</span>
+                <span className="text-xs text-gray-400 ml-1">+{userBadges.length - 3}</span>
               )}
             </div>
           );
@@ -468,7 +469,7 @@ const UserBadgesField = () => {
       // Use the correct API endpoint: DELETE /badges/user/:userId/badge/:badgeId
       const token = localStorage.getItem('accessToken');
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/badges/user/${userBadge.userId}/badge/${userBadge.badgeId}`,
+        `${API_BASE_URL}/badges/user/${userBadge.userId}/badge/${userBadge.badgeId}`,
         {
           method: 'DELETE',
           headers: {
@@ -507,7 +508,7 @@ const UserBadgesField = () => {
   if (activeBadges.length === 0) {
     return (
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-        <span className="text-gray-500 italic">No active badges</span>
+        <span className="text-gray-400 italic">No active badges</span>
         <Tooltip title="Add Badge">
           <IconButton size="small" onClick={() => setAddModalOpen(true)}>
             <Add />
@@ -603,7 +604,7 @@ const UserBadgeHistoryField = () => {
   const userBadges = record?.userBadges || record?.badges || [];
 
   if (userBadges.length === 0) {
-    return <span className="text-gray-500 italic">No badge history</span>;
+    return <span className="text-gray-400 italic">No badge history</span>;
   }
 
   // Sort badges by awarded date (newest first)
@@ -613,7 +614,7 @@ const UserBadgeHistoryField = () => {
 
   return (
     <div className="space-y-2">
-      <div className="text-sm text-gray-600 mb-3">
+      <div className="text-sm text-gray-300 mb-3">
         <strong>Badge History</strong> - Complete record of all badge activities (active, expired, and removed)
       </div>
 
@@ -629,7 +630,7 @@ const UserBadgeHistoryField = () => {
         const isActive = userBadge.isActive;
 
         return (
-          <div key={userBadge.id} className="p-3 bg-gray-50 rounded-lg border-l-4"
+          <div key={userBadge.id} className="p-3 bg-gray-700 rounded-lg border-l-4"
                style={{ borderLeftColor: badge.color }}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3 flex-1">
@@ -653,7 +654,7 @@ const UserBadgeHistoryField = () => {
                 </div>
               </div>
 
-              <div className="text-xs text-gray-600 text-right">
+              <div className="text-xs text-gray-300 text-right">
                 <div><strong>Awarded:</strong> {new Date(userBadge.awardedAt).toLocaleString()}</div>
                 {userBadge.expiresAt && (
                   <div><strong>Expires:</strong> {new Date(userBadge.expiresAt).toLocaleString()}</div>
@@ -668,18 +669,18 @@ const UserBadgeHistoryField = () => {
             </div>
 
             {userBadge.reason && (
-              <div className="mt-2 text-sm text-gray-700">
+              <div className="mt-2 text-sm text-gray-300">
                 <strong>Reason:</strong> {userBadge.reason}
               </div>
             )}
 
             {userBadge.revokedReason && (
-              <div className="mt-2 text-sm text-gray-700">
+              <div className="mt-2 text-sm text-gray-300">
                 <strong>Removal Reason:</strong> {userBadge.revokedReason}
               </div>
             )}
 
-            <div className="mt-1 text-xs text-gray-500 space-y-1">
+            <div className="mt-1 text-xs text-gray-400 space-y-1">
               {userBadge.awardedByUserId && (
                 <div>Manually awarded by admin (ID: {userBadge.awardedByUserId})</div>
               )}
@@ -693,7 +694,7 @@ const UserBadgeHistoryField = () => {
         );
       })}
 
-      <div className="text-xs text-gray-500 mt-3 p-2 bg-blue-50 rounded">
+      <div className="text-xs text-gray-400 mt-3 p-2 bg-gray-800 rounded">
         <strong>Note:</strong> Badge history shows all badges ever awarded to this user. 
         Use "Current Active Badges" section above to manage active badges. 
         Removed and expired badges are logged here for audit purposes.

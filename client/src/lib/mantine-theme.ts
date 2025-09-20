@@ -129,6 +129,11 @@ export const mantineTheme: MantineThemeOverride = {
   colors: usogui,
   primaryColor: 'red',
   primaryShade: { light: 5, dark: 5 },
+  autoContrast: true,
+
+  // Ensure proper CSS variable generation for dark theme
+  white: '#ffffff',
+  black: '#0a0a0a',
 
   fontFamily: '\"Noto Sans\", system-ui, sans-serif',
   fontFamilyMonospace: 'Monaco, Courier, monospace',
@@ -170,190 +175,176 @@ export const mantineTheme: MantineThemeOverride = {
     xl: rem(1536)
   },
 
-  defaultRadius: 'md',
-  defaultTransition: { duration: 200, timingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)' },
-  transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)',
-
-  globalStyles: (theme) => ({
-    '*, *::before, *::after': {
-      boxSizing: 'border-box'
-    },
-    body: {
-      margin: 0,
-      fontFamily: theme.fontFamily,
-      backgroundColor: theme.other.usogui.black,
-      color: theme.white,
-      WebkitFontSmoothing: 'antialiased',
-      MozOsxFontSmoothing: 'grayscale'
-    },
-    a: {
-      color: theme.colors.red[5],
-      textDecoration: 'none',
-      transition: 'color 150ms ease'
-    },
-    'a:hover': {
-      color: theme.colors.red[4]
-    }
-  }),
-
-  shadows: {
-    xs: '0px 1px 2px rgba(0, 0, 0, 0.24)',
-    sm: '0px 3px 6px rgba(0, 0, 0, 0.28)',
-    md: '0 10px 15px -3px rgba(225, 29, 72, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.3)',
-    lg: '0 20px 25px -5px rgba(225, 29, 72, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.4)',
-    xl: '0 25px 50px -12px rgba(225, 29, 72, 0.45)'
-  },
-
   components: {
     Card: {
-      defaultProps: {
-        shadow: 'lg',
-        radius: 'md',
-        withBorder: true
-      },
-      styles: (theme) => ({
+      styles: (theme: MantineTheme) => ({
         root: {
-          backgroundColor: 'rgba(255, 255, 255, 0.05)',
+          backgroundColor: '#0a0a0a',
           border: `1px solid rgba(225, 29, 72, 0.2)`,
           backdropFilter: 'blur(10px)',
           transition: 'all 200ms cubic-bezier(0.4, 0, 0.2, 1)',
+          color: '#ffffff',
           '&:hover': {
-            borderColor: theme.colors.red[5],
+            borderColor: '#e11d48',
             boxShadow: theme.shadows.lg,
             transform: 'translateY(-2px)'
           }
         }
-      })
+      }),
     },
 
     Button: {
       defaultProps: {
         radius: 'sm'
       },
-      styles: (theme) => ({
+      styles: (theme: MantineTheme) => ({
         root: {
           fontWeight: 600,
           fontFamily: theme.fontFamily,
-          textTransform: 'none',
-          transitionTimingFunction: theme.transitionTimingFunction
+          textTransform: 'none'
         }
-      })
+      }),
     },
 
     Container: {
       styles: () => ({
         root: {
-          backgroundColor: 'transparent'
+          backgroundColor: 'transparent',
+          color: '#ffffff'
         }
-      })
+      }),
     },
 
     Modal: {
-      styles: (theme) => ({
+      styles: (theme: any) => ({
         content: {
-          backgroundColor: 'rgba(10, 10, 10, 0.95)',
-          border: `1px solid rgba(225, 29, 72, 0.3)`,
-          backdropFilter: 'blur(10px)'
+          backgroundColor: '#0a0a0a',
+          border: `1px solid rgba(225, 29, 72, 0.2)`,
+          backdropFilter: 'blur(10px)',
+          color: '#ffffff'
         },
         header: {
           backgroundColor: 'transparent',
-          borderBottom: `1px solid rgba(225, 29, 72, 0.2)`
+          borderBottom: `1px solid rgba(225, 29, 72, 0.2)`,
+          color: '#ffffff'
+        },
+        title: {
+          color: '#ffffff'
+        },
+        body: {
+          color: '#ffffff'
         }
-      })
+      }),
     },
 
     Menu: {
-      styles: (theme) => ({
+      styles: (theme: MantineTheme) => ({
         dropdown: {
-          backgroundColor: 'rgba(10, 10, 10, 0.95)',
-          border: `1px solid rgba(225, 29, 72, 0.3)`,
+          backgroundColor: '#0a0a0a',
+          border: `1px solid rgba(225, 29, 72, 0.2)`,
           backdropFilter: 'blur(10px)',
           padding: theme.spacing.xs
         },
         item: {
-          color: theme.white,
+          color: '#ffffff',
           padding: `${theme.spacing.xs} ${rem(10)}`,
           margin: `${rem(2)} 0`,
           borderRadius: theme.radius.sm,
           transition: 'background-color 150ms cubic-bezier(0.4, 0, 0.2, 1), box-shadow 150ms cubic-bezier(0.4, 0, 0.2, 1)',
           '&:hover, &:focusVisible': {
-            backgroundColor: 'rgba(225, 29, 72, 0.14)',
-            boxShadow: `inset 0 0 0 1px rgba(225, 29, 72, 0.35)`
+            backgroundColor: 'rgba(225, 29, 72, 0.1)',
+            boxShadow: `inset 0 0 0 1px rgba(225, 29, 72, 0.2)`
           }
         }
-      })
+      }),
     },
 
     TextInput: {
-      styles: (theme) => ({
+      styles: () => ({
         input: {
-          backgroundColor: 'rgba(10, 10, 10, 0.8)',
-          border: `1px solid rgba(225, 29, 72, 0.3)`,
-          color: theme.white,
+          backgroundColor: 'rgba(255, 255, 255, 0.06)',
+          border: `1px solid rgba(255, 255, 255, 0.15)`,
+          color: '#ffffff',
           transition: 'border-color 150ms ease, box-shadow 150ms ease',
           '&:focus': {
-            borderColor: theme.colors.red[5],
-            boxShadow: `0 0 0 ${rem(2)} rgba(225, 29, 72, 0.25)`
+            borderColor: '#e11d48',
+            boxShadow: `0 0 0 ${rem(2)} rgba(225, 29, 72, 0.2)`
+          },
+          '&::placeholder': {
+            color: 'rgba(255, 255, 255, 0.5)'
           }
         },
         label: {
-          color: 'rgba(255, 255, 255, 0.7)',
+          color: 'rgba(255, 255, 255, 0.65)',
           fontWeight: 500
         }
-      })
+      }),
     },
 
     Textarea: {
-      styles: (theme) => ({
+      styles: () => ({
         input: {
-          backgroundColor: 'rgba(10, 10, 10, 0.8)',
-          border: `1px solid rgba(225, 29, 72, 0.3)`,
-          color: theme.white,
+          backgroundColor: 'rgba(255, 255, 255, 0.06)',
+          border: `1px solid rgba(255, 255, 255, 0.15)`,
+          color: '#ffffff',
           transition: 'border-color 150ms ease, box-shadow 150ms ease',
           '&:focus': {
-            borderColor: theme.colors.red[5],
-            boxShadow: `0 0 0 ${rem(2)} rgba(225, 29, 72, 0.25)`
+            borderColor: '#e11d48',
+            boxShadow: `0 0 0 ${rem(2)} rgba(225, 29, 72, 0.2)`
+          },
+          '&::placeholder': {
+            color: 'rgba(255, 255, 255, 0.5)'
           }
         },
         label: {
-          color: 'rgba(255, 255, 255, 0.7)',
+          color: 'rgba(255, 255, 255, 0.65)',
           fontWeight: 500
         }
-      })
+      }),
     },
 
     Select: {
-      styles: (theme) => ({
+      styles: () => ({
         input: {
-          backgroundColor: 'rgba(10, 10, 10, 0.8)',
-          border: `1px solid rgba(225, 29, 72, 0.3)`,
-          color: theme.white,
+          backgroundColor: 'rgba(255, 255, 255, 0.06)',
+          border: `1px solid rgba(255, 255, 255, 0.15)`,
+          color: '#ffffff',
           '&:focus': {
-            borderColor: theme.colors.red[5],
-            boxShadow: `0 0 0 ${rem(2)} rgba(225, 29, 72, 0.25)`
+            borderColor: '#e11d48',
+            boxShadow: `0 0 0 ${rem(2)} rgba(225, 29, 72, 0.2)`
           }
         },
         label: {
-          color: 'rgba(255, 255, 255, 0.7)',
+          color: 'rgba(255, 255, 255, 0.65)',
           fontWeight: 500
+        },
+        dropdown: {
+          backgroundColor: '#0a0a0a',
+          border: `1px solid rgba(255, 255, 255, 0.15)`,
+          color: '#ffffff'
+        },
+        option: {
+          color: '#ffffff',
+          '&:hover': {
+            backgroundColor: 'rgba(225, 29, 72, 0.1)'
+          }
         }
-      })
+      }),
     },
 
     Tabs: {
-      styles: (theme) => ({
+      styles: () => ({
         tab: {
-          color: 'rgba(255, 255, 255, 0.7)',
+          color: 'rgba(255, 255, 255, 0.65)',
           transition: 'color 150ms ease, border-color 150ms ease',
-          '&[data-active]': {
-            color: theme.colors.red[5],
-            borderColor: theme.colors.red[5]
-          },
           '&:hover': {
-            color: theme.colors.red[4]
+            color: '#f43f5e'
           }
+        },
+        panel: {
+          color: '#ffffff'
         }
-      })
+      }),
     },
 
     Badge: {
@@ -362,25 +353,71 @@ export const mantineTheme: MantineThemeOverride = {
           textTransform: 'none',
           fontWeight: 500
         }
-      })
+      }),
     },
 
     Alert: {
       styles: () => ({
         root: {
-          backgroundColor: 'rgba(10, 10, 10, 0.8)',
-          border: `1px solid rgba(225, 29, 72, 0.2)`
+          backgroundColor: 'rgba(255, 255, 255, 0.06)',
+          border: `1px solid rgba(255, 255, 255, 0.15)`,
+          color: '#ffffff'
+        },
+        message: {
+          color: '#ffffff'
+        },
+        title: {
+          color: '#ffffff'
         }
-      })
+      }),
     },
 
     Paper: {
       styles: () => ({
         root: {
-          backgroundColor: 'rgba(10, 10, 10, 0.6)',
-          border: `1px solid rgba(225, 29, 72, 0.1)`
+          backgroundColor: '#0a0a0a',
+          border: `1px solid rgba(225, 29, 72, 0.2)`,
+          color: '#ffffff'
         }
-      })
+      }),
+    },
+
+    Title: {
+      styles: () => ({
+        root: {
+          color: '#ffffff'
+        }
+      }),
+    },
+
+    Text: {
+      styles: () => ({
+        root: {
+          color: '#ffffff'
+        }
+      }),
+    },
+
+    Loader: {
+      defaultProps: {
+        color: 'red'
+      }
+    },
+
+    Notification: {
+      styles: () => ({
+        root: {
+          backgroundColor: '#0a0a0a',
+          border: `1px solid rgba(225, 29, 72, 0.2)`,
+          color: '#ffffff'
+        },
+        title: {
+          color: '#ffffff'
+        },
+        description: {
+          color: 'rgba(255, 255, 255, 0.8)'
+        }
+      }),
     }
   },
 
@@ -492,9 +529,9 @@ export const getEntityThemeColor = (theme: MantineTheme, entityType: EntityAccen
 export const getAlphaColor = (color: string, alpha: number): string => {
   // Convert hex to rgba
   const hex = color.replace('#', '')
-  const r = parseInt(hex.substr(0, 2), 16)
-  const g = parseInt(hex.substr(2, 2), 16)
-  const b = parseInt(hex.substr(4, 2), 16)
+  const r = parseInt(hex.substring(0, 2), 16)
+  const g = parseInt(hex.substring(2, 4), 16)
+  const b = parseInt(hex.substring(4, 6), 16)
   return `rgba(${r}, ${g}, ${b}, ${alpha})`
 }
 

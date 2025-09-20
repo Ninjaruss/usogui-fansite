@@ -199,8 +199,8 @@ export const FloatingProgressIndicator: React.FC = () => {
     ? `Reading Progress: Chapter ${userProgress} - ${currentChapterTitle} (${progressPercentage}%)`
     : `Reading Progress: Chapter ${userProgress} (${progressPercentage}%)`
 
-  // Use dark mode by default
-  const isDark = theme.colorScheme !== 'light'
+  // Use dark mode by default (Mantine 7 uses CSS variables for theming)
+  const isDark = true // Always use dark mode for this component
   
   return (
     <>
@@ -379,15 +379,8 @@ export const FloatingProgressIndicator: React.FC = () => {
               radius="xl"
               color="red"
               w="100%"
-              styles={{
-                bar: {
-                  backgroundImage: progressGradient
-                },
-                root: {
-                  backgroundColor: isDark
-                    ? theme.colors.dark[6]
-                    : theme.colors.gray[2]
-                }
+              style={{
+                backgroundImage: progressGradient
               }}
             />
           </Stack>

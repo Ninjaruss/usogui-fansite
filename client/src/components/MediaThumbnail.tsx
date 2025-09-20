@@ -69,7 +69,7 @@ export default function MediaThumbnail({
       width: maxWidth,
       height: maxHeight,
       display: inline ? 'inline-block' : 'block',
-      position: 'relative',
+      position: 'relative' as const,
       overflow: 'hidden',
       borderRadius: rem(8),
       backgroundColor: theme.colors.gray?.[0] ?? '#f8f9fa'

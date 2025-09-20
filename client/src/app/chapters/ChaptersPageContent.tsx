@@ -2,27 +2,28 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import {
+  ActionIcon,
   Alert,
   Badge,
   Box,
   Button,
   Card,
-  Grid,
-  Group,
   Loader,
   Pagination,
+  Paper,
   Stack,
   Text,
   TextInput,
   Title,
+  Group,
   rem,
   useMantineTheme
 } from '@mantine/core'
-import { Search, BookOpen } from 'lucide-react'
+import { AlertCircle, Search, BookOpen, X } from 'lucide-react'
 import Link from 'next/link'
-import { api } from '../../lib/api'
-import { motion } from 'motion/react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { motion, AnimatePresence } from 'motion/react'
+import { api } from '../../lib/api'
 
 interface Chapter {
   id: number
@@ -57,208 +58,495 @@ export default function ChaptersPageContent({
   initialError
 }: ChaptersPageContentProps) {
   const theme = useMantineTheme()
+  const accentChapter = theme.other?.usogui?.chapter ?? theme.colors.green?.[6] ?? '#16a34a'
+  const [chapters, setChapters] = useState<Chapter[]>(initialChapters)
   const router = useRouter()
   const searchParams = useSearchParams()
+  const currentPage = parseInt(searchParams.get('page') || '1', 10)
+  const currentSearch = searchParams.get('search') || ''
 
-  const [chapters, setChapters] = useState<Chapter[]>(initialChapters)
+  const [totalPages, setTotalPages] = useState<number>(initialTotalPages)
+  const [total, setTotal] = useState<number>(initialTotal)
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(initialError)
-  const [searchTerm, setSearchTerm] = useState(initialSearch)
-  const [page, setPage] = useState(initialPage)
-  const [totalPages, setTotalPages] = useState(initialTotalPages)
-  const [total, setTotal] = useState(initialTotal)
-  const debounceRef = useRef<number | null>(null)
+  const [error, setError] = useState<string | null>(initialError || null)
+  const [searchQuery, setSearchQuery] = useState(currentSearch || initialSearch)
 
-  const updateURL = useCallback(
-    (newSearch: string, newPage: number) => {
-      const params = new URLSearchParams(searchParams.toString())
-      if (newSearch) params.set('search', newSearch)
-      else params.delete('search')
-      if (newPage > 1) params.set('page', newPage.toString())
-      else params.delete('page')
-      const href = params.toString() ? `/chapters?${params.toString()}` : '/chapters'
-      router.push(href, { scroll: false })
-    },
-    [router, searchParams]
-  )
+  // Hover modal state
+  const [hoveredChapter, setHoveredChapter] = useState<Chapter | null>(null)
+  const [hoverModalPosition, setHoverModalPosition] = useState<{ x: number; y: number } | null>(null)
+  const hoverTimeoutRef = useRef<number | null>(null)
+  const hoveredElementRef = useRef<HTMLElement | null>(null)
 
-  const fetchChapters = useCallback(
-    async (searchValue: string, pageValue: number) => {
-      try {
-        setLoading(true)
-        const params: Record<string, string | number> = { page: pageValue, limit: PAGE_SIZE }
-        if (searchValue.trim()) {
-          if (!isNaN(Number(searchValue))) {
-            params.number = Number(searchValue)
-          } else {
-            params.title = searchValue
-          }
+  const hasSearchQuery = searchQuery.trim().length > 0
+
+  const fetchChapters = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+
+    try {
+      const params = new URLSearchParams({
+        page: currentPage.toString(),
+        limit: PAGE_SIZE.toString()
+      })
+
+      if (searchQuery) {
+        if (!isNaN(Number(searchQuery))) {
+          params.set('number', searchQuery)
+        } else {
+          params.set('title', searchQuery)
         }
-        const response = await api.getChapters(params)
-        setChapters(response.data)
-        setTotalPages(response.totalPages)
-        setTotal(response.total)
-        setError('')
-      } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : 'Failed to fetch chapters'
-        setError(message)
-      } finally {
-        setLoading(false)
       }
-    },
-    []
-  )
+
+  const response = await api.get(`/chapters?${params}`)
+  // API client returns a fetch Response-like object; narrow to any to parse JSON
+  const data = (await (response as any).json()) as any
+
+      setChapters(data.data || [])
+      setTotal(data.total || 0)
+      setTotalPages(data.totalPages || Math.ceil((data.total || 0) / PAGE_SIZE))
+    } catch (error) {
+      console.error('Error fetching chapters:', error)
+      setError('Failed to load chapters. Please try again later.')
+    } finally {
+      setLoading(false)
+    }
+  }, [currentPage, searchQuery])
 
   useEffect(() => {
-    if (page !== initialPage || searchTerm !== initialSearch) {
-      fetchChapters(searchTerm, page)
+    if (searchQuery !== currentSearch || chapters.length === 0) {
+      fetchChapters()
     }
-  }, [fetchChapters, page, searchTerm, initialPage, initialSearch])
+  }, [currentPage, searchQuery, currentSearch, chapters.length, fetchChapters])
+
+  // Function to update modal position based on hovered element
+  const updateModalPosition = useCallback((chapter?: Chapter) => {
+    const currentChapter = chapter || hoveredChapter
+    if (hoveredElementRef.current && currentChapter) {
+      const rect = hoveredElementRef.current.getBoundingClientRect()
+      const modalWidth = 300 // rem(300) from the modal width
+      const modalHeight = 180 // Approximate modal height
+      const navbarHeight = 60 // Height of the sticky navbar
+      const buffer = 10 // Additional buffer space
+
+      let x = rect.left + rect.width / 2
+      let y = rect.top - modalHeight - buffer
+
+      // Check if modal would overlap with navbar
+      if (y < navbarHeight + buffer) {
+        // Position below the card instead
+        y = rect.bottom + buffer
+      }
+
+      // Ensure modal doesn't go off-screen horizontally
+      const modalLeftEdge = x - modalWidth / 2
+      const modalRightEdge = x + modalWidth / 2
+
+      if (modalLeftEdge < buffer) {
+        x = modalWidth / 2 + buffer
+      } else if (modalRightEdge > window.innerWidth - buffer) {
+        x = window.innerWidth - modalWidth / 2 - buffer
+      }
+
+      setHoverModalPosition({ x, y })
+    }
+  }, [hoveredChapter])
 
   useEffect(() => {
     return () => {
-      if (debounceRef.current) {
-        window.clearTimeout(debounceRef.current)
+      if (hoverTimeoutRef.current) {
+        window.clearTimeout(hoverTimeoutRef.current)
       }
     }
   }, [])
 
-  const handleSearchChange = (value: string) => {
-    setSearchTerm(value)
-    setPage(1)
-    updateURL(value, 1)
+  // Add scroll and resize listeners to update modal position
+  useEffect(() => {
+    if (hoveredChapter && hoveredElementRef.current) {
+      const handleScroll = () => {
+        updateModalPosition()
+      }
 
-    if (debounceRef.current) {
-      window.clearTimeout(debounceRef.current)
+      const handleResize = () => {
+        updateModalPosition()
+      }
+
+      window.addEventListener('scroll', handleScroll)
+      document.addEventListener('scroll', handleScroll)
+      window.addEventListener('resize', handleResize)
+
+      return () => {
+        window.removeEventListener('scroll', handleScroll)
+        document.removeEventListener('scroll', handleScroll)
+        window.removeEventListener('resize', handleResize)
+      }
+    }
+  }, [hoveredChapter, updateModalPosition])
+
+  const handleSearchChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    const newSearch = event.currentTarget.value
+    setSearchQuery(newSearch)
+  }, [])
+
+  // Debounce search query changes
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      const params = new URLSearchParams()
+      if (searchQuery) params.set('search', searchQuery)
+      params.set('page', '1') // Reset to first page on new search
+
+      router.push(`/chapters?${params.toString()}`)
+    }, 300)
+
+    return () => clearTimeout(timeoutId)
+  }, [searchQuery, router])
+
+  const handleClearSearch = useCallback(() => {
+    setSearchQuery('')
+
+    const params = new URLSearchParams()
+    params.set('page', '1')
+
+    router.push(`/chapters?${params.toString()}`)
+  }, [router])
+
+  const handlePageChange = useCallback((page: number) => {
+    const params = new URLSearchParams()
+    if (searchQuery) params.set('search', searchQuery)
+    params.set('page', page.toString())
+
+    router.push(`/chapters?${params.toString()}`)
+  }, [router, searchQuery])
+
+  // Hover modal handlers
+  const handleChapterMouseEnter = (chapter: Chapter, event: React.MouseEvent) => {
+    const element = event.currentTarget as HTMLElement
+    hoveredElementRef.current = element
+
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current)
     }
 
-    debounceRef.current = window.setTimeout(() => {
-      fetchChapters(value, 1)
-    }, 300)
+    hoverTimeoutRef.current = window.setTimeout(() => {
+      setHoveredChapter(chapter)
+      updateModalPosition(chapter) // Pass chapter directly to ensure position calculation works immediately
+    }, 500) // 500ms delay before showing
   }
 
-  const handlePageChange = (pageValue: number) => {
-    setPage(pageValue)
-    updateURL(searchTerm, pageValue)
-    fetchChapters(searchTerm, pageValue)
+  const handleChapterMouseLeave = () => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current)
+    }
+
+    // Small delay before hiding to allow moving to modal
+    hoverTimeoutRef.current = window.setTimeout(() => {
+      setHoveredChapter(null)
+      setHoverModalPosition(null)
+      hoveredElementRef.current = null
+    }, 200)
   }
 
-  if (error && !loading) {
-    return (
-      <Alert color="red" radius="md">
-        <Text size="sm">{error}</Text>
-      </Alert>
-    )
+  const handleModalMouseEnter = () => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current)
+    }
+  }
+
+  const handleModalMouseLeave = () => {
+    setHoveredChapter(null)
+    setHoverModalPosition(null)
+    hoveredElementRef.current = null
   }
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-      <Stack align="center" gap="xs" mb="xl">
-        <BookOpen size={48} color={theme.other?.usogui?.guide ?? theme.colors.green?.[6]} />
-        <Title order={1}>Chapters</Title>
-        <Text size="lg" c="dimmed">
-          Explore the story chapter by chapter
-        </Text>
-      </Stack>
+      {/* Hero Section */}
+      <Box
+        style={{
+          background: `linear-gradient(135deg, ${accentChapter}15, ${accentChapter}08)`,
+          borderRadius: theme.radius.lg,
+          border: `1px solid ${accentChapter}25`,
+          marginBottom: rem(24)
+        }}
+        p="md"
+      >
+        <Stack align="center" gap="xs">
+          <Box
+            style={{
+              background: `linear-gradient(135deg, ${accentChapter}, ${accentChapter}CC)`,
+              borderRadius: '50%',
+              width: rem(40),
+              height: rem(40),
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: `0 4px 16px ${accentChapter}40`
+            }}
+          >
+            <BookOpen size={20} color="white" />
+          </Box>
 
-      <Box mb="lg" style={{ maxWidth: rem(520), marginInline: 'auto', width: '100%' }}>
-        <TextInput
-          placeholder="Search chapters by number or title..."
-          value={searchTerm}
-          onChange={(event) => handleSearchChange(event.currentTarget.value)}
-          leftSection={<Search size={18} />}
-          size="md"
-        />
+          <Stack align="center" gap="xs">
+            <Title order={1} size="1.5rem" fw={700} ta="center" c={accentChapter}>
+              Chapters
+            </Title>
+            <Text size="md" c="dimmed" ta="center" maw={400}>
+              Explore the story chapter by chapter through the Usogui universe
+            </Text>
+
+            {total > 0 && (
+              <Badge size="md" variant="light" color="green" radius="xl" mt="xs">
+                {total} chapter{total !== 1 ? 's' : ''} available
+              </Badge>
+            )}
+          </Stack>
+        </Stack>
       </Box>
 
+      {/* Search and Filters */}
+      <Box mb="xl">
+        <Group justify="center" mb="md">
+          <Box style={{ maxWidth: rem(600), width: '100%' }}>
+            <TextInput
+              placeholder="Search chapters by number or title..."
+              value={searchQuery}
+              onChange={handleSearchChange}
+              leftSection={<Search size={20} />}
+              size="lg"
+              radius="xl"
+              rightSection={
+                hasSearchQuery ? (
+                  <ActionIcon variant="subtle" color="gray" onClick={handleClearSearch} size="sm">
+                    <X size={16} />
+                  </ActionIcon>
+                ) : null
+              }
+              styles={{
+                input: {
+                  fontSize: rem(16),
+                  paddingLeft: rem(50),
+                  paddingRight: hasSearchQuery ? rem(50) : rem(20)
+                }
+              }}
+            />
+          </Box>
+        </Group>
+      </Box>
+
+      {/* Error State */}
+      {error && (
+        <Alert
+          color="red"
+          radius="md"
+          mb="xl"
+          icon={<AlertCircle size={16} />}
+          title="Error loading chapters"
+        >
+          {error}
+        </Alert>
+      )}
+
+      {/* Loading State */}
       {loading ? (
-        <Box style={{ display: 'flex', justifyContent: 'center', paddingBlock: rem(64) }}>
-          <Loader size="lg" color="red" />
+        <Box style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', paddingBlock: rem(80) }}>
+          <Loader size="xl" color={accentChapter} mb="md" />
+          <Text size="lg" c="dimmed">Loading chapters...</Text>
         </Box>
       ) : (
         <>
-          <Text size="sm" c="dimmed" mb="md">
-            {total} chapter{total !== 1 ? 's' : ''} found
-          </Text>
+          {/* Empty State */}
+          {chapters.length === 0 ? (
+            <Box style={{ textAlign: 'center', paddingBlock: rem(80) }}>
+              <BookOpen size={64} color={theme.colors.gray[4]} style={{ marginBottom: rem(20) }} />
+              <Title order={3} c="dimmed" mb="sm">
+                {hasSearchQuery ? 'No chapters found' : 'No chapters available'}
+              </Title>
+              <Text size="lg" c="dimmed" mb="xl">
+                {hasSearchQuery
+                  ? 'Try adjusting your search terms or filters'
+                  : 'Check back later for new chapters'}
+              </Text>
+              {hasSearchQuery && (
+                <Button variant="outline" color="green" onClick={handleClearSearch}>
+                  Clear search
+                </Button>
+              )}
+            </Box>
+          ) : (
+            <>
+              {/* Dense Results Grid - aim to fit ~10 small cards per row on wide screens */}
+              <Box
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(96px, 1fr))',
+                  gap: rem(8)
+                }}
+              >
+                {chapters.map((chapter, index) => (
+                  <motion.div
+                    key={chapter.id}
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.2, delay: index * 0.01 }}
+                    style={{ width: '100%' }}
+                  >
+                    <Card
+                      component={Link}
+                      href={`/chapters/${chapter.id}`}
+                      withBorder
+                      radius="sm"
+                      shadow="xs"
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: rem(6),
+                        padding: `${rem(6)} ${rem(6)}`,
+                        cursor: 'pointer',
+                        textDecoration: 'none',
+                        minHeight: rem(88),
+                        justifyContent: 'center',
+                        backgroundColor: theme.colors.dark?.[7] ?? theme.white,
+                        border: `1px solid ${theme.colors.dark?.[4] ?? theme.colors.gray?.[2]}`
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'translateY(-4px)'
+                        e.currentTarget.style.boxShadow = '0 12px 28px rgba(0,0,0,0.2)'
+                        handleChapterMouseEnter(chapter, e)
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'translateY(0)'
+                        e.currentTarget.style.boxShadow = theme.shadows.xs
+                        handleChapterMouseLeave()
+                      }}
+                    >
+                      <Badge variant="filled" color="green" radius="sm" size="xs" style={{ fontWeight: 800, padding: `${rem(4)} ${rem(6)}`, fontSize: rem(11) }}>
+                        {chapter.number}
+                      </Badge>
 
-          <Grid gutter="xl">
-            {chapters.map((chapter, index) => (
-              <Grid.Col span={{ base: 12, sm: 6, md: 4 }} key={chapter.id}>
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: index * 0.05 }}
-                >
-                  <Card withBorder radius="md" className="gambling-card" shadow="sm">
-                    <Stack gap="sm" p="lg">
-                      <Group justify="space-between" align="flex-start">
-                        <Text component={Link} href={`/chapters/${chapter.id}`} fw={600} size="lg" style={{ textDecoration: 'none', color: theme.colors.red?.[5] ?? '#e11d48' }}>
-                          Chapter {chapter.number}
-                        </Text>
-                        <Badge color="red" variant="outline" radius="sm">
-                          #{chapter.number}
-                        </Badge>
-                      </Group>
-
-                      {chapter.title && (
-                        <Text size="sm" c="dimmed" fw={500}>
-                          {chapter.title}
-                        </Text>
-                      )}
+                      <Text
+                        size="xs"
+                        fw={700}
+                        c={accentChapter}
+                        lineClamp={2}
+                        style={{ fontSize: rem(12), lineHeight: 1.1, wordBreak: 'break-word', textAlign: 'center' }}
+                      >
+                        {chapter.title || `Ch. ${chapter.number}`}
+                      </Text>
 
                       {chapter.volume && (
-                        <Badge
-                          component={Link}
-                          href={`/volumes/${chapter.volume.id}`}
-                          color="violet"
-                          variant="outline"
-                          radius="sm"
-                          style={{ textDecoration: 'none' }}
-                        >
+                        <Badge variant="filled" color="violet" radius="sm" size="xs" style={{ fontSize: rem(10), padding: `${rem(2)} ${rem(6)}` }}>
                           Vol. {chapter.volume.number}
                         </Badge>
                       )}
+                    </Card>
+                  </motion.div>
+                ))}
+              </Box>
 
-                      {(chapter.description || chapter.summary) && (
-                        <Text size="sm" c="dimmed" style={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                          {chapter.description || chapter.summary}
-                        </Text>
-                      )}
-
-                      <Button
-                        component={Link}
-                        href={`/chapters/${chapter.id}`}
-                        variant="outline"
-                        color="red"
-                        fullWidth
-                      >
-                        View Details
-                      </Button>
-                    </Stack>
-                  </Card>
-                </motion.div>
-              </Grid.Col>
-            ))}
-          </Grid>
-
-          {totalPages > 1 && (
-            <Box style={{ display: 'flex', justifyContent: 'center', marginTop: rem(32) }}>
-              <Pagination total={totalPages} value={page} onChange={handlePageChange} color="red" size="md" />
-            </Box>
-          )}
-
-          {chapters.length === 0 && !loading && (
-            <Box style={{ textAlign: 'center', paddingBlock: rem(64) }}>
-              <Title order={4} c="dimmed">
-                No chapters found
-              </Title>
-              <Text size="sm" c="dimmed">
-                Try adjusting your search terms
-              </Text>
-            </Box>
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <Box style={{ display: 'flex', justifyContent: 'center', marginTop: rem(48) }}>
+                  <Pagination
+                    total={totalPages}
+                    value={currentPage}
+                    onChange={handlePageChange}
+                    color="green"
+                    size="lg"
+                    radius="xl"
+                    withEdges
+                  />
+                </Box>
+              )}
+            </>
           )}
         </>
       )}
+
+      {/* Hover Modal */}
+      <AnimatePresence>
+        {hoveredChapter && hoverModalPosition && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            transition={{ duration: 0.2 }}
+            style={{
+              position: 'fixed',
+              left: hoverModalPosition.x - 150, // Center horizontally (300px width / 2)
+              top: hoverModalPosition.y, // Use calculated position directly
+              zIndex: 1001, // Higher than navbar (which is 1000)
+              pointerEvents: 'auto'
+            }}
+            onMouseEnter={handleModalMouseEnter}
+            onMouseLeave={handleModalMouseLeave}
+          >
+            <Paper
+              shadow="xl"
+              radius="lg"
+              p="md"
+              style={{
+                backgroundColor: theme.colors.dark?.[7] ?? theme.white,
+                border: `2px solid ${accentChapter}`,
+                backdropFilter: 'blur(10px)',
+                width: rem(300),
+                maxWidth: '90vw'
+              }}
+            >
+              <Stack gap="sm">
+                {/* Chapter Title */}
+                <Title
+                  order={4}
+                  size="md"
+                  fw={700}
+                  c={accentChapter}
+                  ta="center"
+                  lineClamp={2}
+                >
+                  {hoveredChapter.title || `Chapter ${hoveredChapter.number}`}
+                </Title>
+
+                {/* Chapter Info */}
+                <Group justify="center" gap="xs">
+                  <Badge
+                    variant="light"
+                    color="green"
+                    size="sm"
+                    fw={600}
+                  >
+                    Chapter #{hoveredChapter.number}
+                  </Badge>
+                  {hoveredChapter.volume && (
+                    <Badge
+                      variant="filled"
+                      color="violet"
+                      size="sm"
+                      fw={600}
+                    >
+                      Vol. {hoveredChapter.volume.number}
+                    </Badge>
+                  )}
+                </Group>
+
+                {/* Description */}
+                {(hoveredChapter.description || hoveredChapter.summary) && (
+                  <Text
+                    size="sm"
+                    c="dimmed"
+                    ta="center"
+                    lineClamp={3}
+                    style={{
+                      lineHeight: 1.4,
+                      maxHeight: rem(60)
+                    }}
+                  >
+                    {hoveredChapter.description || hoveredChapter.summary}
+                  </Text>
+                )}
+              </Stack>
+            </Paper>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   )
 }

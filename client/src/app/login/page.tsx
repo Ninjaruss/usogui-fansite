@@ -1,12 +1,24 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect, Suspense } from 'react'
 import { Button, Card, Container, Stack, Text, Title } from '@mantine/core'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
+import { API_BASE_URL } from '../../../src/lib/api'
 
-export default function LoginPage() {
+function LoginContent() {
+  const searchParams = useSearchParams()
+  
+  useEffect(() => {
+    // Store return URL if provided
+    const returnUrl = searchParams.get('returnUrl')
+    if (returnUrl) {
+      localStorage.setItem('authReturnUrl', returnUrl)
+    }
+  }, [searchParams])
+
   const handleDiscordLogin = () => {
-    window.location.href = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'}/auth/discord`
+  window.location.href = `${API_BASE_URL}/auth/discord`
   }
 
   return (
@@ -43,5 +55,26 @@ export default function LoginPage() {
         </Stack>
       </Card>
     </Container>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <Container size="xs" py="xl">
+        <Card withBorder radius="md" shadow="sm" padding="xl">
+          <Stack gap="lg">
+            <Stack align="center" gap="xs">
+              <Title order={2}>Welcome Back</Title>
+              <Text size="sm" c="dimmed">
+                Loading...
+              </Text>
+            </Stack>
+          </Stack>
+        </Card>
+      </Container>
+    }>
+      <LoginContent />
+    </Suspense>
   )
 }

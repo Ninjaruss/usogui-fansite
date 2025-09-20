@@ -1,8 +1,9 @@
 'use client'
 
-import React, { useMemo, useState } from 'react'
+import React, { useMemo, useState, useEffect } from 'react'
 import {
   ActionIcon,
+  Badge,
   Box,
   Button,
   Collapse,
@@ -17,7 +18,7 @@ import {
   useMantineTheme
 } from '@mantine/core'
 import { Search, Dices, ChevronDown, ChevronRight } from 'lucide-react'
-import GambleChip from './GambleChip'
+// GambleChip removed — render simple Badge chips inline
 
 interface Gamble {
   id: number
@@ -43,9 +44,19 @@ export default function GambleSelectionPopup({
   loading = false
 }: GambleSelectionPopupProps) {
   const [searchTerm, setSearchTerm] = useState('')
-  const [tempSelectedGamble, setTempSelectedGamble] = useState<number | null>(selectedGambleId || null)
+  const [tempSelectedGamble, setTempSelectedGamble] = useState<number | null>(selectedGambleId ?? null)
   const [expandedGamble, setExpandedGamble] = useState<number | null>(null)
   const theme = useMantineTheme()
+
+  // Keep temp selection in sync when the modal is opened or the selectedGambleId prop changes
+  useEffect(() => {
+    if (open) {
+      setTempSelectedGamble(selectedGambleId ?? null)
+      // Reset search and expanded state so selection is visible
+      setSearchTerm('')
+      setExpandedGamble(null)
+    }
+  }, [open, selectedGambleId])
 
   const accentColor = useMemo(
     () => theme.other?.usogui?.gamble ?? theme.colors.red?.[6] ?? '#d32f2f',
@@ -124,28 +135,25 @@ export default function GambleSelectionPopup({
         />
 
         {/* Current Selection */}
-        {tempSelectedGamble && (
-          <Paper
+    {tempSelectedGamble !== null && (
+            <Paper
             withBorder
             radius="md"
             p="md"
             style={{
-              backgroundColor: theme.fn?.rgba ? theme.fn.rgba(accentColor, 0.12) : 'rgba(211, 47, 47, 0.12)'
+              backgroundColor: (theme as any).fn?.rgba ? (theme as any).fn.rgba(accentColor, 0.12) : 'rgba(211, 47, 47, 0.12)'
             }}
           >
             <Text size="sm" fw={600} mb="xs">
               Currently Selected:
             </Text>
-            {(() => {
+              {(() => {
               const selectedGamble = gambles.find(g => g.id === tempSelectedGamble)
               return selectedGamble ? (
                 <Box>
-                  <GambleChip 
-                    gamble={selectedGamble} 
-                    size="small" 
-                    variant="filled"
-                    clickable={false}
-                  />
+                  <Badge radius="lg" size="sm" variant="filled" color="gamble" style={{ fontWeight: 700 }}>
+                    {selectedGamble.name}
+                  </Badge>
                 </Box>
               ) : (
                 <Text size="sm" c="dimmed">
@@ -178,8 +186,8 @@ export default function GambleSelectionPopup({
                   const hasLongRules = Boolean(gamble.rules && gamble.rules.length > 100)
 
                   const cardBackground = isSelected
-                    ? theme.fn?.rgba
-                      ? theme.fn.rgba(accentColor, 0.18)
+                    ? (theme as any).fn?.rgba
+                      ? (theme as any).fn.rgba(accentColor, 0.18)
                       : 'rgba(211, 47, 47, 0.18)'
                     : 'rgba(10, 10, 10, 0.6)'
 
@@ -211,12 +219,9 @@ export default function GambleSelectionPopup({
                         shadow={isSelected ? 'md' : 'sm'}
                       >
                         <Group justify="space-between" align="flex-start" gap="xs">
-                          <GambleChip
-                            gamble={gamble}
-                            size="small"
-                            variant={isSelected ? 'filled' : 'outlined'}
-                            clickable={false}
-                          />
+                          <Badge radius="lg" size="sm" variant={isSelected ? 'filled' : 'outline'} color="gamble" style={{ fontWeight: 700 }}>
+                            {gamble.name}
+                          </Badge>
                           {hasLongRules && (
                             <ActionIcon
                               variant="subtle"

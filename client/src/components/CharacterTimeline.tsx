@@ -17,6 +17,7 @@ import { Calendar, BookOpen, Eye, EyeOff, X, AlertTriangle } from 'lucide-react'
 import Link from 'next/link'
 import { useProgress } from '../providers/ProgressProvider'
 import { useSpoilerSettings } from '../hooks/useSpoilerSettings'
+import { getAlphaColor } from '../lib/mantine-theme'
 
 export interface TimelineEvent {
   id: number
@@ -496,7 +497,7 @@ const TimelineDisplay = React.memo(function TimelineDisplay({
                 left: 0,
                 right: 0,
                 height: rem(3),
-                background: `linear-gradient(90deg, ${theme.fn.rgba(theme.colors.red[5], 0.1)}, ${theme.colors.red[5]}, ${theme.fn.rgba(theme.colors.red[5], 0.1)})`,
+                background: `linear-gradient(90deg, ${getAlphaColor(theme.colors.red[5], 0.1)}, ${theme.colors.red[5]}, ${getAlphaColor(theme.colors.red[5], 0.1)})`,
                 transform: 'translateY(-50%)',
                 borderRadius: rem(2)
               }}
@@ -613,7 +614,7 @@ function TimelineSpoilerWrapper({ event, children }: { event: TimelineEvent; chi
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            background: theme.fn.rgba(theme.colors.red[7], 0.9),
+            background: getAlphaColor(theme.colors.red[7], 0.9),
             cursor: 'pointer',
             zIndex: 10
           }}

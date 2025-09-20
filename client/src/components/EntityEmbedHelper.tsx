@@ -279,7 +279,7 @@ const EntityEmbedHelper: React.FC<EntityEmbedHelperProps> = ({ onInsertEmbed }) 
                   </Box>
                 </Accordion.Control>
                 <Accordion.Panel>
-                  <SimpleGrid cols={2} spacing="sm" breakpoints={[{ maxWidth: 'sm', cols: 1 }]}> 
+                  <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm"> 
                     {entityType.examples.map((example, index) => (
                       <Paper key={index} withBorder radius="md" p="sm">
                         <Box

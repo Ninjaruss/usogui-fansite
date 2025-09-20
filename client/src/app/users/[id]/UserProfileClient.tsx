@@ -26,7 +26,7 @@ import { motion } from 'motion/react'
 import { api } from '../../../lib/api'
 import { usePageView } from '../../../hooks/usePageView'
 import UserProfileImage from '../../../components/UserProfileImage'
-import GambleChip from '../../../components/GambleChip'
+// GambleChip removed — using inline Badge chips for favorite gamble
 import UserBadges from '../../../components/UserBadges'
 import { UserRoleDisplay } from '../../../components/BadgeDisplay'
 
@@ -312,14 +312,9 @@ export default function UserProfileClient({ initialUser }: UserProfileClientProp
                                 <Dices size={18} color={theme.colors.red[6]} />
                                 <Text fw={600}>Favorite Gamble</Text>
                               </Group>
-                              <GambleChip
-                                gamble={{
-                                  id: favoriteGamble.id,
-                                  name: favoriteGamble.name,
-                                  rules: favoriteGamble.rules
-                                }}
-                                size="medium"
-                              />
+                              <Badge radius="lg" size="md" variant="filled" color="gamble" style={{ fontWeight: 700 }}>
+                                {favoriteGamble.name}
+                              </Badge>
                             </Stack>
                           </Card>
                         )}

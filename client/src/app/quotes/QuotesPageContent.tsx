@@ -1,17 +1,18 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import {
+  ActionIcon,
   Alert,
   Badge,
   Box,
+  Button,
   Card,
-  CloseButton,
-  Container,
   Grid,
   Group,
   Loader,
   Pagination,
+  Paper,
   Stack,
   Text,
   TextInput,
@@ -19,12 +20,14 @@ import {
   rem,
   useMantineTheme
 } from '@mantine/core'
-import { Search, Quote } from 'lucide-react'
+import { notifications } from '@mantine/notifications'
+import { Quote, Search, X } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { motion } from 'motion/react'
-import api from '@/lib/api'
+import { motion, AnimatePresence } from 'motion/react'
+import { api } from '../../lib/api'
+import { textColors } from '../../lib/mantine-theme'
 
-interface Quote {
+interface QuoteData {
   id: number
   text: string
   speaker: string
@@ -35,31 +38,73 @@ interface Quote {
   updatedAt: string
 }
 
-export default function QuotesPageContent() {
+interface QuotesPageContentProps {
+  initialQuotes?: QuoteData[]
+  initialTotalPages?: number
+  initialTotal?: number
+  initialPage?: number
+  initialSearch?: string
+  initialCharacterId?: string
+  initialCharacterName?: string | null
+  initialError?: string
+}
+
+const PAGE_SIZE = 12
+
+export default function QuotesPageContent({
+  initialQuotes = [],
+  initialTotalPages = 1,
+  initialTotal = 0,
+  initialPage = 1,
+  initialSearch = '',
+  initialCharacterId,
+  initialCharacterName = null,
+  initialError = ''
+}: QuotesPageContentProps) {
   const theme = useMantineTheme()
   const router = useRouter()
   const searchParams = useSearchParams()
-  const [quotes, setQuotes] = useState<Quote[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
-  const [searchQuery, setSearchQuery] = useState('')
-  const [currentPage, setCurrentPage] = useState(1)
-  const [totalPages, setTotalPages] = useState(1)
-  const [total, setTotal] = useState(0)
-  const [characterName, setCharacterName] = useState<string | null>(null)
 
-  const fetchQuotes = async (page = 1, search = '', characterId?: string | null) => {
+  // The app forces dark mode globally, but use safe theme fallbacks here.
+  const textColor = theme.other?.usogui?.white ?? '#ffffff'
+  const cardBgColor = theme.other?.usogui?.black ?? '#0a0a0a'
+  const badgeVariant = 'filled'
+  const grayBadgeVariant = 'outline'
+  const iconColor = theme.colors?.gray?.[4] ?? '#94a3b8'
+
+  const [quotes, setQuotes] = useState<QuoteData[]>(initialQuotes)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(initialError)
+  const [searchQuery, setSearchQuery] = useState(initialSearch)
+  const [currentPage, setCurrentPage] = useState(initialPage)
+  const [totalPages, setTotalPages] = useState(initialTotalPages)
+  const [total, setTotal] = useState(initialTotal)
+  const [characterName, setCharacterName] = useState<string | null>(initialCharacterName)
+  const [characterId, setCharacterId] = useState<string | undefined>(initialCharacterId)
+  const [hoveredQuote, setHoveredQuote] = useState<QuoteData | null>(null)
+  const [hoverModalPosition, setHoverModalPosition] = useState<{ x: number; y: number } | null>(null)
+  const hoverTimeoutRef = useRef<number | null>(null)
+  const hoveredElementRef = useRef<HTMLElement | null>(null)
+
+  // Use the quote accent color from the theme
+  const accentQuote = theme.other?.usogui?.quote ?? theme.colors.violet?.[5] ?? '#7048e8'
+
+  // Fetch function following the pattern from characters/arcs
+  const fetchQuotes = useCallback(async (page = 1, search = '', charId?: string) => {
     setLoading(true)
+    setError('')
+    
     try {
-      const data = await api.getQuotes({
-        page,
-        limit: 12,
-        search: search || undefined,
-        characterId: characterId && !isNaN(Number(characterId)) ? Number(characterId) : undefined
-      })
+      const params: { page: number; limit: number; search?: string; characterId?: number } = { 
+        page, 
+        limit: PAGE_SIZE 
+      }
+      if (search.trim()) params.search = search.trim()
+      if (charId && !isNaN(Number(charId))) params.characterId = Number(charId)
 
-      // Transform the API response to match the expected format
-      const transformedQuotes = data.data.map((quote: any) => ({
+      const response = await api.getQuotes(params)
+      
+      const transformedQuotes = response.data.map((quote: any) => ({
         id: quote.id,
         text: quote.text,
         speaker: quote.character?.name || 'Unknown',
@@ -71,189 +116,510 @@ export default function QuotesPageContent() {
       }))
 
       setQuotes(transformedQuotes)
-      setTotal(data.total || 0)
-      setTotalPages(data.totalPages || Math.ceil((data.total || 0) / 12))
-    } catch (error: unknown) {
-      console.error('Error fetching quotes:', error)
-      setError(error instanceof Error ? error.message : 'Failed to fetch quotes')
+      setTotal(response.total)
+      setTotalPages(response.totalPages)
+      setError('')
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to fetch quotes'
+      setError(message)
+      notifications.show({ message, color: 'red' })
     } finally {
       setLoading(false)
     }
+  }, [])
+
+  // Effect to refetch when props change
+  useEffect(() => {
+    if (
+      currentPage !== initialPage ||
+      searchQuery !== initialSearch ||
+      characterId !== initialCharacterId
+    ) {
+      fetchQuotes(currentPage, searchQuery, characterId)
+    }
+  }, [currentPage, searchQuery, characterId, initialPage, initialSearch, initialCharacterId, fetchQuotes])
+
+  // Function to update modal position based on hovered element (following arcs pattern)
+  const updateModalPosition = useCallback((quote?: QuoteData) => {
+    const currentQuote = quote || hoveredQuote
+    if (hoveredElementRef.current && currentQuote) {
+      const rect = hoveredElementRef.current.getBoundingClientRect()
+      const modalWidth = 300
+      const modalHeight = 180
+      const navbarHeight = 60
+      const buffer = 10
+
+      let x = rect.left + rect.width / 2
+      let y = rect.top - modalHeight - buffer
+
+      // Check if modal would overlap with navbar
+      if (y < navbarHeight + buffer) {
+        y = rect.bottom + buffer
+      }
+
+      // Ensure modal doesn't go off-screen horizontally
+      const modalLeftEdge = x - modalWidth / 2
+      const modalRightEdge = x + modalWidth / 2
+
+      if (modalLeftEdge < buffer) {
+        x = modalWidth / 2 + buffer
+      } else if (modalRightEdge > window.innerWidth - buffer) {
+        x = window.innerWidth - modalWidth / 2 - buffer
+      }
+
+      setHoverModalPosition({ x, y })
+    }
+  }, [hoveredQuote])
+
+  // Hover handlers following the arcs pattern
+  const handleCardMouseEnter = (quote: QuoteData, element: HTMLElement) => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current)
+    }
+
+    setHoveredQuote(quote)
+    hoveredElementRef.current = element
+
+    hoverTimeoutRef.current = window.setTimeout(() => {
+      updateModalPosition(quote)
+    }, 500)
   }
 
-  useEffect(() => {
-    const characterIdFilter = searchParams.get('characterId')
-    fetchQuotes(currentPage, searchQuery, characterIdFilter)
-
-    // Fetch character name for display
-    if (characterIdFilter && !characterName && !isNaN(Number(characterIdFilter))) {
-      const numericId = Number(characterIdFilter)
-      if (numericId > 0) {
-        api.getCharacter(numericId)
-          .then(character => setCharacterName(character.name))
-          .catch(() => setCharacterName('Unknown'))
-      }
-    } else if (!characterIdFilter) {
-      setCharacterName(null)
+  const handleCardMouseLeave = () => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current)
     }
-  }, [currentPage, searchQuery, searchParams, characterName])
+    setHoveredQuote(null)
+    setHoverModalPosition(null)
+    hoveredElementRef.current = null
+  }
 
+  const handleModalMouseEnter = () => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current)
+    }
+  }
+
+  const handleModalMouseLeave = () => {
+    setHoveredQuote(null)
+    setHoverModalPosition(null)
+    hoveredElementRef.current = null
+  }
+
+  // Search and page handlers
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(event.target.value)
     setCurrentPage(1)
+    
+    // Update URL
+    const params = new URLSearchParams(searchParams.toString())
+    if (event.target.value) {
+      params.set('search', event.target.value)
+    } else {
+      params.delete('search')
+    }
+    params.set('page', '1')
+    const queryString = params.toString()
+    router.push(queryString ? `/quotes?${queryString}` : '/quotes')
   }
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page)
+    
+    // Update URL
+    const params = new URLSearchParams(searchParams.toString())
+    params.set('page', page.toString())
+    const queryString = params.toString()
+    router.push(`/quotes?${queryString}`)
   }
 
   const clearCharacterFilter = () => {
+    setCharacterId(undefined)
+    setCharacterName(null)
+    setCurrentPage(1)
+    
     const params = new URLSearchParams(searchParams.toString())
     params.delete('characterId')
-    const next = params.toString()
-    router.push(next ? `/quotes?${next}` : '/quotes')
+    params.set('page', '1')
+    const queryString = params.toString()
+    router.push(queryString ? `/quotes?${queryString}` : '/quotes')
   }
 
+  const clearSearch = () => {
+    setSearchQuery('')
+    setCurrentPage(1)
+    
+    const params = new URLSearchParams(searchParams.toString())
+    params.delete('search')
+    params.set('page', '1')
+    const queryString = params.toString()
+    router.push(queryString ? `/quotes?${queryString}` : '/quotes')
+  }
+
+  const hasSearchQuery = Boolean(searchQuery || characterId)
+
+  // Cleanup effect
+  useEffect(() => {
+    return () => {
+      if (hoverTimeoutRef.current) {
+        clearTimeout(hoverTimeoutRef.current)
+      }
+    }
+  }, [])
+
   return (
-    <Container size="lg" py="xl">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+      {/* Hero Section */}
+      <Box
+        style={{
+          background: `linear-gradient(135deg, ${accentQuote}15, ${accentQuote}08)`,
+          borderRadius: theme.radius.lg,
+          border: `1px solid ${accentQuote}25`,
+          marginBottom: rem(24)
+        }}
+        p="md"
       >
-        <Stack ta="center" gap="lg">
-          <Box style={{ display: 'flex', justifyContent: 'center' }}>
-            <Quote size={48} color={theme.other?.usogui?.red ?? theme.colors.red[5]} />
+        <Stack align="center" gap="xs">
+          <Box
+            style={{
+              background: `linear-gradient(135deg, ${accentQuote}, ${accentQuote}CC)`,
+              borderRadius: '50%',
+              width: rem(40),
+              height: rem(40),
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: `0 4px 16px ${accentQuote}40`
+            }}
+          >
+            <Quote size={20} color="white" />
           </Box>
-          <Title order={2} component="h1">
-            Memorable Quotes
-          </Title>
-          <Text size="lg" c="dimmed">
-            Iconic lines and wisdom from the world of Usogui
-          </Text>
-        </Stack>
 
-        <Stack gap="md" mt="xl" mb="lg" align="center">
-          <TextInput
-            size="md"
-            placeholder="Search quotes, speakers, or tags..."
-            value={searchQuery}
-            onChange={handleSearchChange}
-            leftSection={<Search size={18} />}
-            style={{ maxWidth: rem(500) }}
-          />
-          {searchParams.get('characterId') && (
-            <Badge
-              variant="filled"
-              color="red"
-              size="lg"
-              rightSection={<CloseButton size="sm" onClick={clearCharacterFilter} />}
-            >
-              Filtered by character: {characterName || 'Loading...'}
-            </Badge>
-          )}
-        </Stack>
-
-        {error && (
-          <Alert color="red" variant="light" mb="md">
-            {error}
-          </Alert>
-        )}
-
-        {loading ? (
-          <Box style={{ display: 'flex', justifyContent: 'center', paddingBlock: theme.spacing.xl }}>
-            <Loader size="lg" />
-          </Box>
-        ) : (
-          <>
-            <Text size="lg" fw={600} mb="md">
-              {total} quote{total !== 1 ? 's' : ''} found
+          <Stack align="center" gap="xs">
+            <Title order={1} size="1.5rem" fw={700} ta="center" c={accentQuote}>
+              Memorable Quotes
+            </Title>
+            <Text size="md" c="dimmed" ta="center" maw={400}>
+              {characterName
+                ? `Iconic wisdom and memorable dialogue from ${characterName}`
+                : 'Discover profound insights and memorable dialogue from the world of Usogui'}
             </Text>
 
-            <Grid gutter="xl">
-              {quotes.map((quote, index) => (
-                <Grid.Col span={{ base: 12, md: 6, lg: 4 }} key={quote.id}>
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: index * 0.1 }}
-                    whileHover={{ y: -4, transition: { duration: 0.2 } }}
-                  >
-                    <Card
-                      className="gambling-card h-full"
-                      shadow="lg"
-                      radius="md"
-                      withBorder
-                      style={{ height: '100%', display: 'flex', flexDirection: 'column', transition: 'transform 0.2s' }}
-                    >
-                      <Stack gap="md" p="xl" style={{ flex: 1 }}>
-                        <Box style={{ display: 'flex', justifyContent: 'center' }}>
-                          <Quote size={24} color={theme.other?.usogui?.red ?? theme.colors.red[5]} />
-                        </Box>
-
-                        <Text
-                          size="lg"
-                          fs="italic"
-                          ta="center"
-                          style={{ lineHeight: 1.6 }}
-                        >
-                          &ldquo;{quote.text}&rdquo;
-                        </Text>
-
-                        <Text ta="center" fw={700} c={theme.other?.usogui?.red ?? theme.colors.red[5]}>
-                          — {quote.speaker}
-                        </Text>
-
-                        {quote.context && (
-                          <Text size="sm" c="dimmed" ta="center" fs="italic">
-                            {quote.context}
-                          </Text>
-                        )}
-
-                        {(quote.chapter || quote.volume) && (
-                          <Text size="sm" c="dimmed" ta="center">
-                            {quote.volume && `Volume ${quote.volume}`}
-                            {quote.volume && quote.chapter && ', '}
-                            {quote.chapter && `Chapter ${quote.chapter}`}
-                          </Text>
-                        )}
-
-                        {quote.tags?.length > 0 && (
-                          <Group gap={6} justify="center" wrap="wrap">
-                            {quote.tags.map((tag, tagIndex) => (
-                              <Badge key={`${quote.id}-tag-${tagIndex}`} variant="outline" color="purple">
-                                {tag}
-                              </Badge>
-                            ))}
-                          </Group>
-                        )}
-                      </Stack>
-                    </Card>
-                  </motion.div>
-                </Grid.Col>
-              ))}
-            </Grid>
-
-            {quotes.length === 0 && !loading && (
-              <Stack align="center" gap="sm" py="xl">
-                <Quote size={64} color="rgba(255, 255, 255, 0.4)" />
-                <Title order={4} c="dimmed">
-                  No quotes found
-                </Title>
-                <Text size="sm" c="dimmed">
-                  {searchQuery ? 'Try adjusting your search terms.' : 'Be the first to submit a memorable quote!'}
-                </Text>
-              </Stack>
+            {total > 0 && (
+              <Badge size="md" variant={badgeVariant as any} color="violet" radius="xl" mt="xs">
+                {total} quote{total !== 1 ? 's' : ''} collected
+              </Badge>
             )}
+          </Stack>
+        </Stack>
+      </Box>
 
-            {totalPages > 1 && (
-              <Box style={{ display: 'flex', justifyContent: 'center', marginTop: theme.spacing.xl }}>
-                <Pagination total={totalPages} value={currentPage} onChange={handlePageChange} size="lg" color="red" />
-              </Box>
-            )}
-          </>
+      {/* Search and Filters */}
+      <Box mb="xl">
+        <Group justify="center" mb="md">
+          <Box style={{ maxWidth: rem(600), width: '100%' }}>
+            <TextInput
+              placeholder="Search quotes, speakers, or context..."
+              value={searchQuery}
+              onChange={handleSearchChange}
+              leftSection={<Search size={20} />}
+              size="lg"
+              radius="xl"
+              rightSection={
+                hasSearchQuery ? (
+                  <ActionIcon variant="subtle" color="gray" onClick={clearSearch} size="sm">
+                    <X size={16} />
+                  </ActionIcon>
+                ) : null
+              }
+              styles={{
+                input: {
+                  fontSize: rem(16),
+                  paddingLeft: rem(50),
+                  paddingRight: hasSearchQuery ? rem(50) : rem(20)
+                }
+              }}
+            />
+          </Box>
+        </Group>
+
+        {characterId && characterName && (
+          <Group justify="center">
+            <Badge
+              size="lg"
+              variant={badgeVariant as any}
+              color="violet"
+              radius="xl"
+              rightSection={
+                <ActionIcon size="xs" color="violet" variant="transparent" onClick={clearCharacterFilter}>
+                  <X size={12} />
+                </ActionIcon>
+              }
+            >
+              Character: {characterName}
+            </Badge>
+          </Group>
         )}
-      </motion.div>
-    </Container>
+      </Box>
+
+      {/* Error Alert */}
+      {error && (
+        <Alert color="red" variant="light" mb="xl">
+          {error}
+        </Alert>
+      )}
+
+      {/* Loading State */}
+      {loading ? (
+        <Box style={{ display: 'flex', justifyContent: 'center', padding: rem(48) }}>
+          <Loader size="lg" color="violet" />
+        </Box>
+      ) : (
+        <Stack gap="xl">
+          {/* Quotes Grid */}
+          <Grid gutter="md">
+            {quotes.map((quote, index) => (
+              // base: 1 column, sm: 2 columns, md: 4 columns, lg: 6 columns
+              <Grid.Col span={{ base: 12, sm: 6, md: 3, lg: 2 }} key={quote.id}>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: index * 0.05 }}
+                >
+                  <Card
+                    withBorder
+                    radius="lg"
+                    shadow="sm"
+                    padding="lg"
+                    style={{
+                      height: '280px', // Match character/arc card height
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease',
+                      position: 'relative',
+                      overflow: 'hidden',
+                      backgroundColor: cardBgColor,
+                    }}
+                    onMouseEnter={(e) => handleCardMouseEnter(quote, e.currentTarget)}
+                    onMouseLeave={handleCardMouseLeave}
+                    styles={{
+                      root: {
+                        '&:hover': {
+                          transform: 'translateY(-4px)',
+                          boxShadow: theme.shadows.lg,
+                        },
+                      },
+                    }}
+                  >
+                    <Stack gap="sm" h="100%" justify="space-between">
+                      {/* Header */}
+                      <Group justify="space-between" align="flex-start">
+                        <Group gap="xs" wrap="wrap">
+                          <Badge color="violet" variant={badgeVariant as any} size="sm">
+                            Quote
+                          </Badge>
+                          {quote.chapter && (
+                            <Badge color="gray" variant={grayBadgeVariant as any} size="sm">
+                              Ch. {quote.chapter}
+                            </Badge>
+                          )}
+                        </Group>
+                        <Quote size={20} color={accentQuote} />
+                      </Group>
+
+                      {/* Quote Text - Centered and Clear */}
+                      <Box style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Text 
+                          size="md" 
+                          lineClamp={4} 
+                          ta="center"
+                          fw={600}
+                          style={{ 
+                            fontStyle: 'italic',
+                            lineHeight: 1.3,
+                            fontSize: rem(15),
+                            color: textColor
+                          }}
+                        >
+                          &quot;{quote.text}&quot;
+                        </Text>
+                      </Box>
+
+                      {/* Speaker - More prominent */}
+                      <Text 
+                        size="sm" 
+                        fw={700} 
+                        c={accentQuote}
+                        ta="center"
+                        style={{ fontSize: rem(13) }}
+                      >
+                        — {quote.speaker}
+                      </Text>
+
+                      {/* Tags */}
+                      {quote.tags.length > 0 && (
+                        <Group gap={4} wrap="wrap" justify="center">
+                          {quote.tags.slice(0, 3).map((tag: string, tagIndex: number) => (
+                            <Badge key={tagIndex} size="xs" color="gray" variant={grayBadgeVariant as any}>
+                              {tag}
+                            </Badge>
+                          ))}
+                          {quote.tags.length > 3 && (
+                            <Badge size="xs" color="gray" variant={grayBadgeVariant as any}>
+                              +{quote.tags.length - 3}
+                            </Badge>
+                          )}
+                        </Group>
+                      )}
+
+                      {/* Footer - Remove "Full Quote" text */}
+                      {quote.volume && (
+                        <Text size="xs" c="dimmed" ta="center">
+                          {quote.volume && `Vol. ${quote.volume}`}
+                          {quote.volume && quote.chapter && ' • '}
+                          {quote.chapter && `Ch. ${quote.chapter}`}
+                        </Text>
+                      )}
+                    </Stack>
+                  </Card>
+                </motion.div>
+              </Grid.Col>
+            ))}
+          </Grid>
+
+          {/* Empty State */}
+          {quotes.length === 0 && !loading && (
+            <Stack align="center" gap="md" py="xl">
+              <Quote size={64} color={iconColor} />
+              <Title order={4} c="dimmed">
+                No quotes found
+              </Title>
+              <Text size="sm" c="dimmed" ta="center">
+                {searchQuery ? 'Try adjusting your search terms.' : 'Be the first to submit a memorable quote!'}
+              </Text>
+            </Stack>
+          )}
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <Group justify="center">
+              <Pagination
+                total={totalPages}
+                value={currentPage}
+                onChange={handlePageChange}
+                color="violet"
+                radius="md"
+                size="lg"
+              />
+            </Group>
+          )}
+        </Stack>
+      )}
+
+      {/* Hover Modal */}
+      <AnimatePresence>
+        {hoveredQuote && hoverModalPosition && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            transition={{ duration: 0.2 }}
+            style={{
+              position: 'fixed',
+              left: hoverModalPosition.x - 150, // Center horizontally (300px width / 2)
+              top: hoverModalPosition.y,
+              zIndex: 1001, // Higher than navbar
+              pointerEvents: 'auto'
+            }}
+            onMouseEnter={handleModalMouseEnter}
+            onMouseLeave={handleModalMouseLeave}
+          >
+            <Paper
+              shadow="xl"
+              radius="lg"
+              p="md"
+              style={{
+                backgroundColor: cardBgColor,
+                border: `2px solid ${accentQuote}`,
+                backdropFilter: 'blur(10px)',
+                width: rem(300),
+                maxWidth: '90vw'
+              }}
+            >
+              <Stack gap="sm">
+                {/* Quote Speaker */}
+                <Title
+                  order={4}
+                  size="md"
+                  fw={700}
+                  c={accentQuote}
+                  ta="center"
+                  lineClamp={2}
+                >
+                  {hoveredQuote.speaker}
+                </Title>
+
+                {/* Context - Emphasized */}
+                {hoveredQuote.context && (
+                  <Box>
+                    <Text size="xs" fw={600} c="dimmed" mb={4} ta="center">
+                      Context
+                    </Text>
+                    <Text 
+                      size="sm" 
+                      c={textColor}
+                      ta="center"
+                      lineClamp={4}
+                      style={{
+                        lineHeight: 1.4,
+                        fontWeight: 500
+                      }}
+                    >
+                      {hoveredQuote.context}
+                    </Text>
+                  </Box>
+                )}
+
+                {/* Chapter and Volume Info */}
+                {(hoveredQuote.volume || hoveredQuote.chapter) && (
+                  <Group justify="center" gap="xs">
+                    <Badge variant="filled" color="violet" size="sm">
+                      {hoveredQuote.volume && `Vol. ${hoveredQuote.volume}`}
+                      {hoveredQuote.volume && hoveredQuote.chapter && ' • '}
+                      {hoveredQuote.chapter && `Ch. ${hoveredQuote.chapter}`}
+                    </Badge>
+                  </Group>
+                )}
+
+                {/* Tags Info */}
+                {hoveredQuote.tags.length > 0 && (
+                  <Group justify="center" gap="xs">
+                    <Badge variant="outline" color="gray" size="xs">
+                      {hoveredQuote.tags.length} tag{hoveredQuote.tags.length !== 1 ? 's' : ''}
+                    </Badge>
+                    {hoveredQuote.tags.slice(0, 2).map((tag: string, index: number) => (
+                      <Badge key={index} variant="light" color="blue" size="xs">
+                        {tag}
+                      </Badge>
+                    ))}
+                    {hoveredQuote.tags.length > 2 && (
+                      <Badge variant="light" color="blue" size="xs">
+                        +{hoveredQuote.tags.length - 2}
+                      </Badge>
+                    )}
+                  </Group>
+                )}
+
+                {/* Show message if no context */}
+                {!hoveredQuote.context && (
+                  <Text size="sm" c="dimmed" ta="center" fs="italic">
+                    No additional context available
+                  </Text>
+                )}
+              </Stack>
+            </Paper>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
   )
 }

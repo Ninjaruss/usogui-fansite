@@ -47,7 +47,7 @@ export default function EventPageClient({ initialEvent }: EventPageClientProps) 
         <Stack align="center" gap="sm" mb="xl">
           <CalendarSearch size={48} color={theme.other?.usogui?.event ?? theme.colors.orange?.[6]} />
           <Title order={1}>{initialEvent.title}</Title>
-          <Group gap="sm" wrap justify="center">
+          <Group gap="sm" wrap="wrap" justify="center">
             <Badge radius="sm" variant="outline" leftSection={<Calendar size={14} />}>
               Chapter {initialEvent.chapterNumber}
             </Badge>
@@ -187,7 +187,7 @@ export default function EventPageClient({ initialEvent }: EventPageClientProps) 
                     <Text size="xs" c="dimmed">
                       Tags
                     </Text>
-                    <Group gap="xs" wrap>
+                    <Group gap="xs" wrap="wrap">
                       {initialEvent.tags.map((tag) => (
                         <Badge key={tag.id} variant="outline" radius="sm">
                           {tag.name}

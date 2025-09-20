@@ -152,7 +152,7 @@ export default function ArcPageClient({ initialArc, initialEvents, initialGamble
                   </Grid.Col>
                 </Grid>
 
-                <Group gap="sm" wrap>
+                <Group gap="sm" wrap="wrap">
                   <Badge color="red" radius="lg" variant="filled">
                     {initialEvents.length} Event{initialEvents.length !== 1 ? 's' : ''}
                   </Badge>

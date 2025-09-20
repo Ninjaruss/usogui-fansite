@@ -61,27 +61,32 @@ export default function UsersPageContent() {
 
   const limit = 12
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        setLoading(true)
-        const params: any = { page, limit }
-        if (searchTerm.trim()) {
-          params.username = searchTerm
-        }
-        
-        const response = await api.getPublicUsers(params)
-        setUsers(response.data)
-        setTotalPages(response.totalPages)
-        setTotal(response.total)
-      } catch (error: any) {
-        setError(error.message)
-      } finally {
-        setLoading(false)
+  const fetchUsers = async () => {
+    try {
+      setLoading(true)
+      const params: any = { page, limit }
+      if (searchTerm.trim()) {
+        params.username = searchTerm
       }
-    }
 
-    fetchUsers()
+      const response = await api.getPublicUsers(params)
+      setUsers(response.data)
+      setTotalPages(response.totalPages)
+      setTotal(response.total)
+    } catch (error: any) {
+      setError(error.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Debounced search effect
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      fetchUsers()
+    }, 300)
+
+    return () => clearTimeout(timeoutId)
   }, [page, searchTerm])
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {

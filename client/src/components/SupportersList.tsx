@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { UserBadge, BadgeType } from '../types';
 import BadgeDisplay from './BadgeDisplay';
+import { API_BASE_URL } from '../lib/api';
 import CustomRoleDisplay from './CustomRoleDisplay';
 import UserProfileImage from './UserProfileImage';
 
@@ -42,7 +43,7 @@ export default function SupportersList() {
   useEffect(() => {
     const fetchSupporters = async () => {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/badges/supporters`);
+  const response = await fetch(`${API_BASE_URL}/badges/supporters`);
         if (!response.ok) {
           throw new Error('Failed to fetch supporters');
         }
@@ -60,18 +61,18 @@ export default function SupportersList() {
 
   if (loading) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
+      <div className="bg-gray-800 rounded-lg shadow-sm p-6">
         <div className="animate-pulse">
-          <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mb-4"></div>
+          <div className="h-6 bg-gray-700 rounded w-1/3 mb-4"></div>
           <div className="space-y-3">
             {Array.from({ length: 5 }).map((_, i) => (
               <div key={i} className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+                <div className="w-12 h-12 bg-gray-700 rounded-full"></div>
                 <div className="flex-1">
-                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/4 mb-2"></div>
-                  <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/3"></div>
+                  <div className="h-4 bg-gray-700 rounded w-1/4 mb-2"></div>
+                  <div className="h-3 bg-gray-700 rounded w-1/3"></div>
                 </div>
-                <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+                <div className="w-8 h-8 bg-gray-700 rounded-full"></div>
               </div>
             ))}
           </div>
@@ -82,8 +83,8 @@ export default function SupportersList() {
 
   if (error) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
-        <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Our Supporters</h2>
+      <div className="bg-gray-800 rounded-lg shadow-sm p-6">
+        <h2 className="text-xl font-bold mb-4 text-white">Our Supporters</h2>
         <p className="text-red-600 dark:text-red-400">Failed to load supporters: {error}</p>
       </div>
     );
@@ -91,9 +92,9 @@ export default function SupportersList() {
 
   if (supporters.length === 0) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
-        <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Our Supporters</h2>
-        <p className="text-gray-600 dark:text-gray-400">
+      <div className="bg-gray-800 rounded-lg shadow-sm p-6">
+        <h2 className="text-xl font-bold mb-4 text-white">Our Supporters</h2>
+        <p className="text-gray-400">
           No supporters yet. Be the first to support our fansite!
         </p>
       </div>
@@ -116,13 +117,13 @@ export default function SupportersList() {
   });
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
+    <div className="bg-gray-800 rounded-lg shadow-sm p-6">
       <div className="flex items-center gap-2 mb-6">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Our Supporters</h2>
+        <h2 className="text-2xl font-bold text-white">Our Supporters</h2>
         <span className="text-red-500">❤️</span>
       </div>
 
-      <p className="text-gray-600 dark:text-gray-400 mb-6">
+      <p className="text-gray-400 mb-6">
         Thank you to all our amazing supporters who help keep this fansite running!
       </p>
 
@@ -133,7 +134,7 @@ export default function SupportersList() {
 
         return (
           <div key={badgeType} className="mb-8 last:mb-0">
-            <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4 flex items-center gap-2">
+            <h3 className="text-lg font-semibold text-gray-200 mb-4 flex items-center gap-2">
               <span>{groupSupporters[0].badge.icon}</span>
               {badgeType === 'sponsor' && 'Sponsors'}
               {badgeType === 'supporter' && 'Supporters'}
@@ -147,7 +148,7 @@ export default function SupportersList() {
               {sortedSupporters.map((supporter) => (
                 <div
                   key={`${supporter.user.id}-${supporter.badge.id}`}
-                  className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg"
+                  className="flex items-center gap-3 p-4 bg-gray-700 rounded-lg"
                 >
                   <UserProfileImage
                     user={supporter.user}
@@ -156,7 +157,7 @@ export default function SupportersList() {
                   />
 
                   <div className="flex-1 min-w-0">
-                    <div className="font-medium text-gray-900 dark:text-white mb-1">
+                    <div className="font-medium text-white mb-1">
                       {supporter.user.username}
                     </div>
                     {supporter.user.customRole && (
@@ -167,7 +168,7 @@ export default function SupportersList() {
                         />
                       </div>
                     )}
-                    <div className="text-sm text-gray-500 dark:text-gray-400">
+                    <div className="text-sm text-gray-400">
                       Since {new Date(supporter.awardedAt).getFullYear()}
                     </div>
                   </div>
@@ -195,9 +196,9 @@ export default function SupportersList() {
         );
       })}
 
-      <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-600">
+      <div className="mt-8 pt-6 border-t border-gray-600">
         <div className="text-center">
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+          <p className="text-sm text-gray-400 mb-2">
             Want to support us?
           </p>
           <a

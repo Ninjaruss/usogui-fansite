@@ -51,7 +51,7 @@ export default function UserBadges({
         {Array.from({ length: 3 }).map((_, i) => (
           <div
             key={i}
-            className={`rounded-full bg-gray-300 animate-pulse ${
+            className={`rounded-full bg-gray-700 animate-pulse ${
               size === 'sm' ? 'w-6 h-6' : size === 'md' ? 'w-8 h-8' : 'w-10 h-10'
             }`}
           />

@@ -168,7 +168,7 @@ export const FAQ: React.FC<FAQProps> = ({ showTitle = true, maxItems }) => {
 
       <Paper
         shadow="sm"
-        padding="md"
+        p="md"
         radius="md"
         style={{
           backgroundColor: withAlpha(surface, 0.94, surface),

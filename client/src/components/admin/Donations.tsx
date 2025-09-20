@@ -27,6 +27,7 @@ import {
   EditButton,
 } from 'react-admin';
 import { useState } from 'react';
+import { API_BASE_URL } from '../../lib/api';
 
 const DonationStatusField = () => {
   const record = useRecordContext();
@@ -68,7 +69,7 @@ const AssignUserButton = ({ donationId }: { donationId: number }) => {
     setIsAssigning(true);
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/donations/${donationId}/assign/${selectedUserId}`,
+        `${API_BASE_URL}/donations/${donationId}/assign/${selectedUserId}`,
         {
           method: 'PATCH',
           headers: {
@@ -203,7 +204,7 @@ export const DonationShow = () => (
       <FunctionField
         label="Raw Webhook Data"
         render={(record: any) => (
-          <pre className="text-xs bg-gray-100 p-2 rounded max-w-full overflow-auto">
+          <pre className="text-xs bg-gray-800 p-2 rounded max-w-full overflow-auto">
             {JSON.stringify(record.webhookData, null, 2)}
           </pre>
         )}

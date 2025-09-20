@@ -17,6 +17,7 @@ export class OrganizationsService {
    */
   async findAll(
     filters: {
+      name?: string;
       sort?: string;
       order?: 'ASC' | 'DESC';
       page?: number;
@@ -29,10 +30,16 @@ export class OrganizationsService {
     perPage: number;
     totalPages: number;
   }> {
-    const { sort, order = 'ASC', page = 1, limit = 1000 } = filters;
+    const { name, sort, order = 'ASC', page = 1, limit = 1000 } = filters;
     const query = this.repo
       .createQueryBuilder('organization')
       .leftJoinAndSelect('organization.characters', 'characters');
+
+    // Add name filter if provided
+    if (name) {
+      query.where('organization.name ILIKE :name', { name: `%${name}%` });
+    }
+
     const allowedSort = ['id', 'name'];
     if (sort && allowedSort.includes(sort)) {
       query.orderBy(`organization.${sort}`, order);

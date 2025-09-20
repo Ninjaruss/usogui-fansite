@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useMemo, useState } from 'react'
+import React, { useMemo, useRef, useState } from 'react'
 import {
   Badge,
   Button,
@@ -20,6 +20,7 @@ import Link from 'next/link'
 import { api } from '../../../lib/api'
 import { useAuth } from '../../../providers/AuthProvider'
 import EnhancedSpoilerMarkdown from '../../../components/EnhancedSpoilerMarkdown'
+// GambleChip removed — using simple Badge chips inline for gambles
 import EntityEmbedHelperWithSearch from '../../../components/EntityEmbedHelperWithSearch'
 import TimelineSpoilerWrapper from '../../../components/TimelineSpoilerWrapper'
 import { motion } from 'motion/react'
@@ -85,11 +86,41 @@ export default function GuidePageClient({ initialGuide }: GuidePageClientProps) 
   const [editedContent, setEditedContent] = useState(initialGuide.content)
   const [saving, setSaving] = useState(false)
   const [activeTab, setActiveTab] = useState<string>('content')
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null)
 
   usePageView('guide', guide.id.toString(), true)
 
-  const canEdit = user?.id === guide.author.id || user?.role === 'admin' || user?.role === 'moderator'
-  const canPublish = user?.role === 'admin' || user?.role === 'moderator'
+  // When the server-rendered page couldn't see the user's session,
+  // initialGuide.userHasLiked may be undefined. If we have a logged-in
+  // user on the client, refresh the guide like status so the button
+  // correctly reflects whether the current user already liked it.
+  React.useEffect(() => {
+    let cancelled = false
+    const ensureLikeStatus = async () => {
+      if (!user) return
+      // Only refetch if server didn't provide a boolean for userHasLiked
+      if (typeof guide.userHasLiked === 'boolean') return
+      try {
+        const fresh = await api.getGuide(guide.id)
+        if (cancelled) return
+        setGuide((prev) => ({ ...prev, userHasLiked: fresh.userHasLiked, likeCount: fresh.likeCount }))
+      } catch (e) {
+        // ignore silently
+      }
+    }
+
+    ensureLikeStatus()
+
+    return () => {
+      cancelled = true
+    }
+  }, [user?.id, guide.id, guide.userHasLiked])
+
+  // Only the guide owner or admins can edit. Moderators cannot edit guides.
+  const canEdit = user?.id === guide.author.id || user?.role === 'admin'
+
+  // Remove publish/unpublish button from the guide detail page UI. Publish actions are handled elsewhere.
+  const canPublish = false
 
   const roleBadge = useMemo(() => {
     if (!guide.author.role) return null
@@ -116,17 +147,7 @@ export default function GuidePageClient({ initialGuide }: GuidePageClientProps) 
     }
   }
 
-  const handlePublishToggle = async () => {
-    if (!canPublish) return
-    try {
-      await api.updateGuideStatus(guide.id, guide.status === GuideStatus.APPROVED ? GuideStatus.PENDING : GuideStatus.APPROVED)
-      const updatedGuide = await api.getGuide(guide.id)
-      setGuide(updatedGuide)
-      notifications.show({ message: 'Guide status updated.', color: 'green' })
-    } catch (error: unknown) {
-      notifications.show({ message: error instanceof Error ? error.message : 'Failed to update status.', color: 'red' })
-    }
-  }
+  // Publish/unpublish is not available in this client view; server/admin UI handles it.
 
   const handleSave = async () => {
     if (!canEdit) return
@@ -160,11 +181,7 @@ export default function GuidePageClient({ initialGuide }: GuidePageClientProps) 
             Back to Guides
           </Button>
           <Group gap="sm">
-            {canPublish && (
-              <Button variant="outline" color="yellow" onClick={handlePublishToggle}>
-                {guide.status === GuideStatus.APPROVED ? 'Unpublish' : 'Approve Guide'}
-              </Button>
-            )}
+            {/* publish/unpublish removed from UI per requirements */}
             <Button
               variant={guide.userHasLiked ? 'filled' : 'outline'}
               color="red"
@@ -179,14 +196,17 @@ export default function GuidePageClient({ initialGuide }: GuidePageClientProps) 
         <Card withBorder radius="md" className="gambling-card" shadow="md" mb="xl">
           <Stack gap="md" p="lg">
             <Group gap="sm" align="flex-start">
-              <AuthorProfileImage
-                author={guide.author}
-                size={64}
-              />
+              <Link href={`/users/${guide.author.id}`}>
+                <AuthorProfileImage
+                  author={guide.author}
+                  size={64}
+                />
+              </Link>
               <Stack gap={4}>
                 <Title order={1}>{guide.title}</Title>
                 <Group gap="sm" align="center">
-                  <Text size="sm" c="dimmed">
+                  <AuthorProfileImage author={guide.author} size={28} showFallback />
+                  <Text size="sm" c="dimmed" component={Link} href={`/users/${guide.author.id}`} style={{ textDecoration: 'none' }}>
                     By {guide.author.username}
                   </Text>
                   {guide.author.customRole && <Badge color="violet" variant="outline" radius="sm">{guide.author.customRole}</Badge>}
@@ -195,7 +215,12 @@ export default function GuidePageClient({ initialGuide }: GuidePageClientProps) 
                       {roleBadge.label}
                     </Badge>
                   )}
-                  <UserRoleDisplay role={guide.author.role} customRole={guide.author.customRole} size="sm" />
+                  {/* adapt author.role to the UserRoleDisplay props */}
+                  <UserRoleDisplay
+                    userRole={(guide.author.role === 'admin' || guide.author.role === 'moderator') ? guide.author.role : 'user'}
+                    customRole={guide.author.customRole}
+                    size="small"
+                  />
                 </Group>
                 <Group gap="xs" align="center">
                   <Badge color="red" radius="sm" variant="light" leftSection={<Calendar size={14} />}>
@@ -213,7 +238,34 @@ export default function GuidePageClient({ initialGuide }: GuidePageClientProps) 
                     {guide.description}
                   </Text>
                 )}
-                <Group gap="xs" wrap>
+                {/* Related chips: arc, gambles, characters (moved into header) - placed above tags */}
+                <Group style={{ flexWrap: 'wrap', gap: 8 }}>
+                  {guide.arc && (
+                    <Link href={`/arcs/${guide.arc.id}`} style={{ textDecoration: 'none', display: 'inline-block' }}>
+                      <Badge radius="lg" variant="outline" size="sm" style={{ borderColor: (theme.colors as any).arc?.[5] ?? '#dc004e', color: (theme.colors as any).arc?.[5] ?? '#dc004e' }}>
+                        {guide.arc.name}
+                      </Badge>
+                    </Link>
+                  )}
+
+                  {guide.gambles && guide.gambles.length > 0 && guide.gambles.map((gamble) => (
+                    <Link key={gamble.id} href={`/gambles/${gamble.id}`} style={{ textDecoration: 'none', display: 'inline-block' }}>
+                      <Badge radius="lg" variant="outline" size="sm" style={{ borderColor: (theme.colors as any).gamble?.[5] ?? '#d32f2f', color: (theme.colors as any).gamble?.[5] ?? '#d32f2f', fontWeight: 700 }}>
+                        {gamble.name}
+                      </Badge>
+                    </Link>
+                  ))}
+
+                  {guide.characters && guide.characters.length > 0 && guide.characters.map((character) => (
+                    <Link key={character.id} href={`/characters/${character.id}`} style={{ textDecoration: 'none', display: 'inline-block' }}>
+                      <Badge radius="lg" variant="outline" size="sm" style={{ borderColor: (theme.colors as any).character?.[5] ?? '#1976d2', color: (theme.colors as any).character?.[5] ?? '#1976d2' }}>
+                        {character.name}
+                      </Badge>
+                    </Link>
+                  ))}
+                </Group>
+
+                <Group gap="xs" style={{ flexWrap: 'wrap' }}>
                   {guide.tags.map((tag) => (
                     <Badge key={tag.id} variant="outline" radius="sm">
                       {tag.name}
@@ -226,18 +278,9 @@ export default function GuidePageClient({ initialGuide }: GuidePageClientProps) 
         </Card>
 
         <Card withBorder radius="md" className="gambling-card" shadow="md">
-          <Tabs value={activeTab} onChange={setActiveTab} keepMounted={false}>
+          <Tabs value={activeTab} onChange={(v) => setActiveTab(v ?? 'content')} keepMounted={false}>
             <Tabs.List>
               <Tabs.Tab value="content" leftSection={<FileText size={16} />}>Guide Content</Tabs.Tab>
-              {guide.arc && (
-                <Tabs.Tab value="arc" leftSection={<BookOpen size={16} />}>Related Arc</Tabs.Tab>
-              )}
-              {guide.gambles && guide.gambles.length > 0 && (
-                <Tabs.Tab value="gambles" leftSection={<Dice6 size={16} />}>Related Gambles</Tabs.Tab>
-              )}
-              {guide.characters && guide.characters.length > 0 && (
-                <Tabs.Tab value="characters" leftSection={<Users size={16} />}>Characters</Tabs.Tab>
-              )}
               {canEdit && (
                 <Tabs.Tab value="edit" leftSection={<Edit size={16} />}>Edit Guide</Tabs.Tab>
               )}
@@ -252,78 +295,45 @@ export default function GuidePageClient({ initialGuide }: GuidePageClientProps) 
                   className="guide-content"
                 />
               </TimelineSpoilerWrapper>
+
+              {/* Related items shown as chips below the content */}
+              <Stack gap="sm" mt="md">
+                {/* related chips moved to header */}
+              </Stack>
             </Tabs.Panel>
-
-            {guide.arc && (
-              <Tabs.Panel value="arc" pt="md">
-                <Card withBorder radius="md" shadow="sm">
-                  <Stack gap="md" p="lg">
-                    <Title order={3}>Arc Overview</Title>
-                    <Text size="sm">
-                      This guide references the {guide.arc.name} arc. Explore the arc for detailed event breakdowns and timeline.
-                    </Text>
-                    <Button component={Link} href={`/arcs/${guide.arc.id}`} variant="outline" color="red">
-                      View Arc
-                    </Button>
-                  </Stack>
-                </Card>
-              </Tabs.Panel>
-            )}
-
-            {guide.gambles && guide.gambles.length > 0 && (
-              <Tabs.Panel value="gambles" pt="md">
-                <Card withBorder radius="md" shadow="sm">
-                  <Stack gap="sm" p="lg">
-                    <Title order={3}>Related Gambles</Title>
-                    <Stack gap="sm">
-                      {guide.gambles.map((gamble) => (
-                        <Button
-                          key={gamble.id}
-                          component={Link}
-                          href={`/gambles/${gamble.id}`}
-                          variant="outline"
-                          color="red"
-                          fullWidth
-                        >
-                          {gamble.name}
-                        </Button>
-                      ))}
-                    </Stack>
-                  </Stack>
-                </Card>
-              </Tabs.Panel>
-            )}
-
-            {guide.characters && guide.characters.length > 0 && (
-              <Tabs.Panel value="characters" pt="md">
-                <Card withBorder radius="md" shadow="sm">
-                  <Stack gap="sm" p="lg">
-                    <Title order={3}>Featured Characters</Title>
-                    <Stack gap="xs">
-                      {guide.characters.map((character) => (
-                        <Button
-                          key={character.id}
-                          component={Link}
-                          href={`/characters/${character.id}`}
-                          variant="subtle"
-                          color="gray"
-                          justify="flex-start"
-                        >
-                          {character.name}
-                        </Button>
-                      ))}
-                    </Stack>
-                  </Stack>
-                </Card>
-              </Tabs.Panel>
-            )}
 
             {canEdit && (
               <Tabs.Panel value="edit" pt="md">
                 <Card withBorder radius="md" shadow="sm">
                   <Stack gap="md" p="lg">
-                    <EntityEmbedHelperWithSearch />
+                    {/* Provide an insertion handler so embeds are inserted at the current cursor position */}
+                    <EntityEmbedHelperWithSearch onInsertEmbed={(embed) => {
+                      const textarea = textareaRef.current
+                      if (!textarea) {
+                        // fallback: append to content
+                        setEditedContent((prev) => prev + embed)
+                        return
+                      }
+
+                      const start = textarea.selectionStart ?? editedContent.length
+                      const end = textarea.selectionEnd ?? start
+                      const newContent = editedContent.slice(0, start) + embed + editedContent.slice(end)
+                      setEditedContent(newContent)
+
+                      // restore focus and place cursor after the inserted embed
+                      requestAnimationFrame(() => {
+                        textarea.focus()
+                        const pos = start + embed.length
+                        try {
+                          textarea.setSelectionRange(pos, pos)
+                        } catch (e) {
+                          // ignore
+                        }
+                      })
+                    }} />
+
                     <Textarea
+                      ref={textareaRef}
                       value={editedContent}
                       onChange={(event) => setEditedContent(event.currentTarget.value)}
                       autosize

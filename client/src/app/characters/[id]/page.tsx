@@ -20,6 +20,7 @@ import type { Arc, Event, Gamble, Guide, Quote } from '../../../types'
 import { GuideStatus } from '../../../types'
 import { Metadata } from 'next'
 import dynamic from 'next/dynamic'
+import { API_BASE_URL } from '../../../lib/api'
 
 const CharacterPageClient = dynamic(() => import('./CharacterPageClient'), {
   loading: () => <Box py="md">Loading...</Box>
@@ -55,8 +56,6 @@ interface CharacterPageData {
 }
 
 async function fetchCharacterData(characterId: number): Promise<CharacterPageData> {
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'
-
   try {
     const [characterRes, gamblesRes, eventsRes, guidesRes, quotesRes, allArcsRes] = await Promise.all([
       fetch(`${API_BASE_URL}/characters/${characterId}`, { next: { revalidate: 300 } }),
@@ -239,7 +238,7 @@ function CharacterHeader({ character, arcs, gambles, quotes }: {
                 <Text size="sm" c="dimmed">
                   Also known as:
                 </Text>
-                <Group gap="xs" wrap>
+                <Group gap="xs" wrap="wrap">
                   {character.alternateNames.map((name) => (
                     <Badge key={name} variant="outline" color="violet" radius="xl">
                       {name}
@@ -254,7 +253,7 @@ function CharacterHeader({ character, arcs, gambles, quotes }: {
                 <Text size="sm" c="dimmed">
                   Organization Affiliations:
                 </Text>
-                <Group gap="xs" wrap>
+                <Group gap="xs" wrap="wrap">
                   {character.organizations.map((organization) => (
                     <Badge
                       key={organization.id}
@@ -290,7 +289,7 @@ function CharacterHeader({ character, arcs, gambles, quotes }: {
               </Card>
             )}
 
-            <Group gap="sm" wrap>
+            <Group gap="sm" wrap="wrap">
               <Badge
                 component={Link}
                 href={`/arcs?character=${character.name}`}

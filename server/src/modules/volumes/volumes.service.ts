@@ -20,6 +20,7 @@ export class VolumesService {
    */
   async findAll(filters: {
     number?: number;
+    title?: string;
     page?: number;
     limit?: number;
     sort?: string;
@@ -29,6 +30,9 @@ export class VolumesService {
     const query = this.repo.createQueryBuilder('volume');
     if (filters.number) {
       query.andWhere('volume.number = :number', { number: filters.number });
+    }
+    if (filters.title) {
+      query.andWhere('volume.title ILIKE :title', { title: `%${filters.title}%` });
     }
 
     // Sorting: only allow certain fields for safety

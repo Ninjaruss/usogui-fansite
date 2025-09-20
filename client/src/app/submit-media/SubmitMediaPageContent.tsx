@@ -145,7 +145,7 @@ export default function SubmitMediaPageContent() {
 
   const isValidUrl = (url: string) => {
     try {
-      // eslint-disable-next-line no-new
+       
       new URL(url)
       return true
     } catch {
@@ -354,7 +354,17 @@ export default function SubmitMediaPageContent() {
             </Alert>
           )}
 
-          <Card withBorder radius="md" shadow="md" className="gambling-card">
+          <Card
+            withBorder
+            radius="md"
+            shadow="md"
+            className="gambling-card"
+            style={{
+              backgroundColor: theme.colors.dark?.[7] ?? '#070707',
+              color: theme.colors.gray?.[0] ?? '#fff',
+              borderColor: 'rgba(255,255,255,0.06)'
+            }}
+          >
             <Stack gap="xl">
               {isPrivilegedUser && (
                 <Tabs value={activeTab} onChange={(value) => setActiveTab((value as 'url' | 'upload') ?? 'url')}>
@@ -383,6 +393,13 @@ export default function SubmitMediaPageContent() {
                           </Box>
                         }
                         leftSectionPointerEvents="none"
+                        styles={{
+                          input: {
+                            backgroundColor: theme.colors.dark?.[5] ?? '#0b0b0b',
+                            color: theme.colors.gray?.[0] ?? '#fff',
+                            borderColor: 'rgba(255,255,255,0.06)'
+                          }
+                        }}
                       />
 
                       <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
@@ -407,7 +424,16 @@ export default function SubmitMediaPageContent() {
                           clearable
                           withAsterisk
                           nothingFoundMessage="No matches"
-                          withinPortal
+                          styles={{
+                            input: {
+                              backgroundColor: theme.colors.dark?.[5] ?? '#0b0b0b',
+                              color: theme.colors.gray?.[0] ?? '#fff',
+                              borderColor: 'rgba(255,255,255,0.06)'
+                            },
+                            dropdown: {
+                              backgroundColor: theme.colors.dark?.[7] ?? '#070707'
+                            }
+                          }}
                         />
 
                         <Select
@@ -420,7 +446,16 @@ export default function SubmitMediaPageContent() {
                           searchable
                           withAsterisk
                           nothingFoundMessage={dataLoading ? 'Loading...' : 'No matches found'}
-                          withinPortal
+                          styles={{
+                            input: {
+                              backgroundColor: theme.colors.dark?.[5] ?? '#0b0b0b',
+                              color: theme.colors.gray?.[0] ?? '#fff',
+                              borderColor: 'rgba(255,255,255,0.06)'
+                            },
+                            dropdown: {
+                              backgroundColor: theme.colors.dark?.[7] ?? '#070707'
+                            }
+                          }}
                         />
                       </SimpleGrid>
 
@@ -432,6 +467,13 @@ export default function SubmitMediaPageContent() {
                         min={1}
                         description="Associate with a specific chapter if relevant"
                         hideControls
+                        styles={{
+                          input: {
+                            backgroundColor: theme.colors.dark?.[5] ?? '#0b0b0b',
+                            color: theme.colors.gray?.[0] ?? '#fff',
+                            borderColor: 'rgba(255,255,255,0.06)'
+                          }
+                        }}
                       />
 
                       <Textarea
@@ -442,6 +484,13 @@ export default function SubmitMediaPageContent() {
                         description="Please provide credit to the original artist if known"
                         autosize
                         minRows={4}
+                        styles={{
+                          input: {
+                            backgroundColor: theme.colors.dark?.[5] ?? '#0b0b0b',
+                            color: theme.colors.gray?.[0] ?? '#fff',
+                            borderColor: 'rgba(255,255,255,0.06)'
+                          }
+                        }}
                       />
 
                       <Button

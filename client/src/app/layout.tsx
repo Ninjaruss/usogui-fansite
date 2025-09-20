@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import './globals.css'
 import { ClientProviders } from '../providers/ClientProviders'
 import { LayoutWrapper } from '../components/LayoutWrapper'
+import { ColorSchemeScript } from '@mantine/core'
 
 export const metadata: Metadata = {
   title: {
@@ -54,9 +55,10 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" data-mantine-color-scheme="dark" suppressHydrationWarning>
       <head>
         <meta name="emotion-insertion-point" content="" />
+        <ColorSchemeScript defaultColorScheme="dark" forceColorScheme="dark" />
       </head>
       <body suppressHydrationWarning>
         <ClientProviders>

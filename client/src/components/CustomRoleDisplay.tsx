@@ -54,10 +54,6 @@ export default function CustomRoleDisplay({
             boxShadow: '0 4px 8px rgba(156, 39, 176, 0.3)',
             transform: 'translateY(-1px)'
           }
-        },
-        leftSection: {
-          color: '#ffffff',
-          marginRight: showIcon ? theme.spacing.xs : 0
         }
       }}
     >

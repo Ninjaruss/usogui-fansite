@@ -58,6 +58,56 @@ const EnhancedSpoilerMarkdown: React.FC<EnhancedSpoilerMarkdownProps> = ({
     return { processedMarkdown: parsedContent, embedMap: embedLookup }
   }, [content, enableEntityEmbeds, compactEntityCards])
 
+  // Lightweight preprocessor to convert single newlines into markdown hard breaks
+  // while avoiding code fences so code blocks remain intact.
+  const processedForLineBreaks = useMemo(() => {
+    const text = processedMarkdown
+
+    if (!text) return text
+
+    let inCodeBlock = false
+    const lines = text.split('\n')
+    const out: string[] = []
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i]
+
+      // Toggle code fence state (```)
+      if (line.trim().startsWith('```')) {
+        inCodeBlock = !inCodeBlock
+        out.push(line)
+        continue
+      }
+
+      if (inCodeBlock) {
+        out.push(line)
+        continue
+      }
+
+      const nextLine = lines[i + 1]
+
+      // If this line and the next are both non-empty, and this line isn't a
+      // list/heading/blockquote/code-indented line, add two trailing spaces to
+      // force a markdown hard break. Skip if already ends with two spaces.
+      const isCurrentNonEmpty = line.trim() !== ''
+      const isNextNonEmpty = typeof nextLine !== 'undefined' && nextLine.trim() !== ''
+      const isListOrHeading = /^\s*([*+-]|\d+\.)\s+/.test(line) || /^\s*#{1,6}\s+/.test(line) || /^\s*>\s+/.test(line)
+      const isIndentedCode = /^\s{4,}/.test(line)
+
+      if (isCurrentNonEmpty && isNextNonEmpty && !isListOrHeading && !isIndentedCode) {
+        if (!/\s{2}$/.test(line)) {
+          out.push(line + '  ')
+        } else {
+          out.push(line)
+        }
+      } else {
+        out.push(line)
+      }
+    }
+
+    return out.join('\n')
+  }, [processedMarkdown])
+
   // Custom renderer that handles embed replacement in text content
   const components = {
     // Handle blockquotes as spoilers if they contain spoiler marker
@@ -248,7 +298,7 @@ const EnhancedSpoilerMarkdown: React.FC<EnhancedSpoilerMarkdownProps> = ({
         remarkPlugins={[remarkGfm]}
         components={components}
       >
-        {processedMarkdown}
+        {processedForLineBreaks}
       </ReactMarkdown>
     </div>
   )

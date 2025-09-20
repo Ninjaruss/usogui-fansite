@@ -35,6 +35,7 @@ import {
 } from 'lucide-react'
 import NextImage from 'next/image'
 import { api } from '../lib/api'
+import { API_BASE_URL } from '../lib/api'
 
 interface MediaItem {
   id: number
@@ -242,7 +243,7 @@ export default function MediaGallery({
   const getMediaThumbnail = (mediaItem: MediaItem) => {
     if (mediaItem.type === 'image') {
       return mediaItem.isUploaded
-        ? `${process.env.NEXT_PUBLIC_API_URL}/media/${mediaItem.fileName}`
+  ? `${API_BASE_URL}/media/${mediaItem.fileName}`
         : mediaItem.url
     }
 
@@ -380,12 +381,7 @@ export default function MediaGallery({
 
       <SimpleGrid
         spacing={compactMode ? 'xs' : 'md'}
-        cols={compactMode ? 2 : 3}
-        breakpoints={[
-          { maxWidth: 'lg', cols: compactMode ? 3 : 4 },
-          { maxWidth: 'md', cols: compactMode ? 2 : 3 },
-          { maxWidth: 'sm', cols: 2 }
-        ]}
+        cols={{ base: compactMode ? 2 : 3, md: compactMode ? 2 : 3, lg: compactMode ? 3 : 4 }}
       >
         {filteredMedia.map((mediaItem) => {
           const thumbnail = getMediaThumbnail(mediaItem)
@@ -487,6 +483,26 @@ export default function MediaGallery({
                     Official
                   </Badge>
                 )}
+
+                {/* Chapter number badge */}
+                {mediaItem.chapterNumber && (
+                  <Badge
+                    size="sm"
+                    radius="sm"
+                    style={{
+                      position: 'absolute',
+                      top: rem(12),
+                      left: rem(12),
+                      backdropFilter: 'blur(10px)',
+                      backgroundColor: 'rgba(225, 29, 72, 0.95)',
+                      border: '1px solid rgba(255, 255, 255, 0.2)',
+                      color: '#fff',
+                      fontWeight: 600
+                    }}
+                  >
+                    Ch. {mediaItem.chapterNumber}
+                  </Badge>
+                )}
               </Box>
 
               {!compactMode && (
@@ -509,12 +525,19 @@ export default function MediaGallery({
                     <Text size="xs" c="dimmed" fw={500}>
                       By {mediaItem.submittedBy.username}
                     </Text>
-                    <Text size="xs" c="dimmed" style={{ opacity: 0.7 }}>
-                      {new Date(mediaItem.createdAt).toLocaleDateString(undefined, {
-                        month: 'short',
-                        day: 'numeric'
-                      })}
-                    </Text>
+                    <Group gap="xs">
+                      {mediaItem.chapterNumber && (
+                        <Text size="xs" c="dimmed" style={{ opacity: 0.7 }}>
+                          Ch. {mediaItem.chapterNumber}
+                        </Text>
+                      )}
+                      <Text size="xs" c="dimmed" style={{ opacity: 0.7 }}>
+                        {new Date(mediaItem.createdAt).toLocaleDateString(undefined, {
+                          month: 'short',
+                          day: 'numeric'
+                        })}
+                      </Text>
+                    </Group>
                   </Group>
                 </Box>
               )}
@@ -855,3 +878,4 @@ export default function MediaGallery({
     </Box>
   )
 }
+

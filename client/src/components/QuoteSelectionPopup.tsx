@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useMemo, useState } from 'react'
+import React, { useMemo, useState, useEffect } from 'react'
 import {
   Badge,
   Box,
@@ -20,7 +20,7 @@ import { Search, Quote as QuoteIcon } from 'lucide-react'
 interface Quote {
   id: number
   text: string
-  character: string
+  character: string | { id: number; name: string; [key: string]: any }
   chapterNumber: number
 }
 
@@ -42,8 +42,17 @@ export default function QuoteSelectionPopup({
   loading = false
 }: QuoteSelectionPopupProps) {
   const [searchTerm, setSearchTerm] = useState('')
-  const [tempSelectedQuote, setTempSelectedQuote] = useState<number | null>(selectedQuoteId || null)
+  const [tempSelectedQuote, setTempSelectedQuote] = useState<number | null>(selectedQuoteId ?? null)
   const theme = useMantineTheme()
+
+  // Keep temp selection in sync when the modal is opened or the selectedQuoteId prop changes
+  useEffect(() => {
+    if (open) {
+      setTempSelectedQuote(selectedQuoteId ?? null)
+      // Reset search when opening so the selected quote is visible
+      setSearchTerm('')
+    }
+  }, [open, selectedQuoteId])
 
   const accentColor = useMemo(
     () => theme.other?.usogui?.quote ?? theme.colors.teal?.[6] ?? '#00796b',
@@ -51,10 +60,11 @@ export default function QuoteSelectionPopup({
   )
 
   // Filter quotes based on search term
-  const filteredQuotes = quotes.filter(quote =>
-    quote.text.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    quote.character.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  const filteredQuotes = (quotes || []).filter(quote => {
+    const characterName = typeof quote.character === 'string' ? quote.character : quote.character.name
+    return quote.text.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      characterName.toLowerCase().includes(searchTerm.toLowerCase())
+  })
 
   const handleConfirm = () => {
     onSelectQuote(tempSelectedQuote)
@@ -117,7 +127,7 @@ export default function QuoteSelectionPopup({
         />
 
         {/* Current Selection */}
-        {tempSelectedQuote && (
+        {tempSelectedQuote !== null && (
           <Paper
             withBorder
             radius="md"
@@ -136,7 +146,10 @@ export default function QuoteSelectionPopup({
                 </Text>
                 <Group gap="xs">
                   <Badge variant="outline" radius="sm">
-                    {quotes.find(q => q.id === tempSelectedQuote)!.character}
+                    {(() => {
+                      const foundQuote = quotes.find(q => q.id === tempSelectedQuote)!;
+                      return typeof foundQuote.character === 'string' ? foundQuote.character : foundQuote.character.name;
+                    })()}
                   </Badge>
                   <Badge color="red" radius="sm" variant="light">
                     Ch. {quotes.find(q => q.id === tempSelectedQuote)!.chapterNumber}
@@ -214,7 +227,7 @@ export default function QuoteSelectionPopup({
                           color={isSelected ? 'teal' : 'gray'}
                           radius="sm"
                         >
-                          {quote.character}
+                          {typeof quote.character === 'string' ? quote.character : quote.character.name}
                         </Badge>
                         <Badge
                           variant={isSelected ? 'filled' : 'outline'}

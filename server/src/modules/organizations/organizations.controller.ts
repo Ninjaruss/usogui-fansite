@@ -35,7 +35,12 @@ export class OrganizationsController {
   @Get()
   @ApiOperation({
     summary: 'Get all organizations',
-    description: 'Retrieve all organizations with optional sorting',
+    description: 'Retrieve all organizations with optional filtering and sorting',
+  })
+  @ApiQuery({
+    name: 'name',
+    required: false,
+    description: 'Filter by organization name',
   })
   @ApiQuery({
     name: 'sort',
@@ -79,12 +84,14 @@ export class OrganizationsController {
     },
   })
   async findAll(
+    @Query('name') name?: string,
     @Query('sort') sort?: string,
     @Query('order') order?: 'ASC' | 'DESC',
     @Query('page') page?: number,
     @Query('limit') limit?: number,
   ) {
     return this.service.findAll({
+      name,
       sort,
       order,
       page: page ? Number(page) : undefined,
