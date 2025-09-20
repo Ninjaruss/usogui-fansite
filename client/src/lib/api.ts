@@ -106,7 +106,15 @@ class ApiClient {
           this.method = method
         }
       }
-      
+
+      // Log error for debugging
+      console.error('[API Error]', {
+        url,
+        method: options.method || 'GET',
+        status: response.status,
+        message: errorMessage
+      })
+
       throw new APIError(errorMessage, response.status, errorDetails, url, options.method || 'GET')
     }
 

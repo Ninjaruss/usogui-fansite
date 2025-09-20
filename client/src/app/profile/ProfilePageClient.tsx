@@ -99,8 +99,8 @@ export default function ProfilePageClient() {
         const responseData = (profileResp as any).data || profileResp
         setProfileData({
           favoriteCharacter: responseData.favoriteCharacter || '',
-          favoriteQuote: responseData.favoriteQuoteId?.toString() || '',
-          favoriteGamble: responseData.favoriteGambleId?.toString() || '',
+          favoriteQuote: responseData.favoriteQuoteId ? responseData.favoriteQuoteId.toString() : '',
+          favoriteGamble: responseData.favoriteGambleId ? responseData.favoriteGambleId.toString() : '',
           customRole: user?.customRole || responseData.customRole || ''
         })
         favoriteQuoteId = responseData.favoriteQuoteId ?? null
@@ -108,10 +108,16 @@ export default function ProfilePageClient() {
 
         // If user has favorites, fetch them now so UI can show them immediately
         const favFetches: Promise<any>[] = []
-        if (favoriteQuoteId != null) favFetches.push(api.getQuote(favoriteQuoteId))
-        else favFetches.push(Promise.resolve(null))
-        if (favoriteGambleId != null) favFetches.push(api.getGamble(favoriteGambleId))
-        else favFetches.push(Promise.resolve(null))
+        if (favoriteQuoteId != null && typeof favoriteQuoteId === 'number' && favoriteQuoteId > 0) {
+          favFetches.push(api.getQuote(favoriteQuoteId))
+        } else {
+          favFetches.push(Promise.resolve(null))
+        }
+        if (favoriteGambleId != null && typeof favoriteGambleId === 'number' && favoriteGambleId > 0) {
+          favFetches.push(api.getGamble(favoriteGambleId))
+        } else {
+          favFetches.push(Promise.resolve(null))
+        }
 
         const [favQuoteResp, favGambleResp] = await Promise.all(favFetches)
         const favQuote = favQuoteResp?.data ?? favQuoteResp
@@ -139,7 +145,7 @@ export default function ProfilePageClient() {
         api.get('/guides/my-guides'),
         api.get('/quotes'),
         api.get('/gambles'),
-        user?.id ? api.getUserBadges(user.id) : Promise.resolve([])
+        user?.id && typeof user.id === 'number' ? api.getUserBadges(user.id) : Promise.resolve([])
       ])
 
       if (guidesResponse.status === 'fulfilled') {
@@ -190,7 +196,19 @@ export default function ProfilePageClient() {
   const handleSave = async () => {
     try {
       setSaving(true)
-      await api.patch('/users/profile', profileData)
+
+      // Convert string IDs to numbers for API
+      const updateData = {
+        favoriteQuoteId: profileData.favoriteQuote && !isNaN(parseInt(profileData.favoriteQuote))
+          ? parseInt(profileData.favoriteQuote)
+          : null,
+        favoriteGambleId: profileData.favoriteGamble && !isNaN(parseInt(profileData.favoriteGamble))
+          ? parseInt(profileData.favoriteGamble)
+          : null,
+        customRole: profileData.customRole || null
+      }
+
+      await api.patch('/users/profile', updateData)
       notifications.show({
         title: 'Success',
         message: 'Profile updated successfully',
@@ -237,10 +255,10 @@ export default function ProfilePageClient() {
   }
 
   const handleQuoteSelect = async (quoteId: number | null) => {
-    const newQuote = quoteId?.toString() || ''
+    const newQuote = quoteId ? quoteId.toString() : ''
     setProfileData(prev => ({ ...prev, favoriteQuote: newQuote }))
     closeQuoteModal()
-    
+
     // Auto-save the change
     try {
       await api.patch('/users/profile', { favoriteQuoteId: quoteId })
@@ -259,10 +277,10 @@ export default function ProfilePageClient() {
   }
 
   const handleGambleSelect = async (gambleId: number | null) => {
-    const newGamble = gambleId?.toString() || ''
+    const newGamble = gambleId ? gambleId.toString() : ''
     setProfileData(prev => ({ ...prev, favoriteGamble: newGamble }))
     closeGambleModal()
-    
+
     // Auto-save the change
     try {
       await api.patch('/users/profile', { favoriteGambleId: gambleId })
@@ -356,7 +374,7 @@ export default function ProfilePageClient() {
                   e.currentTarget.style.boxShadow = 'none'
                 }}
                 onClick={() => {
-                  if (user?.id) {
+                  if (user?.id && typeof user.id === 'number') {
                     openProfilePictureSelector();
                   } else {
                     notifications.show({
@@ -407,7 +425,7 @@ export default function ProfilePageClient() {
           </Card>
 
           {/* Profile Picture Selector - Inline when opened */}
-          {profilePictureSelectorOpened && user?.id && (
+          {profilePictureSelectorOpened && user?.id && typeof user.id === 'number' && (
             <Card shadow="sm" padding="md" radius="md">
               <Stack gap="md">
                 <Group justify="space-between">
@@ -465,7 +483,7 @@ export default function ProfilePageClient() {
                         {loading ? 'Loading...' : 
                          profileData.favoriteQuote ? 
                           (() => {
-                            const selectedQuote = quotes.find(q => q.id === parseInt(profileData.favoriteQuote));
+                            const selectedQuote = quotes.find(q => q.id === parseInt(profileData.favoriteQuote) || 0);
                             if (selectedQuote?.text) {
                               return selectedQuote.text.length > 100 
                                 ? selectedQuote.text.substring(0, 100) + '...'
@@ -509,7 +527,7 @@ export default function ProfilePageClient() {
                         <Text size="sm" c="dimmed">Loading...</Text>
                       ) : profileData.favoriteGamble ? (
                         (() => {
-                          const selected = gambles.find(g => g.id === parseInt(profileData.favoriteGamble))
+                          const selected = gambles.find(g => g.id === parseInt(profileData.favoriteGamble) || 0)
                           return selected ? (
                             <Link href={`/gambles/${selected.id}`} style={{ textDecoration: 'none', display: 'inline-block' }}>
                               <Badge radius="lg" variant="outline" size="sm" style={{ borderColor: (theme.colors as any).gamble?.[5] ?? theme.colors.red[6], color: (theme.colors as any).gamble?.[5] ?? theme.colors.red[6], fontWeight: 700 }}>
@@ -662,7 +680,7 @@ export default function ProfilePageClient() {
         open={quoteModalOpened}
         onClose={closeQuoteModal}
         quotes={quotes}
-        selectedQuoteId={profileData.favoriteQuote ? parseInt(profileData.favoriteQuote) : null}
+        selectedQuoteId={profileData.favoriteQuote && !isNaN(parseInt(profileData.favoriteQuote)) ? parseInt(profileData.favoriteQuote) : null}
         onSelectQuote={handleQuoteSelect}
         loading={loading}
       />
@@ -671,7 +689,7 @@ export default function ProfilePageClient() {
         open={gambleModalOpened}
         onClose={closeGambleModal}
         gambles={gambles}
-        selectedGambleId={profileData.favoriteGamble ? parseInt(profileData.favoriteGamble) : null}
+        selectedGambleId={profileData.favoriteGamble && !isNaN(parseInt(profileData.favoriteGamble)) ? parseInt(profileData.favoriteGamble) : null}
         onSelectGamble={handleGambleSelect}
         loading={loading}
       />

@@ -19,7 +19,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: any): Promise<Partial<User>> {
-    const user = await this.usersService.getUserProfile(payload.sub);
+    const userId = typeof payload.sub === 'string' ? parseInt(payload.sub, 10) : payload.sub;
+    const user = await this.usersService.getUserProfile(userId);
     // Return all safe fields including profile preferences and selected character media
     return {
       id: user.id,

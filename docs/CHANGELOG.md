@@ -12,6 +12,7 @@
 - Finished layout/styling of arcs list page
 - Added detail modal for arcs list page
 - Adjusted styling of all public list pages
+- Fixed profile page and any edit modals
 
 ### Notes
 - Debouncing is the solution for the search function calling continuous api calls. A simple timeout delay between the first call and subsequent calls limits how many calls are made while typing in search.

@@ -403,6 +403,250 @@ export class UsersController {
     } as const;
   }
 
+  // --- Profile customization endpoints ---
+  @Get('profile')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.USER, UserRole.MODERATOR, UserRole.ADMIN)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Get current user profile',
+    description:
+      "Retrieve the current user's profile with favorite quote and gamble details",
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'User profile with customization details',
+    type: User,
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async getCurrentUserProfile(@CurrentUser() user: User): Promise<User> {
+    return this.service.getUserProfile(user.id);
+  }
+
+  @Patch('profile')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.USER, UserRole.MODERATOR, UserRole.ADMIN)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Update user profile',
+    description:
+      "Update the current user's profile picture, favorite quote, and favorite gamble",
+  })
+  @ApiBody({ type: UpdateProfileDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Profile updated successfully',
+    type: User,
+  })
+  @ApiResponse({ status: 400, description: 'Invalid input data' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 404, description: 'Quote or gamble not found' })
+  async updateProfile(
+    @CurrentUser() user: User,
+    @Body() updateProfileDto: UpdateProfileDto,
+  ): Promise<User> {
+    return this.service.updateProfile(user.id, updateProfileDto);
+  }
+
+  @Post('profile/refresh-discord-avatar')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.USER, UserRole.MODERATOR, UserRole.ADMIN)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Refresh Discord avatar',
+    description:
+      'Fetch the latest Discord avatar for the current user from Discord API',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Discord avatar refreshed successfully',
+    type: User,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'User does not have Discord linked or Discord API error',
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async refreshDiscordAvatar(@CurrentUser() user: User): Promise<User> {
+    return this.service.refreshDiscordAvatar(user.id);
+  }
+
+  @Get('profile/progress')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.USER, UserRole.MODERATOR, UserRole.ADMIN)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Get current user reading progress',
+    description:
+      "Get the current user's reading progress (highest chapter read)",
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'User reading progress',
+    schema: {
+      type: 'object',
+      properties: {
+        userProgress: { type: 'number', example: 42 },
+        username: { type: 'string', example: 'john_doe' },
+      },
+    },
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async getUserProgress(
+    @CurrentUser() user: User,
+  ): Promise<{ userProgress: number; username: string }> {
+    return {
+      userProgress: user.userProgress,
+      username: user.username,
+    };
+  }
+
+  @Put('profile/progress')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.USER, UserRole.MODERATOR, UserRole.ADMIN)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Update user reading progress',
+    description:
+      "Update the current user's reading progress (highest chapter read)",
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      required: ['userProgress'],
+      properties: {
+        userProgress: {
+          type: 'number',
+          example: 45,
+          minimum: 1,
+          maximum: 539,
+          description: 'Highest chapter number the user has read (1-539)',
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Reading progress updated successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        message: {
+          type: 'string',
+          example: 'Reading progress updated successfully',
+        },
+        userProgress: { type: 'number', example: 45 },
+      },
+    },
+  })
+  @ApiResponse({ status: 400, description: 'Invalid progress value' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async updateUserProgress(
+    @CurrentUser() user: User,
+    @Body('userProgress', ParseIntPipe) userProgress: number,
+  ): Promise<{ message: string; userProgress: number }> {
+    if (userProgress < 1 || userProgress > 539) {
+      throw new NotFoundException('User progress must be between 1 and 539');
+    }
+
+    await this.service.updateUserProgress(user.id, userProgress);
+    return {
+      message: 'Reading progress updated successfully',
+      userProgress,
+    };
+  }
+
+  @Get('profile/stats')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.USER, UserRole.MODERATOR, UserRole.ADMIN)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Get current user profile statistics',
+    description:
+      'Get statistics for the current user including guides written, media submitted, and likes received',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'User profile statistics',
+    schema: {
+      type: 'object',
+      properties: {
+        guidesWritten: {
+          type: 'number',
+          example: 5,
+          description: 'Number of approved guides written by the user',
+        },
+        mediaSubmitted: {
+          type: 'number',
+          example: 12,
+          description: 'Total number of media submissions by the user',
+        },
+        likesReceived: {
+          type: 'number',
+          example: 28,
+          description: 'Total number of likes received on all approved guides',
+        },
+      },
+    },
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async getUserProfileStats(@CurrentUser() user: User): Promise<{
+    guidesWritten: number;
+    mediaSubmitted: number;
+    likesReceived: number;
+  }> {
+    return this.service.getUserProfileStats(user.id);
+  }
+
+  @Patch('profile/custom-role')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.USER, UserRole.MODERATOR, UserRole.ADMIN)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Update custom cosmetic role',
+    description:
+      'Update custom cosmetic role (requires active supporter badge)',
+  })
+  @ApiBody({ type: UpdateCustomRoleDto })
+  @ApiResponse({ status: 200, description: 'Custom role updated successfully' })
+  @ApiResponse({ status: 403, description: 'Active supporter badge required' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async updateCustomRole(
+    @CurrentUser() user: User,
+    @Body() updateCustomRoleDto: UpdateCustomRoleDto,
+  ) {
+    const hasActiveBadge = await this.badgesService.hasActiveSupporterBadge(
+      user.id,
+    );
+
+    if (!hasActiveBadge) {
+      throw new NotFoundException(
+        'Active supporter badge required to set custom role',
+      );
+    }
+
+    await this.service.updateCustomRole(
+      user.id,
+      updateCustomRoleDto.customRole,
+    );
+    return { message: 'Custom role updated successfully' };
+  }
+
+  @Delete('profile/custom-role')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.USER, UserRole.MODERATOR, UserRole.ADMIN)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Remove custom cosmetic role',
+    description: 'Remove the current custom cosmetic role',
+  })
+  @ApiResponse({ status: 200, description: 'Custom role removed successfully' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async removeCustomRole(@CurrentUser() user: User) {
+    await this.service.updateCustomRole(user.id, null);
+    return { message: 'Custom role removed successfully' };
+  }
+
   @Get(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
@@ -659,201 +903,6 @@ export class UsersController {
     return this.service.getUserActivity(id);
   }
 
-  // --- Profile customization endpoints ---
-  @Get('profile')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.USER, UserRole.MODERATOR, UserRole.ADMIN)
-  @ApiBearerAuth()
-  @ApiOperation({
-    summary: 'Get current user profile',
-    description:
-      "Retrieve the current user's profile with favorite quote and gamble details",
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'User profile with customization details',
-    type: User,
-  })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async getCurrentUserProfile(@CurrentUser() user: User): Promise<User> {
-    return this.service.getUserProfile(user.id);
-  }
-
-  @Patch('profile')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.USER, UserRole.MODERATOR, UserRole.ADMIN)
-  @ApiBearerAuth()
-  @ApiOperation({
-    summary: 'Update user profile',
-    description:
-      "Update the current user's profile picture, favorite quote, and favorite gamble",
-  })
-  @ApiBody({ type: UpdateProfileDto })
-  @ApiResponse({
-    status: 200,
-    description: 'Profile updated successfully',
-    type: User,
-  })
-  @ApiResponse({ status: 400, description: 'Invalid input data' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 404, description: 'Quote or gamble not found' })
-  async updateProfile(
-    @CurrentUser() user: User,
-    @Body() updateProfileDto: UpdateProfileDto,
-  ): Promise<User> {
-    return this.service.updateProfile(user.id, updateProfileDto);
-  }
-
-  @Post('profile/refresh-discord-avatar')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.USER, UserRole.MODERATOR, UserRole.ADMIN)
-  @ApiBearerAuth()
-  @ApiOperation({
-    summary: 'Refresh Discord avatar',
-    description:
-      'Fetch the latest Discord avatar for the current user from Discord API',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Discord avatar refreshed successfully',
-    type: User,
-  })
-  @ApiResponse({
-    status: 400,
-    description: 'User does not have Discord linked or Discord API error',
-  })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async refreshDiscordAvatar(@CurrentUser() user: User): Promise<User> {
-    return this.service.refreshDiscordAvatar(user.id);
-  }
-
-  @Get('profile/progress')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.USER, UserRole.MODERATOR, UserRole.ADMIN)
-  @ApiBearerAuth()
-  @ApiOperation({
-    summary: 'Get current user reading progress',
-    description:
-      "Get the current user's reading progress (highest chapter read)",
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'User reading progress',
-    schema: {
-      type: 'object',
-      properties: {
-        userProgress: { type: 'number', example: 42 },
-        username: { type: 'string', example: 'john_doe' },
-      },
-    },
-  })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async getUserProgress(
-    @CurrentUser() user: User,
-  ): Promise<{ userProgress: number; username: string }> {
-    return {
-      userProgress: user.userProgress,
-      username: user.username,
-    };
-  }
-
-  @Put('profile/progress')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.USER, UserRole.MODERATOR, UserRole.ADMIN)
-  @ApiBearerAuth()
-  @ApiOperation({
-    summary: 'Update user reading progress',
-    description:
-      "Update the current user's reading progress (highest chapter read)",
-  })
-  @ApiBody({
-    schema: {
-      type: 'object',
-      required: ['userProgress'],
-      properties: {
-        userProgress: {
-          type: 'number',
-          example: 45,
-          minimum: 1,
-          maximum: 539,
-          description: 'Highest chapter number the user has read (1-539)',
-        },
-      },
-    },
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Reading progress updated successfully',
-    schema: {
-      type: 'object',
-      properties: {
-        message: {
-          type: 'string',
-          example: 'Reading progress updated successfully',
-        },
-        userProgress: { type: 'number', example: 45 },
-      },
-    },
-  })
-  @ApiResponse({ status: 400, description: 'Invalid progress value' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async updateUserProgress(
-    @CurrentUser() user: User,
-    @Body('userProgress', ParseIntPipe) userProgress: number,
-  ): Promise<{ message: string; userProgress: number }> {
-    if (userProgress < 1 || userProgress > 539) {
-      throw new NotFoundException('User progress must be between 1 and 539');
-    }
-
-    await this.service.updateUserProgress(user.id, userProgress);
-    return {
-      message: 'Reading progress updated successfully',
-      userProgress,
-    };
-  }
-
-  @Get('profile/stats')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.USER, UserRole.MODERATOR, UserRole.ADMIN)
-  @ApiBearerAuth()
-  @ApiOperation({
-    summary: 'Get current user profile statistics',
-    description:
-      'Get statistics for the current user including guides written, media submitted, and likes received',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'User profile statistics',
-    schema: {
-      type: 'object',
-      properties: {
-        guidesWritten: {
-          type: 'number',
-          example: 5,
-          description: 'Number of approved guides written by the user',
-        },
-        mediaSubmitted: {
-          type: 'number',
-          example: 12,
-          description: 'Total number of media submissions by the user',
-        },
-        likesReceived: {
-          type: 'number',
-          example: 28,
-          description: 'Total number of likes received on all approved guides',
-        },
-      },
-    },
-  })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async getUserProfileStats(@CurrentUser() user: User): Promise<{
-    guidesWritten: number;
-    mediaSubmitted: number;
-    likesReceived: number;
-  }> {
-    return this.service.getUserProfileStats(user.id);
-  }
-
   // --- Statistics endpoints ---
   @Get('stats/quote-popularity')
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -950,54 +999,5 @@ export class UsersController {
   @ApiResponse({ status: 403, description: 'Forbidden - Admin role required' })
   async getAllUserBadges(@Param('id', ParseIntPipe) id: number) {
     return this.badgesService.getAllUserBadges(id);
-  }
-
-  @Patch('profile/custom-role')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.USER, UserRole.MODERATOR, UserRole.ADMIN)
-  @ApiBearerAuth()
-  @ApiOperation({
-    summary: 'Update custom cosmetic role',
-    description:
-      'Update custom cosmetic role (requires active supporter badge)',
-  })
-  @ApiBody({ type: UpdateCustomRoleDto })
-  @ApiResponse({ status: 200, description: 'Custom role updated successfully' })
-  @ApiResponse({ status: 403, description: 'Active supporter badge required' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async updateCustomRole(
-    @CurrentUser() user: User,
-    @Body() updateCustomRoleDto: UpdateCustomRoleDto,
-  ) {
-    const hasActiveBadge = await this.badgesService.hasActiveSupporterBadge(
-      user.id,
-    );
-
-    if (!hasActiveBadge) {
-      throw new NotFoundException(
-        'Active supporter badge required to set custom role',
-      );
-    }
-
-    await this.service.updateCustomRole(
-      user.id,
-      updateCustomRoleDto.customRole,
-    );
-    return { message: 'Custom role updated successfully' };
-  }
-
-  @Delete('profile/custom-role')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.USER, UserRole.MODERATOR, UserRole.ADMIN)
-  @ApiBearerAuth()
-  @ApiOperation({
-    summary: 'Remove custom cosmetic role',
-    description: 'Remove the current custom cosmetic role',
-  })
-  @ApiResponse({ status: 200, description: 'Custom role removed successfully' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async removeCustomRole(@CurrentUser() user: User) {
-    await this.service.updateCustomRole(user.id, null);
-    return { message: 'Custom role removed successfully' };
   }
 }
