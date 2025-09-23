@@ -40,6 +40,7 @@ interface MediaThumbnailProps {
   maxWidth?: string | number
   maxHeight?: string | number
   inline?: boolean
+  disableExternalLinks?: boolean
 }
 
 // Cache for media data to avoid redundant API calls
@@ -156,7 +157,8 @@ export default function MediaThumbnail({
   showGallery = false,
   maxWidth = 300,
   maxHeight = 300,
-  inline = false
+  inline = false,
+  disableExternalLinks = false
 }: MediaThumbnailProps) {
   const [currentThumbnail, setCurrentThumbnail] = useState<MediaItem | null>(null)
   const [allEntityMedia, setAllEntityMedia] = useState<MediaItem[]>([])
@@ -434,33 +436,8 @@ export default function MediaThumbnail({
         const displayTitle = mediaInfo.title || media.description
         const displayAuthor = mediaInfo.author
 
-        return (
-          <Box
-            component="a"
-            href={media.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              width: '100%',
-              height: '100%',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: theme.colors.gray[1],
-              color: theme.colors.gray[7],
-              borderRadius: rem(8),
-              gap: rem(8),
-              textDecoration: 'none',
-              cursor: 'pointer',
-              transition: 'all 0.2s ease',
-              border: `2px solid ${placeholder.color}20`,
-              '&:hover': {
-                backgroundColor: theme.colors.gray[2],
-                transform: 'scale(1.02)'
-              }
-            }}
-          >
+        const content = (
+          <>
             <Text size={rem(32)} style={{ lineHeight: 1 }}>
               {placeholder.icon}
             </Text>
@@ -479,6 +456,37 @@ export default function MediaThumbnail({
                 by {displayAuthor}
               </Text>
             )}
+          </>
+        )
+
+        return (
+          <Box
+            component={disableExternalLinks ? 'div' : 'a'}
+            href={disableExternalLinks ? undefined : media.url}
+            target={disableExternalLinks ? undefined : '_blank'}
+            rel={disableExternalLinks ? undefined : 'noopener noreferrer'}
+            style={{
+              width: '100%',
+              height: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: theme.colors.gray[1],
+              color: theme.colors.gray[7],
+              borderRadius: rem(8),
+              gap: rem(8),
+              textDecoration: 'none',
+              cursor: disableExternalLinks ? 'default' : 'pointer',
+              transition: 'all 0.2s ease',
+              border: `2px solid ${placeholder.color}20`,
+              '&:hover': disableExternalLinks ? {} : {
+                backgroundColor: theme.colors.gray[2],
+                transform: 'scale(1.02)'
+              }
+            }}
+          >
+            {content}
           </Box>
         )
       }

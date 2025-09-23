@@ -328,7 +328,17 @@ export default function GamblesPageContent({
             </Text>
 
             {total > 0 && (
-              <Badge size="md" variant="light" style={{ color: getEntityThemeColor(theme, 'gamble') }} radius="xl" mt="xs">
+              <Badge
+                size="md"
+                variant="light"
+                c={getEntityThemeColor(theme, 'gamble')}
+                style={{
+                  backgroundColor: `${getEntityThemeColor(theme, 'gamble')}20`,
+                  borderColor: getEntityThemeColor(theme, 'gamble')
+                }}
+                radius="xl"
+                mt="xs"
+              >
                 {total} gamble{total !== 1 ? 's' : ''} available
               </Badge>
             )}
@@ -510,6 +520,7 @@ export default function GamblesPageContent({
                           allowCycling={false}
                           maxWidth="100%"
                           maxHeight="100%"
+                          disableExternalLinks={true}
                         />
                       </Box>
 

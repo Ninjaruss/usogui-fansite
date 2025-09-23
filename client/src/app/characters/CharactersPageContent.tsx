@@ -660,7 +660,7 @@ export default function CharactersPageContent({
                     total={totalPages}
                     value={currentPage}
                     onChange={handlePageChange}
-                    color="blue"
+                    color="character"
                     size="lg"
                     radius="xl"
                     withEdges
@@ -795,7 +795,8 @@ export default function CharactersPageContent({
                       <Badge
                         key={index}
                         variant="outline"
-                        c={getEntityThemeColor(theme, 'media')}
+                        c={getEntityThemeColor(theme, 'character')}
+                        style={{ borderColor: getEntityThemeColor(theme, 'character') }}
                         size="xs"
                         fw={500}
                       >
@@ -828,6 +829,10 @@ export default function CharactersPageContent({
                         key={org.id}
                         variant="light"
                         c={getEntityThemeColor(theme, 'event')}
+                        style={{
+                          backgroundColor: `${getEntityThemeColor(theme, 'event')}20`,
+                          borderColor: getEntityThemeColor(theme, 'event')
+                        }}
                         size="xs"
                         fw={500}
                       >
@@ -838,6 +843,10 @@ export default function CharactersPageContent({
                       <Badge
                         variant="light"
                         c={getEntityThemeColor(theme, 'event')}
+                        style={{
+                          backgroundColor: `${getEntityThemeColor(theme, 'event')}20`,
+                          borderColor: getEntityThemeColor(theme, 'event')
+                        }}
                         size="xs"
                         fw={500}
                       >
@@ -867,12 +876,23 @@ export default function CharactersPageContent({
                 {hoveredCharacter.tags && hoveredCharacter.tags.length > 0 && (
                   <Group justify="center" gap="xs">
                     {hoveredCharacter.tags.slice(0, 3).map((tag) => (
-                      <Badge key={tag} variant="outline" color="gray" size="xs">
+                      <Badge
+                        key={tag}
+                        variant="outline"
+                        c={getEntityThemeColor(theme, 'character')}
+                        style={{ borderColor: getEntityThemeColor(theme, 'character') }}
+                        size="xs"
+                      >
                         {tag}
                       </Badge>
                     ))}
                     {hoveredCharacter.tags.length > 3 && (
-                      <Badge variant="outline" color="gray" size="xs">
+                      <Badge
+                        variant="outline"
+                        c={getEntityThemeColor(theme, 'character')}
+                        style={{ borderColor: getEntityThemeColor(theme, 'character') }}
+                        size="xs"
+                      >
                         +{hoveredCharacter.tags.length - 3}
                       </Badge>
                     )}

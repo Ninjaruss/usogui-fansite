@@ -46,13 +46,6 @@ function LoginContent() {
           >
             Continue with Discord
           </Button>
-
-          <Text size="sm" c="dimmed" ta="center">
-            New to the community?{' '}
-            <Button variant="subtle" component={Link} href="/register" style={{ color: getEntityThemeColor(theme, 'gamble') }} size="compact-sm">
-              Join us
-            </Button>
-          </Text>
         </Stack>
       </Card>
     </Container>

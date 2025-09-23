@@ -200,6 +200,7 @@ export default function OrganizationPageClient({
                                         c={getEntityThemeColor(theme, 'media')}
                                         size="sm"
                                         radius="xl"
+                                        style={{ borderColor: getEntityThemeColor(theme, 'media') }}
                                       >
                                         {name}
                                       </Badge>
@@ -210,7 +211,7 @@ export default function OrganizationPageClient({
                                         size="sm"
                                         radius="xl"
                                         c={getEntityThemeColor(theme, 'media')}
-                                        style={{ opacity: 0.75 }}
+                                        style={{ opacity: 0.75, borderColor: getEntityThemeColor(theme, 'media') }}
                                       >
                                         +{member.alternateNames.length - 2} more
                                       </Badge>

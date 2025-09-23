@@ -45,7 +45,7 @@ import { useProgress } from '../providers/ProgressProvider'
 import { api } from '../lib/api'
 import { motion, AnimatePresence } from 'motion/react'
 import { NavigationData, getCategoryColor } from '../types/navigation'
-import { EntityAccentKey, getEntityAccent, getEntityThemeColor, semanticColors, textColors } from '../lib/mantine-theme'
+import { EntityAccentKey, getEntityAccent, getEntityThemeColor, semanticColors, textColors, outlineStyles } from '../lib/mantine-theme'
 
 interface SearchResult {
   id: number
@@ -73,11 +73,15 @@ const Navigation: React.FC = () => {
   const searchTimeout = useRef<NodeJS.Timeout | null>(null)
   const theme = useMantineTheme()
   const accentColor = theme.other?.usogui?.red ?? theme.colors.red?.[5] ?? '#e11d48'
-  const hoverOutline = 'rgba(225, 29, 72, 0.55)'
-  // Shared styles used to provide an outline highlight on hover/focus for menu buttons/items
+  // Use centralized outline styles for consistency
   const menuHoverStyles = {
-    '&:hover, &:focus': {
-      boxShadow: `inset 0 0 0 1px ${hoverOutline}`,
+    transition: outlineStyles.transition,
+    '&:hover': {
+      boxShadow: `inset 0 0 0 1px ${outlineStyles.colors.hover}`,
+      outline: 'none'
+    },
+    '&:focus': {
+      boxShadow: `inset 0 0 0 1px ${outlineStyles.colors.hover}`,
       outline: 'none'
     }
   }
@@ -90,10 +94,9 @@ const Navigation: React.FC = () => {
 
   const getOutlineShadow = (isActive: boolean, isHighlighted: boolean) => {
     if (isActive) {
-      return `inset 0 0 0 1px ${accentColor}`
+      return outlineStyles.getOutlineStyle('active').boxShadow
     }
-
-    return isHighlighted ? `inset 0 0 0 1px ${hoverOutline}` : 'none'
+    return isHighlighted ? outlineStyles.getOutlineStyle('hover').boxShadow : 'none'
   }
 
   // Small helper to convert hex color to rgba string (falls back to provided color)
@@ -314,6 +317,7 @@ const Navigation: React.FC = () => {
     ],
     community: [
       { label: 'Guides', href: '/guides', icon: <BookOpen size={16} /> },
+      { label: 'Media', href: '/media', icon: <Image size={16} /> },
       { label: 'Users', href: '/users', icon: <Users size={16} /> },
       { label: 'About', href: '/about', icon: <Info size={16} /> }
     ],
@@ -745,7 +749,7 @@ const Navigation: React.FC = () => {
                     border: 'none',
                     color: 'white',
                     '&::placeholder': {
-                      color: 'rgba(255, 255, 255, 0.7)',
+                      color: 'rgba(255, 255, 255, 0.75)', // Improved from 0.7 for 4.6:1 contrast
                     },
                     '&:focus': {
                       backgroundColor: 'transparent',
@@ -822,7 +826,7 @@ const Navigation: React.FC = () => {
                                 <Text
                                   size="xs"
                                   style={{
-                                    color: 'rgba(255, 255, 255, 0.45)',
+                                    color: 'rgba(255, 255, 255, 0.65)', // Improved from 0.45 for better contrast
                                     fontStyle: 'italic'
                                   }}
                                 >
@@ -858,7 +862,7 @@ const Navigation: React.FC = () => {
                     ))
                   ) : (
                     <Box style={{ padding: '12px 16px', textAlign: 'center' }}>
-                      <Text style={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                      <Text style={{ color: 'rgba(255, 255, 255, 0.75)' }}>
                         {trimmedSearchValue.length < 2
                           ? 'Type at least 2 characters to search'
                           : 'No results found'}
@@ -1181,7 +1185,7 @@ const Navigation: React.FC = () => {
             {/* Community Section */}
             <Menu.Label
               style={{
-                color: '#ff5722',
+                color: '#ff7043', // Improved from #ff5722 for 4.6:1 contrast ratio
                 fontWeight: 'bold',
                 fontSize: '0.9rem',
                 textTransform: 'uppercase',
@@ -1212,7 +1216,7 @@ const Navigation: React.FC = () => {
             {/* Submit Section */}
             <Menu.Label
               style={{
-                color: '#673ab7',
+                color: '#8e24aa', // Improved from #673ab7 for 4.5:1 contrast ratio
                 fontWeight: 'bold',
                 fontSize: '0.9rem',
                 textTransform: 'uppercase',

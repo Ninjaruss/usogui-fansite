@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   Badge,
   Box,
@@ -15,8 +15,8 @@ import {
   Title,
   useMantineTheme
 } from '@mantine/core'
-import { getEntityThemeColor, semanticColors, textColors } from '../../../lib/mantine-theme'
-import { ArrowLeft, BookOpen, Calendar, Eye } from 'lucide-react'
+import { getEntityThemeColor, semanticColors, textColors, setTabAccentColors } from '../../../lib/mantine-theme'
+import { ArrowLeft, BookOpen, Calendar, Eye, Crown } from 'lucide-react'
 import Link from 'next/link'
 import EnhancedSpoilerMarkdown from '../../../components/EnhancedSpoilerMarkdown'
 import { motion } from 'motion/react'
@@ -67,6 +67,11 @@ export default function ArcPageClient({ initialArc, initialEvents, initialGamble
   const gambleColor = getEntityThemeColor(theme, 'gamble')
 
   usePageView('arc', initialArc.id.toString(), true)
+
+  // Set tab accent colors for arc entity
+  useEffect(() => {
+    setTabAccentColors('arc')
+  }, [])
 
   const chapterCount = initialArc.endChapter - initialArc.startChapter + 1
 
@@ -156,13 +161,31 @@ export default function ArcPageClient({ initialArc, initialEvents, initialGamble
                 </Grid>
 
                 <Group gap="sm" wrap="wrap">
-                  <Badge style={{ backgroundColor: arcColor }} radius="lg" variant="filled">
+                  <Badge
+                    c="white"
+                    radius="lg"
+                    variant="filled"
+                    style={{ backgroundColor: arcColor }}
+                  >
                     {initialEvents.length} Event{initialEvents.length !== 1 ? 's' : ''}
                   </Badge>
-                  <Badge style={{ backgroundColor: gambleColor }} radius="lg" variant="filled">
+                  <Badge
+                    c="white"
+                    radius="lg"
+                    variant="filled"
+                    style={{ backgroundColor: gambleColor }}
+                  >
                     {initialGambles.length} Gamble{initialGambles.length !== 1 ? 's' : ''}
                   </Badge>
-                  <Badge style={{ backgroundColor: `${arcColor}20`, color: arcColor, borderColor: arcColor }} radius="lg" variant="light">
+                  <Badge
+                    c={arcColor}
+                    radius="lg"
+                    variant="light"
+                    style={{
+                      backgroundColor: `${arcColor}20`,
+                      borderColor: arcColor
+                    }}
+                  >
                     Arc {initialArc.order ?? 'N/A'}
                   </Badge>
                 </Group>
@@ -206,10 +229,10 @@ export default function ArcPageClient({ initialArc, initialEvents, initialGamble
                   <Card withBorder radius="md" shadow="sm" style={{ position: 'sticky', top: 24 }}>
                     <Stack gap="md" p="lg">
                       <Title order={4}>Chapter Range</Title>
-                      <Button component={Link} href={`/chapters/${initialArc.startChapter}`} variant="outline" c={getEntityThemeColor(theme, 'gamble')} fullWidth>
+                      <Button component={Link} href={`/chapters/${initialArc.startChapter}`} variant="outline" c={arcColor} fullWidth>
                         Start: Chapter {initialArc.startChapter}
                       </Button>
-                      <Button component={Link} href={`/chapters/${initialArc.endChapter}`} c={getEntityThemeColor(theme, 'gamble')} fullWidth>
+                      <Button component={Link} href={`/chapters/${initialArc.endChapter}`} c={arcColor} fullWidth>
                         End: Chapter {initialArc.endChapter}
                       </Button>
                     </Stack>
@@ -236,15 +259,60 @@ export default function ArcPageClient({ initialArc, initialEvents, initialGamble
             </Tabs.Panel>
 
             <Tabs.Panel value="media" pt="md">
-              <Card withBorder radius="md" shadow="sm">
-                <Stack gap="sm" p="lg">
-                  <Title order={3}>Media Gallery</Title>
-                  <Text size="sm" c="dimmed">
-                    Explore fan art, videos, and other media related to {initialArc.name}
-                  </Text>
-                  <MediaGallery arcId={initialArc.id} limit={20} showTitle={false} compactMode={false} />
-                </Stack>
-              </Card>
+              <Stack gap="md">
+                {/* Gallery Media Section */}
+                <Card withBorder radius="md" shadow="sm">
+                  <Stack gap="md" p="lg">
+                    <Group justify="space-between" align="center">
+                      <Group gap="sm">
+                        <Eye size={20} color={getEntityThemeColor(theme, 'media')} />
+                        <Title order={4}>Community Media</Title>
+                      </Group>
+                      <Button
+                        component={Link}
+                        href={`/media?ownerType=arc&ownerId=${initialArc.id}`}
+                        variant="outline"
+                        color={getEntityThemeColor(theme, 'media')}
+                        size="sm"
+                        radius="xl"
+                      >
+                        View All
+                      </Button>
+                    </Group>
+                    <Text size="sm" c="dimmed">
+                      Explore fan art, videos, and other media related to {initialArc.name}
+                    </Text>
+                    <MediaGallery
+                      ownerType="arc"
+                      ownerId={initialArc.id}
+                      purpose="gallery"
+                      limit={8}
+                      showTitle={false}
+                      compactMode={true}
+                      showFilters={false}
+                    />
+                  </Stack>
+                </Card>
+
+                {/* Official Media Section */}
+                <Card withBorder radius="md" shadow="sm">
+                  <Stack gap="md" p="lg">
+                    <Group gap="sm">
+                      <Crown size={20} color={getEntityThemeColor(theme, 'media')} />
+                      <Title order={4}>Official Media</Title>
+                    </Group>
+                    <MediaGallery
+                      ownerType="arc"
+                      ownerId={initialArc.id}
+                      purpose="entity_display"
+                      limit={6}
+                      showTitle={false}
+                      compactMode={true}
+                      showFilters={false}
+                    />
+                  </Stack>
+                </Card>
+              </Stack>
             </Tabs.Panel>
           </Tabs>
         </Card>

@@ -27,7 +27,7 @@ import MediaGallery from '../../../components/MediaGallery'
 import MediaThumbnail from '../../../components/MediaThumbnail'
 import { GambleStructuredData } from '../../../components/StructuredData'
 import { api } from '../../../lib/api'
-import { getEntityThemeColor, semanticColors } from '../../../lib/mantine-theme'
+import { getEntityThemeColor, semanticColors, setTabAccentColors } from '../../../lib/mantine-theme'
 
 interface Gamble {
   id: number
@@ -65,6 +65,11 @@ export default function GamblePageClient({ initialGamble }: GamblePageClientProp
   const [activeTab, setActiveTab] = useState<string>('overview')
 
   usePageView('gamble', initialGamble.id.toString(), true)
+
+  // Set tab accent colors for gamble entity
+  useEffect(() => {
+    setTabAccentColors('gamble')
+  }, [])
 
   useEffect(() => {
     const fetchTimelineData = async () => {
@@ -145,16 +150,36 @@ export default function GamblePageClient({ initialGamble }: GamblePageClientProp
                 </Group>
 
                 <Group gap="sm" wrap="wrap">
-                  <Badge style={{ backgroundColor: gambleColor }} radius="lg" variant="filled">
+                  <Badge
+                    c="white"
+                    radius="lg"
+                    variant="filled"
+                    style={{ backgroundColor: gambleColor }}
+                  >
                     {chapterInfo}
                   </Badge>
                   {initialGamble.participants && initialGamble.participants.length > 0 && (
-                    <Badge style={{ backgroundColor: characterColor }} radius="lg" variant="filled" leftSection={<Users size={14} />}>
+                    <Badge
+                      c="white"
+                      radius="lg"
+                      variant="filled"
+                      leftSection={<Users size={14} />}
+                      style={{ backgroundColor: characterColor }}
+                    >
                       {initialGamble.participants.length} Participant{initialGamble.participants.length !== 1 ? 's' : ''}
                     </Badge>
                   )}
                   {initialGamble.winCondition && (
-                    <Badge c={getEntityThemeColor(theme, 'quote')} radius="lg" variant="light" leftSection={<Trophy size={14} />}>
+                    <Badge
+                      c={getEntityThemeColor(theme, 'quote')}
+                      radius="lg"
+                      variant="light"
+                      leftSection={<Trophy size={14} />}
+                      style={{
+                        backgroundColor: `${getEntityThemeColor(theme, 'quote')}20`,
+                        borderColor: getEntityThemeColor(theme, 'quote')
+                      }}
+                    >
                       Win Condition Included
                     </Badge>
                   )}
@@ -237,7 +262,13 @@ export default function GamblePageClient({ initialGamble }: GamblePageClientProp
                                 {participant.alternateNames && participant.alternateNames.length > 0 && (
                                   <Group gap="xs" wrap="wrap">
                                     {participant.alternateNames.slice(0, 2).map((name) => (
-                                      <Badge key={name} variant="outline" c={semanticColors.neutral} radius="sm">
+                                      <Badge
+                                        key={name}
+                                        variant="outline"
+                                        c={characterColor}
+                                        style={{ borderColor: characterColor }}
+                                        radius="sm"
+                                      >
                                         {name}
                                       </Badge>
                                     ))}
@@ -279,15 +310,60 @@ export default function GamblePageClient({ initialGamble }: GamblePageClientProp
             </Tabs.Panel>
 
             <Tabs.Panel value="media" pt="md">
-              <Card withBorder radius="md" shadow="sm">
-                <Stack gap="sm" p="lg">
-                  <Title order={3}>Media Gallery</Title>
-                  <Text size="sm" c="dimmed">
-                    Explore media related to {initialGamble.name}
-                  </Text>
-                  <MediaGallery ownerType="gamble" ownerId={initialGamble.id} limit={20} showTitle={false} compactMode={false} />
-                </Stack>
-              </Card>
+              <Stack gap="md">
+                {/* Gallery Media Section */}
+                <Card withBorder radius="md" shadow="sm">
+                  <Stack gap="md" p="lg">
+                    <Group justify="space-between" align="center">
+                      <Group gap="sm">
+                        <Eye size={20} color={getEntityThemeColor(theme, 'media')} />
+                        <Title order={4}>Community Media</Title>
+                      </Group>
+                      <Button
+                        component={Link}
+                        href={`/media?ownerType=gamble&ownerId=${initialGamble.id}`}
+                        variant="outline"
+                        color={getEntityThemeColor(theme, 'media')}
+                        size="sm"
+                        radius="xl"
+                      >
+                        View All
+                      </Button>
+                    </Group>
+                    <Text size="sm" c="dimmed">
+                      Explore media related to {initialGamble.name}
+                    </Text>
+                    <MediaGallery
+                      ownerType="gamble"
+                      ownerId={initialGamble.id}
+                      purpose="gallery"
+                      limit={8}
+                      showTitle={false}
+                      compactMode={true}
+                      showFilters={false}
+                    />
+                  </Stack>
+                </Card>
+
+                {/* Official Media Section */}
+                <Card withBorder radius="md" shadow="sm">
+                  <Stack gap="md" p="lg">
+                    <Group gap="sm">
+                      <Crown size={20} color={getEntityThemeColor(theme, 'media')} />
+                      <Title order={4}>Official Media</Title>
+                    </Group>
+                    <MediaGallery
+                      ownerType="gamble"
+                      ownerId={initialGamble.id}
+                      purpose="entity_display"
+                      limit={6}
+                      showTitle={false}
+                      compactMode={true}
+                      showFilters={false}
+                    />
+                  </Stack>
+                </Card>
+              </Stack>
             </Tabs.Panel>
           </Tabs>
         </Card>

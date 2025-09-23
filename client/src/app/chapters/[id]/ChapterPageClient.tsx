@@ -103,7 +103,8 @@ export default function ChapterPageClient({
               href={`/volumes/${initialChapter.volume.id}`}
               variant="outline"
               radius="lg"
-              style={{ color: getEntityThemeColor(theme, 'media'), textDecoration: 'none' }}
+              c={getEntityThemeColor(theme, 'media')}
+              style={{ textDecoration: 'none', borderColor: getEntityThemeColor(theme, 'media') }}
             >
               Volume {initialChapter.volume.number}
               {initialChapter.volume.title ? `: ${initialChapter.volume.title}` : ''}
@@ -138,7 +139,8 @@ export default function ChapterPageClient({
                             component={Link}
                             href={`/events/${event.id}`}
                             fw={600}
-                            style={{ textDecoration: 'none', color: getEntityThemeColor(theme, 'character') }}
+                            c={getEntityThemeColor(theme, 'character')}
+                            style={{ textDecoration: 'none' }}
                           >
                             {event.title}
                           </Text>
@@ -198,7 +200,8 @@ export default function ChapterPageClient({
                       component={Link}
                       href={`/volumes/${initialChapter.volume.id}`}
                       fw={600}
-                      style={{ textDecoration: 'none', color: getEntityThemeColor(theme, 'gamble') }}
+                      c={getEntityThemeColor(theme, 'gamble')}
+                      style={{ textDecoration: 'none' }}
                     >
                       Volume {initialChapter.volume.number}
                       {initialChapter.volume.title ? ` — ${initialChapter.volume.title}` : ''}

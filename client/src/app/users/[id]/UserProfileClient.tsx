@@ -25,7 +25,6 @@ import { ArrowLeft, FileText, Quote, Dices, Calendar, BookOpen, Camera } from 'l
 import Link from 'next/link'
 import { motion } from 'motion/react'
 import { api } from '../../../lib/api'
-import { usePageView } from '../../../hooks/usePageView'
 import UserProfileImage from '../../../components/UserProfileImage'
 // GambleChip removed — using inline Badge chips for favorite gamble
 import UserBadges from '../../../components/UserBadges'
@@ -96,7 +95,7 @@ export default function UserProfileClient({ initialUser }: UserProfileClientProp
   } | null>(null)
   const [dataLoading, setDataLoading] = useState(true)
 
-  usePageView('user', user.id.toString(), true)
+  // Note: User profiles don't support page view tracking in the current system
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -148,37 +147,30 @@ export default function UserProfileClient({ initialUser }: UserProfileClientProp
 
   const accentRed = getEntityThemeColor(theme, 'character')
   const accentPurple = getEntityThemeColor(theme, 'gamble')
+  const accentBlue = getEntityThemeColor(theme, 'guide')
+  const accentGreen = getEntityThemeColor(theme, 'event')
 
   const stats = [
     {
       label: 'Guides Written',
       value: userStats ? userStats.guidesWritten : dataLoading ? '…' : '0',
       icon: <FileText size={22} color={accentRed} />,
-      highlight: 'rgba(225, 29, 72, 0.08)'
+      highlight: 'rgba(225, 29, 72, 0.08)',
+      color: accentRed
     },
     {
       label: 'Media Submitted',
       value: userStats ? userStats.mediaSubmitted : dataLoading ? '…' : '0',
       icon: <Camera size={22} color={accentPurple} />,
-      highlight: 'rgba(124, 58, 237, 0.08)'
+      highlight: 'rgba(124, 58, 237, 0.08)',
+      color: accentPurple
     },
     {
       label: 'Likes Received',
       value: userStats ? userStats.likesReceived : dataLoading ? '…' : '0',
-      icon: <BookOpen size={22} color={getEntityThemeColor(theme, 'guide')} />,
-      highlight: 'rgba(25, 118, 210, 0.08)'
-    },
-    {
-      label: 'Joined',
-      value: user.createdAt
-        ? new Date(user.createdAt).toLocaleDateString('en-US', {
-            month: 'short',
-            day: 'numeric',
-            year: 'numeric'
-          })
-        : 'Unknown',
-      icon: <Calendar size={22} color={getEntityThemeColor(theme, 'event')} />,
-      highlight: 'rgba(56, 142, 60, 0.08)'
+      icon: <BookOpen size={22} color={accentBlue} />,
+      highlight: 'rgba(25, 118, 210, 0.08)',
+      color: accentBlue
     }
   ]
 
@@ -191,13 +183,14 @@ export default function UserProfileClient({ initialUser }: UserProfileClientProp
           component={Link}
           href="/users"
           variant="light"
-          style={{ color: getEntityThemeColor(theme, 'gamble') }}
+          style={{ color: accentPurple }}
           leftSection={<ArrowLeft size={16} />}
-          mb="md"
+          mb="xl"
         >
           Back to Users
         </Button>
 
+        {/* Main Profile Card */}
         <Card
           className="gambling-card"
           withBorder
@@ -209,144 +202,266 @@ export default function UserProfileClient({ initialUser }: UserProfileClientProp
             background: 'linear-gradient(135deg, rgba(124, 58, 237, 0.08) 0%, rgba(14, 116, 144, 0.05) 100%)'
           }}
         >
-          <Stack gap="lg">
-            <Group align="flex-start" gap="xl" wrap="wrap">
-              <UserProfileImage user={user} size={120} showFallback className="user-profile-avatar-large" />
+          <Stack gap="xl">
+            {/* Profile Header Section */}
+            <Group align="flex-start" gap="xl" wrap="nowrap">
+              <Box style={{ flexShrink: 0 }}>
+                <UserProfileImage user={user} size={140} showFallback className="user-profile-avatar-large" />
+              </Box>
 
-              <Stack gap="md" style={{ flex: 1, minWidth: rem(260) }}>
-                <Group gap="sm" align="center" wrap="wrap">
-                  <Title
-                    order={2}
-                    style={{
-                      fontWeight: 700,
-                      backgroundImage: `linear-gradient(135deg, ${theme.white} 0%, ${accentRed} 100%)`,
-                      WebkitBackgroundClip: 'text',
-                      color: 'transparent'
-                    }}
-                  >
-                    {user.username}
-                  </Title>
-                  <UserRoleDisplay
-                    userRole={user.role as 'admin' | 'moderator' | 'user'}
-                    customRole={user.customRole}
-                    size="medium"
-                    spacing={1}
-                  />
-                </Group>
+              <Stack gap="lg" style={{ flex: 1, minWidth: 0 }}>
+                {/* Name and Role */}
+                <Stack gap="sm">
+                  <Group gap="sm" align="center" wrap="wrap">
+                    <Title
+                      order={1}
+                      size="h2"
+                      style={{
+                        fontWeight: 700,
+                        backgroundImage: `linear-gradient(135deg, ${theme.white} 0%, ${accentRed} 100%)`,
+                        WebkitBackgroundClip: 'text',
+                        color: 'transparent'
+                      }}
+                    >
+                      {user.username}
+                    </Title>
+                    <UserRoleDisplay
+                      userRole={user.role as 'admin' | 'moderator' | 'user'}
+                      customRole={user.customRole}
+                      size="large"
+                      spacing={2}
+                    />
+                  </Group>
 
-                <UserBadges userId={user.id} size="md" maxDisplay={6} />
+                  <Text size="sm" c="dimmed">
+                    Joined {user.createdAt
+                      ? new Date(user.createdAt).toLocaleDateString('en-US', {
+                          month: 'long',
+                          day: 'numeric',
+                          year: 'numeric'
+                        })
+                      : 'Unknown'}
+                  </Text>
 
-                <SimpleGrid cols={{ base: 1, sm: 2, md: 4 }} spacing="md">
+                  <UserBadges userId={user.id} size="lg" maxDisplay={8} />
+                </Stack>
+
+                {/* Quick Stats Row */}
+                <SimpleGrid cols={{ base: 2, sm: 3 }} spacing="md">
                   {stats.map((stat) => (
                     <Card
                       key={stat.label}
                       shadow="sm"
                       radius="md"
-                      padding="lg"
+                      padding="md"
                       withBorder
-                      style={{ backgroundColor: stat.highlight, borderColor: 'transparent' }}
+                      style={{ 
+                        backgroundColor: stat.highlight, 
+                        borderColor: 'transparent',
+                        textAlign: 'center'
+                      }}
                     >
-                      <Group gap="sm" align="center">
+                      <Stack gap="xs" align="center">
                         {stat.icon}
-                        <Stack gap={2} style={{ flex: 1 }}>
-                          <Text size="sm" c="dimmed" fw={500}>
-                            {stat.label}
-                          </Text>
-                          <Text size="lg" fw={600}>
+                        <Stack gap={2} align="center">
+                          <Text size="xl" fw={700} c={stat.color}>
                             {stat.value}
                           </Text>
+                          <Text size="xs" c="dimmed" fw={500}>
+                            {stat.label}
+                          </Text>
                         </Stack>
-                      </Group>
+                      </Stack>
                     </Card>
                   ))}
                 </SimpleGrid>
-
-                <Card withBorder radius="md" padding="lg" shadow="sm">
-                  <Group align="flex-start" gap="md">
-                    <BookOpen size={24} color={getEntityThemeColor(theme, 'guide')} />
-                    <Stack gap={4} style={{ flex: 1 }}>
-                      <Text size="sm" c="dimmed" fw={500}>
-                        Reading Progress
-                      </Text>
-                      <Text fw={600}>
-                        Chapter {user.userProgress} of 539 ({readingProgress}%)
-                      </Text>
-                      <Progress value={readingProgress} style={{ color: getEntityThemeColor(theme, 'gamble') }} radius="md" size="sm" />
-                    </Stack>
-                  </Group>
-                </Card>
-
-                {(favoriteQuote || favoriteGamble) && (
-                  <Card withBorder radius="md" padding="lg" shadow="sm">
-                    <Stack gap="md">
-                      <Text fw={600} c={accentRed}>
-                        Favorites
-                      </Text>
-                      <Group align="stretch" gap="lg" grow>
-                        {favoriteQuote && (
-                          <Card withBorder radius="md" padding="md" shadow="xs">
-                            <Stack gap="sm">
-                              <Group gap={6}>
-                                <Quote size={18} color={getEntityThemeColor(theme, 'quote')} />
-                                <Text fw={600}>Favorite Quote</Text>
-                              </Group>
-                              <Text fs="italic" size="sm" style={{ lineHeight: 1.5 }}>
-                                "{favoriteQuote.text}"
-                              </Text>
-                              <Group gap={8} wrap="wrap">
-                                <Badge variant="outline" style={{ color: getEntityThemeColor(theme, 'quote') }}>
-                                  {favoriteQuote.character?.name || 'Unknown'}
-                                </Badge>
-                                {favoriteQuote.chapterNumber && (
-                                  <Badge variant="outline" style={{ color: getEntityThemeColor(theme, 'gamble') }}>
-                                    Ch. {favoriteQuote.chapterNumber}
-                                  </Badge>
-                                )}
-                              </Group>
-                            </Stack>
-                          </Card>
-                        )}
-                        {favoriteGamble && (
-                          <Card withBorder radius="md" padding="md" shadow="xs">
-                            <Stack gap="sm">
-                              <Group gap={6}>
-                                <Dices size={18} color={getEntityThemeColor(theme, 'gamble')} />
-                                <Text fw={600}>Favorite Gamble</Text>
-                              </Group>
-                              <Badge radius="lg" size="md" variant="filled" color="gamble" style={{ fontWeight: 700 }}>
-                                {favoriteGamble.name}
-                              </Badge>
-                            </Stack>
-                          </Card>
-                        )}
-                      </Group>
-                    </Stack>
-                  </Card>
-                )}
               </Stack>
             </Group>
+
+            <Divider />
+
+            {/* Reading Progress */}
+            <Card withBorder radius="md" padding="lg" shadow="sm">
+              <Stack gap="md">
+                <Group gap="sm" align="center">
+                  <BookOpen size={24} color={accentBlue} />
+                  <Text fw={600} size="lg">
+                    Reading Progress
+                  </Text>
+                </Group>
+
+                <Stack gap="sm">
+                  <Group justify="space-between" align="center">
+                    <Text size="sm" c="dimmed">
+                      Current Chapter
+                    </Text>
+                    <Text fw={600}>
+                      {user.userProgress} / 539
+                    </Text>
+                  </Group>
+
+                  <Progress
+                    value={readingProgress}
+                    style={{ color: accentBlue }}
+                    radius="md"
+                    size="lg"
+                    striped
+                    animated
+                  />
+
+                  <Group justify="space-between" align="center">
+                    <Text size="xs" c="dimmed">
+                      0%
+                    </Text>
+                    <Text size="sm" fw={600} c={accentBlue}>
+                      {readingProgress}%
+                    </Text>
+                    <Text size="xs" c="dimmed">
+                      100%
+                    </Text>
+                  </Group>
+                </Stack>
+              </Stack>
+            </Card>
+
+            {/* Favorites Section */}
+            {(favoriteQuote || favoriteGamble) && (
+              <>
+                <Divider />
+                <Stack gap="lg">
+                  <Group gap="sm" align="center">
+                    <Text fw={700} size="xl" c={accentRed}>
+                      ⭐ Favorites
+                    </Text>
+                  </Group>
+                  
+                  <SimpleGrid cols={{ base: 1, sm: favoriteQuote && favoriteGamble ? 2 : 1 }} spacing="lg">
+                    {favoriteQuote && (
+                      <Card withBorder radius="md" padding="lg" shadow="sm" bg="rgba(255, 193, 7, 0.05)">
+                        <Stack gap="md">
+                          <Group gap="sm" justify="space-between" align="center">
+                            <Group gap="sm">
+                              <Quote size={20} color={getEntityThemeColor(theme, 'quote')} />
+                              <Text fw={600} c={getEntityThemeColor(theme, 'quote')}>
+                                Favorite Quote
+                              </Text>
+                            </Group>
+                            <Anchor
+                              component={Link}
+                              href={`/quotes/${favoriteQuote.id}`}
+                              size="xs"
+                              c={getEntityThemeColor(theme, 'quote')}
+                            >
+                              View Quote
+                            </Anchor>
+                          </Group>
+                          
+                          <Box
+                            p="md"
+                            style={{
+                              backgroundColor: 'rgba(255, 255, 255, 0.5)',
+                              borderRadius: rem(8),
+                              borderLeft: `4px solid ${getEntityThemeColor(theme, 'quote')}`
+                            }}
+                          >
+                            <Text fs="italic" size="sm" style={{ lineHeight: 1.6 }}>
+                              "{favoriteQuote.text}"
+                            </Text>
+                          </Box>
+                          
+                          <Group gap="xs" wrap="wrap">
+                            <Badge variant="outline" color="yellow" size="sm">
+                              {favoriteQuote.character?.name || 'Unknown'}
+                            </Badge>
+                            {favoriteQuote.chapterNumber && (
+                              <Badge variant="outline" color="blue" size="sm">
+                                Chapter {favoriteQuote.chapterNumber}
+                              </Badge>
+                            )}
+                          </Group>
+                        </Stack>
+                      </Card>
+                    )}
+                    
+                    {favoriteGamble && (
+                      <Card withBorder radius="md" padding="lg" shadow="sm" bg="rgba(124, 58, 237, 0.05)">
+                        <Stack gap="md">
+                          <Group gap="sm" justify="space-between" align="center">
+                            <Group gap="sm">
+                              <Dices size={20} color={accentPurple} />
+                              <Text fw={600} c={accentPurple}>
+                                Favorite Gamble
+                              </Text>
+                            </Group>
+                            <Anchor
+                              component={Link}
+                              href={`/gambles/${favoriteGamble.id}`}
+                              size="xs"
+                              c={accentPurple}
+                            >
+                              View Gamble
+                            </Anchor>
+                          </Group>
+                          
+                          <Box style={{ textAlign: 'center' }}>
+                            <Badge 
+                              radius="lg" 
+                              size="xl" 
+                              variant="gradient" 
+                              gradient={{ from: 'violet', to: 'purple' }}
+                              style={{ fontWeight: 700, fontSize: rem(16), padding: rem(12) }}
+                            >
+                              {favoriteGamble.name}
+                            </Badge>
+                          </Box>
+                          
+                          {favoriteGamble.rules && (
+                            <Text size="xs" c="dimmed" style={{ textAlign: 'center' }}>
+                              {favoriteGamble.rules.length > 100 
+                                ? `${favoriteGamble.rules.substring(0, 100)}...`
+                                : favoriteGamble.rules}
+                            </Text>
+                          )}
+                        </Stack>
+                      </Card>
+                    )}
+                  </SimpleGrid>
+                </Stack>
+              </>
+            )}
           </Stack>
         </Card>
 
+        {/* User Guides Section */}
         {guides.length > 0 && (
           <Card className="gambling-card" withBorder radius="md" shadow="lg" p="xl">
-            <Stack gap="md">
-              <Group justify="space-between" align="center">
-                <Title order={3}>Guides by {user.username}</Title>
+            <Stack gap="lg">
+              <Group justify="space-between" align="center" wrap="wrap">
+                <Group gap="sm" align="center">
+                  <FileText size={24} color={accentRed} />
+                  <Title order={2} size="h3">
+                    Guides by {user.username}
+                  </Title>
+                  <Badge variant="light" color="red" size="lg">
+                    {guides.length}
+                  </Badge>
+                </Group>
+                
                 <Button
                   component={Link}
                   href={`/guides?author=${user.id}&authorName=${encodeURIComponent(user.username)}`}
                   variant="outline"
-                  style={{ color: getEntityThemeColor(theme, 'gamble') }}
+                  style={{ color: accentPurple }}
                   size="sm"
+                  leftSection={<BookOpen size={16} />}
                 >
-                  View All
+                  View All Guides
                 </Button>
               </Group>
 
-              <Stack gap="md">
+              <SimpleGrid cols={{ base: 1, md: 2 }} spacing="md">
                 {guides.map((guide) => (
-                  <Card key={guide.id} withBorder radius="md" padding="lg" shadow="sm">
+                  <Card key={guide.id} withBorder radius="md" padding="lg" shadow="sm" bg="rgba(225, 29, 72, 0.02)">
                     <Stack gap="sm">
                       <Anchor
                         component={Link}
@@ -358,18 +473,25 @@ export default function UserProfileClient({ initialUser }: UserProfileClientProp
                       >
                         {guide.title}
                       </Anchor>
-                      <Text size="sm" c="dimmed">
+                      
+                      <Text size="sm" c="dimmed" lineClamp={2}>
                         {guide.description}
                       </Text>
-                      <Group justify="space-between" align="center">
-                        <Group gap="lg">
-                          <Text size="xs" c="dimmed">
-                            {guide.viewCount} views
-                          </Text>
-                          <Text size="xs" c="dimmed">
-                            {guide.likeCount} likes
-                          </Text>
+                      
+                      <Group justify="space-between" align="center" mt="xs">
+                        <Group gap="md">
+                          <Group gap="xs">
+                            <Text size="xs" c="dimmed">
+                              👁 {guide.viewCount}
+                            </Text>
+                          </Group>
+                          <Group gap="xs">
+                            <Text size="xs" c="dimmed">
+                              ❤️ {guide.likeCount}
+                            </Text>
+                          </Group>
                         </Group>
+                        
                         <Text size="xs" c="dimmed">
                           {new Date(guide.createdAt).toLocaleDateString('en-US', {
                             month: 'short',
@@ -381,7 +503,7 @@ export default function UserProfileClient({ initialUser }: UserProfileClientProp
                     </Stack>
                   </Card>
                 ))}
-              </Stack>
+              </SimpleGrid>
             </Stack>
           </Card>
         )}

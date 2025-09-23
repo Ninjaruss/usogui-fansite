@@ -311,7 +311,14 @@ export default function ChaptersPageContent({
             </Text>
 
             {allChapters.length > 0 && (
-              <Badge size="md" variant="light" style={{ color: getEntityThemeColor(theme, 'guide') }} radius="xl" mt="xs">
+              <Badge
+                size="md"
+                variant="light"
+                c={getEntityThemeColor(theme, 'guide')}
+                radius="xl"
+                mt="xs"
+                style={{ backgroundColor: `${getEntityThemeColor(theme, 'guide')}20`, borderColor: getEntityThemeColor(theme, 'guide') }}
+              >
                 {searchQuery ? `${total} of ${allChapters.length}` : `${allChapters.length}`} chapter{(searchQuery ? total : allChapters.length) !== 1 ? 's' : ''} {searchQuery ? 'found' : 'available'}
               </Badge>
             )}
@@ -451,7 +458,18 @@ export default function ChaptersPageContent({
                         handleChapterMouseLeave()
                       }}
                     >
-                      <Badge variant="filled" radius="sm" size="xs" style={{ color: getEntityThemeColor(theme, 'guide'), fontWeight: 800, padding: `${rem(4)} ${rem(6)}`, fontSize: rem(11) }}>
+                      <Badge
+                        variant="filled"
+                        radius="sm"
+                        size="xs"
+                        c="white"
+                        style={{
+                          backgroundColor: getEntityThemeColor(theme, 'guide'),
+                          fontWeight: 800,
+                          padding: `${rem(4)} ${rem(6)}`,
+                          fontSize: rem(11)
+                        }}
+                      >
                         {chapter.number}
                       </Badge>
 
@@ -466,7 +484,17 @@ export default function ChaptersPageContent({
                       </Text>
 
                       {chapter.volume && (
-                        <Badge variant="filled" radius="sm" size="xs" style={{ color: getEntityThemeColor(theme, 'media'), fontSize: rem(10), padding: `${rem(2)} ${rem(6)}` }}>
+                        <Badge
+                          variant="filled"
+                          radius="sm"
+                          size="xs"
+                          c="white"
+                          style={{
+                            backgroundColor: getEntityThemeColor(theme, 'media'),
+                            fontSize: rem(10),
+                            padding: `${rem(2)} ${rem(6)}`
+                          }}
+                        >
                           Vol. {chapter.volume.number}
                         </Badge>
                       )}
@@ -558,18 +586,20 @@ export default function ChaptersPageContent({
                 <Group justify="center" gap="xs">
                   <Badge
                     variant="light"
-                    style={{ color: getEntityThemeColor(theme, 'guide') }}
+                    c={getEntityThemeColor(theme, 'guide')}
                     size="sm"
                     fw={600}
+                    style={{ backgroundColor: `${getEntityThemeColor(theme, 'guide')}20`, borderColor: getEntityThemeColor(theme, 'guide') }}
                   >
                     Chapter #{hoveredChapter.number}
                   </Badge>
                   {hoveredChapter.volume && (
                     <Badge
                       variant="filled"
-                      style={{ color: getEntityThemeColor(theme, 'media') }}
+                      c="white"
                       size="sm"
                       fw={600}
+                      style={{ backgroundColor: getEntityThemeColor(theme, 'media') }}
                     >
                       Vol. {hoveredChapter.volume.number}
                     </Badge>

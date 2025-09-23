@@ -539,7 +539,7 @@ const MediaFilterToolbar = () => {
 
   const typeFilters = [
     { id: 'general', name: 'General', color: '#2196f3', icon: '🎨' },
-    { id: 'volumes', name: 'Volumes', color: '#9c27b0', icon: '📚' }
+    { id: 'volumes', name: 'Volumes', color: '#ff69b4', icon: '📚' }
   ]
 
   const handleStatusFilter = (status: string) => {

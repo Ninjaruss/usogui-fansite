@@ -449,7 +449,17 @@ export default function ArcsPageContent({
             </Text>
 
             {total > 0 && (
-              <Badge size="md" variant="light" style={{ color: getEntityThemeColor(theme, 'arc') }} radius="xl" mt="xs">
+              <Badge
+                size="md"
+                variant="light"
+                c={getEntityThemeColor(theme, 'arc')}
+                style={{
+                  backgroundColor: `${getEntityThemeColor(theme, 'arc')}20`,
+                  borderColor: getEntityThemeColor(theme, 'arc')
+                }}
+                radius="xl"
+                mt="xs"
+              >
                 {total} arc{total !== 1 ? 's' : ''} available
               </Badge>
             )}
@@ -606,7 +616,7 @@ export default function ArcsPageContent({
                             radius="sm"
                             size="sm"
                             style={{
-                              color: getEntityThemeColor(theme, 'arc'),
+                              color: 'white',
                               position: 'absolute',
                               top: rem(8),
                               left: rem(8),
@@ -951,7 +961,7 @@ export default function ArcsPageContent({
                   {formatChapterRange(hoveredArc) && (
                     <Badge
                       variant="filled"
-                      style={{ color: getEntityThemeColor(theme, 'arc') }}
+                      style={{ color: 'white', backgroundColor: accentArc }}
                       size="sm"
                       fw={600}
                     >

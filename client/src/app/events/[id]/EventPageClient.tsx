@@ -49,7 +49,13 @@ export default function EventPageClient({ initialEvent }: EventPageClientProps) 
           <CalendarSearch size={48} color={getEntityThemeColor(theme, 'event')} />
           <Title order={1}>{initialEvent.title}</Title>
           <Group gap="sm" wrap="wrap" justify="center">
-            <Badge radius="sm" variant="outline" leftSection={<Calendar size={14} />}>
+            <Badge
+              radius="sm"
+              variant="outline"
+              leftSection={<Calendar size={14} />}
+              c={getEntityThemeColor(theme, 'organization')}
+              style={{ borderColor: getEntityThemeColor(theme, 'organization') }}
+            >
               Chapter {initialEvent.chapterNumber}
             </Badge>
             {initialEvent.arc && (
@@ -59,7 +65,8 @@ export default function EventPageClient({ initialEvent }: EventPageClientProps) 
                 leftSection={<BookOpen size={14} />}
                 component={Link}
                 href={`/arcs/${initialEvent.arc.id}`}
-                style={{ textDecoration: 'none' }}
+                c={getEntityThemeColor(theme, 'arc')}
+                style={{ textDecoration: 'none', borderColor: getEntityThemeColor(theme, 'arc') }}
               >
                 {initialEvent.arc.name}
               </Badge>
@@ -71,12 +78,19 @@ export default function EventPageClient({ initialEvent }: EventPageClientProps) 
                 leftSection={<Dice6 size={14} />}
                 component={Link}
                 href={`/gambles/${initialEvent.gamble.id}`}
-                style={{ textDecoration: 'none' }}
+                c={getEntityThemeColor(theme, 'gamble')}
+                style={{ textDecoration: 'none', borderColor: getEntityThemeColor(theme, 'gamble') }}
               >
                 {initialEvent.gamble.name}
               </Badge>
             )}
-            <Badge style={{ color: getEntityThemeColor(theme, 'gamble') }} radius="sm" variant="light" leftSection={<Tag size={14} />}>
+            <Badge
+              c={getEntityThemeColor(theme, 'gamble')}
+              radius="sm"
+              variant="light"
+              leftSection={<Tag size={14} />}
+              style={{ backgroundColor: `${getEntityThemeColor(theme, 'gamble')}20`, borderColor: getEntityThemeColor(theme, 'gamble') }}
+            >
               {initialEvent.status}
             </Badge>
           </Group>
@@ -190,7 +204,13 @@ export default function EventPageClient({ initialEvent }: EventPageClientProps) 
                     </Text>
                     <Group gap="xs" wrap="wrap">
                       {initialEvent.tags.map((tag) => (
-                        <Badge key={tag.id} variant="outline" radius="sm">
+                        <Badge
+                          key={tag.id}
+                          variant="outline"
+                          radius="sm"
+                          c={getEntityThemeColor(theme, 'media')}
+                          style={{ borderColor: getEntityThemeColor(theme, 'media') }}
+                        >
                           {tag.name}
                         </Badge>
                       ))}

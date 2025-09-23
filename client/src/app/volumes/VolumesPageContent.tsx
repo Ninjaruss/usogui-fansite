@@ -312,7 +312,14 @@ export default function VolumesPageContent({
             </Text>
 
             {allVolumes.length > 0 && (
-              <Badge size="md" variant="light" style={{ color: getEntityThemeColor(theme, 'gamble') }} radius="xl" mt="xs">
+              <Badge
+                size="md"
+                variant="light"
+                c={getEntityThemeColor(theme, 'gamble')}
+                radius="xl"
+                mt="xs"
+                style={{ backgroundColor: `${getEntityThemeColor(theme, 'gamble')}20`, borderColor: getEntityThemeColor(theme, 'gamble') }}
+              >
                 {searchQuery ? `${total} of ${allVolumes.length}` : `${allVolumes.length}`} volume{(searchQuery ? total : allVolumes.length) !== 1 ? 's' : ''} {searchQuery ? 'found' : 'available'}
               </Badge>
             )}
@@ -460,8 +467,8 @@ export default function VolumesPageContent({
                         variant="filled"
                         radius="sm"
                         size="sm"
+                        c="white"
                         style={{
-                          color: getEntityThemeColor(theme, 'media'),
                           position: 'absolute',
                           top: rem(8),
                           left: rem(8),
@@ -616,10 +623,11 @@ export default function VolumesPageContent({
                 <Group justify="center" gap="xs">
                   <Badge
                     variant="filled"
-                    style={{ color: getEntityThemeColor(theme, 'media') }}
+                    c="white"
                     size="sm"
                     fw={600}
                     leftSection={<Hash size={12} />}
+                    style={{ backgroundColor: getEntityThemeColor(theme, 'media') }}
                   >
                     Ch. {hoveredVolume.startChapter}-{hoveredVolume.endChapter}
                   </Badge>

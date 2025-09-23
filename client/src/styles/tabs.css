@@ -1,0 +1,49 @@
+/* Enhanced tab styling with entity-specific colors */
+
+/* Base tab styles */
+.mantine-Tabs-tab {
+  color: rgba(255, 255, 255, 0.7) !important;
+  border-radius: 6px !important;
+  transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1) !important;
+  padding: 12px 20px !important;
+  background-color: transparent !important;
+  border: 2px solid transparent !important;
+  position: relative !important;
+}
+
+/* Hover state */
+.mantine-Tabs-tab:hover {
+  background-color: var(--tab-hover-bg, rgba(225, 29, 72, 0.08)) !important;
+  color: rgba(255, 255, 255, 0.95) !important;
+  border-color: var(--tab-hover-outline, rgba(225, 29, 72, 0.4)) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Focus state */
+.mantine-Tabs-tab:focus,
+.mantine-Tabs-tab:focus-visible {
+  background-color: transparent !important;
+  border-color: var(--tab-focus-outline, rgba(225, 29, 72, 0.6)) !important;
+  outline: none !important;
+}
+
+/* Active state */
+.mantine-Tabs-tab[data-active="true"] {
+  color: #ffffff !important;
+  background-color: var(--tab-active-bg, rgba(225, 29, 72, 0.12)) !important;
+  border-color: var(--tab-active-outline, rgba(225, 29, 72, 0.8)) !important;
+  font-weight: 600 !important;
+}
+
+/* Active hover state */
+.mantine-Tabs-tab[data-active="true"]:hover {
+  background-color: var(--tab-active-hover-bg, rgba(225, 29, 72, 0.15)) !important;
+  border-color: var(--tab-active-outline, rgba(225, 29, 72, 0.8)) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Tab list styling */
+.mantine-Tabs-list {
+  border-color: var(--tab-border, rgba(225, 29, 72, 0.2)) !important;
+  gap: 4px !important;
+}

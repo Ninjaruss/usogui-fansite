@@ -6,19 +6,24 @@ import {
   Box,
   Button,
   Card,
-  Grid,
   Group,
   Paper,
-  ScrollArea,
   Stack,
   Tabs,
   Text,
   Title,
-  rem,
   useMantineTheme
 } from '@mantine/core'
-import { getEntityThemeColor, textColors, headerColors } from '../../../lib/mantine-theme'
-import { User, Crown, Calendar, BookOpen } from 'lucide-react'
+import {
+  getEntityThemeColor,
+  textColors,
+  headerColors,
+  getAlphaColor,
+  spacing,
+  fontSize,
+  setTabAccentColors
+} from '../../../lib/mantine-theme'
+import { User, Crown, Calendar, BookOpen, Image as ImageIcon } from 'lucide-react'
 import Link from 'next/link'
 import { motion } from 'motion/react'
 import { usePageView } from '../../../hooks/usePageView'
@@ -45,7 +50,7 @@ interface Character {
   arcs?: Array<{
     id: number
     name: string
-    order: number
+    order?: number
   }>
 }
 
@@ -76,8 +81,13 @@ export default function CharacterPageClient({
 
   usePageView('character', character.id.toString(), true)
 
+  // Set tab accent colors for character entity
+  useEffect(() => {
+    setTabAccentColors('character')
+  }, [])
+
   if (!isClient) {
-    return <Box py="md">Loading...</Box>
+    return <Box py="md" c={textColors.primary}>Loading...</Box>
   }
 
   // Use consistent theme colors for better readability
@@ -91,7 +101,13 @@ export default function CharacterPageClient({
   }
 
   return (
-    <Stack gap="md">
+    <Box style={{
+      backgroundColor: theme.colors.dark[8],
+      minHeight: '100vh',
+      color: textColors.primary,
+      padding: theme.spacing.md
+    }}>
+    <Stack gap={theme.spacing.md}>
       {/* Enhanced Character Header */}
       <Card
         withBorder
@@ -99,10 +115,11 @@ export default function CharacterPageClient({
         shadow="lg"
         p={0}
         style={{
-          background: `linear-gradient(135deg, ${theme.colors.dark?.[6] ?? theme.colors.gray?.[1]} 0%, ${theme.colors.dark?.[7] ?? theme.colors.gray?.[0]} 100%)`,
-          border: `1px solid ${entityColors.character}`,
+          background: `linear-gradient(135deg, ${theme.colors.dark[6]} 0%, ${theme.colors.dark[7]} 100%)`,
+          border: `2px solid ${entityColors.character}`,
           position: 'relative',
-          overflow: 'hidden'
+          overflow: 'hidden',
+          backdropFilter: theme.other?.effects?.backdropBlur || 'blur(10px)'
         }}
       >
         {/* Subtle Pattern Overlay */}
@@ -124,15 +141,16 @@ export default function CharacterPageClient({
         />
 
         {/* Content */}
-        <Box p="lg" style={{ position: 'relative', zIndex: 1 }}>
-          <Group gap="lg" align="stretch" wrap="nowrap">
+        <Box p={theme.spacing.lg} style={{ position: 'relative', zIndex: 1 }}>
+          <Group gap={theme.spacing.lg} align="stretch" wrap="nowrap">
             <Box style={{ flexShrink: 0 }}>
               <Box
                 style={{
                   borderRadius: theme.radius.md,
                   overflow: 'hidden',
-                  border: `2px solid ${entityColors.character}`,
-                  boxShadow: '0 8px 32px rgba(0,0,0,0.3)'
+                  border: `3px solid ${entityColors.character}`,
+                  boxShadow: theme.shadows.xl,
+                  transition: `all ${theme.other?.transitions?.durationStandard || 250}ms ${theme.other?.transitions?.easingStandard || 'ease-in-out'}`
                 }}
               >
                 <MediaThumbnail
@@ -146,21 +164,23 @@ export default function CharacterPageClient({
               </Box>
             </Box>
 
-            <Stack gap="md" style={{ flex: 1, minWidth: 0, height: '100%' }} justify="space-between">
-              <Stack gap="sm">
+            <Stack gap={theme.spacing.md} style={{ flex: 1, minWidth: 0, height: '100%' }} justify="space-between">
+              <Stack gap={theme.spacing.sm}>
                 <Title
                   order={1}
-                  size="2.5rem"
-                  fw={700}
-                  c={theme.white}
+                  size="2.8rem"
+                  fw={800}
+                  c={headerColors.h1}
                   style={{
-                    lineHeight: 1.1
+                    lineHeight: 1.1,
+                    textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
+                    letterSpacing: '-0.02em'
                   }}
                 >
                   {character.name}
                 </Title>
                 {character.alternateNames && character.alternateNames.length > 0 && (
-                  <Group gap="xs" wrap="wrap">
+                  <Group gap={theme.spacing.xs} wrap="wrap">
                     {character.alternateNames.map((name, index) => (
                       <Badge
                         key={index}
@@ -168,8 +188,10 @@ export default function CharacterPageClient({
                         size="md"
                         radius="md"
                         style={{
-                          background: `${theme.colors.dark?.[5] ?? theme.colors.gray?.[2]}40`,
-                          border: `1px solid ${theme.colors.dark?.[5] ?? theme.colors.gray?.[2]}60`
+                          background: `${theme.colors.dark[5]}80`,
+                          border: `1px solid ${theme.colors.dark[4]}`,
+                          fontWeight: 500,
+                          letterSpacing: '0.02em'
                         }}
                         c={textColors.secondary}
                       >
@@ -180,8 +202,8 @@ export default function CharacterPageClient({
                 )}
               </Stack>
 
-              <Stack gap="md" style={{ flex: 1, justifyContent: 'center' }}>
-                <Group gap="md" wrap="wrap" align="center">
+              <Stack gap={theme.spacing.md} style={{ flex: 1, justifyContent: 'center' }}>
+                <Group gap={theme.spacing.md} wrap="wrap" align="center">
                   {character.firstAppearanceChapter && (
                     <Badge
                       variant="filled"
@@ -190,9 +212,10 @@ export default function CharacterPageClient({
                       style={{
                         background: `linear-gradient(135deg, ${entityColors.character} 0%, ${entityColors.character}dd 100%)`,
                         border: `1px solid ${entityColors.character}`,
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
-                        fontSize: '0.9rem',
-                        color: 'white'
+                        boxShadow: theme.shadows.md,
+                        fontSize: fontSize.sm,
+                        color: textColors.primary,
+                        fontWeight: 600
                       }}
                     >
                       First appears in Chapter {character.firstAppearanceChapter}
@@ -201,7 +224,7 @@ export default function CharacterPageClient({
                 </Group>
 
                 {character.organizations && character.organizations.length > 0 && (
-                  <Group gap="sm" wrap="wrap">
+                  <Group gap={theme.spacing.sm} wrap="wrap">
                     {character.organizations.map((org) => (
                       <Badge
                         key={org.id}
@@ -209,11 +232,13 @@ export default function CharacterPageClient({
                         size="lg"
                         radius="md"
                         style={{
-                          background: `${entityColors.character}20`,
-                          border: `1px solid ${entityColors.character}`,
+                          background: getAlphaColor(entityColors.character, 0.25),
+                          border: `1.5px solid ${entityColors.character}`,
                           color: textColors.character,
-                          fontSize: '0.85rem',
-                          padding: '8px 16px'
+                          fontSize: fontSize.sm,
+                          padding: `${spacing.sm} ${spacing.md}`,
+                          fontWeight: 500,
+                          transition: `all ${theme.other?.transitions?.durationShort || 200}ms ease`
                         }}
                       >
                         {org.name}
@@ -223,20 +248,45 @@ export default function CharacterPageClient({
                 )}
 
                 {/* Content Stats */}
-                <Group gap="md" wrap="wrap" mt="sm">
-                  <Badge size="md" variant="light" c={textColors.arc} style={{ fontSize: '0.8rem' }}>
+                <Group gap={theme.spacing.md} wrap="wrap" mt={theme.spacing.sm}>
+                  <Badge size="lg" variant="light" c={textColors.arc} style={{
+                    fontSize: fontSize.xs,
+                    fontWeight: 600,
+                    background: getAlphaColor(entityColors.arc, 0.2),
+                    border: `1px solid ${getAlphaColor(entityColors.arc, 0.4)}`
+                  }}>
                     {arcs.length} Story Arcs
                   </Badge>
-                  <Badge size="md" variant="light" c={textColors.gamble} style={{ fontSize: '0.8rem' }}>
+                  <Badge size="lg" variant="light" c={textColors.gamble} style={{
+                    fontSize: fontSize.xs,
+                    fontWeight: 600,
+                    background: getAlphaColor(entityColors.gamble, 0.2),
+                    border: `1px solid ${getAlphaColor(entityColors.gamble, 0.4)}`
+                  }}>
                     {gambles.length} Gambles
                   </Badge>
-                  <Badge size="md" variant="light" c={textColors.character} style={{ fontSize: '0.8rem' }}>
+                  <Badge size="lg" variant="light" c={textColors.character} style={{
+                    fontSize: fontSize.xs,
+                    fontWeight: 600,
+                    background: getAlphaColor(entityColors.character, 0.2),
+                    border: `1px solid ${getAlphaColor(entityColors.character, 0.4)}`
+                  }}>
                     {events.length} Events
                   </Badge>
-                  <Badge size="md" variant="light" c={textColors.quote} style={{ fontSize: '0.8rem' }}>
+                  <Badge size="lg" variant="light" c={textColors.quote} style={{
+                    fontSize: fontSize.xs,
+                    fontWeight: 600,
+                    background: getAlphaColor(entityColors.quote, 0.2),
+                    border: `1px solid ${getAlphaColor(entityColors.quote, 0.4)}`
+                  }}>
                     {quotes.length} Quotes
                   </Badge>
-                  <Badge size="md" variant="light" c={textColors.guide} style={{ fontSize: '0.8rem' }}>
+                  <Badge size="lg" variant="light" c={textColors.guide} style={{
+                    fontSize: fontSize.xs,
+                    fontWeight: 600,
+                    background: getAlphaColor(entityColors.guide, 0.2),
+                    border: `1px solid ${getAlphaColor(entityColors.guide, 0.4)}`
+                  }}>
                     {guides.length} Guides
                   </Badge>
                 </Group>
@@ -251,7 +301,10 @@ export default function CharacterPageClient({
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <Card withBorder radius="md" className="gambling-card" shadow="md">
+        <Card withBorder radius="lg" className="gambling-card" shadow="xl" style={{
+          background: `linear-gradient(135deg, ${theme.colors.dark[6]} 0%, ${theme.colors.dark[7]} 100%)`,
+          border: `1px solid ${theme.colors.dark[4]}`
+        }}>
         <Tabs
           value={activeTab}
           onChange={(value) => value && setActiveTab(value)}
@@ -262,9 +315,15 @@ export default function CharacterPageClient({
             tab: {
               color: textColors.secondary,
               backgroundColor: 'transparent',
+              borderRadius: theme.radius.lg,
+              fontWeight: 500,
+              fontSize: fontSize.sm,
+              padding: `${spacing.sm} ${spacing.lg}`,
+              transition: `all ${theme.other?.transitions?.durationShort || 200}ms ease`,
               '&:hover': {
-                backgroundColor: `${getEntityThemeColor(theme, 'character')}20`,
-                color: textColors.primary
+                backgroundColor: getAlphaColor(getEntityThemeColor(theme, 'character'), 0.25),
+                color: textColors.primary,
+                transform: theme.other?.effects?.cardHoverTransform || 'translateY(-1px)'
               }
             }
           }}
@@ -277,12 +336,15 @@ export default function CharacterPageClient({
             <Tabs.Tab value="media" leftSection={<BookOpen size={16} />}>Media</Tabs.Tab>
           </Tabs.List>
 
-          <Tabs.Panel value="overview" pt="md">
-            <Stack gap="lg">
+          <Tabs.Panel value="overview" pt={theme.spacing.md}>
+            <Stack gap={theme.spacing.lg}>
               {/* Character Description Section */}
-              <Card withBorder radius="md" shadow="sm">
-                <Stack gap="md" p="lg">
-                  <Group gap="sm" align="center">
+              <Card withBorder radius="lg" shadow="lg" style={{
+                background: `linear-gradient(135deg, ${theme.colors.dark[6]} 0%, ${theme.colors.dark[7]} 100%)`,
+                border: `1px solid ${getAlphaColor(entityColors.character, 0.4)}`
+              }}>
+                <Stack gap={theme.spacing.md} p={theme.spacing.lg}>
+                  <Group gap={theme.spacing.sm} align="center">
                     <User size={24} color={entityColors.character} />
                     <Title order={3} c={headerColors.h3}>About {character.name}</Title>
                   </Group>
@@ -293,7 +355,7 @@ export default function CharacterPageClient({
                       </Box>
                     </TimelineSpoilerWrapper>
                   ) : (
-                    <Text size="sm" c="dimmed" style={{ fontStyle: 'italic', textAlign: 'center', padding: '2rem' }}>
+                    <Text size="sm" c={textColors.tertiary} style={{ fontStyle: 'italic', textAlign: 'center', padding: theme.spacing.xl }}>
                       No description available for this character yet. Check back later for updates!
                     </Text>
                   )}
@@ -302,10 +364,14 @@ export default function CharacterPageClient({
 
               {/* Related Story Arcs */}
               {arcs.length > 0 && (
-                <Card withBorder radius="md" shadow="sm">
-                  <Stack gap="md" p="md">
+                <Card withBorder radius="lg" shadow="lg" style={{
+                  background: `linear-gradient(135deg, ${theme.colors.dark[6]} 0%, ${theme.colors.dark[7]} 100%)`,
+                  border: `1px solid ${getAlphaColor(entityColors.arc, 0.4)}`,
+                  transition: `all ${theme.other?.transitions?.durationShort || 200}ms ease-in-out`
+                }}>
+                  <Stack gap={theme.spacing.md} p={theme.spacing.md}>
                     <Group justify="space-between" align="center">
-                      <Group gap="sm">
+                      <Group gap={theme.spacing.sm}>
                         <BookOpen size={20} color={entityColors.arc} />
                         <Title order={4} c={textColors.arc}>Related Story Arcs</Title>
                       </Group>
@@ -314,15 +380,27 @@ export default function CharacterPageClient({
                         href={`/arcs?character=${character.name}`}
                         variant="outline"
                         c={entityColors.arc}
-                        size="xs"
+                        size="sm"
                         radius="xl"
+                        style={{
+                          fontWeight: 600,
+                          border: `2px solid ${entityColors.arc}`,
+                          transition: `all ${theme.other?.transitions?.durationShort || 200}ms ease`
+                        }}
                       >
                         View All ({arcs.length})
                       </Button>
                     </Group>
-                    <Stack gap="sm">
+                    <Stack gap={theme.spacing.sm}>
                       {arcs.slice(0, 4).map((arc) => (
-                        <Paper key={arc.id} withBorder radius="md" p="sm" shadow="xs">
+                        <Paper key={arc.id} withBorder radius="lg" p={theme.spacing.md} shadow="md" style={{
+                          border: `1px solid ${getAlphaColor(entityColors.arc, 0.3)}`,
+                          transition: `all ${theme.other?.transitions?.durationShort || 200}ms ease`,
+                          '&:hover': {
+                            transform: theme.other?.effects?.cardHoverTransform || 'translateY(-2px)',
+                            boxShadow: theme.shadows.lg
+                          }
+                        }}>
                           <Group justify="space-between" align="flex-start">
                             <Box style={{ flex: 1 }}>
                               <Text
@@ -336,13 +414,13 @@ export default function CharacterPageClient({
                                 {arc.name}
                               </Text>
                               {arc.description && (
-                                <Text size="xs" c="dimmed" lineClamp={2} mt={4}>
+                                <Text size="xs" c={textColors.tertiary} lineClamp={2} mt={spacing.xs}>
                                   {arc.description}
                                 </Text>
                               )}
                             </Box>
                             <Badge c={entityColors.arc} variant="outline" size="xs">
-                              Arc {arc.order ?? "N/A"}
+                              Arc {(arc as Arc & { order?: number }).order ?? "N/A"}
                             </Badge>
                           </Group>
                         </Paper>
@@ -354,10 +432,14 @@ export default function CharacterPageClient({
 
               {/* Related Gambles */}
               {gambles.length > 0 && (
-                <Card withBorder radius="md" shadow="sm">
-                  <Stack gap="md" p="md">
+                <Card withBorder radius="lg" shadow="lg" style={{
+                  background: `linear-gradient(135deg, ${theme.colors.dark[6]} 0%, ${theme.colors.dark[7]} 100%)`,
+                  border: `1px solid ${getAlphaColor(entityColors.gamble, 0.4)}`,
+                  transition: `all ${theme.other?.transitions?.durationShort || 200}ms ease-in-out`
+                }}>
+                  <Stack gap={theme.spacing.md} p={theme.spacing.md}>
                     <Group justify="space-between" align="center">
-                      <Group gap="sm">
+                      <Group gap={theme.spacing.sm}>
                         <Crown size={20} color={entityColors.gamble} />
                         <Title order={4} c={textColors.gamble}>Related Gambles</Title>
                       </Group>
@@ -366,15 +448,22 @@ export default function CharacterPageClient({
                         href={`/gambles?character=${character.name}`}
                         variant="outline"
                         c={entityColors.gamble}
-                        size="xs"
+                        size="sm"
                         radius="xl"
                       >
                         View All ({gambles.length})
                       </Button>
                     </Group>
-                    <Stack gap="sm">
+                    <Stack gap={theme.spacing.sm}>
                       {gambles.slice(0, 4).map((gamble) => (
-                        <Paper key={gamble.id} withBorder radius="md" p="sm" shadow="xs">
+                        <Paper key={gamble.id} withBorder radius="lg" p={theme.spacing.md} shadow="md" style={{
+                          border: `1px solid ${getAlphaColor(entityColors.gamble, 0.3)}`,
+                          transition: `all ${theme.other?.transitions?.durationShort || 200}ms ease`,
+                          '&:hover': {
+                            transform: theme.other?.effects?.cardHoverTransform || 'translateY(-2px)',
+                            boxShadow: theme.shadows.lg
+                          }
+                        }}>
                           <TimelineSpoilerWrapper chapterNumber={gamble.chapterId ?? undefined}>
                             <Group justify="space-between" align="flex-start">
                               <Box style={{ flex: 1 }}>
@@ -389,7 +478,7 @@ export default function CharacterPageClient({
                                   {gamble.name}
                                 </Text>
                                 {gamble.description && (
-                                  <Text size="xs" c="dimmed" lineClamp={2} mt={4}>
+                                  <Text size="xs" c={textColors.tertiary} lineClamp={2} mt={spacing.xs}>
                                     {gamble.description}
                                   </Text>
                                 )}
@@ -410,10 +499,14 @@ export default function CharacterPageClient({
 
               {/* Memorable Quotes */}
               {quotes.length > 0 && (
-                <Card withBorder radius="md" shadow="sm">
-                  <Stack gap="md" p="md">
+                <Card withBorder radius="lg" shadow="lg" style={{
+                  background: `linear-gradient(135deg, ${theme.colors.dark[6]} 0%, ${theme.colors.dark[7]} 100%)`,
+                  border: `1px solid ${getAlphaColor(entityColors.quote, 0.4)}`,
+                  transition: `all ${theme.other?.transitions?.durationShort || 200}ms ease-in-out`
+                }}>
+                  <Stack gap={theme.spacing.md} p={theme.spacing.md}>
                     <Group justify="space-between" align="center">
-                      <Group gap="sm">
+                      <Group gap={theme.spacing.sm}>
                         <BookOpen size={20} color={entityColors.quote} />
                         <Title order={4} c={textColors.quote}>Memorable Quotes</Title>
                       </Group>
@@ -422,18 +515,25 @@ export default function CharacterPageClient({
                         href={`/quotes?characterId=${character.id}`}
                         variant="outline"
                         c={entityColors.quote}
-                        size="xs"
+                        size="sm"
                         radius="xl"
                       >
                         View All ({quotes.length})
                       </Button>
                     </Group>
 
-                    <Stack gap="sm">
+                    <Stack gap={theme.spacing.sm}>
                       {quotes.slice(0, 3).map((quote) => (
-                        <Paper key={quote.id} withBorder radius="md" p="md" shadow="xs">
+                        <Paper key={quote.id} withBorder radius="lg" p={theme.spacing.md} shadow="md" style={{
+                          border: `1px solid ${getAlphaColor(entityColors.quote, 0.3)}`,
+                          transition: `all ${theme.other?.transitions?.durationShort || 200}ms ease`,
+                          '&:hover': {
+                            transform: theme.other?.effects?.cardHoverTransform || 'translateY(-2px)',
+                            boxShadow: theme.shadows.lg
+                          }
+                        }}>
                           <TimelineSpoilerWrapper chapterNumber={quote.chapter?.number ?? undefined}>
-                            <Stack gap="sm">
+                            <Stack gap={theme.spacing.sm}>
                               <Text size="sm" style={{ fontStyle: 'italic', lineHeight: 1.5 }}>
                                 &ldquo;{quote.text}&rdquo;
                               </Text>
@@ -451,10 +551,14 @@ export default function CharacterPageClient({
 
               {/* Community Guides */}
               {guides.length > 0 && (
-                <Card withBorder radius="md" shadow="sm">
-                  <Stack gap="md" p="md">
+                <Card withBorder radius="lg" shadow="lg" style={{
+                  background: `linear-gradient(135deg, ${theme.colors.dark[6]} 0%, ${theme.colors.dark[7]} 100%)`,
+                  border: `1px solid ${getAlphaColor(entityColors.guide, 0.4)}`,
+                  transition: `all ${theme.other?.transitions?.durationShort || 200}ms ease-in-out`
+                }}>
+                  <Stack gap={theme.spacing.md} p={theme.spacing.md}>
                     <Group justify="space-between" align="center">
-                      <Group gap="sm">
+                      <Group gap={theme.spacing.sm}>
                         <BookOpen size={20} color={entityColors.guide} />
                         <Title order={4} c={textColors.guide}>Community Guides</Title>
                       </Group>
@@ -463,17 +567,24 @@ export default function CharacterPageClient({
                         href={`/guides?character=${character.name}`}
                         variant="outline"
                         c={entityColors.guide}
-                        size="xs"
+                        size="sm"
                         radius="xl"
                       >
                         View All ({guides.length})
                       </Button>
                     </Group>
 
-                    <Stack gap="sm">
+                    <Stack gap={theme.spacing.sm}>
                       {guides.slice(0, 4).map((guide) => (
-                        <Paper key={guide.id} withBorder radius="md" p="sm" shadow="xs">
-                          <Stack gap={6}>
+                        <Paper key={guide.id} withBorder radius="lg" p={theme.spacing.md} shadow="md" style={{
+                          border: `1px solid ${getAlphaColor(entityColors.guide, 0.3)}`,
+                          transition: `all ${theme.other?.transitions?.durationShort || 200}ms ease`,
+                          '&:hover': {
+                            transform: theme.other?.effects?.cardHoverTransform || 'translateY(-2px)',
+                            boxShadow: theme.shadows.lg
+                          }
+                        }}>
+                          <Stack gap={spacing.xs}>
                             <Text
                               component={Link}
                               href={`/guides/${guide.id}`}
@@ -485,9 +596,9 @@ export default function CharacterPageClient({
                             >
                               {guide.title}
                             </Text>
-                            <Group gap="xs" align="center">
+                            <Group gap={theme.spacing.xs} align="center">
                               <User size={12} color={textColors.tertiary} />
-                              <Text size="xs" c="dimmed">
+                              <Text size="xs" c={textColors.tertiary}>
                                 By {guide.author?.username ?? 'Unknown'}
                               </Text>
                             </Group>
@@ -501,7 +612,7 @@ export default function CharacterPageClient({
             </Stack>
           </Tabs.Panel>
 
-          <Tabs.Panel value="timeline" pt="md">
+          <Tabs.Panel value="timeline" pt={theme.spacing.md}>
             <CharacterTimeline
               events={events}
               arcs={arcs}
@@ -510,19 +621,69 @@ export default function CharacterPageClient({
             />
           </Tabs.Panel>
 
-          <Tabs.Panel value="media" pt="md">
-            <Box pos="relative">
-              <MediaGallery
-                characterId={character.id}
-                limit={12}
-                showTitle={false}
-                compactMode={false}
-              />
-            </Box>
+          <Tabs.Panel value="media" pt={theme.spacing.md}>
+            <Stack gap="md">
+              {/* Gallery Media Section */}
+              <Card withBorder radius="lg" shadow="lg" style={{
+                background: `linear-gradient(135deg, ${theme.colors.dark[6]} 0%, ${theme.colors.dark[7]} 100%)`,
+                border: `1px solid ${getAlphaColor(entityColors.media, 0.4)}`
+              }}>
+                <Stack gap="md" p="md">
+                  <Group justify="space-between" align="center">
+                    <Group gap="sm">
+                      <ImageIcon size={20} color={entityColors.media} />
+                      <Title order={4} c={textColors.media}>Community Media</Title>
+                    </Group>
+                    <Button
+                      component={Link}
+                      href={`/media?ownerType=character&ownerId=${character.id}`}
+                      variant="outline"
+                      c={entityColors.media}
+                      size="sm"
+                      radius="xl"
+                    >
+                      View All
+                    </Button>
+                  </Group>
+                  <MediaGallery
+                    ownerType="character"
+                    ownerId={character.id}
+                    purpose="gallery"
+                    limit={8}
+                    showTitle={false}
+                    compactMode={true}
+                    showFilters={false}
+                  />
+                </Stack>
+              </Card>
+
+              {/* Official Media Section */}
+              <Card withBorder radius="lg" shadow="lg" style={{
+                background: `linear-gradient(135deg, ${theme.colors.dark[6]} 0%, ${theme.colors.dark[7]} 100%)`,
+                border: `1px solid ${getAlphaColor(entityColors.media, 0.4)}`
+              }}>
+                <Stack gap="md" p="md">
+                  <Group gap="sm">
+                    <Crown size={20} color={entityColors.media} />
+                    <Title order={4} c={textColors.media}>Official Media</Title>
+                  </Group>
+                  <MediaGallery
+                    ownerType="character"
+                    ownerId={character.id}
+                    purpose="entity_display"
+                    limit={6}
+                    showTitle={false}
+                    compactMode={true}
+                    showFilters={false}
+                  />
+                </Stack>
+              </Card>
+            </Stack>
           </Tabs.Panel>
         </Tabs>
       </Card>
     </motion.div>
     </Stack>
+    </Box>
   )
 }

@@ -103,7 +103,7 @@ export default async function UserDetailPage({ params }: PageProps) {
     return (
       <Container size="lg" py="xl">
         <Stack gap="md">
-          <Alert style={{ color: getEntityThemeColor(theme, 'gamble') }} radius="md">
+          <Alert color="red" radius="md">
             User not found
           </Alert>
           <Button

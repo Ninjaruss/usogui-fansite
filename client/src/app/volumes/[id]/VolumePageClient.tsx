@@ -81,7 +81,6 @@ export default function VolumePageClient({ initialVolume, initialChapters }: Vol
           p={0}
           mb="xl"
           style={{
-            background: `linear-gradient(135deg, ${theme.colors.dark?.[6] ?? theme.colors.gray?.[1]} 0%, ${theme.colors.dark?.[7] ?? theme.colors.gray?.[0]} 100%)`,
             border: `1px solid ${getEntityThemeColor(theme, 'guide')}`,
             overflow: 'hidden'
           }}
@@ -131,6 +130,7 @@ export default function VolumePageClient({ initialVolume, initialChapters }: Vol
                     variant="light"
                     c={getEntityThemeColor(theme, 'gamble')}
                     leftSection={<Hash size={16} />}
+                    style={{ backgroundColor: `${getEntityThemeColor(theme, 'gamble')}20`, borderColor: getEntityThemeColor(theme, 'gamble') }}
                   >
                     Chapters {initialVolume.startChapter}-{initialVolume.endChapter}
                   </Badge>
@@ -141,6 +141,7 @@ export default function VolumePageClient({ initialVolume, initialChapters }: Vol
                     variant="light"
                     c={getEntityThemeColor(theme, 'character')}
                     leftSection={<Book size={16} />}
+                    style={{ backgroundColor: `${getEntityThemeColor(theme, 'character')}20`, borderColor: getEntityThemeColor(theme, 'character') }}
                   >
                     {initialVolume.endChapter - initialVolume.startChapter + 1} Chapters
                   </Badge>
@@ -158,7 +159,7 @@ export default function VolumePageClient({ initialVolume, initialChapters }: Vol
                 <Stack gap="lg" align="center">
                   <Group gap="sm" justify="center">
                     <FileText size={24} color={getEntityThemeColor(theme, 'guide')} />
-                    <Title order={3} c="red.5" ta="center">Volume Summary</Title>
+                    <Title order={3} c={getEntityThemeColor(theme, 'guide')} ta="center">Volume Summary</Title>
                   </Group>
                   <TimelineSpoilerWrapper chapterNumber={initialVolume.startChapter}>
                     <Text size="md" style={{ lineHeight: 1.7 }} ta="center">
@@ -176,9 +177,14 @@ export default function VolumePageClient({ initialVolume, initialChapters }: Vol
                   <Group gap="md" justify="center" wrap="wrap">
                     <Group gap="sm">
                       <Book size={24} color={getEntityThemeColor(theme, 'guide')} />
-                      <Title order={3} c="red.5" ta="center">Chapters in this Volume</Title>
+                      <Title order={3} c={getEntityThemeColor(theme, 'guide')} ta="center">Chapters in this Volume</Title>
                     </Group>
-                    <Badge variant="light" c={semanticColors.neutral} size="lg">
+                    <Badge
+                      variant="light"
+                      c={getEntityThemeColor(theme, 'organization')}
+                      size="lg"
+                      style={{ backgroundColor: `${getEntityThemeColor(theme, 'organization')}20`, borderColor: getEntityThemeColor(theme, 'organization') }}
+                    >
                       {initialChapters.length} chapters
                     </Badge>
                   </Group>
@@ -195,8 +201,6 @@ export default function VolumePageClient({ initialVolume, initialChapters }: Vol
                           style={{
                             cursor: 'pointer',
                             transition: 'all 0.2s ease',
-                            borderColor: theme.colors.dark?.[6] ?? theme.colors.gray?.[2],
-                            backgroundColor: theme.colors.dark?.[6] ?? theme.colors.gray?.[1],
                             height: '100%'
                           }}
                           classNames={{
@@ -237,7 +241,12 @@ export default function VolumePageClient({ initialVolume, initialChapters }: Vol
                 <Stack gap="md">
                   <Group justify="space-between">
                     <Text size="sm" c="dimmed">Volume Number</Text>
-                    <Badge variant="light" c={getEntityThemeColor(theme, 'character')} size="lg">
+                    <Badge
+                      variant="light"
+                      c={getEntityThemeColor(theme, 'character')}
+                      size="lg"
+                      style={{ backgroundColor: `${getEntityThemeColor(theme, 'character')}20`, borderColor: getEntityThemeColor(theme, 'character') }}
+                    >
                       #{initialVolume.number}
                     </Badge>
                   </Group>

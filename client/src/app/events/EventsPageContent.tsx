@@ -274,22 +274,24 @@ export default function EventsPageContent({
   }
 
   const eventTypeColor = (type: string) => {
+    // Use consistent event theming with subtle amber-based variations
+    const baseEventColor = getEntityThemeColor(theme, 'event')
     switch (type.toLowerCase()) {
-      case 'gamble': return 'red'
-      case 'decision': return 'blue'
-      case 'reveal': return 'yellow'
-      case 'shift': return 'green'
-      case 'resolution': return 'violet'
-      default: return 'gray'
+      case 'gamble': return '#e67e22' // Orange-amber for gamble events
+      case 'decision': return '#f39c12' // Base amber for decisions
+      case 'reveal': return '#f1c40f' // Brighter amber for reveals
+      case 'shift': return '#d68910' // Deeper amber for shifts
+      case 'resolution': return '#b7950b' // Dark amber for resolutions
+      default: return baseEventColor
     }
   }
 
   const statusColor = (status: string) => {
     switch (status) {
-      case EventStatus.APPROVED: return 'green'
-      case EventStatus.PENDING: return 'yellow'
-      case EventStatus.REJECTED: return 'red'
-      default: return 'gray'
+      case EventStatus.APPROVED: return '#51cf66' // Green for approved
+      case EventStatus.PENDING: return '#ffd43b' // Yellow for pending
+      case EventStatus.REJECTED: return '#ff6b6b' // Red for rejected
+      default: return '#adb5bd' // Gray for unknown
     }
   }
 
@@ -338,10 +340,20 @@ export default function EventsPageContent({
                 {event.title}
               </Title>
               <Group gap="xs" wrap="wrap">
-                <Badge color={eventTypeColor(event.type)} variant="light" size="sm">
+                <Badge
+                  c={eventTypeColor(event.type)}
+                  variant="light"
+                  size="sm"
+                  style={{ backgroundColor: `${eventTypeColor(event.type)}20`, borderColor: eventTypeColor(event.type) }}
+                >
                   {event.type}
                 </Badge>
-                <Badge color="gray" variant="light" size="sm">
+                <Badge
+                  c={getEntityThemeColor(theme, 'organization')}
+                  variant="light"
+                  size="sm"
+                  style={{ backgroundColor: `${getEntityThemeColor(theme, 'organization')}20`, borderColor: getEntityThemeColor(theme, 'organization') }}
+                >
                   Ch. {event.chapterNumber}
                 </Badge>
               </Group>
@@ -386,7 +398,12 @@ export default function EventsPageContent({
                 Details
               </Text>
             </Group>
-            <Badge color={statusColor(event.status)} variant="light" size="sm">
+            <Badge
+              c={statusColor(event.status)}
+              variant="light"
+              size="sm"
+              style={{ backgroundColor: `${statusColor(event.status)}20`, borderColor: statusColor(event.status) }}
+            >
               {event.status}
             </Badge>
           </Group>
@@ -442,7 +459,14 @@ export default function EventsPageContent({
             </Text>
 
             {totalEvents > 0 && (
-              <Badge size="md" variant="light" style={{ color: getEntityThemeColor(theme, 'event') }} radius="xl" mt="xs">
+              <Badge
+                size="md"
+                variant="light"
+                c={getEntityThemeColor(theme, 'event')}
+                radius="xl"
+                mt="xs"
+                style={{ backgroundColor: `${getEntityThemeColor(theme, 'event')}20`, borderColor: getEntityThemeColor(theme, 'event') }}
+              >
                 {totalEvents} event{totalEvents !== 1 ? 's' : ''} available
               </Badge>
             )}
@@ -553,7 +577,19 @@ export default function EventsPageContent({
                 // Grouped by arcs - accordion layout
                 <Stack gap="md">
                   {groupedEvents.arcs.map(({ arc, events }) => (
-                    <Accordion key={arc.id} defaultValue={`arc-${arc.id}`} radius="lg">
+                    <Accordion
+                      key={arc.id}
+                      defaultValue={`arc-${arc.id}`}
+                      radius="lg"
+                      styles={{
+                        control: {
+                          backgroundColor: theme.colors.dark?.[7] ?? theme.white,
+                          '&:hover': {
+                            backgroundColor: theme.colors.dark?.[6] ?? theme.colors.gray?.[0]
+                          }
+                        }
+                      }}
+                    >
                       <Accordion.Item
                         value={`arc-${arc.id}`}
                         style={{
@@ -571,7 +607,12 @@ export default function EventsPageContent({
                         >
                           <Group gap="sm" align="center">
                             <Text size="lg" fw={600} c={accentEvent}>{arc.name}</Text>
-                            <Badge style={{ color: getEntityThemeColor(theme, 'event') }} variant="light" radius="xl">
+                            <Badge
+                              c={getEntityThemeColor(theme, 'event')}
+                              variant="light"
+                              radius="xl"
+                              style={{ backgroundColor: `${getEntityThemeColor(theme, 'event')}20`, borderColor: getEntityThemeColor(theme, 'event') }}
+                            >
                               {events.length} event{events.length !== 1 ? 's' : ''}
                             </Badge>
                           </Group>
@@ -593,7 +634,18 @@ export default function EventsPageContent({
                   ))}
 
                   {groupedEvents.noArc.length > 0 && (
-                    <Accordion defaultValue="no-arc" radius="lg">
+                    <Accordion
+                      defaultValue="no-arc"
+                      radius="lg"
+                      styles={{
+                        control: {
+                          backgroundColor: theme.colors.dark?.[7] ?? theme.white,
+                          '&:hover': {
+                            backgroundColor: theme.colors.dark?.[6] ?? theme.colors.gray?.[0]
+                          }
+                        }
+                      }}
+                    >
                       <Accordion.Item
                         value="no-arc"
                         style={{
@@ -611,7 +663,12 @@ export default function EventsPageContent({
                         >
                           <Group gap="sm" align="center">
                             <Text size="lg" fw={600} c="dimmed">Other Events</Text>
-                            <Badge style={{ color: getEntityThemeColor(theme, 'media') }} variant="light" radius="xl">
+                            <Badge
+                              c={getEntityThemeColor(theme, 'media')}
+                              variant="light"
+                              radius="xl"
+                              style={{ backgroundColor: `${getEntityThemeColor(theme, 'media')}20`, borderColor: getEntityThemeColor(theme, 'media') }}
+                            >
                               {groupedEvents.noArc.length} event{groupedEvents.noArc.length !== 1 ? 's' : ''}
                             </Badge>
                           </Group>
@@ -674,14 +731,29 @@ export default function EventsPageContent({
                 </Title>
 
                 <Group justify="center" gap="xs" wrap="wrap">
-                  <Badge variant="light" color={eventTypeColor(hoveredEvent.type)} size="sm">
+                  <Badge
+                    c={eventTypeColor(hoveredEvent.type)}
+                    variant="light"
+                    size="sm"
+                    style={{ backgroundColor: `${eventTypeColor(hoveredEvent.type)}20`, borderColor: eventTypeColor(hoveredEvent.type) }}
+                  >
                     {hoveredEvent.type}
                   </Badge>
-                  <Badge variant="outline" color="gray" size="sm">
+                  <Badge
+                    c={getEntityThemeColor(theme, 'organization')}
+                    variant="outline"
+                    size="sm"
+                    style={{ borderColor: getEntityThemeColor(theme, 'organization') }}
+                  >
                     Ch. {hoveredEvent.chapterNumber}
                   </Badge>
                   {hoveredEvent.arc && (
-                    <Badge variant="outline" style={{ color: getEntityThemeColor(theme, 'character') }} size="sm">
+                    <Badge
+                      c={getEntityThemeColor(theme, 'character')}
+                      variant="outline"
+                      size="sm"
+                      style={{ borderColor: getEntityThemeColor(theme, 'character') }}
+                    >
                       {hoveredEvent.arc.name}
                     </Badge>
                   )}
@@ -692,7 +764,12 @@ export default function EventsPageContent({
                 </Text>
 
                 <Group justify="center">
-                  <Badge color={statusColor(hoveredEvent.status)} variant="light" size="sm">
+                  <Badge
+                    c={statusColor(hoveredEvent.status)}
+                    variant="light"
+                    size="sm"
+                    style={{ backgroundColor: `${statusColor(hoveredEvent.status)}20`, borderColor: statusColor(hoveredEvent.status) }}
+                  >
                     {hoveredEvent.status}
                   </Badge>
                 </Group>

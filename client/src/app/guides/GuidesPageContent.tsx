@@ -230,7 +230,12 @@ export default function GuidesPageContent({
 
         {authorFilter && authorName && (
           <Group justify="center" gap="sm">
-            <Badge size="md" style={{ color: getEntityThemeColor(theme, 'gamble') }} variant="filled">
+            <Badge
+              size="md"
+              c="white"
+              variant="filled"
+              style={{ backgroundColor: getEntityThemeColor(theme, 'gamble') }}
+            >
               Author: {authorName}
             </Badge>
             <Button
@@ -309,12 +314,23 @@ export default function GuidesPageContent({
                                 <Users size={14} />
                                 <Group gap={4} wrap="wrap">
                                   {guide.characters.slice(0, 2).map((character) => (
-                                    <Badge key={character.id} size="sm" style={{ color: getEntityThemeColor(theme, 'gamble') }} variant="light">
-                                      {character.name}
-                                    </Badge>
+                                    <Badge
+                                    key={character.id}
+                                    size="sm"
+                                    c={getEntityThemeColor(theme, 'gamble')}
+                                    variant="light"
+                                    style={{ backgroundColor: `${getEntityThemeColor(theme, 'gamble')}20`, borderColor: getEntityThemeColor(theme, 'gamble') }}
+                                  >
+                                    {character.name}
+                                  </Badge>
                                   ))}
                                   {guide.characters.length > 2 && (
-                                    <Badge size="sm" color="gray" variant="light">
+                                    <Badge
+                                      size="sm"
+                                      c={getEntityThemeColor(theme, 'organization')}
+                                      variant="light"
+                                      style={{ backgroundColor: `${getEntityThemeColor(theme, 'organization')}20`, borderColor: getEntityThemeColor(theme, 'organization') }}
+                                    >
                                       +{guide.characters.length - 2}
                                     </Badge>
                                   )}
@@ -325,7 +341,12 @@ export default function GuidesPageContent({
                             {guide.arc && (
                               <Group gap={6} align="center">
                                 <BookOpen size={14} />
-                                <Badge size="sm" style={{ color: getEntityThemeColor(theme, 'media') }} variant="light">
+                                <Badge
+                                  size="sm"
+                                  c={getEntityThemeColor(theme, 'media')}
+                                  variant="light"
+                                  style={{ backgroundColor: `${getEntityThemeColor(theme, 'media')}20`, borderColor: getEntityThemeColor(theme, 'media') }}
+                                >
                                   {guide.arc.name}
                                 </Badge>
                               </Group>
@@ -336,12 +357,23 @@ export default function GuidesPageContent({
                                 <Dice6 size={14} />
                                 <Group gap={4} wrap="wrap">
                                   {guide.gambles.slice(0, 2).map((gamble) => (
-                                    <Badge key={gamble.id} size="sm" style={{ color: getEntityThemeColor(theme, 'gamble') }} variant="light">
+                                    <Badge
+                                      key={gamble.id}
+                                      size="sm"
+                                      c={getEntityThemeColor(theme, 'gamble')}
+                                      variant="light"
+                                      style={{ backgroundColor: `${getEntityThemeColor(theme, 'gamble')}20`, borderColor: getEntityThemeColor(theme, 'gamble') }}
+                                    >
                                       {gamble.name}
                                     </Badge>
                                   ))}
                                   {guide.gambles.length > 2 && (
-                                    <Badge size="sm" color="gray" variant="light">
+                                    <Badge
+                                      size="sm"
+                                      c={getEntityThemeColor(theme, 'organization')}
+                                      variant="light"
+                                      style={{ backgroundColor: `${getEntityThemeColor(theme, 'organization')}20`, borderColor: getEntityThemeColor(theme, 'organization') }}
+                                    >
                                       +{guide.gambles.length - 2}
                                     </Badge>
                                   )}
@@ -354,7 +386,13 @@ export default function GuidesPageContent({
                         {guide.tags?.length > 0 && (
                           <Group gap={6} wrap="wrap">
                             {guide.tags.slice(0, 4).map((tag) => (
-                              <Badge key={tag.id} size="sm" color="gray" variant="outline">
+                              <Badge
+                                key={tag.id}
+                                size="sm"
+                                c={getEntityThemeColor(theme, 'organization')}
+                                variant="outline"
+                                style={{ borderColor: getEntityThemeColor(theme, 'organization') }}
+                              >
                                 #{tag.name}
                               </Badge>
                             ))}

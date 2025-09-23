@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useMemo, useRef, useState } from 'react'
+import React, { useMemo, useRef, useState, useEffect } from 'react'
 import {
   Badge,
   Button,
@@ -15,7 +15,7 @@ import {
   useMantineTheme
 } from '@mantine/core'
 import { notifications } from '@mantine/notifications'
-import { getEntityThemeColor, semanticColors, textColors } from '../../../lib/mantine-theme'
+import { getEntityThemeColor, semanticColors, textColors, setTabAccentColors } from '../../../lib/mantine-theme'
 import { ArrowLeft, FileText, Calendar, Heart, Edit, Save, X, Users, BookOpen, Dice6 } from 'lucide-react'
 import Link from 'next/link'
 import { api } from '../../../lib/api'
@@ -87,6 +87,11 @@ export default function GuidePageClient({ initialGuide }: GuidePageClientProps) 
   const [editedContent, setEditedContent] = useState(initialGuide.content)
   const [saving, setSaving] = useState(false)
   const [activeTab, setActiveTab] = useState<string>('content')
+
+  // Set tab accent colors for guide entity
+  useEffect(() => {
+    setTabAccentColors('guide')
+  }, [])
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
 
   usePageView('guide', guide.id.toString(), true)
@@ -210,9 +215,23 @@ export default function GuidePageClient({ initialGuide }: GuidePageClientProps) 
                   <Text size="sm" c="dimmed" component={Link} href={`/users/${guide.author.id}`} style={{ textDecoration: 'none' }}>
                     By {guide.author.username}
                   </Text>
-                  {guide.author.customRole && <Badge style={{ color: getEntityThemeColor(theme, 'media') }} variant="outline" radius="sm">{guide.author.customRole}</Badge>}
+                  {guide.author.customRole && (
+                    <Badge
+                      c={getEntityThemeColor(theme, 'media')}
+                      variant="outline"
+                      radius="sm"
+                      style={{ borderColor: getEntityThemeColor(theme, 'media') }}
+                    >
+                      {guide.author.customRole}
+                    </Badge>
+                  )}
                   {roleBadge && (
-                    <Badge color={roleBadge.color} variant="light" radius="sm">
+                    <Badge
+                      c={roleBadge.color}
+                      variant="light"
+                      radius="sm"
+                      style={{ backgroundColor: `${roleBadge.color}20`, borderColor: roleBadge.color }}
+                    >
                       {roleBadge.label}
                     </Badge>
                   )}
@@ -224,13 +243,29 @@ export default function GuidePageClient({ initialGuide }: GuidePageClientProps) 
                   />
                 </Group>
                 <Group gap="xs" align="center">
-                  <Badge style={{ color: getEntityThemeColor(theme, 'gamble') }} radius="sm" variant="light" leftSection={<Calendar size={14} />}>
+                  <Badge
+                    c={getEntityThemeColor(theme, 'gamble')}
+                    radius="sm"
+                    variant="light"
+                    leftSection={<Calendar size={14} />}
+                    style={{ backgroundColor: `${getEntityThemeColor(theme, 'gamble')}20`, borderColor: getEntityThemeColor(theme, 'gamble') }}
+                  >
                     Published {new Date(guide.createdAt).toLocaleDateString()}
                   </Badge>
-                  <Badge style={{ color: getEntityThemeColor(theme, 'character') }} radius="sm" variant="light">
+                  <Badge
+                    c={getEntityThemeColor(theme, 'character')}
+                    radius="sm"
+                    variant="light"
+                    style={{ backgroundColor: `${getEntityThemeColor(theme, 'character')}20`, borderColor: getEntityThemeColor(theme, 'character') }}
+                  >
                     {guide.viewCount} view{guide.viewCount !== 1 ? 's' : ''}
                   </Badge>
-                  <Badge style={{ color: getEntityThemeColor(theme, 'media') }} radius="sm" variant="light">
+                  <Badge
+                    c={getEntityThemeColor(theme, 'media')}
+                    radius="sm"
+                    variant="light"
+                    style={{ backgroundColor: `${getEntityThemeColor(theme, 'media')}20`, borderColor: getEntityThemeColor(theme, 'media') }}
+                  >
                     {guide.likeCount} like{guide.likeCount !== 1 ? 's' : ''}
                   </Badge>
                 </Group>
@@ -243,7 +278,13 @@ export default function GuidePageClient({ initialGuide }: GuidePageClientProps) 
                 <Group style={{ flexWrap: 'wrap', gap: 8 }}>
                   {guide.arc && (
                     <Link href={`/arcs/${guide.arc.id}`} style={{ textDecoration: 'none', display: 'inline-block' }}>
-                      <Badge radius="lg" variant="outline" size="sm" style={{ borderColor: (theme.colors as any).arc?.[5] ?? '#dc004e', color: (theme.colors as any).arc?.[5] ?? '#dc004e' }}>
+                      <Badge
+                        radius="lg"
+                        variant="outline"
+                        size="sm"
+                        c={getEntityThemeColor(theme, 'arc')}
+                        style={{ borderColor: getEntityThemeColor(theme, 'arc') }}
+                      >
                         {guide.arc.name}
                       </Badge>
                     </Link>
@@ -251,7 +292,13 @@ export default function GuidePageClient({ initialGuide }: GuidePageClientProps) 
 
                   {guide.gambles && guide.gambles.length > 0 && guide.gambles.map((gamble) => (
                     <Link key={gamble.id} href={`/gambles/${gamble.id}`} style={{ textDecoration: 'none', display: 'inline-block' }}>
-                      <Badge radius="lg" variant="outline" size="sm" style={{ borderColor: (theme.colors as any).gamble?.[5] ?? '#d32f2f', color: (theme.colors as any).gamble?.[5] ?? '#d32f2f', fontWeight: 700 }}>
+                      <Badge
+                        radius="lg"
+                        variant="outline"
+                        size="sm"
+                        c={getEntityThemeColor(theme, 'gamble')}
+                        style={{ borderColor: getEntityThemeColor(theme, 'gamble'), fontWeight: 700 }}
+                      >
                         {gamble.name}
                       </Badge>
                     </Link>
@@ -259,7 +306,13 @@ export default function GuidePageClient({ initialGuide }: GuidePageClientProps) 
 
                   {guide.characters && guide.characters.length > 0 && guide.characters.map((character) => (
                     <Link key={character.id} href={`/characters/${character.id}`} style={{ textDecoration: 'none', display: 'inline-block' }}>
-                      <Badge radius="lg" variant="outline" size="sm" style={{ borderColor: (theme.colors as any).character?.[5] ?? '#1976d2', color: (theme.colors as any).character?.[5] ?? '#1976d2' }}>
+                      <Badge
+                        radius="lg"
+                        variant="outline"
+                        size="sm"
+                        c={getEntityThemeColor(theme, 'character')}
+                        style={{ borderColor: getEntityThemeColor(theme, 'character') }}
+                      >
                         {character.name}
                       </Badge>
                     </Link>
@@ -268,7 +321,13 @@ export default function GuidePageClient({ initialGuide }: GuidePageClientProps) 
 
                 <Group gap="xs" style={{ flexWrap: 'wrap' }}>
                   {guide.tags.map((tag) => (
-                    <Badge key={tag.id} variant="outline" radius="sm">
+                    <Badge
+                      key={tag.id}
+                      variant="outline"
+                      radius="sm"
+                      c={getEntityThemeColor(theme, 'organization')}
+                      style={{ borderColor: getEntityThemeColor(theme, 'organization') }}
+                    >
                       {tag.name}
                     </Badge>
                   ))}

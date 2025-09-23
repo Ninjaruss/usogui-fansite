@@ -20,7 +20,7 @@ import {
   Title,
   useMantineTheme
 } from '@mantine/core'
-import { getEntityThemeColor, semanticColors, textColors } from '../../lib/mantine-theme'
+import { getEntityThemeColor, semanticColors, textColors, setTabAccentColors } from '../../lib/mantine-theme'
 import { Upload, Link as LinkIcon, Image, Video, Music } from 'lucide-react'
 import { useAuth } from '../../providers/AuthProvider'
 import { api } from '../../lib/api'
@@ -85,6 +85,11 @@ export default function SubmitMediaPageContent() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [activeTab, setActiveTab] = useState<'url' | 'upload'>('url')
+
+  // Set tab accent colors for media entity (since we're submitting media)
+  useEffect(() => {
+    setTabAccentColors('media')
+  }, [])
 
   useEffect(() => {
     const fetchData = async () => {

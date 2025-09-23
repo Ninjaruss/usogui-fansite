@@ -301,7 +301,14 @@ export default function OrganizationsPageContent({
             </Text>
 
             {allOrganizations.length > 0 && (
-              <Badge size="md" variant="light" color="grape" radius="xl" mt="xs">
+              <Badge
+                size="md"
+                variant="light"
+                c={getEntityThemeColor(theme, 'organization')}
+                radius="xl"
+                mt="xs"
+                style={{ backgroundColor: `${getEntityThemeColor(theme, 'organization')}20`, borderColor: getEntityThemeColor(theme, 'organization') }}
+              >
                 {searchQuery ? `${total} of ${allOrganizations.length}` : `${allOrganizations.length}`} organization{(searchQuery ? total : allOrganizations.length) !== 1 ? 's' : ''} {searchQuery ? 'found' : 'available'}
               </Badge>
             )}
@@ -433,7 +440,7 @@ export default function OrganizationsPageContent({
                       {organization.memberCount !== undefined && (
                         <Badge
                           variant="filled"
-                          color="grape"
+                          c="white"
                           radius="sm"
                           size="sm"
                           style={{
@@ -590,10 +597,11 @@ export default function OrganizationsPageContent({
                   {hoveredOrganization.memberCount !== undefined && (
                     <Badge
                       variant="filled"
-                      color="grape"
+                      c="white"
                       size="sm"
                       fw={600}
                       leftSection={<Users size={12} />}
+                      style={{ backgroundColor: getEntityThemeColor(theme, 'organization') }}
                     >
                       {hoveredOrganization.memberCount} members
                     </Badge>

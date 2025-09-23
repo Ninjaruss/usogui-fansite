@@ -993,6 +993,8 @@ class ApiClient {
     ownerType?: 'character' | 'arc' | 'event' | 'gamble' | 'organization' | 'user' | 'volume'
     ownerId?: number
     purpose?: 'gallery' | 'entity_display'
+    search?: string
+    description?: string
   }) {
     const searchParams = new URLSearchParams()
     if (params) {

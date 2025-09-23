@@ -23,7 +23,7 @@ import {
   rem,
   useMantineTheme
 } from '@mantine/core'
-import { getEntityThemeColor, semanticColors, textColors } from '../../lib/mantine-theme'
+import { getEntityThemeColor, semanticColors, textColors, setTabAccentColors } from '../../lib/mantine-theme'
 import { FileText, Send, Plus, BookOpen, Eye } from 'lucide-react'
 import { useAuth } from '../../providers/AuthProvider'
 import { api } from '../../lib/api'
@@ -56,6 +56,11 @@ export default function SubmitGuidePageContent() {
   const [gambles, setGambles] = useState<Array<{ id: number; name: string }>>([])
   const [loadingData, setLoadingData] = useState(true)
   const [activeTab, setActiveTab] = useState<'write' | 'preview'>('write')
+
+  // Set tab accent colors for guide entity (since we're submitting guides)
+  useEffect(() => {
+    setTabAccentColors('guide')
+  }, [])
   const contentRef = useRef<HTMLTextAreaElement | null>(null)
 
   const guideAccent = theme.other?.usogui?.guide ?? theme.colors.green[6]

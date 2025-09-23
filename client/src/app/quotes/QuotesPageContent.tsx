@@ -581,7 +581,12 @@ export default function QuotesPageContent({
                 {/* Chapter and Volume Info */}
                 {(hoveredQuote.volume || hoveredQuote.chapter) && (
                   <Group justify="center" gap="xs">
-                    <Badge variant="filled" style={{ color: getEntityThemeColor(theme, 'media') }} size="sm">
+                    <Badge
+                      variant="filled"
+                      c="white"
+                      size="sm"
+                      style={{ backgroundColor: getEntityThemeColor(theme, 'media') }}
+                    >
                       {hoveredQuote.volume && `Vol. ${hoveredQuote.volume}`}
                       {hoveredQuote.volume && hoveredQuote.chapter && ' • '}
                       {hoveredQuote.chapter && `Ch. ${hoveredQuote.chapter}`}
