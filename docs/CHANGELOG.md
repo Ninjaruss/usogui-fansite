@@ -2,10 +2,24 @@
 ## TODO:
 - Redis based rate limiting with caching middle ware for responses; add cache headers to specific routes
 - Add image upload for gambles, events, organizations, volumes (need to setup Backblaze + CDN)
-- Update landing page volume showcase to handle other volume covers (single and pairs) 
-- Quality control of admin page sorting and display of fields; improved ux if needed for all pages
 - Add proper README at the root of the project; add AGPL v3 license to allow people to copy but force them to open source as well
 - Donation linking to badges; badge system with perks
+- Fix searching for users page
+- Clean up ui for users and media pages
+
+## 2025-12-10
+### Changes
+- Further clean up using Opus 4.5 to QA the application
+- Resolved "property id should not exist" issue with admin dashboard (it was not trimming the additional fields received from react admin)
+- Adjusting search for users page
+- Updates to admin dashboard show/edit look
+
+## 2025-10-01
+### Changes
+- Multiple updates to ensure build goes through properly (eslint and typing)
+- Updated theming to user detail page
+- Landing page volume cover pop outs accept single and pair volume covers (still need to test)
+- 
 
 ## 2025-09-23
 ### Changes

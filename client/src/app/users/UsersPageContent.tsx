@@ -1,26 +1,35 @@
 'use client'
 
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import {
   Alert,
   Badge,
   Box,
   Card,
   Container,
-  Grid,
   Group,
   Loader,
   Pagination,
-  Progress,
+  Paper,
+  SimpleGrid,
   Stack,
   Text,
   TextInput,
   Title,
   rem,
-  useMantineTheme
+  useMantineTheme,
+  Select,
+  ActionIcon,
+  Tooltip
 } from '@mantine/core'
-import { getEntityThemeColor, semanticColors, textColors, backgroundStyles, getHeroStyles } from '../../lib/mantine-theme'
-import { Search, Users, BookOpen } from 'lucide-react'
+import { useDebouncedValue } from '@mantine/hooks'
+import {
+  getEntityThemeColor,
+  backgroundStyles,
+  getHeroStyles,
+  getCardStyles
+} from '../../lib/mantine-theme'
+import { Search, Users as UsersIcon, BookOpen, ArrowUpDown, TrendingUp, Calendar, X } from 'lucide-react'
 import Link from 'next/link'
 import { api } from '../../lib/api'
 import { usePaged } from '../../hooks/usePagedCache'
@@ -52,31 +61,48 @@ interface PublicUser {
   userProgress?: number
 }
 
+const RESULTS_PER_PAGE = 20
+const TOTAL_CHAPTERS = 539
+
+type SortOption = 'username' | 'newest' | 'progress' | 'guides'
+
 export default function UsersPageContent() {
   const theme = useMantineTheme()
+  const accentCommunity = theme.other?.usogui?.organization ?? theme.colors.purple?.[6] ?? '#7c3aed'
+
   const [users, setUsers] = useState<PublicUser[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
-  const [searchTerm, setSearchTerm] = useState('')
+  const [searchInput, setSearchInput] = useState('')
+  const [debouncedSearch] = useDebouncedValue(searchInput, 250)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [sortBy, setSortBy] = useState<SortOption>('newest')
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(0)
   const [total, setTotal] = useState(0)
 
-  const limit = 12
-
   const fetcher = useCallback(async (p: number) => {
-    const params: any = { page: p, limit }
-    if (searchTerm.trim()) params.username = searchTerm
+    const params: Record<string, string | number> = { page: p, limit: RESULTS_PER_PAGE }
+    if (searchQuery) params.username = searchQuery
     const resAny = await api.getPublicUsers(params)
-    return { data: resAny.data || [], total: resAny.total || 0, page: resAny.page || p, perPage: limit, totalPages: resAny.totalPages || Math.max(1, Math.ceil((resAny.total || 0) / limit)) }
-  }, [searchTerm, limit])
 
-  const { data: pageData, loading: pageLoading, error: pageError, prefetch, refresh } = usePaged<PublicUser>(
+    return {
+      data: resAny.data || [],
+      total: resAny.total || 0,
+      page: resAny.page || p,
+      perPage: RESULTS_PER_PAGE,
+      totalPages: resAny.totalPages || Math.max(1, Math.ceil((resAny.total || 0) / RESULTS_PER_PAGE))
+    }
+  }, [searchQuery])
+
+  const { data: pageData, loading: pageLoading, error: pageError } = usePaged<PublicUser>(
     'users',
     page,
     fetcher,
-    { username: searchTerm },
-    { ttlMs: pagedCacheConfig.lists.users.ttlMs, persist: pagedCacheConfig.defaults.persist, maxEntries: pagedCacheConfig.lists.users.maxEntries }
+    searchQuery ? { username: searchQuery } : {},
+    {
+      ttlMs: pagedCacheConfig.lists.users.ttlMs,
+      persist: pagedCacheConfig.defaults.persist,
+      maxEntries: pagedCacheConfig.lists.users.maxEntries
+    }
   )
 
   useEffect(() => {
@@ -85,186 +111,426 @@ export default function UsersPageContent() {
       setTotalPages(pageData.totalPages || 0)
       setTotal(pageData.total || 0)
     }
-    setLoading(!!pageLoading)
-  }, [pageData, pageLoading])
+  }, [pageData])
 
   useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      refresh(false).catch(() => {})
-    }, 300)
+    const normalized = debouncedSearch.trim()
+    if (searchQuery === normalized) {
+      return
+    }
 
-    return () => clearTimeout(timeoutId)
-  }, [page, searchTerm])
+    setSearchQuery(normalized)
+    setPage(1)
+  }, [debouncedSearch, searchQuery])
+
+  const sortedUsers = useMemo(() => {
+    const usersCopy = [...users]
+
+    switch (sortBy) {
+      case 'username':
+        return usersCopy.sort((a, b) => a.username.localeCompare(b.username))
+      case 'newest':
+        return usersCopy.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      case 'progress':
+        return usersCopy.sort((a, b) => (b.userProgress ?? 0) - (a.userProgress ?? 0))
+      case 'guides':
+        return usersCopy.sort((a, b) => (b.guidesCount ?? 0) - (a.guidesCount ?? 0))
+      default:
+        return usersCopy
+    }
+  }, [users, sortBy])
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(event.target.value)
-    setPage(1) // Reset to first page when searching
+    setSearchInput(event.target.value)
   }
+
+  const handleClearSearch = useCallback(() => {
+    setSearchInput('')
+    setSearchQuery('')
+    setPage(1)
+  }, [])
 
   const handlePageChange = (value: number) => {
     setPage(value)
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
   }
 
-  if (error) {
-    return (
-      <Container size="lg" py="xl">
-        <Alert style={{ color: getEntityThemeColor(theme, 'gamble') }} variant="light">
-          {error}
-        </Alert>
-      </Container>
-    )
-  }
+  const errorMessage = pageError
+    ? pageError instanceof Error
+      ? pageError.message
+      : String(pageError)
+    : ''
+
+  const hasSearch = searchQuery.length > 0
+  const isLoading = pageLoading && users.length === 0
+  const isRefreshing = pageLoading && users.length > 0
+
+  const rangeStart = (page - 1) * RESULTS_PER_PAGE + (users.length > 0 ? 1 : 0)
+  const rangeEnd = rangeStart + users.length - 1
+
+  const { averageProgressPercentage, topProgressChapter, guideAuthors, totalGuidesOnPage } = useMemo(() => {
+    if (sortedUsers.length === 0) {
+      return {
+        averageProgressPercentage: 0,
+        topProgressChapter: 0,
+        guideAuthors: 0,
+        totalGuidesOnPage: 0
+      }
+    }
+
+    const progressValues = sortedUsers
+      .map(user => user.userProgress ?? 0)
+      .filter(progress => progress > 0)
+
+    const averageProgress = progressValues.length > 0
+      ? Math.round(
+          progressValues.reduce((sum, chapter) => sum + (chapter / TOTAL_CHAPTERS) * 100, 0) /
+          progressValues.length
+        )
+      : 0
+
+    const topProgress = progressValues.length > 0 ? Math.max(...progressValues) : 0
+    const authors = sortedUsers.filter(user => (user.guidesCount ?? 0) > 0).length
+    const guideCount = sortedUsers.reduce((sum, user) => sum + (user.guidesCount ?? 0), 0)
+
+    return {
+      averageProgressPercentage: averageProgress,
+      topProgressChapter: topProgress,
+      guideAuthors: authors,
+      totalGuidesOnPage: guideCount
+    }
+  }, [sortedUsers])
 
   return (
     <Box style={{ backgroundColor: backgroundStyles.page(theme), minHeight: '100vh' }}>
-    <Container size="lg" py="xl">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <Stack ta="center" gap="sm" mb="xl">
-          <Users size={48} style={{ margin: '0 auto 16px' }} />
-          <Title order={2} component="h1">
-            Community
-          </Title>
-          <Text size="lg" c="dimmed">
-            Meet the L-file community members
-          </Text>
-        </Stack>
+        <Box p="md" style={getHeroStyles(theme, accentCommunity)}>
+          <Stack align="center" gap="sm">
+            <Box
+              style={{
+                background: `linear-gradient(135deg, ${accentCommunity}, ${accentCommunity}CC)`,
+                borderRadius: '50%',
+                width: rem(40),
+                height: rem(40),
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: `0 10px 30px ${accentCommunity}40`
+              }}
+            >
+              <UsersIcon size={20} color="#ffffff" />
+            </Box>
 
-        <TextInput
-          size="md"
-          placeholder="Search users by username..."
-          value={searchTerm}
-          onChange={handleSearch}
-          leftSection={<Search size={18} />}
-          mb="lg"
-        />
+            <Stack align="center" gap={4} maw={520} ta="center">
+              <Title order={1} size="1.5rem" fw={700} c="#ffffff">
+                Community Hub
+              </Title>
+              <Text size="sm" c="dimmed">
+                Discover fellow readers, track progress, and celebrate community contributions.
+              </Text>
+              <Badge
+                size="sm"
+                variant="light"
+                c={accentCommunity}
+                radius="sm"
+                style={{ backgroundColor: `${accentCommunity}20` }}
+              >
+                {total.toLocaleString()} member{total === 1 ? '' : 's'}
+              </Badge>
+            </Stack>
+          </Stack>
+        </Box>
 
-        {loading ? (
-          <Box style={{ display: 'flex', justifyContent: 'center', paddingBlock: theme.spacing.xl }}>
-            <Loader size="lg" />
-          </Box>
-        ) : (
-          <>
-            <Text size="sm" c="dimmed" mb="md">
-              {total} community members
-            </Text>
+        <Container size="xl" px="md" mb="md">
+          <Paper
+            withBorder
+            radius="md"
+            p="md"
+            style={{
+              background: backgroundStyles.card,
+              borderColor: `${accentCommunity}25`
+            }}
+          >
+            <Stack gap="md">
+              <Group gap="md" align="flex-end" wrap="wrap">
+                <Box style={{ flex: '1 1 auto', minWidth: '0', width: '100%' }} maw={{ sm: '100%', md: 'calc(100% - 250px)' }}>
+                  <TextInput
+                    size="md"
+                    radius="md"
+                    placeholder="Search by username..."
+                    value={searchInput}
+                    onChange={handleSearch}
+                    leftSection={<Search size={16} />}
+                    rightSection={
+                      searchInput && (
+                        <ActionIcon
+                          size="sm"
+                          variant="subtle"
+                          onClick={handleClearSearch}
+                          style={{ color: accentCommunity }}
+                        >
+                          <X size={14} />
+                        </ActionIcon>
+                      )
+                    }
+                    styles={{
+                      input: {
+                        backgroundColor: backgroundStyles.input,
+                        border: `1px solid ${accentCommunity}30`,
+                        color: '#ffffff',
+                        '&:focus': {
+                          borderColor: accentCommunity
+                        }
+                      }
+                    }}
+                  />
+                </Box>
 
-            <Grid gutter="xl">
-              {users.map((user) => {
-                const progressPercentage = Math.round(((user.userProgress ?? 0) / 539) * 100)
-                
-                return (
-                  <Grid.Col span={{ base: 12, xs: 6, sm: 4, md: 2.4, lg: 2.4 }} key={user.id}>
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ duration: 0.3 }}
-                      whileHover={{ y: -4, transition: { duration: 0.2 } }}
-                    >
-                      <Card
-                        className="gambling-card"
-                        shadow="lg"
-                        radius="md"
-                        withBorder
-                        style={{ height: '100%' }}
-                      >
-                        <Stack gap="md" align="center" p="xl" style={{ height: '100%' }}>
-                          <UserProfileImage
-                            user={user}
-                            size={60}
-                            showFallback={true}
-                            className="user-profile-avatar"
-                          />
+                <Select
+                  size="md"
+                  radius="md"
+                  placeholder="Sort by..."
+                  value={sortBy}
+                  onChange={(value) => setSortBy(value as SortOption)}
+                  leftSection={<ArrowUpDown size={16} />}
+                  data={[
+                    { value: 'newest', label: 'Newest Members' },
+                    { value: 'username', label: 'Username (A-Z)' },
+                    { value: 'progress', label: 'Reading Progress' },
+                    { value: 'guides', label: 'Most Guides' }
+                  ]}
+                  w={{ base: '100%', md: 220 }}
+                  styles={{
+                    input: {
+                      backgroundColor: backgroundStyles.input,
+                      border: `1px solid ${accentCommunity}30`,
+                      color: '#ffffff'
+                    },
+                    dropdown: {
+                      backgroundColor: backgroundStyles.card
+                    }
+                  }}
+                />
+              </Group>
 
-                          <Text
-                            component={Link}
-                            href={`/users/${user.id}`}
-                            fw={600}
-                            c={theme.other?.usogui?.red ?? theme.colors.red[5]}
-                            ta="center"
-                            style={{ textDecoration: 'none' }}
+              {total > 0 && (
+                <SimpleGrid cols={{ base: 2, sm: 2, md: 4 }} spacing="xs">
+                  <Paper p="xs" radius="sm" style={{ background: `${accentCommunity}10`, border: `1px solid ${accentCommunity}20` }}>
+                    <Group gap={6} wrap="nowrap">
+                      <UsersIcon size={14} color={accentCommunity} style={{ flexShrink: 0 }} />
+                      <Stack gap={0}>
+                        <Text size="lg" fw={700} lh={1.2}>{total.toLocaleString()}</Text>
+                        <Text size="xs" c="dimmed" lh={1.2}>Members</Text>
+                      </Stack>
+                    </Group>
+                  </Paper>
+
+                  <Paper p="xs" radius="sm" style={{ background: `${accentCommunity}10`, border: `1px solid ${accentCommunity}20` }}>
+                    <Group gap={6} wrap="nowrap">
+                      <BookOpen size={14} color={accentCommunity} style={{ flexShrink: 0 }} />
+                      <Stack gap={0}>
+                        <Text size="lg" fw={700} lh={1.2}>{guideAuthors}</Text>
+                        <Text size="xs" c="dimmed" lh={1.2}>Guide Authors</Text>
+                      </Stack>
+                    </Group>
+                  </Paper>
+
+                  <Paper p="xs" radius="sm" style={{ background: `${accentCommunity}10`, border: `1px solid ${accentCommunity}20` }}>
+                    <Group gap={6} wrap="nowrap">
+                      <TrendingUp size={14} color={accentCommunity} style={{ flexShrink: 0 }} />
+                      <Stack gap={0}>
+                        <Text size="lg" fw={700} lh={1.2}>{averageProgressPercentage}%</Text>
+                        <Text size="xs" c="dimmed" lh={1.2}>Avg Progress</Text>
+                      </Stack>
+                    </Group>
+                  </Paper>
+
+                  <Paper p="xs" radius="sm" style={{ background: `${accentCommunity}10`, border: `1px solid ${accentCommunity}20` }}>
+                    <Group gap={6} wrap="nowrap">
+                      <Calendar size={14} color={accentCommunity} style={{ flexShrink: 0 }} />
+                      <Stack gap={0}>
+                        <Text size="lg" fw={700} lh={1.2}>{topProgressChapter ? `Ch.${topProgressChapter}` : 'N/A'}</Text>
+                        <Text size="xs" c="dimmed" lh={1.2}>Top Chapter</Text>
+                      </Stack>
+                    </Group>
+                  </Paper>
+                </SimpleGrid>
+              )}
+            </Stack>
+          </Paper>
+        </Container>
+
+        {errorMessage && (
+          <Container size="xl" px="md" pb="xl">
+            <Alert
+              color={accentCommunity}
+              variant="light"
+              radius="lg"
+              title="Unable to load community members"
+            >
+              {errorMessage}
+            </Alert>
+          </Container>
+        )}
+
+        {!errorMessage && (
+          <Container size="xl" px="md" pb="xl">
+            {isLoading ? (
+              <Group justify="center" py="xl">
+                <Loader size="lg" color={accentCommunity} />
+              </Group>
+            ) : (
+              <>
+                {users.length === 0 ? (
+                  <Stack align="center" gap="sm" py="xl">
+                    <UsersIcon size={48} color={theme.colors.dark?.[3] ?? '#4b4d52'} />
+                    <Title order={4} c="dimmed">
+                      {hasSearch ? 'No users match your search' : 'No community members yet'}
+                    </Title>
+                    <Text size="sm" c="dimmed">
+                      Try adjusting your search or check back soon.
+                    </Text>
+                  </Stack>
+                ) : (
+                  <Stack gap="md">
+                    <Group justify="space-between" gap={6} align="center" wrap="wrap">
+                      <Text size="sm" c="dimmed">
+                        Showing {rangeStart.toLocaleString()}–{rangeEnd.toLocaleString()} of {total.toLocaleString()} members
+                      </Text>
+                      {isRefreshing && (
+                        <Group gap={6} align="center">
+                          <Loader size="xs" color={accentCommunity} />
+                          <Text size="xs" c="dimmed">Updating…</Text>
+                        </Group>
+                      )}
+                    </Group>
+
+                    <SimpleGrid cols={{ base: 1, xs: 2, sm: 2, md: 3, lg: 4, xl: 5 }} spacing="sm">
+                      {sortedUsers.map((user, index) => {
+                        const progressPercentage = Math.round(((user.userProgress ?? 0) / TOTAL_CHAPTERS) * 100)
+                        return (
+                          <motion.div
+                            key={user.id}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.3, delay: index * 0.02 }}
+                            whileHover={{ y: -3, transition: { duration: 0.15 } }}
                           >
-                            {user.username}
-                          </Text>
-
-                          {/* User Role Display with Custom Roles */}
-                          <UserRoleDisplay
-                            userRole={user.role as 'admin' | 'moderator' | 'user'}
-                            customRole={user.customRole}
-                            size="small"
-                            spacing={0.5}
-                          />
-
-                          {/* User Badges */}
-                          <UserBadges userId={user.id} size="sm" maxDisplay={4} />
-
-                          <Stack gap={6} w="100%">
-                            <Group justify="space-between" gap={theme.spacing.xs}>
-                              <Text size="xs" c="dimmed">
-                                Reading Progress
-                              </Text>
-                              <Text size="xs" c="dimmed">
-                                 Ch. {user.userProgress ?? 0}
-                              </Text>
-                            </Group>
-                            <Progress value={progressPercentage} size="sm" radius="md" style={{ color: getEntityThemeColor(theme, 'gamble') }} />
-                            <Text size="xs" c="dimmed" ta="center">
-                              {progressPercentage}% complete
-                            </Text>
-                          </Stack>
-
-                          {user.guidesCount !== undefined && user.guidesCount > 0 && (
-                            <Box
+                            <Card
+                              component={Link}
+                              href={`/users/${user.id}`}
+                              shadow="sm"
+                              radius="md"
+                              withBorder
+                              padding="md"
                               style={{
-                                marginTop: 'auto',
-                                paddingTop: theme.spacing.sm,
-                                borderTop: `1px solid rgba(255,255,255,0.12)`,
-                                width: '100%',
-                                display: 'flex',
-                                justifyContent: 'center'
+                                ...getCardStyles(theme, accentCommunity),
+                                height: '100%',
+                                textDecoration: 'none',
+                                cursor: 'pointer'
                               }}
                             >
-                              <Badge
-                                variant="outline"
-                                style={{ color: getEntityThemeColor(theme, 'media') }}
-                                leftSection={<BookOpen size={14} />}
-                              >
-                                {user.guidesCount} guide{user.guidesCount !== 1 ? 's' : ''}
-                              </Badge>
-                            </Box>
-                          )}
+                              <Stack gap="xs" align="center" style={{ height: '100%' }}>
+                                <UserProfileImage
+                                  user={user}
+                                  size={56}
+                                  showFallback
+                                  className="user-profile-avatar"
+                                />
 
-                          <Text size="xs" c="dimmed" ta="center">
-                            Joined {new Date(user.createdAt).toLocaleDateString()}
-                          </Text>
-                        </Stack>
-                      </Card>
-                    </motion.div>
-                  </Grid.Col>
-                )
-              })}
-            </Grid>
+                                <Stack gap={2} align="center" w="100%">
+                                  <Text
+                                    fw={600}
+                                    c={accentCommunity}
+                                    ta="center"
+                                    size="sm"
+                                    lineClamp={1}
+                                    title={user.username}
+                                  >
+                                    {user.username}
+                                  </Text>
+                                  <UserRoleDisplay
+                                    userRole={user.role as 'admin' | 'moderator' | 'user'}
+                                    customRole={user.customRole}
+                                    size="small"
+                                    spacing={0.5}
+                                  />
+                                </Stack>
 
-            {totalPages > 1 && (
-              <Box style={{ display: 'flex', justifyContent: 'center', marginTop: theme.spacing.xl }}>
-                <Pagination total={totalPages} value={page} onChange={handlePageChange} size="lg" style={{ color: getEntityThemeColor(theme, 'gamble') }} />
-              </Box>
+                                <UserBadges userId={user.id} size="sm" maxDisplay={3} />
+
+                                <Stack gap={3} w="100%" mt="xs">
+                                  <Group justify="space-between" gap="xs">
+                                    <Text size="xs" c="dimmed">Progress</Text>
+                                    <Text size="xs" fw={500}>{progressPercentage}%</Text>
+                                  </Group>
+                                  <Box w="100%" style={{ backgroundColor: `${accentCommunity}15`, borderRadius: theme.radius.sm, height: rem(4) }}>
+                                    <Box
+                                      style={{
+                                        width: `${Math.min(progressPercentage, 100)}%`,
+                                        height: '100%',
+                                        borderRadius: theme.radius.sm,
+                                        background: `linear-gradient(90deg, ${accentCommunity}, ${getEntityThemeColor(theme, 'guide')})`
+                                      }}
+                                    />
+                                  </Box>
+                                </Stack>
+
+                                <Group gap="xs" justify="space-between" w="100%" mt="auto">
+                                  {user.guidesCount !== undefined && user.guidesCount > 0 ? (
+                                    <Badge
+                                      variant="light"
+                                      radius="sm"
+                                      size="xs"
+                                      c={getEntityThemeColor(theme, 'guide')}
+                                      style={{
+                                        backgroundColor: `${getEntityThemeColor(theme, 'guide')}15`
+                                      }}
+                                    >
+                                      <Group gap={4}>
+                                        <BookOpen size={10} />
+                                        <span>{user.guidesCount}</span>
+                                      </Group>
+                                    </Badge>
+                                  ) : (
+                                    <Box />
+                                  )}
+
+                                  <Text size="xs" c="dimmed" ta="right">
+                                    Ch. {user.userProgress ?? 0}
+                                  </Text>
+                                </Group>
+                              </Stack>
+                            </Card>
+                          </motion.div>
+                        )
+                      })}
+                    </SimpleGrid>
+
+                    {totalPages > 1 && (
+                      <Group justify="center">
+                        <Pagination
+                          total={totalPages}
+                          value={page}
+                          onChange={handlePageChange}
+                          color="grape"
+                          radius="lg"
+                        />
+                      </Group>
+                    )}
+                  </Stack>
+                )}
+              </>
             )}
-
-            {users.length === 0 && !loading && (
-              <Stack align="center" gap="sm" py="xl">
-                <Title order={4} c="dimmed">
-                  No users found
-                </Title>
-              </Stack>
-            )}
-          </>
+          </Container>
         )}
       </motion.div>
-    </Container>
     </Box>
   )
 }

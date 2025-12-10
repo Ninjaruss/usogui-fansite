@@ -22,11 +22,28 @@ async function bootstrap() {
   app.use(helmet());
   // Cookie parsing for refresh token cookie
   app.use(cookieParser());
+
+  const defaultDevOrigins = ['http://localhost:3000', 'http://localhost:3002'];
+  const rawOriginList =
+    process.env.CORS_ALLOWED_ORIGINS || process.env.FRONTEND_URL || '';
+  const configuredOrigins = rawOriginList
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+
+  const corsOrigins =
+    process.env.NODE_ENV === 'production'
+      ? configuredOrigins
+      : Array.from(new Set([...defaultDevOrigins, ...configuredOrigins]));
+
+  if (process.env.NODE_ENV === 'production' && corsOrigins.length === 0) {
+    console.warn(
+      '[CORS] No origins configured for production. Set CORS_ALLOWED_ORIGINS or FRONTEND_URL.',
+    );
+  }
+
   app.enableCors({
-    origin:
-      process.env.NODE_ENV === 'production'
-        ? ['https://your-frontend-domain.com']
-        : ['http://localhost:3000', 'http://localhost:3002'],
+    origin: corsOrigins.length > 0 ? corsOrigins : true,
     credentials: true,
     // Ensure X-Total-Count is readable by browser clients (used for react-admin pagination)
     exposedHeaders: ['X-Total-Count'],

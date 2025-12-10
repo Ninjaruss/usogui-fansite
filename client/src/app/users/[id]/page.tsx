@@ -1,8 +1,5 @@
 import React from 'react'
-import { Alert, Button, Container, Stack } from '@mantine/core'
-import { getEntityThemeColor, semanticColors, textColors } from '../../../lib/mantine-theme'
-import { ArrowLeft } from 'lucide-react'
-import Link from 'next/link'
+import UserNotFound from './UserNotFound'
 import { Metadata } from 'next'
 import { api } from '../../../lib/api'
 import UserProfileClient from './UserProfileClient'
@@ -100,24 +97,7 @@ export default async function UserDetailPage({ params }: PageProps) {
   const user = await getUserData(id)
 
   if (!user) {
-    return (
-      <Container size="lg" py="xl">
-        <Stack gap="md">
-          <Alert color="red" radius="md">
-            User not found
-          </Alert>
-          <Button
-            component={Link}
-            href="/users"
-            variant="subtle"
-            color="gray"
-            leftSection={<ArrowLeft size={18} />}
-          >
-            Back to Users
-          </Button>
-        </Stack>
-      </Container>
-    )
+    return <UserNotFound />
   }
 
   return <UserProfileClient initialUser={user} />

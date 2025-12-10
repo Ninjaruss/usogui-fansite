@@ -69,7 +69,10 @@ export default async function ArcsPage({ searchParams }: ArcsPageProps) {
       if (charactersResponse.data.length > 0) {
         const characterId = charactersResponse.data[0].id
         const characterArcsResponse = await api.getCharacterArcs(characterId)
-        const allArcs: Arc[] = characterArcsResponse.data || []
+        const allArcs = (characterArcsResponse.data || []).map((arc: any) => ({
+          ...arc,
+          description: arc.description || ''
+        })) as Arc[]
         const startIndex = (page - 1) * 12
         const paginatedArcs = allArcs.slice(startIndex, startIndex + 12)
         response = {

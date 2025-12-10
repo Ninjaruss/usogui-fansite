@@ -357,26 +357,79 @@ const cleanUpdateData = (resource: string, data: Record<string, unknown>) => {
     const allowedFields = [
       'text', 'chapterNumber', 'description', 'pageNumber', 'characterId'
     ]
-    
+
     const quoteCleaned: Record<string, unknown> = {}
     allowedFields.forEach(field => {
       if (cleaned[field] !== undefined) {
         quoteCleaned[field] = cleaned[field]
       }
     })
-    
+
     // Remove read-only relationship objects that shouldn't be sent in updates
     delete quoteCleaned.character
     delete quoteCleaned.submittedBy
-    
+
     // If character object exists but characterId doesn't, extract characterId
     if (data.character && (data.character as Record<string, unknown>).id && !quoteCleaned.characterId) {
       quoteCleaned.characterId = (data.character as Record<string, unknown>).id
     }
-    
+
     return quoteCleaned
   }
-  
+
+  if (resource === 'arcs') {
+    // Keep only the fields that are allowed in the CreateArcDto/UpdateArcDto
+    const allowedFields = [
+      'name', 'description', 'order', 'startChapter', 'endChapter'
+    ]
+
+    const arcCleaned: Record<string, unknown> = {}
+    allowedFields.forEach(field => {
+      if (cleaned[field] !== undefined) {
+        arcCleaned[field] = cleaned[field]
+      }
+    })
+
+    return arcCleaned
+  }
+
+  if (resource === 'organizations') {
+    // Keep only the fields that are allowed in the CreateOrganizationDto/UpdateOrganizationDto
+    const allowedFields = [
+      'name', 'description'
+    ]
+
+    const organizationCleaned: Record<string, unknown> = {}
+    allowedFields.forEach(field => {
+      if (cleaned[field] !== undefined) {
+        organizationCleaned[field] = cleaned[field]
+      }
+    })
+
+    return organizationCleaned
+  }
+
+  if (resource === 'tags') {
+    // Keep only the fields that are allowed in the CreateTagDto/UpdateTagDto
+    const allowedFields = [
+      'name', 'description'
+    ]
+
+    const tagCleaned: Record<string, unknown> = {}
+    allowedFields.forEach(field => {
+      if (cleaned[field] !== undefined) {
+        tagCleaned[field] = cleaned[field]
+      }
+    })
+
+    return tagCleaned
+  }
+
+  // For all other resources, remove the id field as it should never be sent in update requests
+  delete cleaned.id
+  delete cleaned.createdAt
+  delete cleaned.updatedAt
+
   return cleaned
 }
 

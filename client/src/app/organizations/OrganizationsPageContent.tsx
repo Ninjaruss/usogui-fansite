@@ -305,10 +305,9 @@ export default function OrganizationsPageContent({
               <Badge
                 size="md"
                 variant="light"
-                c={getEntityThemeColor(theme, 'organization')}
+                c={accentOrganization}
                 radius="xl"
                 mt="xs"
-                style={{ backgroundColor: `${getEntityThemeColor(theme, 'organization')}20`, borderColor: getEntityThemeColor(theme, 'organization') }}
               >
                 {searchQuery ? `${total} of ${allOrganizations.length}` : `${allOrganizations.length}`} organization{(searchQuery ? total : allOrganizations.length) !== 1 ? 's' : ''} {searchQuery ? 'found' : 'available'}
               </Badge>
@@ -614,10 +613,10 @@ export default function OrganizationsPageContent({
                 {hoveredOrganization.description && (
                   <Text
                     size="sm"
-                    style={{ color: theme.colors.gray[6] }}
                     ta="center"
                     lineClamp={3}
                     style={{
+                      color: theme.colors.gray[6],
                       lineHeight: 1.4,
                       maxHeight: rem(60)
                     }}

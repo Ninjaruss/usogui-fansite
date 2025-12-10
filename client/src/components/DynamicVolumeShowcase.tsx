@@ -5,7 +5,7 @@ import { motion, useScroll, useTransform, useMotionValue, useMotionTemplate } fr
 import Image from 'next/image'
 import React, { useRef, useState, useCallback } from 'react'
 import { AlertTriangle, Image as ImageIcon } from 'lucide-react'
-import { createShowcaseAnimationSet, getEntranceAnimation, getPopoutRotation } from '../lib/showcase-animations'
+import { useShowcaseAnimationSet, getEntranceAnimation, getPopoutRotation } from '../lib/showcase-animations'
 
 import type { VolumeShowcaseItem, ShowcaseAnimations } from '../lib/showcase-config'
 
@@ -178,7 +178,7 @@ export function DynamicVolumeShowcase({
     const baseDelay = index * (animConfig.delayOffset || 0.2)
 
     // Create animation set using utility functions
-    const animationSet = createShowcaseAnimationSet(
+    const animationSet = useShowcaseAnimationSet(
       scrollYProgress,
       time,
       animConfig,

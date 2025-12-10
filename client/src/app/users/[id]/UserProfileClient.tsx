@@ -11,7 +11,6 @@ import {
   Container,
   Divider,
   Group,
-  Loader,
   Progress,
   SimpleGrid,
   Stack,
@@ -20,8 +19,8 @@ import {
   rem,
   useMantineTheme
 } from '@mantine/core'
-import { getEntityThemeColor, semanticColors, textColors, backgroundStyles } from '../../../lib/mantine-theme'
-import { ArrowLeft, FileText, Quote, Dices, Calendar, BookOpen, Camera } from 'lucide-react'
+import { getAlphaColor, getEntityThemeColor, headerColors, textColors } from '../../../lib/mantine-theme'
+import { ArrowLeft, FileText, Quote, Dices, BookOpen, Camera } from 'lucide-react'
 import Link from 'next/link'
 import { motion } from 'motion/react'
 import { api } from '../../../lib/api'
@@ -99,92 +98,101 @@ export default function UserProfileClient({ initialUser }: UserProfileClientProp
 
   useEffect(() => {
     const fetchUserData = async () => {
+      setDataLoading(true)
+
+      const baseStats = {
+        guidesWritten: user.userStats?.guidesWritten ?? 0,
+        mediaSubmitted: user.userStats?.mediaSubmitted ?? 0,
+        likesReceived: user.userStats?.likesReceived ?? 0
+      }
+
       try {
-        setDataLoading(true)
+        const guidesResponse = await api.getGuides({
+          limit: 100,
+          status: 'approved',
+          authorId: user.id.toString()
+        })
 
-        if (user.userStats) {
-          setUserStats(user.userStats)
-        } else {
-          try {
-            const guidesResponse = await api.getGuides({ limit: 100, status: 'approved' })
-            const userGuides = guidesResponse.data?.filter((guide) => guide.author?.id === user.id) || []
-            setGuides(userGuides)
-            setUserStats({
-              guidesWritten: userGuides.length,
-              mediaSubmitted: 0,
-              likesReceived: userGuides.reduce((total, guide) => total + (guide.likeCount || 0), 0)
-            })
-          } catch (guidesError) {
-            console.log('Could not fetch user guides:', guidesError)
-            setUserStats({ guidesWritten: 0, mediaSubmitted: 0, likesReceived: 0 })
-          }
-        }
+        const userGuides = guidesResponse.data ?? []
+        setGuides(userGuides.slice(0, 10))
 
-        try {
-          const guidesResponse = await api.getGuides({ limit: 10, status: 'approved' })
-          const userGuides = guidesResponse.data?.filter((guide) => guide.author?.id === user.id) || []
-          setGuides(userGuides)
-        } catch (guidesError) {
-          console.log('Could not fetch user guides for display:', guidesError)
-        }
+        const aggregateLikes = userGuides.reduce((totalLikes, guide) => totalLikes + (guide.likeCount || 0), 0)
+        const totalGuides = typeof guidesResponse.total === 'number' ? guidesResponse.total : userGuides.length
 
-        if (user.favoriteQuote) {
-          setFavoriteQuote(user.favoriteQuote)
-        }
-
-        if (user.favoriteGamble) {
-          setFavoriteGamble(user.favoriteGamble)
-        }
-      } catch (fetchError: unknown) {
-        console.error('Error fetching additional user data:', fetchError)
+        setUserStats({
+          guidesWritten: Math.max(totalGuides, baseStats.guidesWritten),
+          mediaSubmitted: baseStats.mediaSubmitted,
+          likesReceived: Math.max(aggregateLikes, baseStats.likesReceived)
+        })
+      } catch (guidesError) {
+        console.log('Could not fetch user guides:', guidesError)
+        setGuides([])
+        setUserStats(baseStats)
       } finally {
         setDataLoading(false)
       }
     }
 
+    setFavoriteQuote(user.favoriteQuote ?? null)
+    setFavoriteGamble(user.favoriteGamble ?? null)
+
     fetchUserData()
   }, [user.id, user.userStats, user.favoriteQuote, user.favoriteGamble])
 
-  const accentRed = getEntityThemeColor(theme, 'character')
-  const accentPurple = getEntityThemeColor(theme, 'gamble')
-  const accentBlue = getEntityThemeColor(theme, 'guide')
-  const accentGreen = getEntityThemeColor(theme, 'event')
+  const characterColor = getEntityThemeColor(theme, 'character')
+  const gambleColor = getEntityThemeColor(theme, 'gamble')
+  const guideColor = getEntityThemeColor(theme, 'guide')
+  const mediaColor = getEntityThemeColor(theme, 'media')
+  const quoteColor = getEntityThemeColor(theme, 'quote')
+  const eventColor = getEntityThemeColor(theme, 'event')
+  const arcColor = getEntityThemeColor(theme, 'arc')
+  const accentColor = theme.colors.dark?.[6] ?? '#2c2e33'
+  const accentBorderColor = getAlphaColor(accentColor, 0.4)
+  const accentHoverColor = getAlphaColor(accentColor, 0.18)
+  const accentTextColor = theme.colors.gray?.[0] ?? '#ffffff'
+  const cardBaseBackground = theme.colors.dark?.[7] ?? '#070707'
 
   const stats = [
     {
       label: 'Guides Written',
       value: userStats ? userStats.guidesWritten : dataLoading ? '…' : '0',
-      icon: <FileText size={22} color={accentRed} />,
-      highlight: 'rgba(225, 29, 72, 0.08)',
-      color: accentRed
+      icon: <FileText size={22} color={guideColor} />,
+      color: guideColor
     },
     {
       label: 'Media Submitted',
       value: userStats ? userStats.mediaSubmitted : dataLoading ? '…' : '0',
-      icon: <Camera size={22} color={accentPurple} />,
-      highlight: 'rgba(124, 58, 237, 0.08)',
-      color: accentPurple
+      icon: <Camera size={22} color={mediaColor} />,
+      color: mediaColor
     },
     {
       label: 'Likes Received',
       value: userStats ? userStats.likesReceived : dataLoading ? '…' : '0',
-      icon: <BookOpen size={22} color={accentBlue} />,
-      highlight: 'rgba(25, 118, 210, 0.08)',
-      color: accentBlue
+      icon: <BookOpen size={22} color={eventColor} />,
+      color: eventColor
     }
   ]
 
   const readingProgress = Math.min(Math.round((user.userProgress / 539) * 100), 100)
 
   return (
-    <Box style={{ backgroundColor: backgroundStyles.page(theme), minHeight: '100vh' }}>
     <Container size="lg" py="xl">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
         <Button
           component={Link}
           href="/users"
-          variant="light"
-          style={{ color: accentPurple }}
+          variant="outline"
+          radius="md"
+          styles={{
+            root: {
+              borderColor: accentBorderColor,
+              color: accentTextColor,
+              backgroundColor: getAlphaColor(accentColor, 0.1),
+              '&:hover': {
+                backgroundColor: accentHoverColor
+              }
+            }
+          }}
           leftSection={<ArrowLeft size={16} />}
           mb="xl"
         >
@@ -195,12 +203,15 @@ export default function UserProfileClient({ initialUser }: UserProfileClientProp
         <Card
           className="gambling-card"
           withBorder
-          radius="md"
-          shadow="lg"
+          radius="lg"
+          shadow="xl"
           p="xl"
           mb="xl"
           style={{
-            background: 'linear-gradient(135deg, rgba(124, 58, 237, 0.08) 0%, rgba(14, 116, 144, 0.05) 100%)'
+            background: `linear-gradient(135deg, ${getAlphaColor(accentColor, 0.18)}, ${getAlphaColor(accentColor, 0.05)}), ${cardBaseBackground}`,
+            border: `1px solid ${accentBorderColor}`,
+            boxShadow: `0 20px 45px ${getAlphaColor(accentColor, 0.12)}`,
+            color: theme.colors.gray?.[0] ?? '#ffffff'
           }}
         >
           <Stack gap="xl">
@@ -217,24 +228,20 @@ export default function UserProfileClient({ initialUser }: UserProfileClientProp
                     <Title
                       order={1}
                       size="h2"
-                      style={{
-                        fontWeight: 700,
-                        backgroundImage: `linear-gradient(135deg, ${theme.white} 0%, ${accentRed} 100%)`,
-                        WebkitBackgroundClip: 'text',
-                        color: 'transparent'
-                      }}
+                      c={headerColors.h1}
+                      fw={800}
                     >
                       {user.username}
                     </Title>
                     <UserRoleDisplay
                       userRole={user.role as 'admin' | 'moderator' | 'user'}
                       customRole={user.customRole}
-                      size="large"
+                      size="medium"
                       spacing={2}
                     />
                   </Group>
 
-                  <Text size="sm" c="dimmed">
+                  <Text size="sm" c={textColors.tertiary}>
                     Joined {user.createdAt
                       ? new Date(user.createdAt).toLocaleDateString('en-US', {
                           month: 'long',
@@ -252,13 +259,13 @@ export default function UserProfileClient({ initialUser }: UserProfileClientProp
                   {stats.map((stat) => (
                     <Card
                       key={stat.label}
-                      shadow="sm"
+                      shadow="md"
                       radius="md"
                       padding="md"
                       withBorder
-                      style={{ 
-                        backgroundColor: stat.highlight, 
-                        borderColor: 'transparent',
+                      style={{
+                        background: getAlphaColor(stat.color, 0.12),
+                        border: `1px solid ${getAlphaColor(stat.color, 0.35)}`,
                         textAlign: 'center'
                       }}
                     >
@@ -268,7 +275,7 @@ export default function UserProfileClient({ initialUser }: UserProfileClientProp
                           <Text size="xl" fw={700} c={stat.color}>
                             {stat.value}
                           </Text>
-                          <Text size="xs" c="dimmed" fw={500}>
+                          <Text size="xs" c={textColors.tertiary} fw={500}>
                             {stat.label}
                           </Text>
                         </Stack>
@@ -279,13 +286,22 @@ export default function UserProfileClient({ initialUser }: UserProfileClientProp
               </Stack>
             </Group>
 
-            <Divider />
+            <Divider color={getAlphaColor(accentColor, 0.25)} />
 
             {/* Reading Progress */}
-            <Card withBorder radius="md" padding="lg" shadow="sm">
+            <Card
+              withBorder
+              radius="lg"
+              padding="lg"
+              shadow="lg"
+              style={{
+                background: getAlphaColor(arcColor, 0.12),
+                border: `1px solid ${getAlphaColor(arcColor, 0.35)}`
+              }}
+            >
               <Stack gap="md">
                 <Group gap="sm" align="center">
-                  <BookOpen size={24} color={accentBlue} />
+                  <BookOpen size={24} color={arcColor} />
                   <Text fw={600} size="lg">
                     Reading Progress
                   </Text>
@@ -293,7 +309,7 @@ export default function UserProfileClient({ initialUser }: UserProfileClientProp
 
                 <Stack gap="sm">
                   <Group justify="space-between" align="center">
-                    <Text size="sm" c="dimmed">
+                    <Text size="sm" c={textColors.tertiary}>
                       Current Chapter
                     </Text>
                     <Text fw={600}>
@@ -303,7 +319,7 @@ export default function UserProfileClient({ initialUser }: UserProfileClientProp
 
                   <Progress
                     value={readingProgress}
-                    style={{ color: accentBlue }}
+                    color={arcColor}
                     radius="md"
                     size="lg"
                     striped
@@ -311,13 +327,13 @@ export default function UserProfileClient({ initialUser }: UserProfileClientProp
                   />
 
                   <Group justify="space-between" align="center">
-                    <Text size="xs" c="dimmed">
+                    <Text size="xs" c={textColors.tertiary}>
                       0%
                     </Text>
-                    <Text size="sm" fw={600} c={accentBlue}>
+                    <Text size="sm" fw={600} c={arcColor}>
                       {readingProgress}%
                     </Text>
-                    <Text size="xs" c="dimmed">
+                    <Text size="xs" c={textColors.tertiary}>
                       100%
                     </Text>
                   </Group>
@@ -328,22 +344,31 @@ export default function UserProfileClient({ initialUser }: UserProfileClientProp
             {/* Favorites Section */}
             {(favoriteQuote || favoriteGamble) && (
               <>
-                <Divider />
+                <Divider color={getAlphaColor(accentColor, 0.25)} />
                 <Stack gap="lg">
                   <Group gap="sm" align="center">
-                    <Text fw={700} size="xl" c={accentRed}>
+                    <Text fw={700} size="xl" c={characterColor}>
                       ⭐ Favorites
                     </Text>
                   </Group>
                   
                   <SimpleGrid cols={{ base: 1, sm: favoriteQuote && favoriteGamble ? 2 : 1 }} spacing="lg">
                     {favoriteQuote && (
-                      <Card withBorder radius="md" padding="lg" shadow="sm" bg="rgba(255, 193, 7, 0.05)">
+                      <Card
+                        withBorder
+                        radius="md"
+                        padding="lg"
+                        shadow="sm"
+                        style={{
+                          background: getAlphaColor(quoteColor, 0.12),
+                          border: `1px solid ${getAlphaColor(quoteColor, 0.35)}`
+                        }}
+                      >
                         <Stack gap="md">
                           <Group gap="sm" justify="space-between" align="center">
                             <Group gap="sm">
-                              <Quote size={20} color={getEntityThemeColor(theme, 'quote')} />
-                              <Text fw={600} c={getEntityThemeColor(theme, 'quote')}>
+                              <Quote size={20} color={quoteColor} />
+                              <Text fw={600} c={quoteColor}>
                                 Favorite Quote
                               </Text>
                             </Group>
@@ -351,7 +376,7 @@ export default function UserProfileClient({ initialUser }: UserProfileClientProp
                               component={Link}
                               href={`/quotes/${favoriteQuote.id}`}
                               size="xs"
-                              c={getEntityThemeColor(theme, 'quote')}
+                              c={quoteColor}
                             >
                               View Quote
                             </Anchor>
@@ -360,9 +385,9 @@ export default function UserProfileClient({ initialUser }: UserProfileClientProp
                           <Box
                             p="md"
                             style={{
-                              backgroundColor: 'rgba(255, 255, 255, 0.5)',
+                              backgroundColor: getAlphaColor('#ffffff', 0.08),
                               borderRadius: rem(8),
-                              borderLeft: `4px solid ${getEntityThemeColor(theme, 'quote')}`
+                              borderLeft: `4px solid ${quoteColor}`
                             }}
                           >
                             <Text fs="italic" size="sm" style={{ lineHeight: 1.6 }}>
@@ -371,11 +396,27 @@ export default function UserProfileClient({ initialUser }: UserProfileClientProp
                           </Box>
                           
                           <Group gap="xs" wrap="wrap">
-                            <Badge variant="outline" color="yellow" size="sm">
+                            <Badge
+                              variant="light"
+                              size="sm"
+                              style={{
+                                background: getAlphaColor(quoteColor, 0.2),
+                                border: `1px solid ${getAlphaColor(quoteColor, 0.4)}`,
+                                color: quoteColor
+                              }}
+                            >
                               {favoriteQuote.character?.name || 'Unknown'}
                             </Badge>
                             {favoriteQuote.chapterNumber && (
-                              <Badge variant="outline" color="blue" size="sm">
+                              <Badge
+                                variant="light"
+                                size="sm"
+                                style={{
+                                  background: getAlphaColor(characterColor, 0.2),
+                                  border: `1px solid ${getAlphaColor(characterColor, 0.4)}`,
+                                  color: characterColor
+                                }}
+                              >
                                 Chapter {favoriteQuote.chapterNumber}
                               </Badge>
                             )}
@@ -385,12 +426,21 @@ export default function UserProfileClient({ initialUser }: UserProfileClientProp
                     )}
                     
                     {favoriteGamble && (
-                      <Card withBorder radius="md" padding="lg" shadow="sm" bg="rgba(124, 58, 237, 0.05)">
+                      <Card
+                        withBorder
+                        radius="md"
+                        padding="lg"
+                        shadow="sm"
+                        style={{
+                          background: getAlphaColor(gambleColor, 0.12),
+                          border: `1px solid ${getAlphaColor(gambleColor, 0.35)}`
+                        }}
+                      >
                         <Stack gap="md">
                           <Group gap="sm" justify="space-between" align="center">
                             <Group gap="sm">
-                              <Dices size={20} color={accentPurple} />
-                              <Text fw={600} c={accentPurple}>
+                              <Dices size={20} color={gambleColor} />
+                              <Text fw={600} c={gambleColor}>
                                 Favorite Gamble
                               </Text>
                             </Group>
@@ -398,7 +448,7 @@ export default function UserProfileClient({ initialUser }: UserProfileClientProp
                               component={Link}
                               href={`/gambles/${favoriteGamble.id}`}
                               size="xs"
-                              c={accentPurple}
+                              c={gambleColor}
                             >
                               View Gamble
                             </Anchor>
@@ -409,7 +459,7 @@ export default function UserProfileClient({ initialUser }: UserProfileClientProp
                               radius="lg" 
                               size="xl" 
                               variant="gradient" 
-                              gradient={{ from: 'violet', to: 'purple' }}
+                              gradient={{ from: getAlphaColor(gambleColor, 0.8), to: gambleColor }}
                               style={{ fontWeight: 700, fontSize: rem(16), padding: rem(12) }}
                             >
                               {favoriteGamble.name}
@@ -417,7 +467,7 @@ export default function UserProfileClient({ initialUser }: UserProfileClientProp
                           </Box>
                           
                           {favoriteGamble.rules && (
-                            <Text size="xs" c="dimmed" style={{ textAlign: 'center' }}>
+                            <Text size="xs" c={textColors.tertiary} style={{ textAlign: 'center' }}>
                               {favoriteGamble.rules.length > 100 
                                 ? `${favoriteGamble.rules.substring(0, 100)}...`
                                 : favoriteGamble.rules}
@@ -435,15 +485,34 @@ export default function UserProfileClient({ initialUser }: UserProfileClientProp
 
         {/* User Guides Section */}
         {guides.length > 0 && (
-          <Card className="gambling-card" withBorder radius="md" shadow="lg" p="xl">
+          <Card
+            className="gambling-card"
+            withBorder
+            radius="md"
+            shadow="lg"
+            p="xl"
+            style={{
+              background: `linear-gradient(135deg, ${getAlphaColor(accentColor, 0.14)}, ${getAlphaColor(accentColor, 0.04)}), ${cardBaseBackground}`,
+              border: `1px solid ${getAlphaColor(accentColor, 0.35)}`,
+              boxShadow: `0 16px 36px ${getAlphaColor(accentColor, 0.1)}`
+            }}
+          >
             <Stack gap="lg">
               <Group justify="space-between" align="center" wrap="wrap">
                 <Group gap="sm" align="center">
-                  <FileText size={24} color={accentRed} />
-                  <Title order={2} size="h3">
+                  <FileText size={24} color={guideColor} />
+                  <Title order={2} size="h3" c={headerColors.h2}>
                     Guides by {user.username}
                   </Title>
-                  <Badge variant="light" color="red" size="lg">
+                  <Badge
+                    variant="light"
+                    size="lg"
+                    style={{
+                      background: getAlphaColor(guideColor, 0.2),
+                      border: `1px solid ${getAlphaColor(guideColor, 0.4)}`,
+                      color: guideColor
+                    }}
+                  >
                     {guides.length}
                   </Badge>
                 </Group>
@@ -452,7 +521,17 @@ export default function UserProfileClient({ initialUser }: UserProfileClientProp
                   component={Link}
                   href={`/guides?author=${user.id}&authorName=${encodeURIComponent(user.username)}`}
                   variant="outline"
-                  style={{ color: accentPurple }}
+                  radius="md"
+                  styles={{
+                    root: {
+                      borderColor: accentBorderColor,
+                      color: accentTextColor,
+                      backgroundColor: getAlphaColor(accentColor, 0.1),
+                      '&:hover': {
+                        backgroundColor: accentHoverColor
+                      }
+                    }
+                  }}
                   size="sm"
                   leftSection={<BookOpen size={16} />}
                 >
@@ -462,38 +541,48 @@ export default function UserProfileClient({ initialUser }: UserProfileClientProp
 
               <SimpleGrid cols={{ base: 1, md: 2 }} spacing="md">
                 {guides.map((guide) => (
-                  <Card key={guide.id} withBorder radius="md" padding="lg" shadow="sm" bg="rgba(225, 29, 72, 0.02)">
+                  <Card
+                    key={guide.id}
+                    withBorder
+                    radius="md"
+                    padding="lg"
+                    shadow="sm"
+                    style={{
+                      background: getAlphaColor(guideColor, 0.12),
+                      border: `1px solid ${getAlphaColor(guideColor, 0.35)}`
+                    }}
+                  >
                     <Stack gap="sm">
                       <Anchor
                         component={Link}
                         href={`/guides/${guide.id}`}
                         fw={600}
                         size="lg"
-                        c={accentRed}
+                        c={guideColor}
                         style={{ textDecoration: 'none' }}
                       >
                         {guide.title}
                       </Anchor>
                       
-                      <Text size="sm" c="dimmed" lineClamp={2}>
+                      <Text size="sm" c={textColors.tertiary} lineClamp={2}>
                         {guide.description}
                       </Text>
                       
                       <Group justify="space-between" align="center" mt="xs">
                         <Group gap="md">
                           <Group gap="xs">
-                            <Text size="xs" c="dimmed">
+                            <Text size="xs" c={textColors.tertiary}>
                               👁 {guide.viewCount}
                             </Text>
                           </Group>
                           <Group gap="xs">
-                            <Text size="xs" c="dimmed">
+                            <Text size="xs" c={textColors.tertiary}>
                               ❤️ {guide.likeCount}
                             </Text>
                           </Group>
                         </Group>
                         
-                        <Text size="xs" c="dimmed">
+                        <Text size="xs" c={textColors.tertiary}>
                           {new Date(guide.createdAt).toLocaleDateString('en-US', {
                             month: 'short',
                             day: 'numeric',
@@ -510,6 +599,5 @@ export default function UserProfileClient({ initialUser }: UserProfileClientProp
         )}
       </motion.div>
     </Container>
-    </Box>
   )
 }

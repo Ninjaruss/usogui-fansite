@@ -26,7 +26,7 @@ import {
   backgroundStyles,
   getCardStyles
 } from '../../../lib/mantine-theme'
-import { ArrowLeft, Users, Shield, Crown } from 'lucide-react'
+import { ArrowLeft, Users, Shield, Crown, Image as ImageIcon } from 'lucide-react'
 import Link from 'next/link'
 import EnhancedSpoilerMarkdown from '../../../components/EnhancedSpoilerMarkdown'
 import { motion } from 'motion/react'
@@ -438,9 +438,21 @@ export default function OrganizationPageClient({
             <Stack gap="md">
               <Card withBorder radius="lg" shadow="lg" style={getCardStyles(theme, entityColors.media)}>
                 <Stack gap="md" p="md">
-                  <Group gap="sm">
-                    <Crown size={20} color={entityColors.media} />
-                    <Title order={4} c={textColors.media}>Media Gallery</Title>
+                  <Group justify="space-between" align="center">
+                    <Group gap="sm">
+                      <ImageIcon size={20} color={entityColors.media} />
+                      <Title order={4} c={textColors.media}>Media Gallery</Title>
+                    </Group>
+                    <Button
+                      component={Link}
+                      href={`/media?ownerType=organization&ownerId=${initialOrganization.id}`}
+                      variant="outline"
+                      c={entityColors.media}
+                      size="sm"
+                      radius="xl"
+                    >
+                      View All
+                    </Button>
                   </Group>
                   <MediaGallery
                     ownerType="organization"

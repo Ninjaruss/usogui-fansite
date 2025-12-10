@@ -54,6 +54,8 @@ interface MediaItem {
     username: string
   }
   createdAt: string
+  status?: string
+  isApproved?: boolean
 }
 
 interface MediaGalleryProps {
@@ -68,6 +70,8 @@ interface MediaGalleryProps {
   // Legacy support - will be converted to polymorphic
   characterId?: number
   arcId?: number
+  hideWhenEmpty?: boolean
+  onMediaLoaded?: (items: MediaItem[]) => void
 }
 
 const MAX_DIALOG_WIDTH = 1280
@@ -89,7 +93,9 @@ export default function MediaGallery({
   showTitle = true,
   compactMode = false,
   showFilters = false,
-  allowMultipleTypes = true
+  allowMultipleTypes = true,
+  hideWhenEmpty = false,
+  onMediaLoaded
 }: MediaGalleryProps) {
   const theme = useMantineTheme()
   const isMobile = useMediaQuery(`(max-width: ${theme.breakpoints.sm})`)
@@ -124,68 +130,61 @@ export default function MediaGallery({
 
   useEffect(() => {
     const fetchMedia = async () => {
-      try {
-        setLoading(true)
+    try {
+      setLoading(true)
 
-        let finalOwnerType = ownerType
-        let finalOwnerId = ownerId
+      let finalOwnerType = ownerType
+      let finalOwnerId = ownerId
 
-        if (finalOwnerType === ('organization' as any)) {
-          finalOwnerType = 'organization'
-        }
-
-        if (!finalOwnerType && !finalOwnerId) {
-          if (characterId && !isNaN(characterId) && characterId > 0) {
-            finalOwnerType = 'character'
-            finalOwnerId = characterId
-          } else if (arcId && !isNaN(arcId) && arcId > 0) {
-            finalOwnerType = 'arc'
-            finalOwnerId = arcId
-          }
-        }
-
-        if (finalOwnerId && (isNaN(finalOwnerId) || finalOwnerId <= 0)) {
-          setError('Invalid entity ID for media')
-          return
-        }
-
-        let response
-        if (purpose === 'entity_display' && finalOwnerType && finalOwnerId) {
-          response = await api.getEntityDisplayMedia(finalOwnerType, finalOwnerId, {
-            page: 1,
-            limit
-          })
-        } else if (purpose === 'gallery' && finalOwnerType && finalOwnerId) {
-          response = await api.getGalleryMedia(finalOwnerType, finalOwnerId, {
-            page: 1,
-            limit
-          })
-        } else if (finalOwnerType && finalOwnerId) {
-          response = await api.getGalleryMedia(finalOwnerType, finalOwnerId, {
-            page: 1,
-            limit
-          })
-        } else {
-          const params = {
-            page: 1,
-            limit,
-            ...(purpose && { purpose })
-          }
-          response = await api.getApprovedMedia(params)
-        }
-
-        setMedia(response.data)
-        setFilteredMedia(response.data)
-      } catch (fetchError: any) {
-        console.error('Failed to fetch media:', fetchError)
-        setError(fetchError?.message || 'Failed to load media')
-      } finally {
-        setLoading(false)
+      if (finalOwnerType === ('organization' as any)) {
+        finalOwnerType = 'organization'
       }
+
+      if (!finalOwnerType && !finalOwnerId) {
+        if (characterId && !isNaN(characterId) && characterId > 0) {
+          finalOwnerType = 'character'
+          finalOwnerId = characterId
+        } else if (arcId && !isNaN(arcId) && arcId > 0) {
+          finalOwnerType = 'arc'
+          finalOwnerId = arcId
+        }
+      }
+
+      if (finalOwnerId && (isNaN(finalOwnerId) || finalOwnerId <= 0)) {
+        setError('Invalid entity ID for media')
+        onMediaLoaded?.([])
+        return
+      }
+
+      // Use the same API approach as the main media page
+      const params: any = {
+        page: 1,
+        limit,
+        purpose: purpose || 'gallery'
+      }
+
+      // Add entity filtering if we have entity info
+      if (finalOwnerType && finalOwnerId) {
+        params.ownerType = finalOwnerType
+        params.ownerId = finalOwnerId
+      }
+
+      const response = await api.getApprovedMedia(params)
+
+      setMedia(response.data)
+      setFilteredMedia(response.data)
+      onMediaLoaded?.(response.data)
+    } catch (fetchError: any) {
+      console.error('Failed to fetch media:', fetchError)
+      setError(fetchError?.message || 'Failed to load media')
+      onMediaLoaded?.([])
+    } finally {
+      setLoading(false)
     }
+  }
 
     fetchMedia()
-  }, [ownerType, ownerId, purpose, characterId, arcId, limit])
+  }, [ownerType, ownerId, purpose, characterId, arcId, limit, onMediaLoaded])
 
   useEffect(() => {
     let filtered = [...media]
@@ -242,10 +241,34 @@ export default function MediaGallery({
   }
 
   const getMediaThumbnail = (mediaItem: MediaItem) => {
+
     if (mediaItem.type === 'image') {
-      return mediaItem.isUploaded
-  ? `${API_BASE_URL}/media/${mediaItem.fileName}`
-        : mediaItem.url
+      // For uploaded images, use the API endpoint
+      if (mediaItem.isUploaded) {
+        const thumbnailUrl = `${API_BASE_URL}/media/${mediaItem.fileName}`
+        return thumbnailUrl
+      }
+
+      // For external images, we need to handle different services
+      const url = mediaItem.url
+      // Check if it's a direct image URL (including DeviantArt CDN URLs)
+      if (url.match(/\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i) ||
+          url.includes('images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com') ||
+          url.includes('i.pximg.net')) {
+        return url
+      }
+
+      // For page URLs from DeviantArt or Pixiv, return null to show fallback
+      if (url.includes('deviantart.com/') && !url.includes('images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com')) {
+        return null
+      }
+
+      if (url.includes('pixiv.net/') && !url.includes('i.pximg.net')) {
+        return null
+      }
+
+      // For other external services that aren't direct images, return null
+      return null
     }
 
     if (mediaItem.type === 'video') {
@@ -328,7 +351,11 @@ export default function MediaGallery({
     )
   }
 
+
   if (media.length === 0) {
+    if (hideWhenEmpty) {
+      return null
+    }
     const contextType = ownerType || (characterId ? 'character' : arcId ? 'arc' : 'content')
     return (
       <Stack align="center" gap="xs" py="xl">
@@ -408,7 +435,7 @@ export default function MediaGallery({
               }}
             >
               <Box style={{ position: 'relative' }}>
-                <AspectRatio ratio={16 / 9}>
+                <AspectRatio ratio={16 / 9} style={{ position: 'relative' }} className="aspect-ratio-container">
                   {thumbnail ? (
                     <NextImage
                       src={thumbnail}
@@ -416,21 +443,67 @@ export default function MediaGallery({
                       fill
                       style={{ objectFit: 'cover' }}
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                      unoptimized={!thumbnail.startsWith('/')} // Don't optimize external images
                       onError={(event) => {
                         const target = event.target as HTMLImageElement
+                        // Hide the broken image and show fallback
                         target.style.display = 'none'
+                        // Find the parent container and show the fallback icon
+                        const container = target.closest('.aspect-ratio-container')
+                        if (container) {
+                          const fallback = container.querySelector('.fallback-icon')
+                          if (fallback) {
+                            (fallback as HTMLElement).style.display = 'flex'
+                          }
+                        }
                       }}
                     />
                   ) : (
+                    /* Fallback icon when no thumbnail */
                     <Box
+                      className="fallback-icon"
                       style={{
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        color: theme.colors.gray[5]
+                        color: theme.colors.gray[5],
+                        width: '100%',
+                        height: '100%',
+                        backgroundColor: 'rgba(0,0,0,0.1)',
+                        flexDirection: 'column',
+                        gap: rem(8)
                       }}
                     >
                       {getMediaTypeIcon(mediaItem.type)}
+                      <Text size="xs" c="dimmed" ta="center">
+                        {mediaItem.type === 'image' ? 'External Image' : 'Media'}
+                      </Text>
+                    </Box>
+                  )}
+
+                  {/* Fallback icon for broken images - only shown when thumbnail exists but fails to load */}
+                  {thumbnail && (
+                    <Box
+                      className="fallback-icon"
+                      style={{
+                        display: 'none',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: theme.colors.gray[5],
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        backgroundColor: 'rgba(0,0,0,0.1)',
+                        flexDirection: 'column',
+                        gap: rem(8)
+                      }}
+                    >
+                      {getMediaTypeIcon(mediaItem.type)}
+                      <Text size="xs" c="dimmed" ta="center">
+                        {mediaItem.type === 'image' ? 'External Image' : 'Media'}
+                      </Text>
                     </Box>
                   )}
                 </AspectRatio>
@@ -879,4 +952,3 @@ export default function MediaGallery({
     </Box>
   )
 }
-

@@ -17,7 +17,7 @@ import {
   Title,
   useMantineTheme
 } from '@mantine/core'
-import { ArrowLeft, Crown, Users, Trophy, Calendar, BookOpen, Eye, User, Image as ImageIcon } from 'lucide-react'
+import { ArrowLeft, Crown, Users, Trophy, Calendar, BookOpen, Image as ImageIcon } from 'lucide-react'
 import Link from 'next/link'
 import EnhancedSpoilerMarkdown from '../../../components/EnhancedSpoilerMarkdown'
 import { motion } from 'motion/react'
@@ -470,7 +470,6 @@ export default function GamblePageClient({ initialGamble }: GamblePageClientProp
 
           <Tabs.Panel value="media" pt={theme.spacing.md}>
             <Stack gap="md">
-              {/* Gallery Media Section */}
               <Card withBorder radius="lg" shadow="lg" style={{
                 background: backgroundStyles.card,
                 border: `1px solid ${getAlphaColor(getEntityThemeColor(theme, 'media'), 0.4)}`
@@ -479,7 +478,7 @@ export default function GamblePageClient({ initialGamble }: GamblePageClientProp
                   <Group justify="space-between" align="center">
                     <Group gap="sm">
                       <ImageIcon size={20} color={getEntityThemeColor(theme, 'media')} />
-                      <Title order={4} c={textColors.media}>Community Media</Title>
+                      <Title order={4} c={textColors.media}>Media Gallery</Title>
                     </Group>
                     <Button
                       component={Link}
@@ -498,29 +497,7 @@ export default function GamblePageClient({ initialGamble }: GamblePageClientProp
                     purpose="gallery"
                     limit={8}
                     showTitle={false}
-                    compactMode={true}
-                    showFilters={false}
-                  />
-                </Stack>
-              </Card>
-
-              {/* Official Media Section */}
-              <Card withBorder radius="lg" shadow="lg" style={{
-                background: backgroundStyles.card,
-                border: `1px solid ${getAlphaColor(getEntityThemeColor(theme, 'media'), 0.4)}`
-              }}>
-                <Stack gap="md" p="md">
-                  <Group gap="sm">
-                    <Crown size={20} color={getEntityThemeColor(theme, 'media')} />
-                    <Title order={4} c={textColors.media}>Official Media</Title>
-                  </Group>
-                  <MediaGallery
-                    ownerType="gamble"
-                    ownerId={initialGamble.id}
-                    purpose="entity_display"
-                    limit={6}
-                    showTitle={false}
-                    compactMode={true}
+                    compactMode
                     showFilters={false}
                   />
                 </Stack>

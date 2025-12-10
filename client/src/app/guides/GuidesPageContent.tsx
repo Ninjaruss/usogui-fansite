@@ -103,6 +103,7 @@ export default function GuidesPageContent({
   const [liking, setLiking] = useState<number | null>(null)
   const [authorFilter, setAuthorFilter] = useState<string | null>(initialAuthorId || null)
   const [authorName, setAuthorName] = useState<string | null>(initialAuthorName || null)
+  const [tagFilter, setTagFilter] = useState<string | null>(null)
 
   // Hover modal state
   const [hoveredGuide, setHoveredGuide] = useState<Guide | null>(null)
@@ -114,11 +115,12 @@ export default function GuidesPageContent({
     const params: any = { page, limit: 12, status: 'approved' }
     if (searchQuery) params.title = searchQuery
     if (authorFilter) params.authorId = authorFilter
+    if (tagFilter) params.tag = tagFilter
     const resAny = await api.getGuides(params)
     return { data: resAny.data || [], total: resAny.total || 0, page: resAny.page || page, perPage: 12, totalPages: resAny.totalPages || Math.max(1, Math.ceil((resAny.total || 0) / 12)) }
-  }, [searchQuery, authorFilter])
+  }, [searchQuery, authorFilter, tagFilter])
 
-  const { data: pageData, loading: pageLoading, error: pageError, prefetch, refresh, invalidate } = usePaged<Guide>('guides', currentPage, fetcher, { title: searchQuery, authorId: authorFilter }, { ttlMs: pagedCacheConfig.lists.guides.ttlMs, persist: pagedCacheConfig.defaults.persist, maxEntries: pagedCacheConfig.lists.guides.maxEntries })
+  const { data: pageData, loading: pageLoading, error: pageError, prefetch, refresh, invalidate } = usePaged<Guide>('guides', currentPage, fetcher, { title: searchQuery, authorId: authorFilter, tag: tagFilter }, { ttlMs: pagedCacheConfig.lists.guides.ttlMs, persist: pagedCacheConfig.defaults.persist, maxEntries: pagedCacheConfig.lists.guides.maxEntries })
 
   useEffect(() => {
     if (pageData) {
@@ -129,11 +131,12 @@ export default function GuidesPageContent({
     setLoading(!!pageLoading)
   }, [pageData, pageLoading])
 
-  const updateUrl = useCallback((page: number, search: string, authorId?: string, authorNameParam?: string) => {
+  const updateUrl = useCallback((page: number, search: string, authorId?: string, authorNameParam?: string, tag?: string) => {
     const params = new URLSearchParams()
     if (search) params.set('search', search)
     if (authorId) params.set('author', authorId)
     if (authorNameParam) params.set('authorName', authorNameParam)
+    if (tag) params.set('tag', tag)
     if (page > 1) params.set('page', page.toString())
 
     const newUrl = params.toString() ? `/guides?${params.toString()}` : '/guides'
@@ -149,25 +152,26 @@ export default function GuidesPageContent({
   // Debounced search effect
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      updateUrl(currentPage, searchQuery, authorFilter || undefined, authorName || undefined)
+      updateUrl(currentPage, searchQuery, authorFilter || undefined, authorName || undefined, tagFilter || undefined)
       // trigger usePaged refresh (stale-while-revalidate)
       refresh(false).catch(() => {})
     }, 300)
 
     return () => clearTimeout(timeoutId)
-  }, [searchQuery])
+  }, [searchQuery, tagFilter])
 
   const handlePageChange = useCallback((page: number) => {
     setCurrentPage(page)
-    updateUrl(page, searchQuery, authorFilter || undefined, authorName || undefined)
+    updateUrl(page, searchQuery, authorFilter || undefined, authorName || undefined, tagFilter || undefined)
     prefetch(page)
-  }, [searchQuery, authorFilter, authorName, updateUrl, prefetch])
+  }, [searchQuery, authorFilter, authorName, tagFilter, updateUrl, prefetch])
 
   const handleClearSearch = useCallback(() => {
     setSearchQuery('')
     setCurrentPage(1)
     setAuthorFilter(null)
     setAuthorName(null)
+    setTagFilter(null)
     updateUrl(1, '')
   }, [updateUrl])
 
@@ -175,7 +179,19 @@ export default function GuidesPageContent({
     setAuthorFilter(null)
     setAuthorName(null)
     setCurrentPage(1)
-    updateUrl(1, searchQuery)
+    updateUrl(1, searchQuery, undefined, undefined, tagFilter || undefined)
+  }
+
+  const clearTagFilter = () => {
+    setTagFilter(null)
+    setCurrentPage(1)
+    updateUrl(1, searchQuery, authorFilter || undefined, authorName || undefined)
+  }
+
+  const handleTagClick = (tagName: string) => {
+    setTagFilter(tagName)
+    setCurrentPage(1)
+    updateUrl(1, searchQuery, authorFilter || undefined, authorName || undefined, tagName)
   }
 
   const getContentPreview = (content: string, maxLength = 150) => {
@@ -393,27 +409,52 @@ export default function GuidesPageContent({
           </Box>
         </Group>
 
-        {authorFilter && authorName && (
-          <Group justify="center" gap="sm">
-            <Badge
-              size="md"
-              c="white"
-              variant="filled"
-              style={{ backgroundColor: getEntityThemeColor(theme, 'gamble') }}
-            >
-              Author: {authorName}
-            </Badge>
-            <Button
-              variant="subtle"
-              size="xs"
-              style={{ color: getEntityThemeColor(theme, 'gamble') }}
-              leftSection={<X size={14} />}
-              onClick={clearAuthorFilter}
-            >
-              Clear
-            </Button>
+        {(authorFilter && authorName) || tagFilter ? (
+          <Group justify="center" gap="sm" wrap="wrap">
+            {authorFilter && authorName && (
+              <>
+                <Badge
+                  size="md"
+                  c="white"
+                  variant="filled"
+                  style={{ backgroundColor: getEntityThemeColor(theme, 'character') }}
+                >
+                  Author: {authorName}
+                </Badge>
+                <Button
+                  variant="subtle"
+                  size="xs"
+                  style={{ color: getEntityThemeColor(theme, 'character') }}
+                  leftSection={<X size={14} />}
+                  onClick={clearAuthorFilter}
+                >
+                  Clear Author
+                </Button>
+              </>
+            )}
+            {tagFilter && (
+              <>
+                <Badge
+                  size="md"
+                  c="white"
+                  variant="filled"
+                  style={{ backgroundColor: getEntityThemeColor(theme, 'organization') }}
+                >
+                  Tag: #{tagFilter}
+                </Badge>
+                <Button
+                  variant="subtle"
+                  size="xs"
+                  style={{ color: getEntityThemeColor(theme, 'organization') }}
+                  leftSection={<X size={14} />}
+                  onClick={clearTagFilter}
+                >
+                  Clear Tag
+                </Button>
+              </>
+            )}
           </Group>
-        )}
+        ) : null}
       </Box>
 
       {/* Error State */}
@@ -464,9 +505,11 @@ export default function GuidesPageContent({
                 px="md"
                 style={{
                   display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-                  gap: rem(20),
-                  justifyItems: 'center'
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+                  gap: rem(24),
+                  justifyItems: 'center',
+                  maxWidth: '1400px',
+                  margin: '0 auto'
                 }}
               >
                 {guides.map((guide: Guide, index: number) => (
@@ -476,8 +519,9 @@ export default function GuidesPageContent({
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4, delay: index * 0.05 }}
                     style={{
-                      width: '280px',
-                      minHeight: '320px' // Increased height for better spacing
+                      width: '100%',
+                      maxWidth: '380px',
+                      minHeight: '400px'
                     }}
                   >
                     <Card
@@ -537,21 +581,39 @@ export default function GuidesPageContent({
                         <Title
                           order={3}
                           size="lg"
-                          lineClamp={3}
+                          lineClamp={2}
                           c={accentGuide}
                           style={{
-                            fontSize: rem(24),
+                            fontSize: rem(20),
                             fontWeight: 700,
                             lineHeight: 1.3,
                             textAlign: 'center',
-                            marginBottom: rem(8)
+                            marginBottom: rem(12)
                           }}
                         >
                           {guide.title}
                         </Title>
 
+                        {/* Description Preview */}
+                        {guide.description && (
+                          <Text
+                            size="sm"
+                            c="dimmed"
+                            lineClamp={2}
+                            style={{
+                              textAlign: 'center',
+                              fontSize: rem(13),
+                              lineHeight: 1.4,
+                              marginBottom: rem(12),
+                              minHeight: rem(36)
+                            }}
+                          >
+                            {guide.description}
+                          </Text>
+                        )}
+
                         {/* Tags Section - Much more prominent */}
-                        <Box style={{ minHeight: rem(60) }}>
+                        <Box style={{ minHeight: rem(54) }}>
                           <Group gap={6} justify="center" wrap="wrap">
                             {guide.tags?.slice(0, 3).map((tag) => (
                               <Badge
@@ -565,7 +627,22 @@ export default function GuidesPageContent({
                                   border: `1px solid ${getEntityThemeColor(theme, 'organization')}40`,
                                   fontSize: rem(11),
                                   height: rem(24),
-                                  paddingInline: rem(8)
+                                  paddingInline: rem(8),
+                                  cursor: 'pointer',
+                                  transition: 'all 0.2s ease'
+                                }}
+                                onClick={(e) => {
+                                  e.preventDefault()
+                                  e.stopPropagation()
+                                  handleTagClick(tag.name)
+                                }}
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.backgroundColor = `${getEntityThemeColor(theme, 'organization')}30`
+                                  e.currentTarget.style.transform = 'scale(1.05)'
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.backgroundColor = `${getEntityThemeColor(theme, 'organization')}15`
+                                  e.currentTarget.style.transform = 'scale(1)'
                                 }}
                               >
                                 #{tag.name}

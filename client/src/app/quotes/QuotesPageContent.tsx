@@ -307,7 +307,7 @@ export default function QuotesPageContent({
             </Text>
 
             {total > 0 && (
-              <Badge size="md" variant={badgeVariant as any} style={{ color: getEntityThemeColor(theme, 'media') }} radius="xl" mt="xs">
+              <Badge size="md" variant="light" c={accentQuote} radius="xl" mt="xs">
                 {total} quote{total !== 1 ? 's' : ''} collected
               </Badge>
             )}
@@ -393,9 +393,9 @@ export default function QuotesPageContent({
                     withBorder
                     radius="lg"
                     shadow="sm"
-                    padding="lg"
+                    padding="md"
                     style={{
-                      height: '280px', // Match character/arc card height
+                      height: '240px', // More compact height
                       cursor: 'pointer',
                       transition: 'all 0.3s ease',
                       position: 'relative',
@@ -413,15 +413,12 @@ export default function QuotesPageContent({
                       },
                     }}
                   >
-                    <Stack gap="sm" h="100%" justify="space-between">
+                    <Stack gap="xs" h="100%" justify="space-between">
                       {/* Header */}
                       <Group justify="space-between" align="flex-start">
                         <Group gap="xs" wrap="wrap">
-                          <Badge style={{ color: getEntityThemeColor(theme, 'media') }} variant={badgeVariant as any} size="sm">
-                            Quote
-                          </Badge>
                           {quote.chapter && (
-                            <Badge color="gray" variant={grayBadgeVariant as any} size="sm">
+                            <Badge color="gray" variant={grayBadgeVariant as any} size="md">
                               Ch. {quote.chapter}
                             </Badge>
                           )}
@@ -431,15 +428,15 @@ export default function QuotesPageContent({
 
                       {/* Quote Text - Centered and Clear */}
                       <Box style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <Text 
-                          size="md" 
-                          lineClamp={4} 
+                        <Text
+                          size="lg"
+                          lineClamp={4}
                           ta="center"
                           fw={600}
-                          style={{ 
+                          style={{
                             fontStyle: 'italic',
                             lineHeight: 1.3,
-                            fontSize: rem(15),
+                            fontSize: rem(17),
                             color: textColor
                           }}
                         >
@@ -448,12 +445,12 @@ export default function QuotesPageContent({
                       </Box>
 
                       {/* Speaker - More prominent */}
-                      <Text 
-                        size="sm" 
-                        fw={700} 
+                      <Text
+                        size="md"
+                        fw={700}
                         c={accentQuote}
                         ta="center"
-                        style={{ fontSize: rem(13) }}
+                        style={{ fontSize: rem(15) }}
                       >
                         — {quote.speaker}
                       </Text>

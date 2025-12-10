@@ -21,12 +21,7 @@ import { motion } from 'motion/react'
 import TimelineSpoilerWrapper from '../../../components/TimelineSpoilerWrapper'
 import { usePageView } from '../../../hooks/usePageView'
 import { getEntityThemeColor, semanticColors, backgroundStyles } from '../../../lib/mantine-theme'
-
-interface Volume {
-  id: number
-  number: number
-  title?: string
-}
+import type { Chapter as ChapterResource } from '../../../types'
 
 interface Character {
   id: number
@@ -46,17 +41,8 @@ interface Quote {
   character?: Character
 }
 
-interface Chapter {
-  id: number
-  number: number
-  chapterNumber?: number
-  title?: string | null
-  summary?: string | null
-  description?: string
-  volumeId?: number
-  volume?: Volume
-  createdAt?: string
-  updatedAt?: string
+type Chapter = ChapterResource & {
+  chapterNumber?: number | null
 }
 
 interface ChapterPageClientProps {

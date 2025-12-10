@@ -139,15 +139,33 @@ const DonationFilter = (props: any) => (
 export const DonationList = () => (
   <List filters={<DonationFilter />} sort={{ field: 'donationDate', order: 'DESC' }}>
     <Datagrid rowClick="show">
-      <ReferenceField source="userId" reference="users" link="show" emptyText="Unassigned">
+      <TextField source="id" sortable />
+      <ReferenceField source="userId" reference="users" link="show" emptyText="Unassigned" sortable>
         <TextField source="username" />
       </ReferenceField>
-      <NumberField source="amount" options={{ style: 'currency', currency: 'USD' }} />
-      <TextField source="currency" />
-      <DateField source="donationDate" />
-      <TextField source="provider" />
+      <NumberField source="amount" options={{ style: 'currency', currency: 'USD' }} sortable />
+      <TextField source="currency" sortable />
+      <DateField source="donationDate" sortable showTime={false} />
+      <FunctionField
+        label="Provider"
+        sortBy="provider"
+        render={(record: any) => (
+          <ChipField
+            record={record}
+            source="provider"
+            style={{
+              backgroundColor: record.provider === 'kofi' ? 'rgba(255, 95, 95, 0.2)' : 'rgba(100, 100, 100, 0.2)',
+              color: record.provider === 'kofi' ? '#ff5f5f' : '#888',
+              fontWeight: '500',
+              textTransform: 'uppercase',
+              fontSize: '0.7rem'
+            }}
+          />
+        )}
+      />
       <FunctionField
         label="Status"
+        sortBy="status"
         render={(record: any) => (
           <ChipField
             record={record}
@@ -158,14 +176,17 @@ export const DonationList = () => (
                 record.status === 'pending' ? '#F59E0B' :
                 record.status === 'failed' ? '#EF4444' :
                 record.status === 'refunded' ? '#6B7280' : '#6B7280',
-              color: 'white'
+              color: 'white',
+              fontWeight: '600',
+              textTransform: 'capitalize'
             }}
           />
         )}
       />
-      <TextField source="donorName" />
-      <BooleanField source="isAnonymous" />
-      <BooleanField source="badgesProcessed" />
+      <TextField source="donorName" sortable />
+      <BooleanField source="isAnonymous" sortable label="Anonymous" />
+      <BooleanField source="badgesProcessed" sortable label="Badges" />
+      <DateField source="createdAt" sortable showTime={false} label="Created" />
       <EditButton />
     </Datagrid>
   </List>

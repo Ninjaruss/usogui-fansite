@@ -95,6 +95,12 @@ export class MediaController {
     description: 'Items per page',
     type: 'number',
   })
+  @ApiQuery({
+    name: 'description',
+    required: false,
+    description: 'Search by description',
+    type: 'string',
+  })
   @ApiResponse({
     status: 200,
     description: 'Media retrieved successfully',
@@ -145,6 +151,7 @@ export class MediaController {
     @Query('purpose') purpose?: MediaPurpose,
     @Query('page') page?: number,
     @Query('limit') limit?: number,
+    @Query('description') description?: string,
   ) {
     // Validate ownerId if provided to prevent NaN database errors
     let validOwnerId: number | undefined;
@@ -160,6 +167,7 @@ export class MediaController {
       purpose,
       page,
       limit,
+      description,
     });
   }
 
@@ -210,12 +218,14 @@ export class MediaController {
   @Get('url-resolver')
   @ApiOperation({
     summary: 'Resolve media URL to get direct image URLs',
-    description: 'Resolves platform URLs (DeviantArt, etc.) to direct image URLs and metadata',
+    description:
+      'Resolves platform URLs (DeviantArt, etc.) to direct image URLs and metadata',
   })
   @ApiQuery({
     name: 'url',
     description: 'The media URL to resolve',
-    example: 'https://www.deviantart.com/kronensegler123/art/Baku-Madarame-Render-11-1087009612',
+    example:
+      'https://www.deviantart.com/kronensegler123/art/Baku-Madarame-Render-11-1087009612',
   })
   @ApiResponse({
     status: 200,

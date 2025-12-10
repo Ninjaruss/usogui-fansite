@@ -35,7 +35,11 @@ export class UsersService {
     perPage: number;
     totalPages: number;
   }> {
-    const { page = 1, limit = 1000, username } = filters;
+    // Default to page 1 and limit 20 (reasonable for public API)
+    // Cap maximum limit at 100 to prevent abuse
+    const page = filters.page || 1;
+    const requestedLimit = filters.limit || 20;
+    const limit = Math.min(requestedLimit, 100); // Cap at 100 max
     const skip = (page - 1) * limit;
 
     const queryBuilder = this.repo
@@ -50,9 +54,9 @@ export class UsersService {
       .take(limit);
 
     // Add username filter if provided
-    if (username) {
+    if (filters.username) {
       queryBuilder.where('user.username ILIKE :username', {
-        username: `%${username}%`,
+        username: `%${filters.username}%`,
       });
     }
 

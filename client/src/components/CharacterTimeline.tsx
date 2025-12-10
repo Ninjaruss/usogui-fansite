@@ -310,13 +310,16 @@ const CharacterTimeline = React.memo(function CharacterTimeline({
 
         {firstAppearanceChapter ? (
           <Badge
-            style={{ color: getEntityThemeColor(theme, 'media') }}
             variant="filled"
             leftSection={<BookOpen size={14} />}
             radius="sm"
             onClick={() => scrollToChapter(firstAppearanceChapter)}
             data-chapter={firstAppearanceChapter}
-            style={{ cursor: 'pointer', alignSelf: 'flex-start' }}
+            style={{
+              color: getEntityThemeColor(theme, 'media'),
+              cursor: 'pointer',
+              alignSelf: 'flex-start'
+            }}
           >
             First Appearance: Chapter {firstAppearanceChapter}
           </Badge>
@@ -370,10 +373,12 @@ const CharacterTimeline = React.memo(function CharacterTimeline({
                     <Badge
                       key={section.arc.id}
                       variant="outline"
-                      style={{ color: getEntityThemeColor(theme, 'gamble') }}
+                      style={{
+                        color: getEntityThemeColor(theme, 'gamble'),
+                        cursor: 'pointer'
+                      }}
                       radius="sm"
                       onClick={() => scrollToArc(section.arc.id)}
-                      style={{ cursor: 'pointer' }}
                     >
                       {section.arc.name}
                     </Badge>
@@ -392,11 +397,13 @@ const CharacterTimeline = React.memo(function CharacterTimeline({
                     <Badge
                       key={chapter}
                       variant="outline"
-                      style={{ color: getEntityThemeColor(theme, 'media') }}
+                      style={{
+                        color: getEntityThemeColor(theme, 'media'),
+                        cursor: 'pointer'
+                      }}
                       radius="sm"
                       onClick={() => scrollToChapter(chapter)}
                       data-chapter={chapter}
-                      style={{ cursor: 'pointer' }}
                     >
                       Ch. {chapter}
                     </Badge>

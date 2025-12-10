@@ -19,7 +19,7 @@ import {
   rem,
   useMantineTheme
 } from '@mantine/core'
-import { getEntityThemeColor, semanticColors, textColors, backgroundStyles, getHeroStyles, getPlayingCardStyles, getCardStyles } from '../../lib/mantine-theme'
+import { getEntityThemeColor, backgroundStyles, getHeroStyles, getCardStyles } from '../../lib/mantine-theme'
 import { AlertCircle, Search, BookOpen, X } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'

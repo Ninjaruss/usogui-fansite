@@ -31,7 +31,17 @@ export default function DisclaimerPage() {
         </Text>
       </Stack>
 
-      <Paper withBorder radius="md" shadow="sm" p="xl" mb="xl">
+      <Paper
+        withBorder
+        radius="md"
+        shadow="sm"
+        p="xl"
+        mb="xl"
+        style={{
+          backgroundColor: 'var(--mantine-color-dark-8)',
+          borderColor: 'rgba(255, 255, 255, 0.08)'
+        }}
+      >
         <Stack gap="xl">
           <Stack gap="sm">
             <Box style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>

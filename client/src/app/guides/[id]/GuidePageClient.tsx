@@ -77,37 +77,42 @@ interface Guide {
 }
 
 interface GuidePageClientProps {
-  initialGuide: Guide
+  initialGuide?: Guide
+  guideId?: number
 }
 
-export default function GuidePageClient({ initialGuide }: GuidePageClientProps) {
+export default function GuidePageClient({ initialGuide, guideId }: GuidePageClientProps) {
   const theme = useMantineTheme()
-  const { user } = useAuth()
-  const [guide, setGuide] = useState(initialGuide)
+  const { user, loading: authLoading } = useAuth()
+  const [guide, setGuide] = useState<Guide | null>(initialGuide || null)
   const [isEditing, setIsEditing] = useState(false)
-  const [editedContent, setEditedContent] = useState(initialGuide.content)
+  const [editedContent, setEditedContent] = useState(initialGuide?.content || '')
   const [saving, setSaving] = useState(false)
   const [activeTab, setActiveTab] = useState<string>('content')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   // Tab styling handled by Mantine theme
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
 
-  usePageView('guide', guide.id.toString(), true)
+  // Call usePageView hook early to maintain hook order (Rules of Hooks)
+  usePageView('guide', guide?.id?.toString() || '', !!guide?.id)
 
   // When the server-rendered page couldn't see the user's session,
   // initialGuide.userHasLiked may be undefined. If we have a logged-in
   // user on the client, refresh the guide like status so the button
   // correctly reflects whether the current user already liked it.
   React.useEffect(() => {
+    if (!guide || !user) return
+
     let cancelled = false
     const ensureLikeStatus = async () => {
-      if (!user) return
       // Only refetch if server didn't provide a boolean for userHasLiked
       if (typeof guide.userHasLiked === 'boolean') return
       try {
         const fresh = await api.getGuide(guide.id)
         if (cancelled) return
-        setGuide((prev) => ({ ...prev, userHasLiked: fresh.userHasLiked, likeCount: fresh.likeCount }))
+        setGuide((prev) => prev ? ({ ...prev, userHasLiked: fresh.userHasLiked, likeCount: fresh.likeCount }) : null)
       } catch (e) {
         // ignore silently
       }
@@ -118,16 +123,11 @@ export default function GuidePageClient({ initialGuide }: GuidePageClientProps) 
     return () => {
       cancelled = true
     }
-  }, [user?.id, guide.id, guide.userHasLiked])
+  }, [user?.id, guide?.id, guide?.userHasLiked])
 
-  // Only the guide owner or admins can edit. Moderators cannot edit guides.
-  const canEdit = user?.id === guide.author.id || user?.role === 'admin'
-
-  // Remove publish/unpublish button from the guide detail page UI. Publish actions are handled elsewhere.
-  const canPublish = false
-
+  // Role badge computation
   const roleBadge = useMemo(() => {
-    if (!guide.author.role) return null
+    if (!guide?.author?.role) return null
     switch (guide.author.role) {
       case 'admin':
         return { label: 'Admin', color: theme.other?.usogui?.red ?? '#e11d48' }
@@ -136,16 +136,123 @@ export default function GuidePageClient({ initialGuide }: GuidePageClientProps) 
       default:
         return null
     }
-  }, [guide.author.role])
+  }, [guide?.author?.role, theme.other?.usogui])
+
+  // Fetch guide with authentication when guideId is provided but no initialGuide
+  useEffect(() => {
+    if (!initialGuide && guideId && !authLoading) {
+      setLoading(true)
+      setError(null)
+      
+      const fetchGuide = async () => {
+        try {
+          let fetchedGuide: Guide
+          
+          if (user) {
+            // User is authenticated, try authenticated endpoint first
+            try {
+              fetchedGuide = await api.getGuideAuthenticated(guideId)
+            } catch (authError: any) {
+              // If authenticated request fails with 401/403, try public endpoint
+              if (authError?.status === 401 || authError?.status === 403) {
+                console.log('[GuidePageClient] Authenticated request failed, trying public endpoint')
+                fetchedGuide = await api.getGuide(guideId)
+              } else {
+                throw authError
+              }
+            }
+          } else {
+            // User not authenticated, use public endpoint
+            fetchedGuide = await api.getGuide(guideId)
+          }
+          
+          // Check if user can view this guide
+          if (fetchedGuide.status !== GuideStatus.APPROVED) {
+            // Only allow authors to see their own non-approved guides
+            if (!user || user.id !== fetchedGuide.author.id) {
+              setError('This guide is not available to the public.')
+              return
+            }
+          }
+          
+          setGuide(fetchedGuide)
+          setEditedContent(fetchedGuide.content)
+        } catch (err: any) {
+          console.error('[GuidePageClient] Failed to fetch guide:', err)
+          if (err?.status === 404) {
+            setError('Guide not found.')
+          } else if (err?.isAuthError) {
+            setError('Please log in to access this content.')
+          } else {
+            setError('Failed to load guide.')
+          }
+        } finally {
+          setLoading(false)
+        }
+      }
+      
+      fetchGuide()
+    }
+  }, [guideId, initialGuide, user, authLoading])
+
+  // Show loading state
+  if (authLoading || loading) {
+    return (
+      <Box style={{ backgroundColor: backgroundStyles.page(theme), minHeight: '100vh' }}>
+        <Container size="lg" py="xl">
+          <Text>Loading guide...</Text>
+        </Container>
+      </Box>
+    )
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <Box style={{ backgroundColor: backgroundStyles.page(theme), minHeight: '100vh' }}>
+        <Container size="lg" py="xl">
+          <Stack gap="md">
+            <Button component={Link} href="/guides" variant="subtle" c={semanticColors.neutral} leftSection={<ArrowLeft size={18} />}>
+              Back to Guides
+            </Button>
+            <Card withBorder radius="md" className="gambling-card" shadow="md">
+              <Stack gap="md" p="xl">
+                <Text c={semanticColors.warning}>{error}</Text>
+              </Stack>
+            </Card>
+          </Stack>
+        </Container>
+      </Box>
+    )
+  }
+
+  // Show loading state if guide is still null
+  if (!guide) {
+    return (
+      <Box style={{ backgroundColor: backgroundStyles.page(theme), minHeight: '100vh' }}>
+        <Container size="lg" py="xl">
+          <Text>Loading guide...</Text>
+        </Container>
+      </Box>
+    )
+  }
+
+
+  // Only the guide owner or admins can edit. Moderators cannot edit guides.
+  const canEdit = user?.id === guide.author.id || user?.role === 'admin'
+
+  // Remove publish/unpublish button from the guide detail page UI. Publish actions are handled elsewhere.
+  const canPublish = false
+
 
   const handleLikeToggle = async () => {
     try {
       const response = await api.toggleGuideLike(guide.id)
-      setGuide((prev) => ({
+      setGuide((prev) => prev ? ({
         ...prev,
         likeCount: response.likeCount,
         userHasLiked: response.liked
-      }))
+      }) : null)
     } catch (error) {
       notifications.show({ message: 'Failed to toggle like.', color: 'red' })
     }
@@ -177,6 +284,9 @@ export default function GuidePageClient({ initialGuide }: GuidePageClientProps) 
     setEditedContent(guide.content)
   }
 
+  // Show pending status banner for authors
+  const showPendingBanner = guide.status !== GuideStatus.APPROVED && user?.id === guide.author.id
+
   return (
     <Box style={{ backgroundColor: backgroundStyles.page(theme), minHeight: '100vh' }}>
     <Container size="lg" py="xl">
@@ -197,6 +307,17 @@ export default function GuidePageClient({ initialGuide }: GuidePageClientProps) 
             </Button>
           </Group>
         </Group>
+
+        {/* Pending status banner */}
+        {showPendingBanner && (
+          <Card withBorder radius="md" className="gambling-card" shadow="md" mb="lg" style={{ borderColor: semanticColors.warning }}>
+            <Stack gap="sm" p="md">
+              <Text size="sm" c={semanticColors.warning} fw={500}>
+                📝 This is your {guide.status} guide. It's only visible to you until it gets approved by moderators.
+              </Text>
+            </Stack>
+          </Card>
+        )}
 
         <Card withBorder radius="md" className="gambling-card" shadow="md" mb="xl">
           <Stack gap="xl" p="xl">

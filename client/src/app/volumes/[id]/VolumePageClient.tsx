@@ -89,14 +89,16 @@ export default function VolumePageClient({ initialVolume, initialChapters }: Vol
           <Grid gutter="md" align="center" justify="center">
             <Grid.Col span={{ base: 12, md: 4, lg: 3 }}>
               <Stack align="center" p="xl">
-                <MediaThumbnail
-                  entityType="volume"
-                  entityId={initialVolume.id}
-                  entityName={`Volume ${initialVolume.number}`}
-                  maxWidth="250px"
-                  maxHeight="350px"
-                  allowCycling
-                />
+                <Box style={{ width: '250px', height: '350px' }}>
+                  <MediaThumbnail
+                    entityType="volume"
+                    entityId={initialVolume.id}
+                    entityName={`Volume ${initialVolume.number}`}
+                    maxWidth="250px"
+                    maxHeight="350px"
+                    allowCycling
+                  />
+                </Box>
               </Stack>
             </Grid.Col>
 

@@ -46,9 +46,9 @@ export class FandomDataSeeder implements Seeder {
           role: UserRole.USER,
           userProgress: 1,
         } as Partial<User>);
-        systemUser = await userRepo.save(newUser as any);
+        systemUser = await userRepo.save(newUser as Partial<User>);
         console.log('Created system user seed-system <test@example.com>');
-      } catch (err) {
+      } catch {
         console.warn(
           'Could not create system user automatically; ensure a user with email test@example.com or username seed-system exists.',
         );
@@ -168,10 +168,11 @@ export class FandomDataSeeder implements Seeder {
             }
           }
         }
-      } catch (err) {
+      } catch (err: unknown) {
+        const errorMessage = err instanceof Error ? err.message : String(err);
         console.warn(
           `Error attaching cover for volume ${v.number}:`,
-          err?.message || err,
+          errorMessage,
         );
       }
     }

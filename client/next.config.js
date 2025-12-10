@@ -2,16 +2,12 @@
 const nextConfig = {
   reactStrictMode: true,
   eslint: {
-    ignoreDuringBuilds: true,
+    ignoreDuringBuilds: false,
   },
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
 
-  // Enable experimental features for better performance
-  experimental: {
-    optimizePackageImports: ['@mui/material', '@mui/icons-material', 'lucide-react'],
-  },
 
   // Image optimization
   images: {
@@ -201,9 +197,25 @@ const nextConfig = {
     ]
   },
 
-  // Webpack configuration for better performance
+  // Enable experimental features for better performance
+  experimental: {
+    optimizePackageImports: ['@mui/material', '@mui/icons-material', 'lucide-react'],
+  },
+
+  // Turbopack configuration for better performance in development
+  turbopack: {
+    rules: {
+      // Configure Turbopack-specific optimizations
+      '*.svg': {
+        loaders: ['@svgr/webpack'],
+        as: '*.js',
+      },
+    },
+  },
+
+  // Webpack configuration for production builds only (Turbopack handles dev)
   webpack: (config, { dev, isServer }) => {
-    // Production optimizations
+    // Only apply webpack optimizations for production builds when not using Turbopack
     if (!dev && !isServer) {
       config.optimization.splitChunks = {
         chunks: 'all',

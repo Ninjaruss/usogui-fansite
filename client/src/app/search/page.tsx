@@ -29,7 +29,10 @@ interface SearchPageProps {
 export default async function SearchPage({ searchParams }: SearchPageProps) {
   const resolvedSearchParams = await searchParams
   const query = resolvedSearchParams.q || ''
-  const type = resolvedSearchParams.type
+  const allowedTypes = new Set(['all', 'chapters', 'characters', 'events', 'arcs', 'gambles', 'organizations'])
+  const type = resolvedSearchParams.type && allowedTypes.has(resolvedSearchParams.type)
+    ? resolvedSearchParams.type
+    : undefined
   const page = parseInt(resolvedSearchParams.page || '1', 10)
 
   const structuredData = {
@@ -37,7 +40,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     '@type': 'SearchResultsPage',
     name: `Search Results for "${query}"`,
     description: 'Search results from the L-file Usogui database',
-    url: `https://l-file.net/search?q=${encodeURIComponent(query)}`,
+    url: `https://l-file.com/search?q=${encodeURIComponent(query)}`,
     mainEntity: {
       '@type': 'SearchAction',
       query: query

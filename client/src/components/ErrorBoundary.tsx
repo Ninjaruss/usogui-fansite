@@ -2,7 +2,7 @@
 
 import React, { Component, ReactNode } from 'react'
 import { Alert, Box, Button, Stack, Text, Title } from '@mantine/core'
-import { getEntityThemeColor, semanticColors, textColors } from '../lib/mantine-theme'
+import { textColors } from '../lib/mantine-theme'
 import { AlertTriangle, RefreshCw } from 'lucide-react'
 
 interface Props {
@@ -69,11 +69,14 @@ class ErrorBoundary extends Component<Props, State> {
       return (
         <Box p="md" style={{ minHeight: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <Alert
-            style={{ color: getEntityThemeColor(theme, 'gamble') }}
+            style={{
+              color: textColors.gamble,
+              maxWidth: '500px',
+              width: '100%'
+            }}
             radius="md"
             icon={<AlertTriangle size={20} />}
             title={isNetworkError ? 'Connection Error' : 'Something went wrong'}
-            style={{ maxWidth: '500px', width: '100%' }}
           >
             <Stack gap="sm">
               <Text size="sm">
@@ -92,7 +95,7 @@ class ErrorBoundary extends Component<Props, State> {
               <Box>
                 <Button
                   variant="light"
-                  style={{ color: getEntityThemeColor(theme, 'gamble') }}
+                  style={{ color: textColors.gamble }}
                   size="sm"
                   leftSection={<RefreshCw size={16} />}
                   onClick={this.handleRetry}

@@ -13,13 +13,20 @@ export interface Arc {
 export interface Chapter {
   id: number;
   number: number;
-  title: string;
-  summary: string;
-  series: { id: number; title: string };
-  arc: { id: number; name: string };
-  spoilers: string[];
-  createdAt: string;
-  updatedAt: string;
+  title?: string | null;
+  summary?: string | null;
+  description?: string | null;
+  series?: { id: number; title: string } | null;
+  arc?: { id: number; name: string } | null;
+  volumeId?: number | null;
+  volume?: {
+    id: number;
+    number: number;
+    title?: string | null;
+  } | null;
+  spoilers?: string[];
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Character {

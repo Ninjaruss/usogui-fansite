@@ -311,10 +311,9 @@ export default function VolumesPageContent({
               <Badge
                 size="md"
                 variant="light"
-                c={getEntityThemeColor(theme, 'gamble')}
+                c={accentVolume}
                 radius="xl"
                 mt="xs"
-                style={{ backgroundColor: `${getEntityThemeColor(theme, 'gamble')}20`, borderColor: getEntityThemeColor(theme, 'gamble') }}
               >
                 {searchQuery ? `${total} of ${allVolumes.length}` : `${allVolumes.length}`} volume{(searchQuery ? total : allVolumes.length) !== 1 ? 's' : ''} {searchQuery ? 'found' : 'available'}
               </Badge>
@@ -623,10 +622,10 @@ export default function VolumesPageContent({
                 {hoveredVolume.description && (
                   <Text
                     size="sm"
-                    style={{ color: theme.colors.gray[6] }}
                     ta="center"
                     lineClamp={3}
                     style={{
+                      color: theme.colors.gray[6],
                       lineHeight: 1.4,
                       maxHeight: rem(60)
                     }}

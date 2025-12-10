@@ -21,9 +21,10 @@ import {
   useMantineTheme
 } from '@mantine/core'
 import { notifications } from '@mantine/notifications'
-import { getEntityThemeColor, semanticColors, textColors, backgroundStyles, getHeroStyles, getPlayingCardStyles } from '../../lib/mantine-theme'
+import { getEntityThemeColor, backgroundStyles, getHeroStyles, getPlayingCardStyles } from '../../lib/mantine-theme'
 import { Search, BookOpen, Edit, Upload, X } from 'lucide-react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'motion/react'
 import MediaThumbnail from '../../components/MediaThumbnail'
@@ -236,14 +237,13 @@ export default function ArcsPageContent({
     }
 
     searchDebounceRef.current = window.setTimeout(() => {
-      refresh(false).catch(() => {})
+      loadAllArcs().catch(() => {})
     }, 300)
   }
 
   const handlePageChange = (pageValue: number) => {
     setCurrentPage(pageValue)
     updateUrl(pageValue, searchQuery, characterFilter)
-    prefetch(pageValue).catch(() => {})
   }
 
   const handleClearSearch = () => {
@@ -251,7 +251,7 @@ export default function ArcsPageContent({
     setCurrentPage(1)
     setCharacterFilter(null)
     updateUrl(1, '', null)
-    refresh(false).catch(() => {})
+    loadAllArcs().catch(() => {})
   }
 
 
@@ -339,7 +339,7 @@ export default function ArcsPageContent({
     setUploading(true)
     try {
   await api.uploadArcImage(selectedArc.id, selectedFile, imageDisplayName.trim() || undefined)
-  await refresh(true)
+  await loadAllArcs()
       notifications.show({ message: 'Arc image uploaded successfully!', color: 'green' })
       handleCloseImageDialog()
     } catch (error: unknown) {
@@ -356,7 +356,7 @@ export default function ArcsPageContent({
     setUploading(true)
     try {
   await api.removeArcImage(selectedArc.id)
-  await refresh(true)
+  await loadAllArcs()
       notifications.show({ message: 'Arc image removed successfully!', color: 'green' })
       handleCloseImageDialog()
     } catch (error: unknown) {
@@ -503,7 +503,7 @@ export default function ArcsPageContent({
                   setCharacterFilter(null)
                   setCurrentPage(1)
                   updateUrl(1, searchQuery, null)
-                  refresh(true)
+                  loadAllArcs()
                 }}>
                   <X size={12} />
                 </ActionIcon>
@@ -792,9 +792,11 @@ export default function ArcsPageContent({
                   overflow: 'hidden'
                 }}
               >
-                <img
+                <Image
                   src={previewUrl}
                   alt="Preview"
+                  width={400}
+                  height={200}
                   style={{
                     width: '100%',
                     height: 'auto',

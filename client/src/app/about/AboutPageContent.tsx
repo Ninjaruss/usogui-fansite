@@ -15,7 +15,7 @@ import {
   Title,
   useMantineTheme
 } from '@mantine/core'
-import { getEntityThemeColor, semanticColors, textColors, backgroundStyles } from '../../lib/mantine-theme'
+import { getEntityThemeColor, backgroundStyles } from '../../lib/mantine-theme'
 import { Heart, Mail, Coffee, Github, Twitter } from 'lucide-react'
 
 const supportItems = [

@@ -60,11 +60,17 @@ export function analyzeMediaUrl(url: string): MediaInfo {
   // DeviantArt handling
   if (lowerUrl.includes('deviantart.com')) {
     const isArtPage = lowerUrl.includes('/art/')
+    // Check if it's a direct DeviantArt image URL
+    const isDirectImage = Boolean(
+      lowerUrl.match(/\.(jpg|jpeg|png|gif|webp)(\?|$)/i) &&
+      (lowerUrl.includes('wixmp') || lowerUrl.includes('images-wixmp'))
+    )
+
     return {
-      isDirectImage: false,
-      isEmbeddable: isArtPage,
+      isDirectImage: isDirectImage,
+      isEmbeddable: isArtPage && !isDirectImage,
       platform: 'deviantart',
-      embedUrl: isArtPage ? `${url}/embed` : undefined
+      embedUrl: (isArtPage && !isDirectImage) ? `${url}/embed` : undefined
     }
   }
 
@@ -147,12 +153,12 @@ export async function resolveDeviantArtUrl(url: string): Promise<MediaInfo> {
       isDirectImage: true,
       isEmbeddable: false,
       platform: 'deviantart',
-      directImageUrl: data.url,
+      directImageUrl: data.thumbnail_url, // Use thumbnail_url as the direct image
       thumbnailUrl: data.thumbnail_url,
       title: data.title,
       author: data.author_name,
-      width: data.width,
-      height: data.height
+      width: data.thumbnail_width,
+      height: data.thumbnail_height
     }
   } catch (error) {
     console.warn(`Failed to resolve DeviantArt URL: ${url}`, error)

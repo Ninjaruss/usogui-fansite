@@ -1,99 +1,62 @@
 # Usogui Fansite
 
-A comprehensive fansite for the Usogui manga series featuring character information, story arcs, community guides, and media galleries.
+## WHY
+A comprehensive fansite dedicated to the Usogui manga series. The platform enables fans to explore character information, story arcs, gambles, and community-contributed content including guides and media galleries. Features role-based access with public viewing, moderator content approval, and admin management.
 
-## Project Structure
+## WHAT
 
-This is a monorepo containing:
-- **client/**: Next.js frontend application
-- **server/**: NestJS backend API
-- **docs/**: Documentation files
+### Monorepo Structure
+- **client/** - Next.js 15 frontend (App Router, React 19, Tailwind CSS 4, Mantine UI)
+- **server/** - NestJS backend API (TypeORM, PostgreSQL, JWT auth, Swagger)
+- **docs/** - Project documentation
 
-## Quick Start
+### Tech Stack
+- **Frontend**: Next.js 15, React 19, TypeScript, Tailwind CSS 4, Mantine, React Admin
+- **Backend**: NestJS, TypeORM, PostgreSQL, JWT authentication, Swagger
+- **Authentication**: Discord OAuth integration with JWT tokens
+- **Storage**: Backblaze B2 for media uploads
+- **Database**: PostgreSQL with comprehensive manga content schema
 
-### Prerequisites
-- Node.js 18+
-- Yarn (we use yarn, not npm)
-- PostgreSQL database
+### Key Domain Models
+The database centers around manga content entities:
+- **Core Content**: Characters, Arcs, Volumes, Chapters
+- **Gambles**: Central theme of the manga - gambling matches with participants and outcomes
+- **Community**: Users (role-based), Guides (community-written), Media (fan gallery), Quotes
+- **Organization**: Organizations, Events, Tags, Translations
+
+### API Structure
+Backend runs on `http://localhost:3001/api` with RESTful endpoints for all entities plus authentication and file upload.
+
+## HOW
 
 ### Development Setup
+**Prerequisites**: Node.js 18+, Yarn (not npm), PostgreSQL
 
-1. **Install dependencies for both client and server:**
-   ```bash
-   cd client && yarn install
-   cd ../server && yarn install
-   ```
+**Starting Development:**
+```bash
+# Install dependencies
+cd client && yarn install
+cd ../server && yarn install
 
-2. **Start the backend server:**
-   ```bash
-   cd server
-   yarn start:dev
-   ```
+# Terminal 1 - Backend (port 3001)
+cd server && yarn start:dev
 
-3. **Start the frontend client:**
-   ```bash
-   cd client
-   yarn dev
-   ```
+# Terminal 2 - Frontend (port 3000)
+cd client && yarn dev
+```
 
-## Key Commands
+### Essential Commands
+**Server**: `yarn start:dev` (hot reload), `yarn db:migrate`, `yarn db:seed`
+**Client**: `yarn dev` (with Turbopack), `yarn build`, `yarn lint`
 
-### Root Level
-- Use `yarn` commands in individual client/server directories
+### Project Conventions
+- **Package Manager**: Always use `yarn`, never `npm`
+- **Monorepo**: No root-level package.json; run commands from client/ or server/ directories
+- **TypeScript**: Strict mode enabled across both client and server
+- **API Integration**: Client uses [api.ts](client/src/lib/api.ts) for all backend communication
 
-### Server Commands
-- `yarn start:dev` - Start development server with hot reload
-- `yarn build` - Build for production
-- `yarn start:prod` - Start production server
-- `yarn lint` - Run ESLint
-- `yarn test` - Run unit tests
-- `yarn db:migrate` - Run database migrations
-- `yarn db:seed` - Seed database with initial data
-
-### Client Commands
-- `yarn dev` - Start development server with Turbopack
-- `yarn build` - Build for production
-- `yarn start` - Start production server
-- `yarn lint` - Run Next.js linting
-
-## Architecture
-
-- **Frontend**: Next.js 15 with App Router, React 19, Tailwind CSS 4, React Admin
-- **Backend**: NestJS with TypeORM, PostgreSQL, JWT authentication, Swagger docs
-- **Authentication**: JWT tokens with Discord OAuth integration
-- **File Storage**: Backblaze B2 for media uploads
-- **Admin Panel**: React Admin for content management
-
-## Database
-
-The project uses PostgreSQL with TypeORM. Key entities include:
-- Users (with role-based permissions)
-- Characters, Arcs, Volumes, Chapters
-- Gambles, Events, Organizations
-- Media, Guides, Quotes
-- Tags and Translations
-
-## API Endpoints
-
-Backend runs on http://localhost:3001/api with:
-- `/auth` - Authentication endpoints
-- `/characters` - Character management
-- `/arcs` - Story arc information
-- `/guides` - Community guides
-- `/media` - Media gallery
-- `/gambles` - Gamble information
-- And many more...
-
-## User Roles
-
-- **Public**: View content, submit guides/media
-- **Moderator**: Edit content, approve submissions
-- **Admin**: Full system access including user management
-
-## Development Notes
-
-- Always use yarn instead of npm
-- Follow TypeScript best practices
-- Use Tailwind CSS for styling
-- Implement proper error handling and validation
-- Test changes thoroughly before commits
+### Testing Changes
+1. Verify TypeScript compilation: `yarn build` in respective directory
+2. Run linters: `yarn lint`
+3. Test locally with both client and server running
+4. For database changes: Test migrations and verify seeder still works

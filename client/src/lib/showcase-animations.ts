@@ -29,7 +29,7 @@ export interface ShowcaseAnimationSet {
   popout?: PopoutAnimations
 }
 
-export function createVolumeAnimations(
+export function useVolumeAnimations(
   scrollYProgress: MotionValue<number>,
   config: AnimationConfig,
   index: number,
@@ -67,7 +67,7 @@ export function createVolumeAnimations(
   return { scale, x, rotateY, z }
 }
 
-export function createPopoutAnimations(
+export function usePopoutAnimations(
   scrollYProgress: MotionValue<number>,
   time: MotionValue<number>,
   config: AnimationConfig,
@@ -101,7 +101,7 @@ export function createPopoutAnimations(
   return { scrollY, floatY, y, scale, z, rotateX }
 }
 
-export function createShowcaseAnimationSet(
+export function useShowcaseAnimationSet(
   scrollYProgress: MotionValue<number>,
   time: MotionValue<number>,
   config: AnimationConfig,
@@ -109,10 +109,9 @@ export function createShowcaseAnimationSet(
   totalVolumes: number,
   hasPopout: boolean = false
 ): ShowcaseAnimationSet {
-  const volume = createVolumeAnimations(scrollYProgress, config, index, totalVolumes)
-  const popout = hasPopout
-    ? createPopoutAnimations(scrollYProgress, time, config, index)
-    : undefined
+  const volume = useVolumeAnimations(scrollYProgress, config, index, totalVolumes)
+  const popoutAnimations = usePopoutAnimations(scrollYProgress, time, config, index)
+  const popout = hasPopout ? popoutAnimations : undefined
 
   return { volume, popout }
 }
@@ -248,7 +247,8 @@ export function getPopoutRotation(
   index: number = 0
 ) {
   const config = POPOUT_ROTATION_PATTERNS[pattern]
-  const amplitude = isFirst ? config.amplitude : config.amplitude.map(val => val * -1)
+  const baseAmplitude = [...config.amplitude]
+  const amplitude = isFirst ? baseAmplitude : baseAmplitude.map(val => val * -1)
 
   return {
     animate: { rotateY: amplitude },

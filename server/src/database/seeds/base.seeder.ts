@@ -48,7 +48,7 @@ export abstract class BaseSeeder {
         chalk.green(`✅ ${this.constructor.name} completed successfully`),
       );
       return true;
-    } catch (error) {
+    } catch (error: unknown) {
       // Rollback transaction on error
       await queryRunner.rollbackTransaction();
 
@@ -56,17 +56,22 @@ export abstract class BaseSeeder {
       this.logger.error(error);
 
       // Report detailed error information
-      if (error.message) {
-        this.logger.error(chalk.red(`Error message: ${error.message}`));
+      const dbError = error as {
+        message?: string;
+        sql?: string;
+        parameters?: unknown[];
+      };
+      if (dbError.message) {
+        this.logger.error(chalk.red(`Error message: ${dbError.message}`));
       }
 
-      if (error.sql) {
-        this.logger.error(chalk.red(`Failed SQL: ${error.sql}`));
+      if (dbError.sql) {
+        this.logger.error(chalk.red(`Failed SQL: ${dbError.sql}`));
       }
 
-      if (error.parameters) {
+      if (dbError.parameters) {
         this.logger.error(
-          chalk.red(`Parameters: ${JSON.stringify(error.parameters)}`),
+          chalk.red(`Parameters: ${JSON.stringify(dbError.parameters)}`),
         );
       }
 
@@ -81,8 +86,8 @@ export abstract class BaseSeeder {
    * Check if the seeder should run (e.g. if data already exists)
    * Default is to always run, override in child classes
    */
-  protected async shouldSeed(): Promise<boolean> {
-    return true;
+  protected shouldSeed(): Promise<boolean> {
+    return Promise.resolve(true);
   }
 
   /**

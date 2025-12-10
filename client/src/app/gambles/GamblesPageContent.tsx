@@ -19,7 +19,7 @@ import {
   rem,
   useMantineTheme
 } from '@mantine/core'
-import { getEntityThemeColor, semanticColors, textColors, backgroundStyles, getHeroStyles, getPlayingCardStyles } from '../../lib/mantine-theme'
+import { getEntityThemeColor, backgroundStyles, getHeroStyles, getPlayingCardStyles } from '../../lib/mantine-theme'
 import { Dices, Search, X } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -613,10 +613,10 @@ export default function GamblesPageContent({
                 {hoveredGamble.description && (
                   <Text
                     size="sm"
-                    style={{ color: theme.colors.gray[6] }}
                     ta="center"
                     lineClamp={3}
                     style={{
+                      color: theme.colors.gray[6],
                       lineHeight: 1.4,
                       maxHeight: rem(60)
                     }}
@@ -683,10 +683,12 @@ export default function GamblesPageContent({
                     </Text>
                     <Text
                       size="xs"
-                      style={{ color: theme.colors.gray[6] }}
                       lineClamp={2}
                       ta="center"
-                      style={{ lineHeight: 1.4 }}
+                      style={{
+                        color: theme.colors.gray[6],
+                        lineHeight: 1.4
+                      }}
                     >
                       {hoveredGamble.winCondition}
                     </Text>

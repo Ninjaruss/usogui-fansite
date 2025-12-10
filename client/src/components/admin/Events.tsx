@@ -28,7 +28,9 @@ import {
   Filter,
   Loading,
   useListContext,
-  FunctionField
+  FunctionField,
+  TabbedForm,
+  FormTab
 } from 'react-admin'
 import { useFormContext } from 'react-hook-form'
 import { EventStatus } from '../../types'

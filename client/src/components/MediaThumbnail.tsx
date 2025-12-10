@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useEffect, useMemo, useState, useCallback, useRef } from 'react'
+import type { CSSProperties } from 'react'
 import {
   ActionIcon,
   Alert,
@@ -185,20 +186,20 @@ export default function MediaThumbnail({
   const numericMaxWidth = typeof maxWidth === 'number' ? maxWidth : Number(maxWidth)
   const numericMaxHeight = typeof maxHeight === 'number' ? maxHeight : Number(maxHeight)
 
-  const containerStyles = useMemo(
+  const containerStyles = useMemo<CSSProperties>(
     () => ({
       width: '100%',
       height: '100%',
       maxWidth: maxWidth,
       maxHeight: maxHeight,
       display: inline ? 'inline-block' : 'block',
-      position: 'relative' as const,
+      position: 'relative',
       overflow: 'hidden',
       borderRadius: rem(8),
       backgroundColor: theme.colors.gray?.[0] ?? '#f8f9fa',
       isolation: 'isolate',
       contain: 'layout size style',
-      boxSizing: 'border-box' as const,
+      boxSizing: 'border-box',
       margin: 0,
       padding: 0
     }),
@@ -277,16 +278,27 @@ export default function MediaThumbnail({
       setAllEntityMedia(mediaArray)
 
       if (mediaArray && mediaArray.length > 0) {
-        let startIndex = 0
-        for (let i = mediaArray.length - 1; i >= 0; i -= 1) {
-          const media = mediaArray[i]
-          if (!media.chapterNumber || media.chapterNumber <= userProgress) {
-            startIndex = i
-            break
-          }
+        // Find the best media based on user progress
+        const availableMedia = mediaArray.filter(media => 
+          !media.chapterNumber || media.chapterNumber <= userProgress
+        )
+        
+        let selectedMedia
+        if (availableMedia.length > 0) {
+          // Get the media with the highest chapter number that user has unlocked
+          selectedMedia = availableMedia.reduce((best, current) => {
+            const bestChapter = best.chapterNumber || 0
+            const currentChapter = current.chapterNumber || 0
+            return currentChapter > bestChapter ? current : best
+          })
+        } else {
+          // If no media meets progress requirements, use the first available
+          selectedMedia = mediaArray[0]
         }
+        
+        const startIndex = mediaArray.indexOf(selectedMedia)
         setCurrentIndex(startIndex)
-        setCurrentThumbnail(mediaArray[startIndex])
+        setCurrentThumbnail(selectedMedia)
       } else {
         await fetchCurrentThumbnail()
       }
@@ -312,17 +324,27 @@ export default function MediaThumbnail({
       setAllEntityMedia(mediaArray)
 
       if (mediaArray && mediaArray.length > 0) {
-        let startIndex = 0
-        for (let i = mediaArray.length - 1; i >= 0; i -= 1) {
-          const media = mediaArray[i]
-          if (!media.chapterNumber || media.chapterNumber <= userProgress) {
-            startIndex = i
-            break
-          }
+        // Find the best media based on user progress
+        const availableMedia = mediaArray.filter(media => 
+          !media.chapterNumber || media.chapterNumber <= userProgress
+        )
+        
+        let selectedMedia
+        if (availableMedia.length > 0) {
+          // Get the media with the highest chapter number that user has unlocked
+          selectedMedia = availableMedia.reduce((best, current) => {
+            const bestChapter = best.chapterNumber || 0
+            const currentChapter = current.chapterNumber || 0
+            return currentChapter > bestChapter ? current : best
+          })
+        } else {
+          // If no media meets progress requirements, use the first available
+          selectedMedia = mediaArray[0]
         }
-
+        
+        const startIndex = mediaArray.indexOf(selectedMedia)
         setCurrentIndex(startIndex)
-        setCurrentThumbnail(mediaArray[startIndex])
+        setCurrentThumbnail(selectedMedia)
       } else {
         await fetchCurrentThumbnail()
       }
@@ -418,7 +440,7 @@ export default function MediaThumbnail({
               alt={media.description || mediaInfo.title || `${entityName} image`}
               fill
               style={{
-                objectFit: 'cover',
+                objectFit: 'contain',
                 objectPosition: 'center center',
                 margin: 0,
                 padding: 0,
@@ -448,7 +470,7 @@ export default function MediaThumbnail({
               alt={media.description || `${entityName} video thumbnail`}
               fill
               style={{
-                objectFit: 'cover',
+                objectFit: 'contain',
                 objectPosition: 'center center',
                 margin: 0,
                 padding: 0,
@@ -565,7 +587,7 @@ export default function MediaThumbnail({
             alt={media.description || `${entityName} image`}
             fill
             style={{
-              objectFit: 'cover',
+              objectFit: 'contain',
               objectPosition: 'center center',
               margin: 0,
               padding: 0,
@@ -604,7 +626,7 @@ export default function MediaThumbnail({
           style={{
             width: '100%',
             height: '100%',
-            objectFit: 'cover',
+            objectFit: 'contain',
             objectPosition: 'center'
           }}
           onError={() => {
@@ -702,7 +724,9 @@ export default function MediaThumbnail({
           maxHeight: maxHeight,
           display: inline ? 'inline-flex' : 'flex',
           alignItems: 'center',
-          justifyContent: 'center'
+          justifyContent: 'center',
+          backgroundColor: theme.colors.gray?.[0] ?? '#f8f9fa',
+          borderRadius: rem(8)
         }}
       >
         <Loader style={{ color: getEntityThemeColor(theme, 'gamble') }} />

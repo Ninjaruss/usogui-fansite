@@ -47,13 +47,13 @@ export class MediaUrlResolverService {
       return {
         originalUrl: url,
         directImageUrl: url,
-        platform: 'direct'
+        platform: 'direct',
       };
     } catch (error) {
       this.logger.error(`Failed to resolve media URL: ${url}`, error);
       return {
         originalUrl: url,
-        platform: 'unknown'
+        platform: 'unknown',
       };
     }
   }
@@ -68,9 +68,9 @@ export class MediaUrlResolverService {
         this.httpService.get(oembedUrl, {
           timeout: 10000,
           headers: {
-            'User-Agent': 'Usogui-Fansite/1.0'
-          }
-        })
+            'User-Agent': 'Usogui-Fansite/1.0',
+          },
+        }),
       );
 
       const data = response.data;
@@ -93,15 +93,18 @@ export class MediaUrlResolverService {
           thumbnails: {
             small: data.thumbnail_url_150,
             medium: data.thumbnail_url,
-            large: data.thumbnail_url_200h
-          }
-        }
+            large: data.thumbnail_url_200h,
+          },
+        },
       };
     } catch (error) {
-      this.logger.warn(`Failed to resolve DeviantArt URL: ${url}`, error.message);
+      this.logger.warn(
+        `Failed to resolve DeviantArt URL: ${url}`,
+        error.message,
+      );
       return {
         originalUrl: url,
-        platform: 'deviantart'
+        platform: 'deviantart',
       };
     }
   }
@@ -114,7 +117,7 @@ export class MediaUrlResolverService {
     // For now, return the original URL
     return {
       originalUrl: url,
-      platform: 'pixiv'
+      platform: 'pixiv',
     };
   }
 
@@ -126,7 +129,7 @@ export class MediaUrlResolverService {
     // For now, return the original URL
     return {
       originalUrl: url,
-      platform: 'twitter'
+      platform: 'twitter',
     };
   }
 
@@ -138,14 +141,17 @@ export class MediaUrlResolverService {
     // For now, return the original URL
     return {
       originalUrl: url,
-      platform: 'instagram'
+      platform: 'instagram',
     };
   }
 
   /**
    * Cache resolved URLs to avoid repeated API calls
    */
-  private cache = new Map<string, { data: ResolvedMediaInfo; timestamp: number }>();
+  private cache = new Map<
+    string,
+    { data: ResolvedMediaInfo; timestamp: number }
+  >();
   private readonly CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
 
   async resolveMediaUrlCached(url: string): Promise<ResolvedMediaInfo> {

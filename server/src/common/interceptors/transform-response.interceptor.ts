@@ -8,6 +8,34 @@ import type { Response as ExpressResponse } from 'express';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
+interface PaginatedResponse<T> {
+  data: T[];
+  total: number;
+  page?: number;
+  perPage?: number;
+  limit?: number;
+  totalPages?: number;
+}
+
+interface TransformedPaginatedResponse<T> {
+  data: T[];
+  total: number;
+  page: number;
+  perPage: number | null;
+  totalPages: number;
+}
+
+interface ArrayWrapper<T> {
+  data: T[];
+}
+
+type TransformResult<T> =
+  | TransformedPaginatedResponse<T>
+  | ArrayWrapper<T>
+  | T
+  | null
+  | undefined;
+
 /**
  * Transform responses to ensure a single, consistent shape for the frontend.
  * - Preserve explicit shapes (auth tokens, other non-list payloads).
@@ -20,11 +48,14 @@ import { map } from 'rxjs/operators';
  */
 @Injectable()
 export class TransformResponseInterceptor<T>
-  implements NestInterceptor<T, any>
+  implements NestInterceptor<T, TransformResult<T>>
 {
-  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+  intercept(
+    context: ExecutionContext,
+    next: CallHandler<T>,
+  ): Observable<TransformResult<T>> {
     return next.handle().pipe(
-      map((response) => {
+      map((response: T): TransformResult<T> => {
         const httpResponse = context
           .switchToHttp()
           .getResponse<ExpressResponse>();
@@ -35,6 +66,7 @@ export class TransformResponseInterceptor<T>
         // If auth responses (e.g. { access_token, user }) or other explicit shapes, preserve them
         if (
           typeof response === 'object' &&
+          response !== null &&
           ('access_token' in response || 'token' in response)
         ) {
           return response;
@@ -43,9 +75,11 @@ export class TransformResponseInterceptor<T>
         // If the service already returns the canonical paginated shape expected by the client
         // e.g. { data: [...], total: number }
         if (typeof response === 'object' && response !== null) {
-          // Primary: { data: [...], total }
-          const topData = response.data;
-          const topTotal = response.total;
+          const paginatedResponse = response as unknown as PaginatedResponse<
+            T[keyof T]
+          >;
+          const topData = paginatedResponse.data;
+          const topTotal = paginatedResponse.total;
 
           if (Array.isArray(topData) && typeof topTotal === 'number') {
             const totalValue = topTotal;
@@ -55,18 +89,19 @@ export class TransformResponseInterceptor<T>
               'Access-Control-Expose-Headers',
               'X-Total-Count',
             );
+
+            const perPage =
+              paginatedResponse.perPage ?? paginatedResponse.limit ?? null;
+            const divisor = perPage ?? topData.length ?? 1;
+
             return {
               data: topData,
               total: totalValue,
-              page: response.page ?? 1,
-              perPage: response.perPage ?? response.limit ?? null,
+              page: paginatedResponse.page ?? 1,
+              perPage,
               totalPages:
-                response.totalPages ??
-                Math.ceil(
-                  totalValue /
-                    (response.perPage || response.limit || topData.length || 1),
-                ),
-            };
+                paginatedResponse.totalPages ?? Math.ceil(totalValue / divisor),
+            } as TransformResult<T>;
           }
         }
 
@@ -78,7 +113,7 @@ export class TransformResponseInterceptor<T>
             'Access-Control-Expose-Headers',
             'X-Total-Count',
           );
-          return { data: response };
+          return { data: response } as TransformResult<T>;
         }
 
         // For any other object, return as-is to avoid breaking expected shapes

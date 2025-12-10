@@ -8,7 +8,10 @@ interface Guide {
   title: string
   content: string
   description: string
-  tags: string[]
+  tags: Array<{
+    id: number
+    name: string
+  }>
   author: {
     id: number
     username: string

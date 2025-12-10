@@ -118,7 +118,10 @@ export const SearchBar: React.FC = () => {
 
     setLoading(true)
     try {
-      const response = await api.search(searchQuery, undefined, userProgress)
+      const response = await api.search({
+        query: searchQuery,
+        userProgress
+      })
 
       const priorityOrder = ['character', 'organization', 'arc', 'gamble', 'event', 'chapter']
       const sortedResults = response.results.sort((a, b) => {

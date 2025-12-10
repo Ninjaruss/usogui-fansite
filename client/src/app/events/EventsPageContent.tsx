@@ -22,7 +22,7 @@ import {
   useMantineTheme
 } from '@mantine/core'
 import { notifications } from '@mantine/notifications'
-import { getEntityThemeColor, semanticColors, textColors, backgroundStyles, getHeroStyles, getCardStyles } from '../../lib/mantine-theme'
+import { getEntityThemeColor, backgroundStyles, getCardStyles } from '../../lib/mantine-theme'
 import { CalendarSearch, Search, ChevronDown, AlertCircle, X } from 'lucide-react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'motion/react'

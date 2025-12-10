@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import {
   Title,
   Text,
@@ -18,6 +18,7 @@ import {
   Pagination,
   Alert,
   Box,
+  Container,
   Paper,
   useMantineTheme,
   rem,
@@ -28,7 +29,6 @@ import {
 import { useDebouncedValue } from '@mantine/hooks'
 import {
   Search,
-  Filter,
   Image as ImageIcon,
   Play,
   Volume2,
@@ -38,13 +38,11 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
-  Maximize2
+  Upload
 } from 'lucide-react'
 import Link from 'next/link'
 import { api } from '../../lib/api'
 import { getEntityThemeColor, backgroundStyles, getHeroStyles } from '../../lib/mantine-theme'
-import MediaGallery from '../../components/MediaGallery'
-import { useProgress } from '../../providers/ProgressProvider'
 
 interface MediaItem {
   id: number
@@ -62,7 +60,6 @@ interface MediaItem {
     username: string
   }
   createdAt: string
-  // Related entity info
   character?: { id: number; name: string }
   arc?: { id: number; name: string }
   event?: { id: number; title: string }
@@ -78,7 +75,7 @@ interface MediaPageContentProps {
   initialSearch?: string
 }
 
-const ITEMS_PER_PAGE = 24
+const ITEMS_PER_PAGE = 30
 
 export default function MediaPageContent({
   initialPage,
@@ -88,10 +85,9 @@ export default function MediaPageContent({
   initialSearch
 }: MediaPageContentProps) {
   const theme = useMantineTheme()
-  const { userProgress } = useProgress()
+  const accentMedia = getEntityThemeColor(theme, 'media')
 
   const [media, setMedia] = useState<MediaItem[]>([])
-  const [allMedia, setAllMedia] = useState<MediaItem[]>([]) // Store all media for client-side filtering
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [selectedMedia, setSelectedMedia] = useState<MediaItem | null>(null)
@@ -117,7 +113,7 @@ export default function MediaPageContent({
     setError('')
 
     try {
-      const params: any = {
+      const params: Record<string, string | number> = {
         page: currentPage,
         limit: ITEMS_PER_PAGE,
         purpose: selectedPurpose
@@ -135,58 +131,49 @@ export default function MediaPageContent({
         params.ownerId = initialOwnerId
       }
 
+      if (debouncedSearch.trim()) {
+        params.description = debouncedSearch.trim()
+      }
+
       const response = await api.getApprovedMedia(params)
       const fetchedMedia = response.data || []
 
-      // Store all media for client-side filtering
-      setAllMedia(fetchedMedia)
       setMedia(fetchedMedia)
-      setTotalPages(response.totalPages || 1)
-      setTotal(fetchedMedia.length)
+      setTotal(response.total ?? fetchedMedia.length)
+      setTotalPages(response.totalPages ?? 1)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load media')
       setMedia([])
+      setTotal(0)
+      setTotalPages(1)
     } finally {
       setLoading(false)
     }
-  }, [currentPage, selectedType, selectedOwnerType, selectedPurpose, initialOwnerId])
+  }, [currentPage, selectedType, selectedOwnerType, selectedPurpose, initialOwnerId, debouncedSearch])
 
   useEffect(() => {
     fetchMedia()
   }, [fetchMedia])
 
-  // Separate effect for client-side search filtering
-  useEffect(() => {
-    if (allMedia.length > 0) {
-      let filteredMedia = allMedia
-      if (debouncedSearch && debouncedSearch.trim()) {
-        const searchTerm = debouncedSearch.toLowerCase()
-        filteredMedia = allMedia.filter(item =>
-          item.description?.toLowerCase().includes(searchTerm) ||
-          item.submittedBy?.username?.toLowerCase().includes(searchTerm) ||
-          getEntityName(item).toLowerCase().includes(searchTerm)
-        )
-      }
-      setMedia(filteredMedia)
-      setTotal(filteredMedia.length)
-
-      // Reset to page 1 when search changes
-      if (currentPage !== 1) {
-        setCurrentPage(1)
-      }
-    }
-  }, [debouncedSearch, allMedia, currentPage])
-
-  // Reset to page 1 when filters change (non-search filters)
   useEffect(() => {
     if (currentPage !== 1) {
       setCurrentPage(1)
     }
-  }, [selectedType, selectedOwnerType, selectedPurpose])
+  }, [selectedType, selectedOwnerType, selectedPurpose, debouncedSearch])
+
+  const handleClearFilters = useCallback(() => {
+    setSearchValue('')
+    setSelectedType('all')
+    setSelectedOwnerType('all')
+    setSelectedPurpose('gallery')
+    setCurrentPage(1)
+  }, [])
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page)
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
   }
 
   const handleMediaClick = (item: MediaItem, index: number) => {
@@ -227,13 +214,11 @@ export default function MediaPageContent({
 
   const getOptimalAspectRatio = (itemId: number) => {
     const dims = imageDimensions[itemId]
-    if (!dims) return 1 // Default square
+    if (!dims) return 1
 
     const ratio = dims.width / dims.height
-
-    // Constrain to more compact ratios
-    if (ratio > 1.3) return 1.3 // Max 1.3:1 (slightly wide)
-    if (ratio < 0.8) return 0.8 // Max 1:1.25 (slightly tall)
+    if (ratio > 1.3) return 1.3
+    if (ratio < 0.8) return 0.8
 
     return ratio
   }
@@ -288,8 +273,10 @@ export default function MediaPageContent({
         return getEntityThemeColor(theme, 'gamble')
       case 'organization':
         return getEntityThemeColor(theme, 'organization')
-      default:
+      case 'user':
         return getEntityThemeColor(theme, 'media')
+      default:
+        return accentMedia
     }
   }
 
@@ -299,6 +286,7 @@ export default function MediaPageContent({
     if (item.event) return item.event.title
     if (item.gamble) return item.gamble.name
     if (item.organization) return item.organization.name
+    if (item.ownerType === 'user') return item.submittedBy.username
     return 'Unknown'
   }
 
@@ -308,287 +296,515 @@ export default function MediaPageContent({
     if (item.event) return `/events/${item.event.id}`
     if (item.gamble) return `/gambles/${item.gamble.id}`
     if (item.organization) return `/organizations/${item.organization.id}`
+    if (item.ownerType === 'user') return `/users/${item.ownerId}`
     return '#'
   }
 
+  const mediaInsights = useMemo(() => {
+    const contributorIds = new Set<number>()
+    const counts: Record<'image' | 'video' | 'audio', number> = { image: 0, video: 0, audio: 0 }
+
+    media.forEach(item => {
+      contributorIds.add(item.submittedBy.id)
+      counts[item.type] += 1
+    })
+
+    return {
+      contributors: contributorIds.size,
+      counts,
+      typeSummary: `${counts.image} image${counts.image === 1 ? '' : 's'} • ${counts.video} video${counts.video === 1 ? '' : 's'} • ${counts.audio} audio${counts.audio === 1 ? '' : 's'}`
+    }
+  }, [media])
+
+  const activeFilters = useMemo(() => {
+    const filters: Array<{ key: string; label: string; onClear: () => void }> = []
+
+    if (searchValue.trim()) {
+      filters.push({
+        key: 'search',
+        label: `Keyword: ${searchValue.trim()}`,
+        onClear: () => setSearchValue('')
+      })
+    }
+
+    if (selectedType !== 'all') {
+      filters.push({
+        key: 'type',
+        label: `Type: ${selectedType}`,
+        onClear: () => setSelectedType('all')
+      })
+    }
+
+    if (selectedOwnerType !== 'all') {
+      filters.push({
+        key: 'owner',
+        label: `Content: ${selectedOwnerType}`,
+        onClear: () => setSelectedOwnerType('all')
+      })
+    }
+
+    if (selectedPurpose !== 'gallery') {
+      filters.push({
+        key: 'purpose',
+        label: 'Official media',
+        onClear: () => setSelectedPurpose('gallery')
+      })
+    }
+
+    return filters
+  }, [searchValue, selectedType, selectedOwnerType, selectedPurpose])
+
+  const hasActiveFilters = activeFilters.length > 0
+  const totalLabel = total === 1 ? 'item' : 'items'
+  const rangeStart = media.length > 0 ? (currentPage - 1) * ITEMS_PER_PAGE + 1 : 0
+  const rangeEnd = rangeStart ? rangeStart + media.length - 1 : 0
+
+  const selectionSummary = useMemo(() => {
+    const isDefaultView =
+      selectedPurpose === 'gallery' &&
+      selectedType === 'all' &&
+      selectedOwnerType === 'all' &&
+      !searchValue.trim()
+
+    if (isDefaultView) {
+      return 'All submissions'
+    }
+
+    const parts: string[] = []
+
+    parts.push(selectedPurpose === 'entity_display' ? 'Official media' : 'Community gallery')
+
+    if (selectedType !== 'all') {
+      parts.push(`${selectedType.charAt(0).toUpperCase()}${selectedType.slice(1)}`)
+    }
+
+    if (selectedOwnerType !== 'all') {
+      const formattedOwner = selectedOwnerType === 'user'
+        ? 'Community members'
+        : `${selectedOwnerType.charAt(0).toUpperCase()}${selectedOwnerType.slice(1)}`
+      parts.push(formattedOwner)
+    }
+
+    if (searchValue.trim()) {
+      parts.push(`“${searchValue.trim()}”`)
+    }
+
+    return parts.join(' • ')
+  }, [selectedPurpose, selectedType, selectedOwnerType, searchValue])
+
   return (
     <Box style={{ backgroundColor: backgroundStyles.page(theme), minHeight: '100vh' }}>
-    <Stack gap="xl" px="md">
-      {/* Header */}
       <Stack gap="md">
-        <Group justify="space-between" align="flex-end">
-          <Stack gap="xs">
-            <Title order={1} size="h1" style={{ color: getEntityThemeColor(theme, 'media') }}>
-              Media Gallery
-            </Title>
-            <Text style={{ color: theme.colors.gray[6] }}>
-              Browse community-submitted fanart, videos, and other media related to Usogui
-            </Text>
-          </Stack>
-
-          <Group gap="xs">
-            <Text size="sm" style={{ color: theme.colors.gray[6] }}>
-              {total} {total === 1 ? 'item' : 'items'}
-            </Text>
-          </Group>
-        </Group>
-      </Stack>
-
-      {/* Filters */}
-      <Paper p="md" radius="md" withBorder>
-        <Group gap="md" align="flex-end">
-          <TextInput
-            placeholder="Search media descriptions..."
-            leftSection={<Search size={16} />}
-            value={searchValue}
-            onChange={(e) => setSearchValue(e.target.value)}
-            style={{ flex: 1, minWidth: 200 }}
-          />
-
-          <Select
-            data={[
-              { value: 'all', label: 'All Types' },
-              { value: 'image', label: 'Images' },
-              { value: 'video', label: 'Videos' },
-              { value: 'audio', label: 'Audio' }
-            ]}
-            value={selectedType}
-            onChange={(value) => setSelectedType(value || 'all')}
-            placeholder="Media Type"
-            leftSection={getMediaTypeIcon(selectedType)}
-            w={140}
-          />
-
-          <Select
-            data={[
-              { value: 'all', label: 'All Content' },
-              { value: 'character', label: 'Characters' },
-              { value: 'arc', label: 'Arcs' },
-              { value: 'event', label: 'Events' },
-              { value: 'gamble', label: 'Gambles' },
-              { value: 'organization', label: 'Organizations' }
-            ]}
-            value={selectedOwnerType}
-            onChange={(value) => setSelectedOwnerType(value as any || 'all')}
-            placeholder="Content Type"
-            w={140}
-          />
-
-          <Select
-            data={[
-              { value: 'gallery', label: 'Community Media' },
-              { value: 'entity_display', label: 'Official Media' }
-            ]}
-            value={selectedPurpose}
-            onChange={(value) => setSelectedPurpose(value || 'gallery')}
-            placeholder="Purpose"
-            w={160}
-          />
-        </Group>
-      </Paper>
-
-      {/* Error State */}
-      {error && (
-        <Alert color="red" title="Error loading media">
-          {error}
-        </Alert>
-      )}
-
-      {/* Loading State */}
-      {loading && (
-        <Group justify="center" py="xl">
-          <Loader size="lg" style={{ color: getEntityThemeColor(theme, 'media') }} />
-        </Group>
-      )}
-
-      {/* Media Grid */}
-      {!loading && !error && media.length > 0 && (
-        <SimpleGrid cols={{ base: 3, sm: 4, md: 6, lg: 8, xl: 10 }} spacing="xs">
-          {media.map((item, index) => {
-            const thumbnail = getMediaThumbnail(item)
-            const aspectRatio = getOptimalAspectRatio(item.id)
-            const isImageLoaded = loadedImages.has(item.id)
-
-            return (
-              <Card
-                key={item.id}
-                withBorder
-                radius="sm"
-                shadow="xs"
-                p={0}
-                style={{
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease',
-                  height: 'auto'
-                }}
-                onClick={() => handleMediaClick(item, index)}
-              >
-                <AspectRatio ratio={isImageLoaded ? aspectRatio : 1}>
-                  {thumbnail ? (
-                    <Box style={{ position: 'relative' }}>
-                      <img
-                        src={thumbnail}
-                        alt={item.description}
-                        style={{
-                          width: '100%',
-                          height: '100%',
-                          objectFit: 'cover',
-                          transition: 'opacity 0.3s ease'
-                        }}
-                        onLoad={(e) => handleImageLoad(item.id, e)}
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement
-                          target.style.display = 'none'
-                          const fallback = document.createElement('div')
-                          fallback.style.cssText = `
-                            display: flex;
-                            align-items: center;
-                            justify-content: center;
-                            background: rgba(0,0,0,0.1);
-                            width: 100%;
-                            height: 100%;
-                            border-radius: 8px;
-                          `
-                          fallback.innerHTML = item.type === 'image'
-                            ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>'
-                            : '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5,3 19,12 5,21 5,3"/></svg>'
-                          target.parentElement?.appendChild(fallback)
-                        }}
-                      />
-                      {item.type === 'video' && (
-                        <Box
-                          style={{
-                            position: 'absolute',
-                            top: '50%',
-                            left: '50%',
-                            transform: 'translate(-50%, -50%)',
-                            backgroundColor: 'rgba(0,0,0,0.7)',
-                            borderRadius: '50%',
-                            padding: rem(4),
-                            color: 'white'
-                          }}
-                        >
-                          <Play size={14} />
-                        </Box>
-                      )}
-                      <Badge
-                        variant="light"
-                        color={getOwnerTypeColor(item.ownerType)}
-                        size="xs"
-                        style={{
-                          position: 'absolute',
-                          top: rem(2),
-                          left: rem(2),
-                          fontSize: '7px',
-                          padding: '1px 4px',
-                          height: '14px',
-                          minHeight: '14px'
-                        }}
-                      >
-                        {item.ownerType}
-                      </Badge>
-                      <ActionIcon
-                        variant="subtle"
-                        size="xs"
-                        component="a"
-                        href={item.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={(e) => e.stopPropagation()}
-                        style={{
-                          position: 'absolute',
-                          top: rem(2),
-                          right: rem(2),
-                          backgroundColor: 'rgba(0,0,0,0.7)',
-                          color: 'white',
-                          width: '16px',
-                          height: '16px',
-                          minWidth: '16px',
-                          minHeight: '16px'
-                        }}
-                      >
-                        <ExternalLink size={8} />
-                      </ActionIcon>
-                    </Box>
-                  ) : (
-                    <Box
-                      style={{
-                        background: 'rgba(0,0,0,0.1)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        borderRadius: rem(8)
-                      }}
-                    >
-                      {getMediaTypeIcon(item.type)}
-                    </Box>
-                  )}
-                </AspectRatio>
-
-                <Stack gap={2} p={4}>
-                  <Group justify="space-between" align="center" gap={2}>
-                    <Group gap={2} align="center">
-                      <User size={8} />
-                      <Text size="xs" style={{ color: theme.colors.gray[6], fontSize: '8px' }} truncate>
-                        {item.submittedBy.username}
-                      </Text>
-                    </Group>
-
-                    {item.chapterNumber && (
-                      <Badge variant="outline" size="xs" style={{ fontSize: '7px', padding: '1px 3px', height: '12px', minHeight: '12px' }}>
-                        Ch. {item.chapterNumber}
-                      </Badge>
-                    )}
-                  </Group>
-                </Stack>
-              </Card>
-            )
-          })}
-        </SimpleGrid>
-      )}
-
-      {/* Empty State */}
-      {!loading && !error && media.length === 0 && (
-        <Paper p="xl" radius="md" withBorder ta="center">
-          <Stack gap="md" align="center">
-            <ImageIcon size={48} style={{ color: getEntityThemeColor(theme, 'media'), opacity: 0.5 }} />
-            <Stack gap="xs" align="center">
-              <Text fw={500}>No media found</Text>
-              <Text size="sm" style={{ color: theme.colors.gray[6] }}>
-                Try adjusting your filters or search terms
-              </Text>
-            </Stack>
-            <Button
-              variant="light"
-              color={getEntityThemeColor(theme, 'media')}
-              onClick={() => {
-                setSearchValue('')
-                setSelectedType('all')
-                setSelectedOwnerType('all')
-                setSelectedPurpose('gallery')
-                setCurrentPage(1)
+        <Box p="md" style={getHeroStyles(theme, accentMedia)}>
+          <Stack align="center" gap="sm">
+            <Box
+              style={{
+                background: `linear-gradient(135deg, ${accentMedia}, ${accentMedia}CC)`,
+                borderRadius: '50%',
+                width: rem(40),
+                height: rem(40),
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: `0 10px 30px ${accentMedia}40`
               }}
             >
-              Clear filters
-            </Button>
+              <ImageIcon size={20} color="#ffffff" />
+            </Box>
+
+            <Stack align="center" gap={4} maw={520} ta="center">
+              <Title order={1} size="1.5rem" fw={700} c="#ffffff">
+                Media Gallery
+              </Title>
+              <Text size="sm" c="dimmed">
+                Community fanart, videos, and official artwork celebrating Usogui.
+              </Text>
+              <Group gap={6} justify="center">
+                <Badge
+                  size="sm"
+                  variant="light"
+                  radius="sm"
+                  c={accentMedia}
+                  style={{ backgroundColor: `${accentMedia}20` }}
+                >
+                  {total.toLocaleString()} {totalLabel}
+                </Badge>
+                <Button
+                  component={Link}
+                  href="/submit-media"
+                  size="xs"
+                  radius="sm"
+                  variant="light"
+                  color="grape"
+                  leftSection={<Upload size={14} />}
+                >
+                  Submit
+                </Button>
+              </Group>
+            </Stack>
           </Stack>
-        </Paper>
-      )}
+        </Box>
 
-      {/* Pagination */}
-      {!loading && !error && totalPages > 1 && (
-        <Group justify="center" py="md">
-          <Pagination
-            value={currentPage}
-            onChange={handlePageChange}
-            total={totalPages}
-            color={getEntityThemeColor(theme, 'media')}
-            size="md"
-          />
-        </Group>
-      )}
+        <Container size="xl" px="md">
+          <Paper
+            withBorder
+            radius="md"
+            p="md"
+            style={{ background: backgroundStyles.card, borderColor: `${accentMedia}25` }}
+          >
+            <Stack gap="md">
+              <Group gap="md" wrap="wrap">
+                <Box style={{ flex: '1 1 280px', minWidth: '200px' }}>
+                  <TextInput
+                    placeholder="Search descriptions..."
+                    leftSection={<Search size={16} />}
+                    value={searchValue}
+                    onChange={(e) => setSearchValue(e.target.value)}
+                    rightSection={
+                      searchValue && (
+                        <ActionIcon
+                          size="sm"
+                          variant="subtle"
+                          onClick={() => setSearchValue('')}
+                          style={{ color: accentMedia }}
+                        >
+                          <X size={14} />
+                        </ActionIcon>
+                      )
+                    }
+                    styles={{
+                      input: {
+                        backgroundColor: backgroundStyles.input,
+                        border: `1px solid ${accentMedia}30`,
+                        color: '#ffffff',
+                        '&:focus': {
+                          borderColor: accentMedia
+                        }
+                      }
+                    }}
+                  />
+                </Box>
 
-      {/* Media Viewer Modal */}
+                <Group gap="sm" wrap="wrap">
+                  <Select
+                    data={[
+                      { value: 'all', label: 'All Types' },
+                      { value: 'image', label: 'Images' },
+                      { value: 'video', label: 'Videos' },
+                      { value: 'audio', label: 'Audio' }
+                    ]}
+                    value={selectedType}
+                    onChange={(value) => setSelectedType(value || 'all')}
+                    placeholder="Type"
+                    leftSection={getMediaTypeIcon(selectedType)}
+                    w={140}
+                    styles={{
+                      input: {
+                        backgroundColor: backgroundStyles.input,
+                        border: `1px solid ${accentMedia}30`,
+                        color: '#ffffff'
+                      },
+                      dropdown: {
+                        backgroundColor: backgroundStyles.card
+                      }
+                    }}
+                  />
+
+                  <Select
+                    data={[
+                      { value: 'all', label: 'All Content' },
+                      { value: 'character', label: 'Characters' },
+                      { value: 'arc', label: 'Arcs' },
+                      { value: 'event', label: 'Events' },
+                      { value: 'gamble', label: 'Gambles' },
+                      { value: 'organization', label: 'Organizations' },
+                      { value: 'user', label: 'Community' }
+                    ]}
+                    value={selectedOwnerType}
+                    onChange={(value) => setSelectedOwnerType((value as typeof selectedOwnerType) || 'all')}
+                    placeholder="Category"
+                    w={160}
+                    styles={{
+                      input: {
+                        backgroundColor: backgroundStyles.input,
+                        border: `1px solid ${accentMedia}30`,
+                        color: '#ffffff'
+                      },
+                      dropdown: {
+                        backgroundColor: backgroundStyles.card
+                      }
+                    }}
+                  />
+
+                  <Select
+                    data={[
+                      { value: 'gallery', label: 'Community' },
+                      { value: 'entity_display', label: 'Official' }
+                    ]}
+                    value={selectedPurpose}
+                    onChange={(value) => setSelectedPurpose(value || 'gallery')}
+                    placeholder="Source"
+                    w={130}
+                    styles={{
+                      input: {
+                        backgroundColor: backgroundStyles.input,
+                        border: `1px solid ${accentMedia}30`,
+                        color: '#ffffff'
+                      },
+                      dropdown: {
+                        backgroundColor: backgroundStyles.card
+                      }
+                    }}
+                  />
+
+                  {hasActiveFilters && (
+                    <Button
+                      variant="light"
+                      size="sm"
+                      onClick={handleClearFilters}
+                      color="grape"
+                      leftSection={<X size={14} />}
+                    >
+                      Clear
+                    </Button>
+                  )}
+                </Group>
+              </Group>
+
+              {(media.length > 0 || total > 0) && (
+                <Group gap="xs" wrap="wrap">
+                  <Group gap={6}>
+                    <ImageIcon size={12} color={accentMedia} />
+                    <Text size="xs" c="dimmed">
+                      {total.toLocaleString()} total
+                    </Text>
+                  </Group>
+                  <Text size="xs" c="dimmed">•</Text>
+                  <Text size="xs" c="dimmed">
+                    {mediaInsights.contributors} creator{mediaInsights.contributors !== 1 ? 's' : ''}
+                  </Text>
+                  <Text size="xs" c="dimmed">•</Text>
+                  <Text size="xs" c="dimmed">
+                    {selectionSummary}
+                  </Text>
+                </Group>
+              )}
+            </Stack>
+          </Paper>
+        </Container>
+
+        {error && (
+          <Container size="xl" px="md">
+            <Alert color={accentMedia} variant="light" radius="lg" title="Error loading media">
+              {error}
+            </Alert>
+          </Container>
+        )}
+
+        {!error && (
+          <Container size="xl" px="md" pb="xl">
+            {loading ? (
+              <Group justify="center" py="xl">
+                <Loader size="lg" color={accentMedia} />
+              </Group>
+            ) : (
+              <>
+                {media.length === 0 ? (
+                  <Paper p="md" radius="md" withBorder ta="center" style={{ background: backgroundStyles.card, borderColor: `${accentMedia}25` }}>
+                    <Stack gap="md" align="center">
+                      <ImageIcon size={40} style={{ color: accentMedia, opacity: 0.6 }} />
+                      <Stack gap="xs" align="center">
+                        <Text fw={600}>No media found</Text>
+                        <Text size="sm" c="dimmed">
+                          Try adjusting your filters or search terms
+                        </Text>
+                      </Stack>
+                      <Button variant="light" color="grape" size="sm" onClick={handleClearFilters} leftSection={<X size={14} />}>
+                        Reset filters
+                      </Button>
+                    </Stack>
+                  </Paper>
+                ) : (
+                  <Stack gap="md">
+                    <Group justify="space-between" align="center" wrap="wrap">
+                      <Text size="sm" c="dimmed">
+                        Showing {rangeStart.toLocaleString()}–{rangeEnd.toLocaleString()} of {total.toLocaleString()}
+                      </Text>
+                      {loading && (
+                        <Group gap={6}>
+                          <Loader size="xs" color={accentMedia} />
+                          <Text size="xs" c="dimmed">Loading...</Text>
+                        </Group>
+                      )}
+                    </Group>
+
+                    <SimpleGrid cols={{ base: 2, xs: 3, sm: 4, md: 5, lg: 6, xl: 8 }} spacing="xs">
+                      {media.map((item, index) => {
+                        const thumbnail = getMediaThumbnail(item)
+                        const aspectRatio = getOptimalAspectRatio(item.id)
+                        const isImageLoaded = loadedImages.has(item.id)
+                        const ownerLabel = item.ownerType === 'user'
+                          ? 'Community'
+                          : item.ownerType
+
+                        return (
+                          <Card
+                            key={item.id}
+                            withBorder
+                            radius="md"
+                            shadow="sm"
+                            p={0}
+                            style={{
+                              background: backgroundStyles.card,
+                              borderColor: `${accentMedia}20`,
+                              cursor: 'pointer',
+                              transition: 'transform 0.15s ease, box-shadow 0.15s ease',
+                              overflow: 'hidden'
+                            }}
+                            onClick={() => handleMediaClick(item, index)}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.transform = 'translateY(-2px)';
+                              e.currentTarget.style.boxShadow = `0 8px 20px ${accentMedia}30`
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.transform = 'translateY(0)';
+                              e.currentTarget.style.boxShadow = theme.shadows.sm
+                            }}
+                          >
+                            <AspectRatio ratio={isImageLoaded ? aspectRatio : 1}>
+                              {thumbnail ? (
+                                <Box style={{ position: 'relative', width: '100%', height: '100%' }}>
+                                  <img
+                                    src={thumbnail}
+                                    alt={item.description || 'Media item'}
+                                    style={{
+                                      width: '100%',
+                                      height: '100%',
+                                      objectFit: 'cover'
+                                    }}
+                                    onLoad={(e) => handleImageLoad(item.id, e)}
+                                    onError={(e) => {
+                                      const target = e.target as HTMLImageElement
+                                      target.style.display = 'none'
+                                    }}
+                                  />
+                                  {item.type === 'video' && (
+                                    <Box
+                                      style={{
+                                        position: 'absolute',
+                                        top: '50%',
+                                        left: '50%',
+                                        transform: 'translate(-50%, -50%)',
+                                        backgroundColor: 'rgba(0,0,0,0.75)',
+                                        borderRadius: '50%',
+                                        padding: rem(8),
+                                        color: 'white',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center'
+                                      }}
+                                    >
+                                      <Play size={16} fill="white" />
+                                    </Box>
+                                  )}
+                                  <Badge
+                                    variant="filled"
+                                    size="xs"
+                                    radius="sm"
+                                    style={{
+                                      position: 'absolute',
+                                      top: rem(4),
+                                      left: rem(4),
+                                      backgroundColor: getOwnerTypeColor(item.ownerType),
+                                      color: '#fff',
+                                      textTransform: 'capitalize',
+                                      fontSize: rem(10),
+                                      padding: `${rem(2)} ${rem(6)}`
+                                    }}
+                                  >
+                                    {ownerLabel}
+                                  </Badge>
+                                  <ActionIcon
+                                    variant="filled"
+                                    size="sm"
+                                    component="a"
+                                    href={item.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    onClick={(e) => e.stopPropagation()}
+                                    style={{
+                                      position: 'absolute',
+                                      top: rem(4),
+                                      right: rem(4),
+                                      backgroundColor: 'rgba(0,0,0,0.75)',
+                                      color: 'white'
+                                    }}
+                                  >
+                                    <ExternalLink size={12} />
+                                  </ActionIcon>
+                                </Box>
+                              ) : (
+                                <Box
+                                  style={{
+                                    background: `${accentMedia}10`,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    width: '100%',
+                                    height: '100%'
+                                  }}
+                                >
+                                  {getMediaTypeIcon(item.type)}
+                                </Box>
+                              )}
+                            </AspectRatio>
+
+                            <Stack gap={4} p="xs">
+                              {item.description && (
+                                <Text size="xs" fw={500} lineClamp={2} title={item.description}>
+                                  {item.description}
+                                </Text>
+                              )}
+
+                              <Group justify="space-between" align="center" gap={4} wrap="nowrap">
+                                <Group gap={4} align="center" style={{ minWidth: 0, flex: 1 }}>
+                                  <User size={10} style={{ flexShrink: 0 }} />
+                                  <Text size="xs" c="dimmed" truncate>
+                                    {item.submittedBy.username}
+                                  </Text>
+                                </Group>
+                                {item.chapterNumber && (
+                                  <Badge variant="dot" size="xs" c={accentMedia} style={{ flexShrink: 0 }}>
+                                    Ch.{item.chapterNumber}
+                                  </Badge>
+                                )}
+                              </Group>
+                            </Stack>
+                          </Card>
+                        )
+                      })}
+                    </SimpleGrid>
+
+                    {totalPages > 1 && (
+                      <Group justify="center">
+                        <Pagination
+                          value={currentPage}
+                          onChange={handlePageChange}
+                          total={totalPages}
+                          color="grape"
+                          radius="md"
+                          size="sm"
+                        />
+                      </Group>
+                    )}
+                  </Stack>
+                )}
+              </>
+            )}
+          </Container>
+        )}
+      </Stack>
+
       <Modal
         opened={viewerOpen}
         onClose={handleCloseViewer}
@@ -600,7 +816,6 @@ export default function MediaPageContent({
       >
         {selectedMedia && (
           <Box style={{ position: 'relative' }}>
-            {/* Close Button */}
             <ActionIcon
               variant="subtle"
               size="lg"
@@ -617,7 +832,6 @@ export default function MediaPageContent({
               <X size={20} />
             </ActionIcon>
 
-            {/* Navigation Buttons */}
             {currentIndex > 0 && (
               <ActionIcon
                 variant="subtle"
@@ -656,44 +870,25 @@ export default function MediaPageContent({
               </ActionIcon>
             )}
 
-            {/* Media Content */}
             <Stack gap={0}>
               <Box style={{ maxHeight: '70vh', overflow: 'hidden' }}>
                 {selectedMedia.type === 'image' ? (
                   <Image
-                    src={getMediaThumbnail(selectedMedia) || selectedMedia.url}
-                    alt={selectedMedia.description}
-                    style={{
-                      width: '100%',
-                      height: 'auto',
-                      maxHeight: '70vh',
-                      objectFit: 'contain'
-                    }}
+                    src={selectedMedia.url}
+                    alt={selectedMedia.description || 'Media preview'}
+                    fit="contain"
+                    fallbackSrc="/images/placeholder-media.png"
                   />
                 ) : selectedMedia.type === 'video' ? (
                   selectedMedia.url.includes('youtube.com') || selectedMedia.url.includes('youtu.be') ? (
-                    <Box style={{ position: 'relative', paddingBottom: '56.25%', height: 0 }}>
-                      <iframe
-                        src={`https://www.youtube.com/embed/${extractYouTubeVideoId(selectedMedia.url)}`}
-                        style={{
-                          position: 'absolute',
-                          top: 0,
-                          left: 0,
-                          width: '100%',
-                          height: '100%',
-                          border: 'none'
-                        }}
-                        allowFullScreen
-                      />
-                    </Box>
+                    <iframe
+                      src={selectedMedia.url.replace('watch?v=', 'embed/')}
+                      title={selectedMedia.description}
+                      allowFullScreen
+                      style={{ width: '100%', minHeight: '60vh', border: 'none' }}
+                    />
                   ) : (
-                    <video
-                      controls
-                      style={{
-                        width: '100%',
-                        maxHeight: '70vh'
-                      }}
-                    >
+                    <video controls style={{ width: '100%', maxHeight: '70vh' }}>
                       <source src={selectedMedia.url} />
                       Your browser does not support the video tag.
                     </video>
@@ -716,7 +911,6 @@ export default function MediaPageContent({
                 )}
               </Box>
 
-              {/* Media Info */}
               <Paper p="md" radius={0}>
                 <Stack gap="md">
                   <Group justify="space-between" align="flex-start">
@@ -736,8 +930,8 @@ export default function MediaPageContent({
                         <Badge
                           variant="outline"
                           size="sm"
-                          c={getEntityThemeColor(theme, 'media')}
-                          style={{ borderColor: getEntityThemeColor(theme, 'media') }}
+                          c={accentMedia}
+                          style={{ borderColor: accentMedia }}
                         >
                           {selectedMedia.type}
                         </Badge>
@@ -809,7 +1003,6 @@ export default function MediaPageContent({
           </Box>
         )}
       </Modal>
-    </Stack>
     </Box>
   )
 }

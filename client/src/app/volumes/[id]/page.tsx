@@ -1,6 +1,6 @@
 import React from 'react'
 import { Alert, Box, Button, Container, Stack, Text } from '@mantine/core'
-import { getEntityThemeColor, semanticColors, textColors } from '../../../lib/mantine-theme'
+import { colors } from '../../../lib/mantine-theme'
 import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import { Metadata } from 'next'
@@ -91,7 +91,7 @@ export default async function VolumeDetailPage({ params }: PageProps) {
     return (
       <Container size="lg" py="xl">
         <Stack gap="md">
-          <Alert style={{ color: getEntityThemeColor(theme, 'gamble') }} radius="md">
+          <Alert style={{ color: colors.gamble[5] }} radius="md">
             <Text size="sm">Volume not found</Text>
           </Alert>
           <Box>
@@ -99,7 +99,7 @@ export default async function VolumeDetailPage({ params }: PageProps) {
               component={Link}
               href="/volumes"
               variant="outline"
-              style={{ color: getEntityThemeColor(theme, 'gamble') }}
+              style={{ color: colors.gamble[5] }}
               leftSection={<ArrowLeft size={16} />}
             >
               Back to Volumes

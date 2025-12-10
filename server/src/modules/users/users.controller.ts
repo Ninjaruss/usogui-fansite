@@ -96,21 +96,21 @@ export class UsersController {
   @ApiQuery({
     name: 'limit',
     required: false,
-    description: 'Items per page',
-    example: 12,
+    description: 'Items per page (default: 20, max: 100)',
+    example: 20,
   })
   @ApiQuery({
     name: 'username',
     required: false,
-    description: 'Filter by username',
+    description: 'Filter by username (partial match, case-insensitive)',
   })
   async getPublicUsers(
     @Query('page') page = '1',
-    @Query('limit') limit = '12',
+    @Query('limit') limit = '20',
     @Query('username') username?: string,
   ) {
     const pageNum = parseInt(page) || 1;
-    const limitNum = parseInt(limit) || 12;
+    const limitNum = parseInt(limit) || 20;
 
     const searchParams: any = {
       page: pageNum,

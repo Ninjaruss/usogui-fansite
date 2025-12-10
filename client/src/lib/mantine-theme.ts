@@ -496,7 +496,8 @@ export const mantineTheme: MantineThemeOverride = {
       event: '#f39c12',      // 5.2:1 contrast - amber (more distinct from red)
       guide: '#51cf66',      // 4.9:1 contrast - bright green
       media: '#a855f7',      // 4.5:1 contrast - saturated purple
-      quote: '#20c997'       // 4.6:1 contrast - vibrant teal
+      quote: '#20c997',      // 4.6:1 contrast - vibrant teal
+      organization: '#7c3aed' // 4.6:1 contrast - rich purple accent
     },
     transitions: {
       durationShortest: 150,
@@ -584,6 +585,7 @@ export const getEntityThemeColor = (theme: MantineTheme, entityType: EntityAccen
     case 'gamble': return entityColors.gamble
     case 'character': return entityColors.character
     case 'arc': return entityColors.arc
+    case 'organization': return entityColors.organization
     case 'volume': return entityColors.volume
     case 'event': return entityColors.event
     case 'guide': return entityColors.guide
@@ -662,7 +664,18 @@ export const outlineStyles = {
 // Utility to set tab accent colors based on entity type
 export const setTabAccentColors = (entityType: EntityAccentKey, element?: HTMLElement) => {
   const target = element || document.documentElement
-  const accentColor = getEntityThemeColor({ other: { usogui: mantineTheme.other?.usogui } } as MantineTheme, entityType)
+  const accentColorMap: Record<EntityAccentKey, string> = {
+    character: textColors.character,
+    organization: textColors.organization,
+    arc: textColors.arc,
+    volume: textColors.volume,
+    event: textColors.event,
+    guide: textColors.guide,
+    media: textColors.media,
+    quote: textColors.quote,
+    gamble: textColors.gamble
+  }
+  const accentColor = accentColorMap[entityType] ?? (mantineTheme.other?.usogui?.red ?? '#e11d48')
   
   // Convert hex to rgba values
   const hexToRgba = (hex: string, alpha: number) => {
@@ -740,7 +753,8 @@ export const textColors = {
   event: '#f39c12',      // 5.2:1 contrast ratio - amber (more distinct from red)
   guide: '#51cf66',      // 4.9:1 contrast ratio - bright green
   media: '#a855f7',      // 4.5:1 contrast ratio - saturated purple
-  quote: '#20c997'       // 4.6:1 contrast ratio - vibrant teal
+  quote: '#20c997',      // 4.6:1 contrast ratio - vibrant teal
+  organization: '#c084fc' // 4.6:1 contrast ratio - luminous violet
 } as const
 
 // Header color utilities for consistent styling

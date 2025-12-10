@@ -1,6 +1,6 @@
 import React from 'react'
 import { Alert, Button, Container, Stack } from '@mantine/core'
-import { getEntityThemeColor, semanticColors, textColors } from '../../../lib/mantine-theme'
+import { semanticColors } from '../../../lib/mantine-theme'
 import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import { Metadata } from 'next'
@@ -12,9 +12,24 @@ interface PageProps {
   params: Promise<{ id: string }>
 }
 
-async function getGuide(id: number) {
-  const guide = await api.getGuide(id)
-  return guide
+async function getGuide(id: number, isAuthenticated: boolean = false) {
+  if (isAuthenticated) {
+    // Try authenticated endpoint first (can access user's own drafts/pending guides)
+    try {
+      const guide = await api.getGuideAuthenticated(id)
+      return guide
+    } catch (error: any) {
+      // If authenticated request fails, fall back to public endpoint
+      if (error?.status === 401 || error?.status === 403) {
+        console.log('[getGuide] Authenticated request failed, trying public endpoint')
+        return await api.getGuide(id)
+      }
+      throw error
+    }
+  }
+  
+  // Use public endpoint for non-authenticated requests
+  return await api.getGuide(id)
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -38,9 +53,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       }
     }
   } catch (error) {
-    console.error('Failed to generate metadata for guide:', error)
+    // For non-public guides, return generic metadata instead of failing
     return {
-      title: 'Guide Not Found - Usogui Fansite'
+      title: 'Usogui Guide',
+      description: 'A comprehensive guide for Usogui manga'
     }
   }
 }
@@ -53,7 +69,7 @@ export default async function GuidePage({ params }: PageProps) {
     return (
       <Container size="lg" py="xl">
         <Stack gap="md">
-          <Alert style={{ color: getEntityThemeColor(theme, 'gamble') }} radius="md">
+          <Alert style={{ color: semanticColors.warning }} radius="md">
             Guide not found
           </Alert>
           <Button component={Link} href="/guides" variant="subtle" color="gray" leftSection={<ArrowLeft size={18} />}
@@ -65,39 +81,22 @@ export default async function GuidePage({ params }: PageProps) {
     )
   }
 
+  // First try to get the guide using the public endpoint (no auth required)
   try {
-    const guide = await getGuide(guideId)
-
-    if (guide.status !== GuideStatus.APPROVED) {
-      return (
-        <Container size="lg" py="xl">
-          <Stack gap="md">
-            <Alert style={{ color: semanticColors.warning }} radius="md">
-              This guide is not available to the public.
-            </Alert>
-            <Button component={Link} href="/guides" variant="subtle" color="gray" leftSection={<ArrowLeft size={18} />}>
-              Back to Guides
-            </Button>
-          </Stack>
-        </Container>
-      )
+    const guide = await getGuide(guideId, false)
+    
+    // For approved guides, render normally
+    if (guide.status === GuideStatus.APPROVED) {
+      return <GuidePageClient initialGuide={guide} />
     }
-
+    
+    // For non-approved guides, let the client component handle authentication
+    // and determine if the user can see this guide
     return <GuidePageClient initialGuide={guide} />
-  } catch (error) {
-    console.error('Failed to load guide:', error)
-    return (
-      <Container size="lg" py="xl">
-        <Stack gap="md">
-          <Alert style={{ color: getEntityThemeColor(theme, 'gamble') }} radius="md">
-            Failed to load guide.
-          </Alert>
-          <Button component={Link} href="/guides" variant="subtle" color="gray" leftSection={<ArrowLeft size={18} />}>
-            Back to Guides
-          </Button>
-        </Stack>
-      </Container>
-    )
+    
+  } catch (error: any) {
+    // If public endpoint fails, let the client component try with authentication
+    return <GuidePageClient guideId={guideId} />
   }
 }
 

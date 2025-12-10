@@ -27,16 +27,16 @@ import EnhancedSpoilerMarkdown from '../EnhancedSpoilerMarkdown'
 import { EditToolbar } from './EditToolbar'
 
 export const CharacterList = () => (
-  <List>
+  <List sort={{ field: 'name', order: 'ASC' }}>
     <Datagrid rowClick="show">
-      <TextField source="id" />
-      <TextField source="name" />
-      <NumberField source="firstAppearanceChapter" label="First Chapter" />
-      <FunctionField 
-        label="Alternate Names" 
+      <TextField source="id" sortable />
+      <TextField source="name" sortable />
+      <NumberField source="firstAppearanceChapter" label="First Chapter" sortable />
+      <FunctionField
+        label="Alternate Names"
         render={(record: any) => (
-          <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
-            {(record.alternateNames || []).map((name: string, index: number) => (
+          <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', maxWidth: '200px' }}>
+            {(record.alternateNames || []).slice(0, 3).map((name: string, index: number) => (
               <Chip
                 key={index}
                 label={name}
@@ -49,6 +49,18 @@ export const CharacterList = () => (
                 }}
               />
             ))}
+            {(record.alternateNames || []).length > 3 && (
+              <Chip
+                label={`+${record.alternateNames.length - 3}`}
+                size="small"
+                sx={{
+                  backgroundColor: 'rgba(158, 158, 158, 0.1)',
+                  color: '#9e9e9e',
+                  fontSize: '0.75rem',
+                  height: '24px'
+                }}
+              />
+            )}
           </Box>
         )}
       />

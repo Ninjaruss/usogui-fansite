@@ -93,11 +93,13 @@ function MediaImageCard({ media, onSelect }: MediaImageCardProps) {
         backgroundColor: 'rgba(255, 255, 255, 0.02)',
         height: '100%'
       }}
-      sx={{
-        '&:hover': {
-          transform: 'translateY(-2px)',
-          borderColor: 'rgba(255, 255, 255, 0.3)',
-          backgroundColor: 'rgba(255, 255, 255, 0.05)'
+      styles={{
+        root: {
+          '&:hover': {
+            transform: 'translateY(-2px)',
+            borderColor: 'rgba(255, 255, 255, 0.3)',
+            backgroundColor: 'rgba(255, 255, 255, 0.05)'
+          }
         }
       }}
     >

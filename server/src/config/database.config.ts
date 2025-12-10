@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { LoggerOptions } from 'typeorm';
 
 export const getDatabaseConfig = (configService: ConfigService) => {
-  const nodeEnv = configService.get('NODE_ENV');
+  const nodeEnv = configService.get<string>('NODE_ENV');
   const isDevelopment = nodeEnv === 'development';
   const isTest = nodeEnv === 'test';
 
@@ -14,11 +14,11 @@ export const getDatabaseConfig = (configService: ConfigService) => {
 
   return {
     type: 'postgres' as const,
-    host: configService.get('DATABASE_HOST'),
-    port: parseInt(configService.get('DATABASE_PORT') || '5432'),
-    username: configService.get('DATABASE_USERNAME'),
-    password: configService.get('DATABASE_PASSWORD'),
-    database: configService.get('DATABASE_NAME'),
+    host: configService.get<string>('DATABASE_HOST'),
+    port: parseInt(configService.get<string>('DATABASE_PORT') || '5432'),
+    username: configService.get<string>('DATABASE_USERNAME'),
+    password: configService.get<string>('DATABASE_PASSWORD'),
+    database: configService.get<string>('DATABASE_NAME'),
     entities: [
       path.join(__dirname, '..', 'entities', '**', '*.entity.{ts,js}'),
       path.join(

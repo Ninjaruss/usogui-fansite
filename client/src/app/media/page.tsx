@@ -41,7 +41,7 @@ export default async function MediaPage({ searchParams }: MediaPageProps) {
     '@type': 'CollectionPage',
     name: 'Usogui Media Gallery',
     description: 'Community-submitted fanart, videos, and other media related to Usogui manga',
-    url: 'https://l-file.net/media',
+    url: 'https://l-file.com/media',
     mainEntity: {
       '@type': 'ImageGallery',
       name: 'Usogui Fan Media Collection'
@@ -51,15 +51,13 @@ export default async function MediaPage({ searchParams }: MediaPageProps) {
   return (
     <>
       <JsonLd data={structuredData} />
-      <Container size="xl" py="xl">
-        <MediaPageContent
-          initialPage={page}
-          initialType={type}
-          initialOwnerType={ownerType}
-          initialOwnerId={ownerId}
-          initialSearch={search}
-        />
-      </Container>
+      <MediaPageContent
+        initialPage={page}
+        initialType={type}
+        initialOwnerType={ownerType}
+        initialOwnerId={ownerId}
+        initialSearch={search}
+      />
     </>
   )
 }

@@ -21,7 +21,7 @@ interface UserRoleDisplayProps {
   spacing?: number
 }
 
-const sizeMap: Record<BadgeDisplayProps['size'], 'xs' | 'sm' | 'md'> = {
+const sizeMap: Record<'sm' | 'md' | 'lg', 'xs' | 'sm' | 'md'> = {
   sm: 'xs',
   md: 'sm',
   lg: 'md'
@@ -49,7 +49,7 @@ export function UserRoleDisplay({
     >
       {(userRole === 'admin' || userRole === 'moderator') && (
         <Badge
-          leftSection={<Crown size={size === 'small' ? 12 : 14} />}
+          leftSection={<Crown size={size === 'small' ? 12 : 14} color="#ffffff" />}
           size={size === 'small' ? 'xs' : 'sm'}
           radius="md"
           styles={{
@@ -57,9 +57,6 @@ export function UserRoleDisplay({
               backgroundColor: administrativeColor,
               color: '#ffffff',
               fontWeight: 600
-            },
-            leftSection: {
-              color: '#ffffff'
             }
           }}
         >

@@ -28,6 +28,7 @@ interface TimelineEvent {
   characters?: string[]
   description?: string
   isSpoiler?: boolean
+  spoilerChapter?: number
 }
 
 interface ArcTimelineProps {
@@ -575,18 +576,20 @@ const ArcTimeline = React.memo(function ArcTimeline({ events, arcName, startChap
                     Jump to Section
                   </Text>
                   <Group gap={6} wrap="wrap">
-                    {timelineSections.slice(0, 5).map((section) => (
-                      <Badge
-                        key={section.sectionType}
-                        variant="outline"
-                        style={{ color: getEntityThemeColor(theme, 'gamble') }}
-                        radius="sm"
-                        onClick={() => scrollToSection(section.sectionType)}
-                        style={{ cursor: 'pointer' }}
-                      >
-                        {section.sectionName}
-                      </Badge>
-                    ))}
+                  {timelineSections.slice(0, 5).map((section) => (
+                    <Badge
+                      key={section.sectionType}
+                      variant="outline"
+                      style={{
+                        color: getEntityThemeColor(theme, 'gamble'),
+                        cursor: 'pointer'
+                      }}
+                      radius="sm"
+                      onClick={() => scrollToSection(section.sectionType)}
+                    >
+                      {section.sectionName}
+                    </Badge>
+                  ))}
                   </Group>
                 </Stack>
               )}
@@ -600,10 +603,12 @@ const ArcTimeline = React.memo(function ArcTimeline({ events, arcName, startChap
                     <Badge
                       key={chapter}
                       variant="outline"
-                      style={{ color: getEntityThemeColor(theme, 'media') }}
+                      style={{
+                        color: getEntityThemeColor(theme, 'media'),
+                        cursor: 'pointer'
+                      }}
                       radius="sm"
                       onClick={() => scrollToChapter(chapter)}
-                      style={{ cursor: 'pointer' }}
                     >
                       Ch. {chapter}
                     </Badge>

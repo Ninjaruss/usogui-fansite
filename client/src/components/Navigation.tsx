@@ -254,7 +254,10 @@ const Navigation: React.FC = () => {
 
     setSearchLoading(true)
     try {
-      const response = await api.search(searchQuery, undefined, userProgress)
+      const response = await api.search({
+        query: searchQuery,
+        userProgress
+      })
 
       // Sort results by priority: characters, organizations, arcs, gambles, events, chapters
       const priorityOrder = ['character', 'organization', 'arc', 'gamble', 'event', 'chapter']
@@ -968,8 +971,8 @@ const Navigation: React.FC = () => {
                 <Menu.Item
                   onClick={handleLogout}
                   leftSection={<LogOut size={16} />}
-                  style={{ color: getEntityThemeColor(theme, 'gamble') }}
                   style={{
+                    color: getEntityThemeColor(theme, 'gamble'),
                     backgroundColor: 'transparent',
                     borderRadius: 6,
                     transition: 'box-shadow 0.2s ease',
@@ -1249,7 +1252,13 @@ const Navigation: React.FC = () => {
                 <Menu.Item
                   onClick={handleLogout}
                   leftSection={<LogOut size={16} />}
-                  style={{ color: getEntityThemeColor(theme, 'gamble') }}
+                  style={{
+                    color: getEntityThemeColor(theme, 'gamble'),
+                    backgroundColor: 'transparent',
+                    borderRadius: 6,
+                    transition: 'box-shadow 0.2s ease',
+                    boxShadow: getOutlineShadow(false, mobileAccountHighlight === 'logout')
+                  }}
                   onMouseEnter={() => setMobileAccountHighlight('logout')}
                   onMouseLeave={() => {
                     setMobileAccountHighlight((current) => (current === 'logout' ? null : current))
@@ -1257,12 +1266,6 @@ const Navigation: React.FC = () => {
                   onFocus={() => setMobileAccountHighlight('logout')}
                   onBlur={() => {
                     setMobileAccountHighlight((current) => (current === 'logout' ? null : current))
-                  }}
-                  style={{
-                    backgroundColor: 'transparent',
-                    borderRadius: 6,
-                    transition: 'box-shadow 0.2s ease',
-                    boxShadow: getOutlineShadow(false, mobileAccountHighlight === 'logout')
                   }}
                 >
                   Logout

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import type { ReactNode } from 'react'
 import { Badge, Group, Button, Collapse, Box, Text } from '@mantine/core'
 import { Users, BookOpen, CalendarSearch, FileText, Dices, Image, Shield, ChevronDown, ChevronUp } from 'lucide-react'
 import { motion, AnimatePresence } from 'motion/react'
@@ -21,11 +22,19 @@ interface StatsShowcaseProps {
   loading?: boolean
 }
 
+interface StatItem {
+  key: string
+  value?: number
+  label: string
+  icon: ReactNode
+  color: string
+}
+
 export function StatsShowcase({ stats, loading = false }: StatsShowcaseProps) {
   const [showAll, setShowAll] = useState(false)
 
   // Define primary stats (most important for users)
-  const primaryStats = [
+  const primaryStats: StatItem[] = [
     {
       key: 'totalGuides',
       value: stats.totalGuides,
@@ -50,7 +59,7 @@ export function StatsShowcase({ stats, loading = false }: StatsShowcaseProps) {
   ]
 
   // Secondary stats (shown when expanded)
-  const secondaryStats = [
+  const secondaryStats: StatItem[] = [
     {
       key: 'totalArcs',
       value: stats.totalArcs,
@@ -81,7 +90,7 @@ export function StatsShowcase({ stats, loading = false }: StatsShowcaseProps) {
     }
   ]
 
-  const renderStatBadge = (stat: typeof primaryStats[0], index: number, delay: number = 0) => {
+  const renderStatBadge = (stat: StatItem, index: number, delay: number = 0) => {
     if (!stat.value) return null
 
     return (
@@ -120,7 +129,7 @@ export function StatsShowcase({ stats, loading = false }: StatsShowcaseProps) {
       {/* Primary Stats - Always Visible */}
       <Group
         justify="center"
-        gap={{ base: 'xs', sm: 'md' }}
+        gap="md"
         style={{
           flexWrap: 'wrap',
           marginBottom: hasSecondaryStats ? '0.75rem' : '0'
@@ -137,7 +146,7 @@ export function StatsShowcase({ stats, loading = false }: StatsShowcaseProps) {
           <Collapse in={showAll}>
             <Group
               justify="center"
-              gap={{ base: 'xs', sm: 'md' }}
+              gap="md"
               style={{
                 flexWrap: 'wrap',
                 marginBottom: '0.5rem'

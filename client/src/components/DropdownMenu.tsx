@@ -1,7 +1,6 @@
 import React from 'react'
 import { Menu, Box, Divider } from '@mantine/core'
 import Link from 'next/link'
-import { DropdownHandlers, DropdownState } from '../hooks/useDropdown'
 
 export interface MenuItemData {
   label: string
@@ -13,6 +12,17 @@ export interface MenuCategory {
   name: string
   items: MenuItemData[]
   color?: string
+}
+
+export interface DropdownState {
+  isOpen: boolean
+}
+
+export interface DropdownHandlers {
+  setOpen: (opened: boolean) => void
+  onDropdownEnter: () => void
+  onDropdownLeave: () => void
+  close: () => void
 }
 
 export interface DropdownMenuProps {

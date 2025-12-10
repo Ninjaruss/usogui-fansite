@@ -5,7 +5,6 @@ import {
   validateSync,
   IsIn,
   IsUrl,
-  IsBoolean,
   IsOptional,
 } from 'class-validator';
 
@@ -64,6 +63,10 @@ class EnvironmentVariables {
   @IsString()
   @IsOptional()
   KOFI_WEBHOOK_TOKEN?: string;
+
+  @IsString()
+  @IsOptional()
+  CORS_ALLOWED_ORIGINS?: string;
 }
 
 export function validate(config: Record<string, unknown>) {

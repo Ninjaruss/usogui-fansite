@@ -18,7 +18,6 @@ import {
   useMantineTheme,
   rgba
 } from '@mantine/core'
-import { getEntityThemeColor, semanticColors, textColors } from '../lib/mantine-theme'
 import {
   Code,
   Copy,
@@ -33,7 +32,7 @@ import {
   Volume2,
   Quote
 } from 'lucide-react'
-import { getEntityAccent, EntityAccentKey, getEntityThemeColor, semanticColors } from '../lib/mantine-theme'
+import { getEntityAccent, EntityAccentKey, getEntityThemeColor, semanticColors, textColors } from '../lib/mantine-theme'
 
 interface EntityEmbedHelperProps {
   onInsertEmbed?: (embedCode: string) => void

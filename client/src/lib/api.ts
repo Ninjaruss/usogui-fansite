@@ -1,4 +1,10 @@
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'
+const resolvedApiUrl = process.env.NEXT_PUBLIC_API_URL?.trim()
+
+const defaultApiUrl = process.env.NODE_ENV === 'production'
+  ? 'https://l-file.com/api'
+  : 'http://localhost:3001/api'
+
+export const API_BASE_URL = resolvedApiUrl || defaultApiUrl
 
 
 class ApiClient {
@@ -107,13 +113,21 @@ class ApiClient {
         }
       }
 
-      // Log error for debugging
-      console.error('[API Error]', {
-        url,
-        method: options.method || 'GET',
-        status: response.status,
-        message: errorMessage
-      })
+      // Log error for debugging with proper structure
+      // Skip logging expected 404s for public guide endpoints (normal fallback behavior)
+      const isExpected404 = response.status === 404 && endpoint.includes('/guides/public/')
+
+      if (!isExpected404) {
+        console.error('[API Error]', JSON.stringify({
+          url,
+          method: options.method || 'GET',
+          status: response.status,
+          statusText: response.statusText,
+          message: errorMessage,
+          details: errorDetails,
+          endpoint
+        }, null, 2))
+      }
 
       throw new APIError(errorMessage, response.status, errorDetails, url, options.method || 'GET')
     }
@@ -486,13 +500,25 @@ class ApiClient {
     return this.get<any>(`/events/${id}`)
   }
 
-  async search(query: string, type?: string, userProgress?: number) {
-    const params = new URLSearchParams({ query })
-    if (type) params.append('type', type)
-    if (userProgress !== undefined && !Number.isNaN(userProgress)) {
-      params.append('userProgress', userProgress.toString())
+  async search(options: {
+    query: string
+    type?: string
+    userProgress?: number
+    page?: number
+    limit?: number
+  }) {
+    const params = new URLSearchParams({ query: options.query })
+    if (options.type) params.append('type', options.type)
+    if (options.userProgress !== undefined && !Number.isNaN(options.userProgress)) {
+      params.append('userProgress', options.userProgress.toString())
     }
-    
+    if (options.page !== undefined && !Number.isNaN(options.page)) {
+      params.append('page', options.page.toString())
+    }
+    if (options.limit !== undefined && !Number.isNaN(options.limit)) {
+      params.append('limit', options.limit.toString())
+    }
+
     return this.get<{
       results: Array<{
         id: number
@@ -511,7 +537,7 @@ class ApiClient {
     }>(`/search?${params.toString()}`)
   }
 
-  async getGuides(params?: { page?: number; limit?: number; title?: string; authorId?: string; status?: string }) {
+  async getGuides(params?: { page?: number; limit?: number; title?: string; authorId?: string; status?: string; tag?: string }) {
     const searchParams = new URLSearchParams()
     if (params) {
       // Map title to search parameter to match backend API
@@ -530,6 +556,9 @@ class ApiClient {
       if (params.status) {
         searchParams.append('status', params.status)
       }
+      if (params.tag) {
+        searchParams.append('tag', params.tag)
+      }
     }
     const query = searchParams.toString()
     return this.get<{
@@ -542,6 +571,10 @@ class ApiClient {
 
   async getGuide(id: number) {
     return this.get<any>(`/guides/public/${id}`)
+  }
+
+  async getGuideAuthenticated(id: number) {
+    return this.get<any>(`/guides/${id}`)
   }
 
   async createGuide(data: {
@@ -1105,6 +1138,7 @@ class ApiClient {
     }>(`/media/gallery/${ownerType}/${ownerId}${query ? `?${query}` : ''}`)
   }
 
+
   async getThumbnailForUserProgress(
     ownerType: 'character' | 'arc' | 'event' | 'gamble' | 'organization' | 'user' | 'volume',
     ownerId: number,
@@ -1117,9 +1151,19 @@ class ApiClient {
     ownerType: 'character' | 'arc' | 'event' | 'gamble' | 'organization' | 'user' | 'volume',
     ownerId: number,
     userProgress?: number
-  ) {
+  ): Promise<{ data: any[] }> {
     const query = userProgress !== undefined ? `?userProgress=${userProgress}` : ''
-    return this.get<{data: any[]}>(`/media/entity-display/${ownerType}/${ownerId}/cycling${query}`)
+    const response = await this.get<any>(`/media/entity-display/${ownerType}/${ownerId}/cycling${query}`)
+
+    if (Array.isArray(response)) {
+      return { data: response }
+    }
+
+    if (response && Array.isArray(response.data)) {
+      return { data: response.data }
+    }
+
+    return { data: [] }
   }
 
   async setMediaAsDefault(mediaId: number) {

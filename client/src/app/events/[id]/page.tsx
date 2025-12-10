@@ -1,6 +1,6 @@
 import React from 'react'
 import { Alert, Button, Container, Stack } from '@mantine/core'
-import { getEntityThemeColor, semanticColors, textColors } from '../../../lib/mantine-theme'
+import { colors } from '../../../lib/mantine-theme'
 import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import { Metadata } from 'next'
@@ -64,7 +64,7 @@ export default async function EventDetailPage({ params }: PageProps) {
     return (
       <Container size="lg" py="xl">
         <Stack gap="md">
-          <Alert style={{ color: getEntityThemeColor(theme, 'gamble') }} radius="md">
+          <Alert style={{ color: colors.gamble[5] }} radius="md">
             Event not found
           </Alert>
           <Button

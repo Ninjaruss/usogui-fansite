@@ -432,6 +432,7 @@ export class MediaService {
       purpose?: MediaPurpose;
       page?: number;
       limit?: number;
+      description?: string;
     } = {},
   ) {
     const { page = 1, limit = 20 } = filters;
@@ -466,6 +467,11 @@ export class MediaService {
     }
     if (filters.purpose) {
       query.andWhere('media.purpose = :purpose', { purpose: filters.purpose });
+    }
+    if (filters.description) {
+      query.andWhere('media.description ILIKE :description', {
+        description: `%${filters.description}%`,
+      });
     }
 
     query

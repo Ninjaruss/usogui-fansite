@@ -117,7 +117,7 @@ export default async function ArcDetailPage({ params }: PageProps) {
     return (
       <Container size="lg" py="xl">
         <Stack gap="md">
-          <Alert style={{ color: getEntityThemeColor(theme, 'gamble') }} radius="md">
+          <Alert color="red" radius="md">
             Arc not found
           </Alert>
           <Button component={Link} href="/arcs" variant="subtle" color="gray" leftSection={<ArrowLeft size={18} />}>

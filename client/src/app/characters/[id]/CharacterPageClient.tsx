@@ -587,13 +587,12 @@ export default function CharacterPageClient({
 
           <Tabs.Panel value="media" pt={theme.spacing.md}>
             <Stack gap="md">
-              {/* Gallery Media Section */}
               <Card withBorder radius="lg" shadow="lg" style={getCardStyles(theme, entityColors.media)}>
                 <Stack gap="md" p="md">
                   <Group justify="space-between" align="center">
                     <Group gap="sm">
                       <ImageIcon size={20} color={entityColors.media} />
-                      <Title order={4} c={textColors.media}>Community Media</Title>
+                      <Title order={4} c={textColors.media}>Media Gallery</Title>
                     </Group>
                     <Button
                       component={Link}
@@ -612,26 +611,7 @@ export default function CharacterPageClient({
                     purpose="gallery"
                     limit={8}
                     showTitle={false}
-                    compactMode={true}
-                    showFilters={false}
-                  />
-                </Stack>
-              </Card>
-
-              {/* Official Media Section */}
-              <Card withBorder radius="lg" shadow="lg" style={getCardStyles(theme, entityColors.media)}>
-                <Stack gap="md" p="md">
-                  <Group gap="sm">
-                    <Crown size={20} color={entityColors.media} />
-                    <Title order={4} c={textColors.media}>Official Media</Title>
-                  </Group>
-                  <MediaGallery
-                    ownerType="character"
-                    ownerId={character.id}
-                    purpose="entity_display"
-                    limit={6}
-                    showTitle={false}
-                    compactMode={true}
+                    compactMode
                     showFilters={false}
                   />
                 </Stack>
@@ -640,6 +620,7 @@ export default function CharacterPageClient({
           </Tabs.Panel>
         </Tabs>
       </Card>
+
     </motion.div>
     </Stack>
     </Container>
