@@ -44,6 +44,7 @@ interface MediaThumbnailProps {
   disableExternalLinks?: boolean
   spoilerChapter?: number // Entity's chapter (e.g., firstAppearanceChapter) for spoiler protection
   hideIfEmpty?: boolean // If true, returns null when no media is available
+  onSpoilerRevealed?: () => void // Callback when spoiler is revealed
 }
 
 // Cache for media data to avoid redundant API calls
@@ -221,7 +222,8 @@ export default function MediaThumbnail({
   inline = false,
   disableExternalLinks = false,
   spoilerChapter,
-  hideIfEmpty = false
+  hideIfEmpty = false,
+  onSpoilerRevealed
 }: MediaThumbnailProps) {
   const [currentThumbnail, setCurrentThumbnail] = useState<MediaItem | null>(null)
   const [allEntityMedia, setAllEntityMedia] = useState<MediaItem[]>([])
@@ -814,6 +816,26 @@ export default function MediaThumbnail({
     if (hideIfEmpty) {
       return null
     }
+
+    // Create a dummy media item for spoiler logic when there's no actual media
+    const dummyMedia: MediaItem = {
+      id: 0,
+      url: '',
+      type: 'image',
+      chapterNumber: spoilerChapter
+    }
+
+    // Wrap empty state in spoiler wrapper if there's a spoiler chapter
+    if (spoilerChapter) {
+      return (
+        <Box component={containerComponent} className={className} style={containerStyles}>
+          <MediaSpoilerWrapper media={dummyMedia} userProgress={userProgress} spoilerChapter={spoilerChapter} onRevealed={onSpoilerRevealed}>
+            {renderEmptyState()}
+          </MediaSpoilerWrapper>
+        </Box>
+      )
+    }
+
     return renderEmptyState()
   }
 
@@ -876,7 +898,7 @@ export default function MediaThumbnail({
 
   return (
     <Box component={containerComponent} className={className} style={containerStyles}>
-      <MediaSpoilerWrapper media={currentThumbnail} userProgress={userProgress} spoilerChapter={spoilerChapter}>
+      <MediaSpoilerWrapper media={currentThumbnail} userProgress={userProgress} spoilerChapter={spoilerChapter} onRevealed={onSpoilerRevealed}>
         {mediaContent}
       </MediaSpoilerWrapper>
 
@@ -944,11 +966,13 @@ function MediaSpoilerWrapper({
   media,
   userProgress,
   spoilerChapter,
+  onRevealed,
   children
 }: {
   media: MediaItem
   userProgress: number
   spoilerChapter?: number
+  onRevealed?: () => void
   children: React.ReactNode
 }) {
   const [isRevealed, setIsRevealed] = useState(false)
@@ -985,6 +1009,7 @@ function MediaSpoilerWrapper({
     event.preventDefault()
     event.stopPropagation()
     setIsRevealed(true)
+    onRevealed?.()
   }
 
   return (

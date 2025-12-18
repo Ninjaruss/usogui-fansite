@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   ActionIcon,
   Alert,
@@ -108,6 +108,12 @@ export default function CharactersPageContent({
   )
   const [organizations, setOrganizations] = useState<Array<{ id: number; name: string }>>([])
   const [organizationsLoading, setOrganizationsLoading] = useState(false)
+
+  // Track revealed spoilers
+  const [revealedCharacters, setRevealedCharacters] = useState<Set<number>>(new Set())
+
+  // Track currently hovered character (for triggering modal after reveal)
+  const currentlyHoveredRef = useRef<{ character: Character; element: HTMLElement } | null>(null)
 
   // Hover modal
   const {
@@ -544,19 +550,25 @@ export default function CharactersPageContent({
                       onMouseEnter={(e) => {
                         e.currentTarget.style.transform = 'translateY(-4px)'
                         e.currentTarget.style.boxShadow = '0 12px 32px rgba(0,0,0,0.25)'
-                        // Only show hover modal if content is not spoilered
+
+                        // Store the currently hovered character and element
+                        currentlyHoveredRef.current = { character, element: e.currentTarget as HTMLElement }
+
+                        // Only show hover modal if content is not spoilered OR has been revealed
                         const isSpoilered = shouldHideSpoiler(
                           character.firstAppearanceChapter,
                           userProgress,
                           spoilerSettings
                         )
-                        if (!isSpoilered) {
+                        const hasBeenRevealed = revealedCharacters.has(character.id)
+                        if (!isSpoilered || hasBeenRevealed) {
                           handleCharacterMouseEnter(character, e)
                         }
                       }}
                       onMouseLeave={(e) => {
                         e.currentTarget.style.transform = 'translateY(0)'
                         e.currentTarget.style.boxShadow = theme.shadows.sm
+                        currentlyHoveredRef.current = null
                         handleCharacterMouseLeave()
                       }}
                     >
@@ -625,6 +637,22 @@ export default function CharactersPageContent({
                           maxWidth={200}
                           maxHeight={230}
                           spoilerChapter={character.firstAppearanceChapter}
+                          onSpoilerRevealed={() => {
+                            setRevealedCharacters(prev => new Set(prev).add(character.id))
+                            // If this character is currently being hovered, trigger the modal
+                            if (currentlyHoveredRef.current?.character.id === character.id) {
+                              const element = currentlyHoveredRef.current.element
+                              // Create a synthetic event for the handleCharacterMouseEnter function
+                              const syntheticEvent = {
+                                currentTarget: element,
+                                target: element
+                              } as unknown as React.MouseEvent
+                              handleCharacterMouseEnter(
+                                currentlyHoveredRef.current.character,
+                                syntheticEvent
+                              )
+                            }
+                          }}
                         />
                       </Box>
 

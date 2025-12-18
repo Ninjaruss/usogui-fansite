@@ -5,6 +5,9 @@
 - Add proper README at the root of the project; add AGPL v3 license to allow people to copy but force them to open source as well
 - Donation linking to badges; badge system with perks
 
+## 2025-12-18
+- Added modal checking for chapter progress; mark as spoiler and show modal if spoiler is revealed
+
 ## 2025-12-17
 - Fixed the entity display image for the list and detail pages of characters, arcs, organizations, gambles, and events
 - Added check for user authenticated for guides list page

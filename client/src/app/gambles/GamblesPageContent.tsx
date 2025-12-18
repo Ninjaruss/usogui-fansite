@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import {
   ActionIcon,
   Alert,
@@ -98,6 +98,12 @@ export default function GamblesPageContent({
   const [total, setTotal] = useState(initialTotal)
   const [characterFilter, setCharacterFilter] = useState<string | null>(initialCharacterFilter || null)
   const [sortBy, setSortBy] = useState<SortOption>((searchParams.get('sort') as SortOption) || 'name')
+
+  // Track revealed spoilers
+  const [revealedGambles, setRevealedGambles] = useState<Set<number>>(new Set())
+
+  // Track currently hovered gamble (for triggering modal after reveal)
+  const currentlyHoveredRef = useRef<{ gamble: Gamble; element: HTMLElement } | null>(null)
 
   // Hover modal
   const {
@@ -457,19 +463,25 @@ export default function GamblesPageContent({
                       onMouseEnter={(e) => {
                         e.currentTarget.style.transform = 'translateY(-4px)'
                         e.currentTarget.style.boxShadow = '0 12px 32px rgba(0,0,0,0.25)'
-                        // Only show hover modal if content is not spoilered
+
+                        // Store the currently hovered gamble and element
+                        currentlyHoveredRef.current = { gamble, element: e.currentTarget as HTMLElement }
+
+                        // Only show hover modal if content is not spoilered OR has been revealed
                         const isSpoilered = shouldHideSpoiler(
                           gamble.chapterId,
                           userProgress,
                           spoilerSettings
                         )
-                        if (!isSpoilered) {
+                        const hasBeenRevealed = revealedGambles.has(gamble.id)
+                        if (!isSpoilered || hasBeenRevealed) {
                           handleGambleMouseEnter(gamble, e)
                         }
                       }}
                       onMouseLeave={(e) => {
                         e.currentTarget.style.transform = 'translateY(0)'
                         e.currentTarget.style.boxShadow = theme.shadows.sm
+                        currentlyHoveredRef.current = null
                         handleGambleMouseLeave()
                       }}
                     >
@@ -512,6 +524,22 @@ export default function GamblesPageContent({
                           maxHeight={240}
                           disableExternalLinks={true}
                           spoilerChapter={gamble.chapterId}
+                          onSpoilerRevealed={() => {
+                            setRevealedGambles(prev => new Set(prev).add(gamble.id))
+                            // If this gamble is currently being hovered, trigger the modal
+                            if (currentlyHoveredRef.current?.gamble.id === gamble.id) {
+                              const element = currentlyHoveredRef.current.element
+                              // Create a synthetic event for the handleGambleMouseEnter function
+                              const syntheticEvent = {
+                                currentTarget: element,
+                                target: element
+                              } as unknown as React.MouseEvent
+                              handleGambleMouseEnter(
+                                currentlyHoveredRef.current.gamble,
+                                syntheticEvent
+                              )
+                            }
+                          }}
                         />
                       </Box>
 

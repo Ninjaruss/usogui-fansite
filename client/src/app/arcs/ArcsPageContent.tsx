@@ -98,6 +98,12 @@ export default function ArcsPageContent({
   const [dragActive, setDragActive] = useState(false)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
 
+  // Track revealed spoilers
+  const [revealedArcs, setRevealedArcs] = useState<Set<number>>(new Set())
+
+  // Track currently hovered arc (for triggering modal after reveal)
+  const currentlyHoveredRef = useRef<{ arc: Arc; element: HTMLElement } | null>(null)
+
   // Hover modal
   const {
     hoveredItem: hoveredArc,
@@ -528,19 +534,25 @@ export default function ArcsPageContent({
                         onMouseEnter={(e) => {
                           e.currentTarget.style.transform = 'translateY(-4px)'
                           e.currentTarget.style.boxShadow = '0 12px 32px rgba(0,0,0,0.25)'
-                          // Only show hover modal if content is not spoilered
+
+                          // Store the currently hovered arc and element
+                          currentlyHoveredRef.current = { arc, element: e.currentTarget as HTMLElement }
+
+                          // Only show hover modal if content is not spoilered OR has been revealed
                           const isSpoilered = shouldHideSpoiler(
                             arc.startChapter,
                             userProgress,
                             spoilerSettings
                           )
-                          if (!isSpoilered) {
+                          const hasBeenRevealed = revealedArcs.has(arc.id)
+                          if (!isSpoilered || hasBeenRevealed) {
                             handleArcMouseEnter(arc, e)
                           }
                         }}
                         onMouseLeave={(e) => {
                           e.currentTarget.style.transform = 'translateY(0)'
                           e.currentTarget.style.boxShadow = theme.shadows.sm
+                          currentlyHoveredRef.current = null
                           handleArcMouseLeave()
                         }}
                       >
@@ -609,6 +621,22 @@ export default function ArcsPageContent({
                             maxHeight={240}
                             allowCycling={false}
                             spoilerChapter={arc.startChapter}
+                            onSpoilerRevealed={() => {
+                              setRevealedArcs(prev => new Set(prev).add(arc.id))
+                              // If this arc is currently being hovered, trigger the modal
+                              if (currentlyHoveredRef.current?.arc.id === arc.id) {
+                                const element = currentlyHoveredRef.current.element
+                                // Create a synthetic event for the handleArcMouseEnter function
+                                const syntheticEvent = {
+                                  currentTarget: element,
+                                  target: element
+                                } as unknown as React.MouseEvent
+                                handleArcMouseEnter(
+                                  currentlyHoveredRef.current.arc,
+                                  syntheticEvent
+                                )
+                              }
+                            }}
                           />
                         </Box>
 
