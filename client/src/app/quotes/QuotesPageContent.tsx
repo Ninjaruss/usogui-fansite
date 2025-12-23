@@ -228,7 +228,19 @@ export default function QuotesPageContent({
   // Search and page handlers
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     // Only update input - debounce effect handles search query and URL
-    setSearchInput(event.target.value)
+    const value = event.target.value
+    setSearchInput(value)
+
+    // Immediately clear search when input is emptied (bypass debounce)
+    if (value.trim() === '' && searchQuery !== '') {
+      setSearchQuery('')
+      setCurrentPage(1)
+      const params = new URLSearchParams(searchParams.toString())
+      params.delete('search')
+      params.set('page', '1')
+      router.push(params.toString() ? `/quotes?${params.toString()}` : '/quotes')
+      refresh(true)
+    }
   }
 
   // Handle Enter key - bypass debounce for immediate search

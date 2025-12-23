@@ -1,14 +1,17 @@
 # Changelog and notes
 ## TODO:
-- Make sure all search bars work as intended
-- Add proper README at the root of the project; add AGPL v3 license to allow people to copy but force them to open source as well
 - Donation linking to badges; badge system with perks
 
 ## 2025-12-23
+- Added README.md at project root with comprehensive project overview
+- Added MIT License
 - Arc timeline events compacted
 - Event headers now use the first event as the title
 - Spoiler added to arc events
 - Fixed bug where events list page did not show modal for revealed events
+- Small adjustment to popular profile pic header and badge modal text (profile page)
+- Search for list pages now works if user manually deletes text rather than pressing X to clear
+- Added general README and MIT LICENSE
 
 ## 2025-12-22
 - QA checks for frontend pages including color design and mobile friendly buttons

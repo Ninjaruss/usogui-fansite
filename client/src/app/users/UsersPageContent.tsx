@@ -161,7 +161,15 @@ export default function UsersPageContent() {
   }, [users, sortBy])
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchInput(event.target.value)
+    const value = event.target.value
+    setSearchInput(value)
+
+    // Immediately clear search when input is emptied (bypass debounce)
+    if (value.trim() === '' && searchQuery !== '') {
+      setSearchQuery('')
+      setPage(1)
+      updateURL('', 1, sortBy)
+    }
   }
 
   const handleSearchKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {

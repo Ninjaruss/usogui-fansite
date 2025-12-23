@@ -201,8 +201,20 @@ export default function GamblesPageContent({
 
   const handleSearchChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     // Only update input - debounce effect handles search query and URL
-    setSearchInput(event.currentTarget.value)
-  }, [])
+    const value = event.currentTarget.value
+    setSearchInput(value)
+
+    // Immediately clear search when input is emptied (bypass debounce)
+    if (value.trim() === '' && searchQuery !== '') {
+      setSearchQuery('')
+      setCurrentPage(1)
+      const params = new URLSearchParams()
+      if (characterFilter) params.set('character', characterFilter)
+      if (sortBy !== 'chapter') params.set('sort', sortBy)
+      params.set('page', '1')
+      router.push(`/gambles?${params.toString()}`)
+    }
+  }, [searchQuery, characterFilter, sortBy, router])
 
   // Handle Enter key - bypass debounce for immediate search
   const handleSearchKeyDown = useCallback((event: React.KeyboardEvent<HTMLInputElement>) => {

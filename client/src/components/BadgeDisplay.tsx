@@ -183,7 +183,10 @@ export default function BadgeDisplay({
           backgroundColor: `${theme.colors.dark?.[9] ?? '#000000'}E6`,
           color: '#ffffff',
           fontSize: '0.875rem',
-          padding: '8px 12px'
+          padding: '8px 12px',
+          whiteSpace: 'normal',
+          wordWrap: 'break-word',
+          overflowWrap: 'break-word'
         }
       }}
     >
@@ -193,11 +196,11 @@ export default function BadgeDisplay({
 }
 
 const TextStrong: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <Text style={{ fontWeight: 700, marginBottom: 4 }}>{children}</Text>
+  <Text style={{ fontWeight: 700, marginBottom: 4, wordWrap: 'break-word' }}>{children}</Text>
 )
 
 const StatusText: React.FC<{ children: React.ReactNode; color: string }> = ({ children, color }) => (
-  <Text style={{ fontSize: '0.875rem', color, fontWeight: 700, marginBottom: 4 }}>{children}</Text>
+  <Text style={{ fontSize: '0.875rem', color, fontWeight: 700, marginBottom: 4, wordWrap: 'break-word' }}>{children}</Text>
 )
 
 const MetaText: React.FC<{ children: React.ReactNode; italic?: boolean; color?: string }> = ({
@@ -211,7 +214,9 @@ const MetaText: React.FC<{ children: React.ReactNode; italic?: boolean; color?: 
       opacity: 0.8,
       fontStyle: italic ? 'italic' : 'normal',
       color: color ?? 'inherit',
-      marginBottom: 4
+      marginBottom: 4,
+      wordWrap: 'break-word',
+      whiteSpace: 'normal'
     }}
   >
     {children}

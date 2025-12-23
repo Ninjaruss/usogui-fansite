@@ -112,10 +112,12 @@ export function FavoritesSection() {
                 }}
               >
                 <Box style={{ flexGrow: 1 }}>
-                  <Group gap="xs" style={{ marginBottom: '0.75rem' }}>
-                    <User className="w-5 h-5" color={theme.other?.usogui?.character || theme.colors.blue?.[6] || accent} />
-                    <Text fw={700}>Popular Profile Pics</Text>
-                  </Group>
+                  <Box style={{ textAlign: 'center', marginBottom: '1rem' }}>
+                    <Group justify="center" gap="xs" style={{ marginBottom: '0.5rem' }}>
+                      <User className="w-6 h-6" color={theme.other?.usogui?.character || theme.colors.blue?.[6] || accent} />
+                      <Text fw={700} size="xl">Popular Profile Pics</Text>
+                    </Group>
+                  </Box>
                   <Stack gap="md">
                     {favoriteCharacterMedia.map((item, index) => (
                       <motion.div

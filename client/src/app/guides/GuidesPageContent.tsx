@@ -162,8 +162,19 @@ export default function GuidesPageContent({
 
   const handleSearchChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     // Only update input - debounce effect handles search query and URL
-    setSearchInput(event.target.value)
-  }, [])
+    const value = event.target.value
+    setSearchInput(value)
+
+    // Immediately clear search when input is emptied (bypass debounce)
+    if (value.trim() === '' && searchQuery !== '') {
+      setSearchQuery('')
+      setCurrentPage(1)
+      setAuthorFilter(null)
+      setAuthorName(null)
+      setTagFilter(null)
+      updateUrl(1, '')
+    }
+  }, [searchQuery, updateUrl])
 
   // Handle Enter key - bypass debounce for immediate search
   const handleSearchKeyDown = useCallback((event: React.KeyboardEvent<HTMLInputElement>) => {

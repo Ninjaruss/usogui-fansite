@@ -236,7 +236,15 @@ export default function CharactersPageContent({
   }, [])
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchInput(event.target.value)
+    const value = event.target.value
+    setSearchInput(value)
+
+    // Immediately clear search when input is emptied (bypass debounce)
+    if (value.trim() === '' && searchQuery !== '') {
+      setSearchQuery('')
+      setCurrentPage(1)
+      updateURL(1, '', sortBy)
+    }
   }
 
   const handleClearSearch = () => {

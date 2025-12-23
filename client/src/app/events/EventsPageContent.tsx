@@ -331,6 +331,16 @@ export default function EventsPageContent({
   const handleSearchInput = (value: string) => {
     setSearchTerm(value)
 
+    // Immediately clear search when input is emptied (bypass debounce)
+    if (value.trim() === '' && searchTerm.trim() !== '') {
+      if (searchDebounceRef.current) {
+        clearTimeout(searchDebounceRef.current)
+      }
+      updateUrl('', selectedType, selectedStatus)
+      refresh(true)
+      return
+    }
+
     if (searchDebounceRef.current) {
       clearTimeout(searchDebounceRef.current)
     }

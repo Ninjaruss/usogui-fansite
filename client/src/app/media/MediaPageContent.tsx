@@ -503,13 +503,25 @@ export default function MediaPageContent({
                     placeholder="Search descriptions..."
                     leftSection={<Search size={16} />}
                     value={searchValue}
-                    onChange={(e) => setSearchValue(e.target.value)}
+                    onChange={(e) => {
+                      const value = e.target.value
+                      setSearchValue(value)
+                      // Immediately trigger search when cleared
+                      if (value.trim() === '' && searchValue.trim() !== '') {
+                        setCurrentPage(1)
+                        setHasMore(true)
+                      }
+                    }}
                     rightSection={
                       searchValue && (
                         <ActionIcon
                           size="sm"
                           variant="subtle"
-                          onClick={() => setSearchValue('')}
+                          onClick={() => {
+                            setSearchValue('')
+                            setCurrentPage(1)
+                            setHasMore(true)
+                          }}
                           style={{ color: accentMedia }}
                         >
                           <X size={14} />
