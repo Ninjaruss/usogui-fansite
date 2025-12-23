@@ -8,6 +8,7 @@ import {
   Card,
   Container,
   Group,
+  Skeleton,
   Stack,
   Tabs,
   Text,
@@ -219,12 +220,63 @@ export default function GuidePageClient({ initialGuide, guideId }: GuidePageClie
     }
   }, [guideId, initialGuide, user, authLoading])
 
-  // Show loading state
+  // Show loading state with skeleton
   if (authLoading || loading) {
     return (
       <Box style={{ backgroundColor: backgroundStyles.page(theme), minHeight: '100vh' }}>
         <Container size="lg" py="xl">
-          <Text>Loading guide...</Text>
+          <Stack gap="md">
+            {/* Back button skeleton */}
+            <Skeleton height={36} width={160} radius="md" />
+
+            {/* Header card skeleton */}
+            <Card withBorder radius="lg" shadow="lg" p="lg">
+              <Group gap="md" align="flex-start" wrap="nowrap">
+                {/* Thumbnail skeleton */}
+                <Skeleton height={280} width={200} radius="md" style={{ flexShrink: 0 }} />
+
+                <Stack gap="sm" style={{ flex: 1 }}>
+                  {/* Title skeleton */}
+                  <Skeleton height={32} width="80%" radius="sm" />
+                  <Skeleton height={32} width="60%" radius="sm" />
+
+                  {/* Description skeleton */}
+                  <Skeleton height={20} width="100%" radius="sm" mt="sm" />
+                  <Skeleton height={20} width="90%" radius="sm" />
+
+                  {/* Author skeleton */}
+                  <Group gap="md" mt="md">
+                    <Skeleton height={40} width={40} radius="xl" />
+                    <Stack gap={4}>
+                      <Skeleton height={16} width={120} radius="sm" />
+                      <Skeleton height={14} width={80} radius="sm" />
+                    </Stack>
+                  </Group>
+
+                  {/* Stats badges skeleton */}
+                  <Group gap="sm" mt="md">
+                    <Skeleton height={28} width={100} radius="xl" />
+                    <Skeleton height={28} width={80} radius="xl" />
+                    <Skeleton height={28} width={90} radius="xl" />
+                  </Group>
+                </Stack>
+              </Group>
+            </Card>
+
+            {/* Content card skeleton */}
+            <Card withBorder radius="lg" shadow="lg" p="lg">
+              <Stack gap="md">
+                <Skeleton height={40} width={200} radius="md" />
+                <Skeleton height={20} width="100%" radius="sm" />
+                <Skeleton height={20} width="95%" radius="sm" />
+                <Skeleton height={20} width="100%" radius="sm" />
+                <Skeleton height={20} width="85%" radius="sm" />
+                <Skeleton height={20} width="90%" radius="sm" />
+                <Skeleton height={20} width="100%" radius="sm" />
+                <Skeleton height={20} width="70%" radius="sm" />
+              </Stack>
+            </Card>
+          </Stack>
         </Container>
       </Box>
     )
@@ -253,7 +305,19 @@ export default function GuidePageClient({ initialGuide, guideId }: GuidePageClie
     return (
       <Box style={{ backgroundColor: backgroundStyles.page(theme), minHeight: '100vh' }}>
         <Container size="lg" py="xl">
-          <Text>Loading guide...</Text>
+          <Stack gap="md">
+            <Skeleton height={36} width={160} radius="md" />
+            <Card withBorder radius="lg" shadow="lg" p="lg">
+              <Group gap="md" align="flex-start" wrap="nowrap">
+                <Skeleton height={280} width={200} radius="md" style={{ flexShrink: 0 }} />
+                <Stack gap="sm" style={{ flex: 1 }}>
+                  <Skeleton height={32} width="70%" radius="sm" />
+                  <Skeleton height={20} width="90%" radius="sm" mt="sm" />
+                  <Skeleton height={20} width="80%" radius="sm" />
+                </Stack>
+              </Group>
+            </Card>
+          </Stack>
         </Container>
       </Box>
     )

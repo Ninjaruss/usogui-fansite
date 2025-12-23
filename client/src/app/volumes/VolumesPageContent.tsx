@@ -28,6 +28,7 @@ import MediaThumbnail from '../../components/MediaThumbnail'
 import ErrorBoundary from '../../components/ErrorBoundary'
 import { useHoverModal } from '../../hooks/useHoverModal'
 import { HoverModal } from '../../components/HoverModal'
+import { CardGridSkeleton } from '../../components/CardGridSkeleton'
 
 interface Volume {
   id: number
@@ -79,7 +80,9 @@ export default function VolumesPageContent({
     handleMouseEnter: handleVolumeMouseEnter,
     handleMouseLeave: handleVolumeMouseLeave,
     handleModalMouseEnter,
-    handleModalMouseLeave
+    handleModalMouseLeave,
+    closeModal,
+    isTouchDevice
   } = useHoverModal<Volume>()
 
   const hasSearchQuery = searchQuery.trim().length > 0
@@ -282,10 +285,7 @@ export default function VolumesPageContent({
 
       {/* Loading State */}
       {loading ? (
-        <Box style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', paddingBlock: rem(80) }}>
-          <Loader size="xl" color={accentVolume} mb="md" />
-          <Text size="lg" style={{ color: theme.colors.gray[6] }}>Loading volumes...</Text>
-        </Box>
+        <CardGridSkeleton count={12} cardWidth={200} cardHeight={320} accentColor={accentVolume} />
       ) : (
         <>
           {/* Empty State */}
@@ -409,7 +409,7 @@ export default function VolumesPageContent({
                           ta="center"
                           style={{
                             lineHeight: 1.2,
-                            fontSize: rem(13),
+                            fontSize: rem(15),
                             background: `linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05))`,
                             backdropFilter: 'blur(4px)',
                             borderRadius: rem(6),
@@ -468,6 +468,8 @@ export default function VolumesPageContent({
         accentColor={accentVolume}
         onMouseEnter={handleModalMouseEnter}
         onMouseLeave={handleModalMouseLeave}
+        onClose={closeModal}
+        showCloseButton={isTouchDevice}
       >
         {hoveredVolume && (
           <>

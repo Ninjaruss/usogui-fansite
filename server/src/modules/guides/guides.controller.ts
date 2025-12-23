@@ -677,7 +677,7 @@ export class GuidesController {
         content: {
           type: 'string',
           example:
-            '# Mastering Poker Psychology in Usogui\\n\\nUpdated content here...',
+            '# Mastering Poker Psychology in Usogui\\\\n\\\\nUpdated content here...',
         },
         status: {
           type: 'string',
@@ -753,12 +753,6 @@ export class GuidesController {
     @Body() updateGuideDto: UpdateGuideDto,
     @CurrentUser() user: User,
   ) {
-    console.log('=== GUIDE CONTROLLER UPDATE DEBUG ===');
-    console.log('Guide ID:', id);
-    console.log('Raw body received:', JSON.stringify(updateGuideDto, null, 2));
-    console.log('User:', user.id, user.username, user.role);
-    console.log('=== END CONTROLLER DEBUG ===');
-
     return this.guidesService.update(id, updateGuideDto, user);
   }
 
@@ -804,7 +798,10 @@ export class GuidesController {
       },
     },
   })
-  async delete(@Param('id') id: number, @CurrentUser() user: User) {
+  async delete(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user: User,
+  ) {
     return this.guidesService.remove(id, user);
   }
 

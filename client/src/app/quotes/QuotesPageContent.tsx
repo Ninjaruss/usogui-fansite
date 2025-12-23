@@ -29,6 +29,8 @@ import { motion, AnimatePresence } from 'motion/react'
 import { api } from '../../lib/api'
 import { usePaged } from '../../hooks/usePagedCache'
 import { pagedCacheConfig } from '../../config/pagedCacheConfig'
+import { CardGridSkeleton } from '../../components/CardGridSkeleton'
+import { ScrollToTop } from '../../components/ScrollToTop'
 
 interface QuoteData {
   id: number
@@ -406,9 +408,7 @@ export default function QuotesPageContent({
 
       {/* Loading State */}
       {loading ? (
-        <Box style={{ display: 'flex', justifyContent: 'center', padding: rem(48) }}>
-          <Loader size="lg" style={{ color: getEntityThemeColor(theme, 'media') }} />
-        </Box>
+        <CardGridSkeleton count={12} cardWidth={180} cardHeight={240} accentColor={accentQuote} />
       ) : (
         <Box px="md">
           <Stack gap="xl">
@@ -523,10 +523,10 @@ export default function QuotesPageContent({
           {quotes.length === 0 && !loading && (
             <Stack align="center" gap="md" py="xl">
               <Quote size={64} color={iconColor} />
-              <Title order={4} style={{ color: theme.colors.gray[6] }}>
+              <Title order={3} style={{ color: theme.colors.gray[6] }}>
                 No quotes found
               </Title>
-              <Text size="sm" style={{ color: theme.colors.gray[6] }} ta="center">
+              <Text size="lg" style={{ color: theme.colors.gray[6] }} ta="center">
                 {searchQuery ? 'Try adjusting your search terms.' : 'Be the first to submit a memorable quote!'}
               </Text>
             </Stack>
@@ -659,6 +659,8 @@ export default function QuotesPageContent({
           </motion.div>
         )}
       </AnimatePresence>
+
+      <ScrollToTop accentColor={accentQuote} />
     </motion.div>
     </Box>
   )

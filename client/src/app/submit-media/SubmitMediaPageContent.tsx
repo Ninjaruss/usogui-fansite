@@ -612,6 +612,37 @@ export default function SubmitMediaPageContent() {
                         }}
                       />
 
+                      {/* Validation hints when form is incomplete */}
+                      {!isFormValid && !loading && (
+                        <Alert
+                          variant="light"
+                          radius="md"
+                          style={{
+                            backgroundColor: 'rgba(255, 255, 255, 0.03)',
+                            borderColor: 'rgba(255, 255, 255, 0.1)',
+                            padding: '12px 16px'
+                          }}
+                        >
+                          <Stack gap={4}>
+                            <Text size="sm" fw={500} c="dimmed">Complete the following to submit:</Text>
+                            <Stack gap={2}>
+                              {!formData.url.trim() && (
+                                <Text size="xs" c="dimmed">• Enter a media URL</Text>
+                              )}
+                              {formData.url.trim() && !isValidUrl(formData.url) && (
+                                <Text size="xs" c="dimmed">• Enter a valid URL</Text>
+                              )}
+                              {!formData.ownerType && (
+                                <Text size="xs" c="dimmed">• Select an entity type</Text>
+                              )}
+                              {formData.ownerType && !formData.ownerId && (
+                                <Text size="xs" c="dimmed">• Select a specific {formData.ownerType}</Text>
+                              )}
+                            </Stack>
+                          </Stack>
+                        </Alert>
+                      )}
+
                       <Button
                         type="submit"
                         size="lg"

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useCallback, useRef, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 // Note: Avoid importing Mantine Header to preserve compatibility; using native <header> element
 import {
   Group,
@@ -39,10 +39,9 @@ import {
   ChevronDown
 } from 'lucide-react'
 import Link from 'next/link'
-import { useRouter, usePathname } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import { useAuth } from '../providers/AuthProvider'
-import { useProgress } from '../providers/ProgressProvider'
-import { api } from '../lib/api'
+import { useNavigationSearch } from '../hooks/useNavigationSearch'
 import { motion, AnimatePresence } from 'motion/react'
 import { NavigationData, getCategoryColor } from '../types/navigation'
 import { EntityAccentKey, getEntityAccent, getEntityThemeColor, semanticColors, textColors, outlineStyles } from '../lib/mantine-theme'
@@ -60,18 +59,27 @@ interface SearchResult {
 
 const Navigation: React.FC = () => {
   const { user, logout } = useAuth()
-  const { userProgress } = useProgress()
-  const router = useRouter()
   const pathname = usePathname()
+  const theme = useMantineTheme()
+
   // Mobile menu open state (controlled Menu)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [searchValue, setSearchValue] = useState('')
-  const [searchFocused, setSearchFocused] = useState(false)
-  const [searchResults, setSearchResults] = useState<SearchResult[]>([])
-  const [searchLoading, setSearchLoading] = useState(false)
-  const [showSearchResults, setShowSearchResults] = useState(false)
-  const searchTimeout = useRef<NodeJS.Timeout | null>(null)
-  const theme = useMantineTheme()
+
+  // Search state - extracted to custom hook for cleaner component
+  const {
+    searchValue,
+    searchResults,
+    searchLoading,
+    searchFocused,
+    setSearchFocused,
+    showSearchResults,
+    setShowSearchResults,
+    handleSearchChange,
+    handleSearchResultClick,
+    handleSearchKeyDown,
+    handleSearchSubmit,
+    shouldShowSearchDropdown
+  } = useNavigationSearch()
   const accentColor = theme.other?.usogui?.red ?? theme.colors.red?.[5] ?? '#e11d48'
   // Use centralized outline styles for consistency
   const menuHoverStyles = {
@@ -118,9 +126,6 @@ const Navigation: React.FC = () => {
   }
 
 
-  const trimmedSearchValue = searchValue.trim()
-  const shouldShowSearchDropdown = searchFocused && (showSearchResults || trimmedSearchValue.length < 2)
-
   const handleMobileMenuClose = () => {
     setMobileMenuOpen(false)
     setMobileAccountHighlight(null)
@@ -155,48 +160,6 @@ const Navigation: React.FC = () => {
   // Check if current path is active
   const isActivePath = (path: string) => {
     return pathname === path || pathname.startsWith(path + '/')
-  }
-
-  // Search functionality helpers
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value
-    setSearchValue(value)
-
-    if (searchTimeout.current) {
-      clearTimeout(searchTimeout.current)
-    }
-
-    searchTimeout.current = setTimeout(() => {
-      performSearch(value)
-    }, 300)
-  }
-
-  const handleSearchResultClick = (result: SearchResult) => {
-    setShowSearchResults(false)
-    setSearchValue('')
-    setSearchFocused(false)
-
-    const path = `/${result.type}s/${result.id}`
-    router.push(path)
-  }
-
-  const handleSearchKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Escape') {
-      setShowSearchResults(false)
-      setSearchValue('')
-      setSearchFocused(false)
-    }
-  }
-
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    const trimmed = searchValue.trim()
-    if (trimmed) {
-      setShowSearchResults(false)
-      setSearchValue('')
-      setSearchFocused(false)
-      router.push(`/search?q=${encodeURIComponent(trimmed)}`)
-    }
   }
 
   // Search helper functions
@@ -244,51 +207,6 @@ const Navigation: React.FC = () => {
     return accentColor
   }
 
-  // Search functionality
-  const performSearch = useCallback(async (searchQuery: string) => {
-    if (searchQuery.trim().length < 2) {
-      setSearchResults([])
-      setShowSearchResults(false)
-      return
-    }
-
-    setSearchLoading(true)
-    try {
-      const response = await api.search({
-        query: searchQuery,
-        userProgress
-      })
-
-      // Sort results by priority: characters, organizations, arcs, gambles, events, chapters
-      const priorityOrder = ['character', 'organization', 'arc', 'gamble', 'event', 'chapter']
-      const sortedResults = response.results.sort((a, b) => {
-        const aPriority = priorityOrder.indexOf(a.type)
-        const bPriority = priorityOrder.indexOf(b.type)
-
-        // If both types are in priority list, sort by priority
-        if (aPriority !== -1 && bPriority !== -1) {
-          return aPriority - bPriority
-        }
-
-        // If only one is in priority list, prioritize it
-        if (aPriority !== -1) return -1
-        if (bPriority !== -1) return 1
-
-        // If neither is in priority list, maintain original order
-        return 0
-      })
-
-      setSearchResults(sortedResults)
-      setShowSearchResults(true)
-    } catch (error) {
-      console.error('Search failed:', error)
-      setSearchResults([])
-      setShowSearchResults(false)
-    } finally {
-      setSearchLoading(false)
-    }
-  }, [userProgress])
-
   const navigationData: NavigationData = {
     browse: [
       {
@@ -331,15 +249,6 @@ const Navigation: React.FC = () => {
   }
 
   const avatarSrc = getAvatarSrc()
-
-  // Cleanup search timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (searchTimeout.current) {
-        clearTimeout(searchTimeout.current)
-      }
-    }
-  }, [])
 
   return (
     <header
@@ -724,6 +633,7 @@ const Navigation: React.FC = () => {
             >
               <TextInput
                 placeholder="Search..."
+                aria-label="Search characters, arcs, gambles, and more"
                 value={searchValue}
                 onChange={(e) => handleSearchChange(e)}
                 onFocus={() => {
@@ -825,15 +735,15 @@ const Navigation: React.FC = () => {
                               <Text style={{ color: '#ffffff', fontWeight: 500 }}>
                                 {result.title}
                               </Text>
-                              {result.type === 'character' && result.metadata?.alternateNames?.length > 0 && (
+                              {result.type === 'character' && result.metadata && Array.isArray((result.metadata as Record<string, unknown>).alternateNames) && ((result.metadata as Record<string, unknown>).alternateNames as string[]).length > 0 && (
                                 <Text
                                   size="xs"
                                   style={{
-                                    color: 'rgba(255, 255, 255, 0.65)', // Improved from 0.45 for better contrast
+                                    color: 'rgba(255, 255, 255, 0.75)', // 4.6:1 contrast - WCAG AA compliant
                                     fontStyle: 'italic'
                                   }}
                                 >
-                                  {result.metadata.alternateNames.join(', ')}
+                                  {((result.metadata as Record<string, unknown>).alternateNames as string[]).join(', ')}
                                 </Text>
                               )}
                             </Box>
@@ -866,7 +776,7 @@ const Navigation: React.FC = () => {
                   ) : (
                     <Box style={{ padding: '12px 16px', textAlign: 'center' }}>
                       <Text style={{ color: 'rgba(255, 255, 255, 0.75)' }}>
-                        {trimmedSearchValue.length < 2
+                        {searchValue.trim().length < 2
                           ? 'Type at least 2 characters to search'
                           : 'No results found'}
                       </Text>
@@ -1056,6 +966,7 @@ const Navigation: React.FC = () => {
               <form onSubmit={handleSearchSubmit}>
                 <TextInput
                   placeholder="Search..."
+                  aria-label="Search characters, arcs, gambles, and more"
                   value={searchValue}
                   onChange={(e) => handleSearchChange(e)}
                   leftSection={searchLoading ? <Loader size={18} /> : <Search size={18} />}

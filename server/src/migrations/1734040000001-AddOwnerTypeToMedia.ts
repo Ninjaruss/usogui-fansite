@@ -59,12 +59,20 @@ export class AddOwnerTypeToMedia1734040000001 implements MigrationInterface {
   public async down(queryRunner: QueryRunner): Promise<void> {
     // Drop indexes
     await queryRunner.query(`DROP INDEX IF EXISTS "IDX_media_purpose"`);
-    await queryRunner.query(`DROP INDEX IF EXISTS "IDX_media_ownerType_ownerId_chapterNumber"`);
-    await queryRunner.query(`DROP INDEX IF EXISTS "IDX_media_ownerType_ownerId"`);
+    await queryRunner.query(
+      `DROP INDEX IF EXISTS "IDX_media_ownerType_ownerId_chapterNumber"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX IF EXISTS "IDX_media_ownerType_ownerId"`,
+    );
 
     // Drop columns
-    await queryRunner.query(`ALTER TABLE media DROP COLUMN IF EXISTS "ownerId"`);
-    await queryRunner.query(`ALTER TABLE media DROP COLUMN IF EXISTS "ownerType"`);
+    await queryRunner.query(
+      `ALTER TABLE media DROP COLUMN IF EXISTS "ownerId"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE media DROP COLUMN IF EXISTS "ownerType"`,
+    );
 
     // Note: We don't drop the enum type as it may be in use
   }

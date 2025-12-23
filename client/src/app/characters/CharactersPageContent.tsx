@@ -33,6 +33,8 @@ import { api } from '../../lib/api'
 import MediaThumbnail from '../../components/MediaThumbnail'
 import { useHoverModal } from '../../hooks/useHoverModal'
 import { HoverModal } from '../../components/HoverModal'
+import { CardGridSkeleton } from '../../components/CardGridSkeleton'
+import { ScrollToTop } from '../../components/ScrollToTop'
 import { useProgress } from '../../providers/ProgressProvider'
 import { useSpoilerSettings } from '../../hooks/useSpoilerSettings'
 import { shouldHideSpoiler } from '../../lib/spoiler-utils'
@@ -86,7 +88,7 @@ export default function CharactersPageContent({
   const [error, setError] = useState<string | null>(initialError || null)
   const [searchInput, setSearchInput] = useState(initialSearch || '')
   const [searchQuery, setSearchQuery] = useState(initialSearch || '')
-  const [sortBy, setSortBy] = useState<SortOption>((searchParams.get('sort') as SortOption) || 'name')
+  const [sortBy, setSortBy] = useState<SortOption>((searchParams.get('sort') as SortOption) || 'firstAppearance')
 
   // Server-side pagination
   const [currentPage, setCurrentPage] = useState<number>(parseInt(searchParams.get('page') || '1', 10))
@@ -122,7 +124,10 @@ export default function CharactersPageContent({
     handleMouseEnter: handleCharacterMouseEnter,
     handleMouseLeave: handleCharacterMouseLeave,
     handleModalMouseEnter,
-    handleModalMouseLeave
+    handleModalMouseLeave,
+    handleTap: handleCharacterTap,
+    closeModal,
+    isTouchDevice
   } = useHoverModal<Character>()
 
   const hasSearchQuery = searchQuery.trim().length > 0 || organizationFilter !== null
@@ -192,7 +197,7 @@ export default function CharactersPageContent({
     const params = new URLSearchParams()
     if (search) params.set('search', search)
     if (page > 1) params.set('page', page.toString())
-    if (sort !== 'name') params.set('sort', sort)
+    if (sort !== 'firstAppearance') params.set('sort', sort)
 
     const url = params.toString() ? `/characters?${params.toString()}` : '/characters'
     router.push(url, { scroll: false })
@@ -406,8 +411,15 @@ export default function CharactersPageContent({
               radius="xl"
               rightSection={
                 hasSearchQuery ? (
-                  <ActionIcon variant="subtle" color="gray" onClick={handleClearSearch} size="sm">
-                    <X size={16} />
+                  <ActionIcon
+                    variant="subtle"
+                    color="gray"
+                    onClick={handleClearSearch}
+                    size="lg"
+                    aria-label="Clear search"
+                    style={{ minWidth: 44, minHeight: 44 }}
+                  >
+                    <X size={18} />
                   </ActionIcon>
                 ) : null
               }
@@ -465,8 +477,15 @@ export default function CharactersPageContent({
               style={{ backgroundColor: accentCharacter }}
               radius="xl"
               rightSection={
-                <ActionIcon size="xs" color="white" variant="transparent" onClick={() => handleOrganizationFilterChange(null)}>
-                  <X size={12} />
+                <ActionIcon
+                  size="md"
+                  color="white"
+                  variant="transparent"
+                  onClick={() => handleOrganizationFilterChange(null)}
+                  aria-label="Clear organization filter"
+                  style={{ minWidth: 32, minHeight: 32 }}
+                >
+                  <X size={14} />
                 </ActionIcon>
               }
             >
@@ -493,10 +512,7 @@ export default function CharactersPageContent({
 
       {/* Loading State */}
       {loading ? (
-        <Box style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', paddingBlock: rem(80) }}>
-          <Loader size="xl" color={accentCharacter} mb="md" />
-          <Text size="lg" style={{ color: theme.colors.gray[6] }}>Loading characters...</Text>
-        </Box>
+        <CardGridSkeleton count={12} cardWidth={200} cardHeight={280} accentColor={accentCharacter} />
       ) : (
         <>
           {/* Empty State */}
@@ -524,9 +540,9 @@ export default function CharactersPageContent({
                 px="md"
                 style={{
                   display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 220px))',
                   gap: rem(16),
-                  justifyItems: 'center'
+                  justifyContent: 'center'
                 }}
               >
                 {filteredCharacters.map((character: Character, index: number) => (
@@ -536,8 +552,9 @@ export default function CharactersPageContent({
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4, delay: index * 0.05 }}
                     style={{
-                      width: '200px',
-                      height: '280px' // Playing card aspect ratio: 200px * 1.4 = 280px
+                      width: '100%',
+                      maxWidth: '220px',
+                      aspectRatio: '5/7' // Playing card aspect ratio
                     }}
                   >
                     <Card
@@ -547,7 +564,27 @@ export default function CharactersPageContent({
                       radius="lg"
                       shadow="sm"
                       style={getPlayingCardStyles(theme, accentCharacter)}
+                      onClick={(e) => {
+                        // On touch devices, first tap shows preview, second tap navigates
+                        if (isTouchDevice) {
+                          const isSpoilered = shouldHideSpoiler(
+                            character.firstAppearanceChapter,
+                            userProgress,
+                            spoilerSettings
+                          )
+                          const hasBeenRevealed = revealedCharacters.has(character.id)
+                          if (!isSpoilered || hasBeenRevealed) {
+                            // If modal is not showing for this character, prevent navigation and show modal
+                            if (hoveredCharacter?.id !== character.id) {
+                              e.preventDefault()
+                              handleCharacterTap(character, e)
+                            }
+                            // If modal is already showing, allow navigation (second tap)
+                          }
+                        }
+                      }}
                       onMouseEnter={(e) => {
+                        if (isTouchDevice) return // Skip hover on touch devices
                         e.currentTarget.style.transform = 'translateY(-4px)'
                         e.currentTarget.style.boxShadow = '0 12px 32px rgba(0,0,0,0.25)'
 
@@ -566,6 +603,7 @@ export default function CharactersPageContent({
                         }
                       }}
                       onMouseLeave={(e) => {
+                        if (isTouchDevice) return // Skip hover on touch devices
                         e.currentTarget.style.transform = 'translateY(0)'
                         e.currentTarget.style.boxShadow = theme.shadows.sm
                         currentlyHoveredRef.current = null
@@ -673,16 +711,17 @@ export default function CharactersPageContent({
                           size="sm"
                           fw={700}
                           lineClamp={2}
-                          c={accentCharacter}
                           ta="center"
                           style={{
-                            lineHeight: 1.2,
-                            fontSize: rem(13),
-                            background: `linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05))`,
+                            lineHeight: 1.3,
+                            fontSize: rem(15),
+                            color: '#ffffff',
+                            textShadow: '0 1px 3px rgba(0,0,0,0.8)',
+                            background: `linear-gradient(135deg, ${accentCharacter}dd, ${accentCharacter}aa)`,
                             backdropFilter: 'blur(4px)',
                             borderRadius: rem(6),
-                            padding: `${rem(4)} ${rem(8)}`,
-                            border: `1px solid rgba(255,255,255,0.1)`
+                            padding: `${rem(6)} ${rem(10)}`,
+                            border: `1px solid ${accentCharacter}40`
                           }}
                         >
                           {character.name}
@@ -799,6 +838,8 @@ export default function CharactersPageContent({
         accentColor={accentCharacter}
         onMouseEnter={handleModalMouseEnter}
         onMouseLeave={handleModalMouseLeave}
+        onClose={closeModal}
+        showCloseButton={isTouchDevice}
       >
         {hoveredCharacter && (
           <>
@@ -939,6 +980,8 @@ export default function CharactersPageContent({
           </>
         )}
       </HoverModal>
+
+      <ScrollToTop accentColor={accentCharacter} />
     </motion.div>
     </Box>
   )

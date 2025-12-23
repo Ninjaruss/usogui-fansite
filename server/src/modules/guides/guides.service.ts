@@ -506,15 +506,7 @@ export class GuidesService {
     updateGuideDto: UpdateGuideDto,
     currentUser: User,
   ): Promise<Guide> {
-    console.log('=== GUIDE UPDATE DEBUG ===');
-    console.log(
-      'Received updateGuideDto:',
-      JSON.stringify(updateGuideDto, null, 2),
-    );
-    console.log('Current user:', currentUser.id, currentUser.username);
-
     const guide = await this.findOne(id, currentUser);
-    console.log('Found guide:', guide.id, guide.title);
 
     // Check if user can edit this guide
     if (
@@ -527,14 +519,6 @@ export class GuidesService {
 
     const { tagNames, authorId, characterIds, arcId, gambleIds, ...guideData } =
       updateGuideDto;
-    console.log('Extracted fields:', {
-      tagNames,
-      authorId,
-      characterIds,
-      arcId,
-      gambleIds,
-    });
-    console.log('Basic guide data:', guideData);
 
     return await this.guideRepository.manager.transaction(async (manager) => {
       const guideRepo = manager.getRepository(Guide);
@@ -544,155 +528,125 @@ export class GuidesService {
       const arcRepo = manager.getRepository(Arc);
       const gambleRepo = manager.getRepository(Gamble);
 
-      try {
-        // Check if authorId is being changed (admin only)
-        if (authorId !== undefined && authorId !== guide.authorId) {
-          if (currentUser.role !== UserRole.ADMIN) {
-            throw new ForbiddenException(
-              'Only admins can change guide ownership',
-            );
-          }
-
-          // Verify the new author exists
-          const newAuthor = await userRepo.findOne({
-            where: { id: authorId },
-          });
-          if (!newAuthor) {
-            throw new NotFoundException('New author not found');
-          }
-
-          guide.authorId = authorId;
-          console.log('Updated author to:', authorId);
+      // Check if authorId is being changed (admin only)
+      if (authorId !== undefined && authorId !== guide.authorId) {
+        if (currentUser.role !== UserRole.ADMIN) {
+          throw new ForbiddenException(
+            'Only admins can change guide ownership',
+          );
         }
 
-        // Update basic fields
-        Object.assign(guide, guideData);
-        console.log('Updated basic fields');
-
-        // Handle tags if provided
-        if (tagNames !== undefined) {
-          if (tagNames.length > 0) {
-            console.log('Processing tags:', tagNames);
-            const tags: Tag[] = [];
-            for (const tagName of tagNames) {
-              let tag = await tagRepo.findOne({ where: { name: tagName } });
-              if (!tag) {
-                tag = tagRepo.create({ name: tagName });
-                tag = await tagRepo.save(tag);
-                console.log('Created new tag:', tag.name);
-              }
-              tags.push(tag);
-            }
-            guide.tags = tags;
-            console.log(
-              'Assigned tags:',
-              tags.map((t) => t.name),
-            );
-          } else {
-            guide.tags = [];
-            console.log('Cleared tags');
-          }
-        }
-
-        // Handle character relations
-        if (characterIds !== undefined) {
-          if (characterIds.length > 0) {
-            console.log('Processing character IDs:', characterIds);
-            const characters = await characterRepo.findByIds(characterIds);
-            if (characters.length !== characterIds.length) {
-              const foundIds = characters.map((c) => c.id);
-              const missingIds = characterIds.filter(
-                (id) => !foundIds.includes(id),
-              );
-              console.error('Missing character IDs:', missingIds);
-              throw new BadRequestException(
-                `Character IDs not found: ${missingIds.join(', ')}`,
-              );
-            }
-            guide.characters = characters;
-            console.log(
-              'Assigned characters:',
-              characters.map((c) => `${c.id}:${c.name}`),
-            );
-          } else {
-            guide.characters = [];
-            console.log('Cleared characters');
-          }
-        }
-
-        // Handle arc relation
-        if (arcId !== undefined) {
-          if (arcId && arcId !== null) {
-            console.log('Processing arc ID:', arcId);
-            const arc = await arcRepo.findOne({ where: { id: arcId } });
-            if (!arc) {
-              console.error('Arc not found:', arcId);
-              throw new BadRequestException(`Arc ID not found: ${arcId}`);
-            }
-            guide.arc = arc;
-            guide.arcId = arcId;
-            console.log('Assigned arc:', `${arc.id}:${arc.name}`);
-          } else {
-            guide.arc = undefined;
-            guide.arcId = undefined;
-            console.log('Cleared arc (arcId was:', arcId, ')');
-          }
-        }
-
-        // Handle gamble relations
-        if (gambleIds !== undefined) {
-          if (gambleIds.length > 0) {
-            console.log('Processing gamble IDs:', gambleIds);
-            const gambles = await gambleRepo.findByIds(gambleIds);
-            if (gambles.length !== gambleIds.length) {
-              const foundIds = gambles.map((g) => g.id);
-              const missingIds = gambleIds.filter(
-                (id) => !foundIds.includes(id),
-              );
-              console.error('Missing gamble IDs:', missingIds);
-              throw new BadRequestException(
-                `Gamble IDs not found: ${missingIds.join(', ')}`,
-              );
-            }
-            guide.gambles = gambles;
-            console.log(
-              'Assigned gambles:',
-              gambles.map((g) => `${g.id}:${g.name}`),
-            );
-          } else {
-            guide.gambles = [];
-            console.log('Cleared gambles');
-          }
-        }
-
-        console.log('Saving guide...');
-        const savedGuide = await guideRepo.save(guide);
-        console.log('Guide saved successfully');
-
-        // Fetch the updated guide with all relations to ensure React Admin gets complete data
-        const updatedGuide = await guideRepo.findOne({
-          where: { id: savedGuide.id },
-          relations: [
-            'author',
-            'tags',
-            'likes',
-            'characters',
-            'arc',
-            'gambles',
-          ],
+        // Verify the new author exists
+        const newAuthor = await userRepo.findOne({
+          where: { id: authorId },
         });
-
-        if (!updatedGuide) {
-          throw new NotFoundException('Guide not found after update');
+        if (!newAuthor) {
+          throw new NotFoundException('New author not found');
         }
 
-        console.log('Returning updated guide with relations');
-        console.log('=== END GUIDE UPDATE DEBUG ===');
-        return updatedGuide;
-      } catch (error) {
-        console.error('Error in guide update transaction:', error);
-        throw error;
+        guide.authorId = authorId;
       }
+
+      // Update basic fields
+      Object.assign(guide, guideData);
+
+      // Handle tags if provided - optimized batch query
+      if (tagNames !== undefined) {
+        if (tagNames.length > 0) {
+          // Batch fetch all existing tags in a single query
+          const existingTags = await tagRepo
+            .createQueryBuilder('tag')
+            .where('tag.name IN (:...names)', { names: tagNames })
+            .getMany();
+
+          const existingTagMap = new Map(existingTags.map((t) => [t.name, t]));
+          const tags: Tag[] = [];
+
+          for (const tagName of tagNames) {
+            let tag = existingTagMap.get(tagName);
+            if (!tag) {
+              // Only create tags that don't exist
+              tag = tagRepo.create({ name: tagName });
+              tag = await tagRepo.save(tag);
+            }
+            tags.push(tag);
+          }
+          guide.tags = tags;
+        } else {
+          guide.tags = [];
+        }
+      }
+
+      // Handle character relations - single batch query
+      if (characterIds !== undefined) {
+        if (characterIds.length > 0) {
+          const characters = await characterRepo
+            .createQueryBuilder('character')
+            .where('character.id IN (:...ids)', { ids: characterIds })
+            .getMany();
+          if (characters.length !== characterIds.length) {
+            const foundIds = characters.map((c) => c.id);
+            const missingIds = characterIds.filter(
+              (id) => !foundIds.includes(id),
+            );
+            throw new BadRequestException(
+              `Character IDs not found: ${missingIds.join(', ')}`,
+            );
+          }
+          guide.characters = characters;
+        } else {
+          guide.characters = [];
+        }
+      }
+
+      // Handle arc relation
+      if (arcId !== undefined) {
+        if (arcId && arcId !== null) {
+          const arc = await arcRepo.findOne({ where: { id: arcId } });
+          if (!arc) {
+            throw new BadRequestException(`Arc ID not found: ${arcId}`);
+          }
+          guide.arc = arc;
+          guide.arcId = arcId;
+        } else {
+          guide.arc = undefined;
+          guide.arcId = undefined;
+        }
+      }
+
+      // Handle gamble relations - single batch query
+      if (gambleIds !== undefined) {
+        if (gambleIds.length > 0) {
+          const gambles = await gambleRepo
+            .createQueryBuilder('gamble')
+            .where('gamble.id IN (:...ids)', { ids: gambleIds })
+            .getMany();
+          if (gambles.length !== gambleIds.length) {
+            const foundIds = gambles.map((g) => g.id);
+            const missingIds = gambleIds.filter((id) => !foundIds.includes(id));
+            throw new BadRequestException(
+              `Gamble IDs not found: ${missingIds.join(', ')}`,
+            );
+          }
+          guide.gambles = gambles;
+        } else {
+          guide.gambles = [];
+        }
+      }
+
+      const savedGuide = await guideRepo.save(guide);
+
+      // Fetch the updated guide with all relations to ensure React Admin gets complete data
+      const updatedGuide = await guideRepo.findOne({
+        where: { id: savedGuide.id },
+        relations: ['author', 'tags', 'likes', 'characters', 'arc', 'gambles'],
+      });
+
+      if (!updatedGuide) {
+        throw new NotFoundException('Guide not found after update');
+      }
+
+      return updatedGuide;
     });
   }
 

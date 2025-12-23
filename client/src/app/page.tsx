@@ -1,8 +1,8 @@
 'use client'
 
-import { Box, Container, Title, Text, Button, Badge, Group } from '@mantine/core'
+import { Box, Container, Title, Text, Button, Group, Alert } from '@mantine/core'
 import { useMantineTheme } from '@mantine/core'
-import { Users, BookOpen, Dices, CalendarSearch, Book, Shield, FileText, Quote, ChevronRight, Sparkles, MessageCircle, ExternalLink, Image } from 'lucide-react'
+import { CalendarSearch, Shield, FileText, MessageCircle, ExternalLink, Image, AlertCircle } from 'lucide-react'
 import Link from 'next/link'
 import { EnhancedSearchBar } from '../components/EnhancedSearchBar'
 import { DynamicVolumeShowcase } from '../components/DynamicVolumeShowcase'
@@ -152,115 +152,73 @@ export default function HomePage() {
             </Text>
 
             {/* Database Stats */}
-            {landingData?.stats && (
+            {landingError ? (
+              <Alert
+                icon={<AlertCircle size={16} />}
+                color="yellow"
+                variant="light"
+                radius="md"
+                style={{ marginBottom: '2rem', maxWidth: 400, margin: '0 auto 2rem auto' }}
+              >
+                <Text size="sm">Stats temporarily unavailable. Join our community!</Text>
+              </Alert>
+            ) : landingData?.stats && (
               <Box style={{ marginBottom: '2rem' }}>
                 <Text size="lg" fw={600} style={{ textAlign: 'center', marginBottom: '1.5rem', color: '#ffffff' }}>
                   Discover Rich Content & Community Insights
                 </Text>
-                <Group justify="center" gap="lg" style={{ flexWrap: 'wrap' }}>
+                <Group justify="center" gap="xl" style={{ flexWrap: 'wrap' }}>
                   {landingData.stats.totalGuides && (
-                    <Badge
-                      size="xl"
-                      variant="filled"
-                      style={{
-                        backgroundColor: 'rgba(255, 217, 61, 0.2)',
-                        border: '2px solid #FFD93D',
-                        borderRadius: '12px',
-                        padding: '12px 20px',
-                        minWidth: '140px',
-                        height: 'auto'
-                      }}
-                    >
-                      <Box style={{ textAlign: 'center' }}>
-                        <Text size="xl" fw={700} style={{ color: '#FFD93D', marginBottom: '0.25rem', display: 'block' }}>
-                          {landingData.stats.totalGuides.toLocaleString()}
+                    <Box style={{ textAlign: 'center' }}>
+                      <Text size="xl" fw={700} style={{ color: textColors.guide, marginBottom: '0.25rem' }}>
+                        {landingData.stats.totalGuides.toLocaleString()}
+                      </Text>
+                      <Group justify="center" gap={4}>
+                        <FileText size={14} style={{ color: textColors.tertiary }} />
+                        <Text size="sm" style={{ color: textColors.tertiary }}>
+                          Guides
                         </Text>
-                        <Group justify="center" gap="xs" style={{ marginTop: '0.25rem' }}>
-                          <FileText size={16} style={{ color: '#FFD93D' }} />
-                          <Text size="sm" fw={600} style={{ color: '#FFD93D' }}>
-                            Guides
-                          </Text>
-                        </Group>
-                      </Box>
-                    </Badge>
+                      </Group>
+                    </Box>
                   )}
                   {landingData.stats.totalEvents && (
-                    <Badge
-                      size="xl"
-                      variant="filled"
-                      style={{
-                        backgroundColor: 'rgba(255, 107, 107, 0.2)',
-                        border: '2px solid #FF6B6B',
-                        borderRadius: '12px',
-                        padding: '12px 20px',
-                        minWidth: '140px',
-                        height: 'auto'
-                      }}
-                    >
-                      <Box style={{ textAlign: 'center' }}>
-                        <Text size="xl" fw={700} style={{ color: '#FF6B6B', marginBottom: '0.25rem', display: 'block' }}>
-                          {landingData.stats.totalEvents.toLocaleString()}
+                    <Box style={{ textAlign: 'center' }}>
+                      <Text size="xl" fw={700} style={{ color: textColors.event, marginBottom: '0.25rem' }}>
+                        {landingData.stats.totalEvents.toLocaleString()}
+                      </Text>
+                      <Group justify="center" gap={4}>
+                        <CalendarSearch size={14} style={{ color: textColors.tertiary }} />
+                        <Text size="sm" style={{ color: textColors.tertiary }}>
+                          Events
                         </Text>
-                        <Group justify="center" gap="xs" style={{ marginTop: '0.25rem' }}>
-                          <CalendarSearch size={16} style={{ color: '#FF6B6B' }} />
-                          <Text size="sm" fw={600} style={{ color: '#FF6B6B' }}>
-                            Events
-                          </Text>
-                        </Group>
-                      </Box>
-                    </Badge>
+                      </Group>
+                    </Box>
                   )}
                   {landingData.stats.totalMedia && (
-                    <Badge
-                      size="xl"
-                      variant="filled"
-                      style={{
-                        backgroundColor: 'rgba(78, 205, 196, 0.2)',
-                        border: '2px solid #4ECDC4',
-                        borderRadius: '12px',
-                        padding: '12px 20px',
-                        minWidth: '140px',
-                        height: 'auto'
-                      }}
-                    >
-                      <Box style={{ textAlign: 'center' }}>
-                        <Text size="xl" fw={700} style={{ color: '#4ECDC4', marginBottom: '0.25rem', display: 'block' }}>
-                          {landingData.stats.totalMedia.toLocaleString()}
+                    <Box style={{ textAlign: 'center' }}>
+                      <Text size="xl" fw={700} style={{ color: textColors.media, marginBottom: '0.25rem' }}>
+                        {landingData.stats.totalMedia.toLocaleString()}
+                      </Text>
+                      <Group justify="center" gap={4}>
+                        <Image size={14} style={{ color: textColors.tertiary }} />
+                        <Text size="sm" style={{ color: textColors.tertiary }}>
+                          Media
                         </Text>
-                        <Group justify="center" gap="xs" style={{ marginTop: '0.25rem' }}>
-                          <Image size={16} style={{ color: '#4ECDC4' }} />
-                          <Text size="sm" fw={600} style={{ color: '#4ECDC4' }}>
-                            Media
-                          </Text>
-                        </Group>
-                      </Box>
-                    </Badge>
+                      </Group>
+                    </Box>
                   )}
                   {landingData.stats.totalUsers && (
-                    <Badge
-                      size="xl"
-                      variant="filled"
-                      style={{
-                        backgroundColor: 'rgba(168, 230, 207, 0.2)',
-                        border: '2px solid #A8E6CF',
-                        borderRadius: '12px',
-                        padding: '12px 20px',
-                        minWidth: '140px',
-                        height: 'auto'
-                      }}
-                    >
-                      <Box style={{ textAlign: 'center' }}>
-                        <Text size="xl" fw={700} style={{ color: '#A8E6CF', marginBottom: '0.25rem', display: 'block' }}>
-                          {landingData.stats.totalUsers.toLocaleString()}
+                    <Box style={{ textAlign: 'center' }}>
+                      <Text size="xl" fw={700} style={{ color: textColors.character, marginBottom: '0.25rem' }}>
+                        {landingData.stats.totalUsers.toLocaleString()}
+                      </Text>
+                      <Group justify="center" gap={4}>
+                        <Shield size={14} style={{ color: textColors.tertiary }} />
+                        <Text size="sm" style={{ color: textColors.tertiary }}>
+                          Members
                         </Text>
-                        <Group justify="center" gap="xs" style={{ marginTop: '0.25rem' }}>
-                          <Shield size={16} style={{ color: '#A8E6CF' }} />
-                          <Text size="sm" fw={600} style={{ color: '#A8E6CF' }}>
-                            Members
-                          </Text>
-                        </Group>
-                      </Box>
-                    </Badge>
+                      </Group>
+                    </Box>
                   )}
                 </Group>
               </Box>

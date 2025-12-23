@@ -76,11 +76,6 @@ export default function CharacterPageClient({
 }: CharacterPageClientProps) {
   const theme = useMantineTheme()
   const [activeTab, setActiveTab] = useState<string>('overview')
-  const [isClient, setIsClient] = useState(false)
-
-  useEffect(() => {
-    setIsClient(true)
-  }, [])
 
   usePageView('character', character.id.toString(), true)
 
@@ -88,10 +83,6 @@ export default function CharacterPageClient({
   useEffect(() => {
     setTabAccentColors('character')
   }, [])
-
-  if (!isClient) {
-    return <Box py="md" c={textColors.primary}>Loading...</Box>
-  }
 
   // Use consistent theme colors for better readability
   const entityColors = {
@@ -144,7 +135,7 @@ export default function CharacterPageClient({
 
         {/* Content */}
         <Box p={theme.spacing.lg} style={{ position: 'relative', zIndex: 1 }}>
-          <Group gap={theme.spacing.lg} align="stretch" wrap="nowrap">
+          <Group gap={theme.spacing.lg} align="flex-start" wrap="wrap" justify="center">
             <Box style={{ flexShrink: 0 }}>
               <Box
                 style={{
@@ -168,7 +159,7 @@ export default function CharacterPageClient({
               </Box>
             </Box>
 
-            <Stack gap={theme.spacing.md} style={{ flex: 1, minWidth: 0, height: '100%' }} justify="space-between">
+            <Stack gap={theme.spacing.md} style={{ flex: 1, minWidth: '280px' }} justify="space-between">
               <Stack gap={theme.spacing.sm}>
                 <Title
                   order={1}
@@ -371,13 +362,8 @@ export default function CharacterPageClient({
                     </Group>
                     <Stack gap={theme.spacing.sm}>
                       {arcs.slice(0, 4).map((arc) => (
-                        <Paper key={arc.id} withBorder radius="lg" p={theme.spacing.md} shadow="md" style={{
-                          border: `1px solid ${getAlphaColor(entityColors.arc, 0.3)}`,
-                          transition: `all ${theme.other?.transitions?.durationShort || 200}ms ease`,
-                          '&:hover': {
-                            transform: theme.other?.effects?.cardHoverTransform || 'translateY(-2px)',
-                            boxShadow: theme.shadows.lg
-                          }
+                        <Paper key={arc.id} withBorder radius="lg" p={theme.spacing.md} shadow="md" className="hoverable-paper" style={{
+                          border: `1px solid ${getAlphaColor(entityColors.arc, 0.3)}`
                         }}>
                           <Group justify="space-between" align="flex-start">
                             <Box style={{ flex: 1 }}>
@@ -430,13 +416,8 @@ export default function CharacterPageClient({
                     </Group>
                     <Stack gap={theme.spacing.sm}>
                       {gambles.slice(0, 4).map((gamble) => (
-                        <Paper key={gamble.id} withBorder radius="lg" p={theme.spacing.md} shadow="md" style={{
-                          border: `1px solid ${getAlphaColor(entityColors.gamble, 0.3)}`,
-                          transition: `all ${theme.other?.transitions?.durationShort || 200}ms ease`,
-                          '&:hover': {
-                            transform: theme.other?.effects?.cardHoverTransform || 'translateY(-2px)',
-                            boxShadow: theme.shadows.lg
-                          }
+                        <Paper key={gamble.id} withBorder radius="lg" p={theme.spacing.md} shadow="md" className="hoverable-paper" style={{
+                          border: `1px solid ${getAlphaColor(entityColors.gamble, 0.3)}`
                         }}>
                           <TimelineSpoilerWrapper chapterNumber={gamble.chapterId ?? undefined}>
                             <Group justify="space-between" align="flex-start">
@@ -494,13 +475,8 @@ export default function CharacterPageClient({
 
                     <Stack gap={theme.spacing.sm}>
                       {quotes.slice(0, 3).map((quote) => (
-                        <Paper key={quote.id} withBorder radius="lg" p={theme.spacing.md} shadow="md" style={{
-                          border: `1px solid ${getAlphaColor(entityColors.quote, 0.3)}`,
-                          transition: `all ${theme.other?.transitions?.durationShort || 200}ms ease`,
-                          '&:hover': {
-                            transform: theme.other?.effects?.cardHoverTransform || 'translateY(-2px)',
-                            boxShadow: theme.shadows.lg
-                          }
+                        <Paper key={quote.id} withBorder radius="lg" p={theme.spacing.md} shadow="md" className="hoverable-paper" style={{
+                          border: `1px solid ${getAlphaColor(entityColors.quote, 0.3)}`
                         }}>
                           <TimelineSpoilerWrapper chapterNumber={quote.chapter?.number ?? undefined}>
                             <Stack gap={theme.spacing.sm}>
@@ -542,13 +518,8 @@ export default function CharacterPageClient({
 
                     <Stack gap={theme.spacing.sm}>
                       {guides.slice(0, 4).map((guide) => (
-                        <Paper key={guide.id} withBorder radius="lg" p={theme.spacing.md} shadow="md" style={{
-                          border: `1px solid ${getAlphaColor(entityColors.guide, 0.3)}`,
-                          transition: `all ${theme.other?.transitions?.durationShort || 200}ms ease`,
-                          '&:hover': {
-                            transform: theme.other?.effects?.cardHoverTransform || 'translateY(-2px)',
-                            boxShadow: theme.shadows.lg
-                          }
+                        <Paper key={guide.id} withBorder radius="lg" p={theme.spacing.md} shadow="md" className="hoverable-paper" style={{
+                          border: `1px solid ${getAlphaColor(entityColors.guide, 0.3)}`
                         }}>
                           <Stack gap={spacing.xs}>
                             <Text

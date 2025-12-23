@@ -6,16 +6,16 @@ import {
   TextInput,
   Paper,
   Badge,
+  Button,
   Group,
   Stack,
   Loader,
   Text,
   ScrollArea,
   useMantineTheme,
-  rgba,
-  Pill
+  rgba
 } from '@mantine/core'
-import { Search, BookOpen, Users, Zap, Shield, FileText, Dices, Image as MediaIcon, Quote, TrendingUp, Clock } from 'lucide-react'
+import { Search, BookOpen, Users, Zap, Shield, FileText, Dices, Image as MediaIcon, Quote, TrendingUp, Clock, ArrowRight } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { api } from '../lib/api'
 import { useProgress } from '../providers/ProgressProvider'
@@ -402,6 +402,7 @@ export const EnhancedSearchBar: React.FC<EnhancedSearchBarProps> = ({ trendingDa
         onFocus={() => setShowResults(true)}
         onKeyDown={handleKeyDown}
         placeholder="Discover characters, arcs, gambles, events, and more..."
+        aria-label="Search the Usogui database"
         radius="xl"
         size="md"
         leftSection={
@@ -441,7 +442,7 @@ export const EnhancedSearchBar: React.FC<EnhancedSearchBarProps> = ({ trendingDa
               top: '100%',
               left: 0,
               right: 0,
-              zIndex: 500,
+              zIndex: 1000,
               marginTop: '0.5rem'
             }}
           >
@@ -463,81 +464,107 @@ export const EnhancedSearchBar: React.FC<EnhancedSearchBarProps> = ({ trendingDa
                   <Stack gap={0}>
                     {results.length === 0 && !loading ? (
                       <Box style={{ padding: '1.5rem', textAlign: 'center' }}>
-                        <Text size="sm" c="dimmed">
+                        <Text size="sm" c="dimmed" mb="xs">
                           No results found for "{query}"
+                        </Text>
+                        <Text size="xs" c="dimmed">
+                          Try a different spelling, or browse Characters, Gambles, or Arcs
                         </Text>
                       </Box>
                     ) : (
-                      results.map((result, index) => (
-                        <motion.div
-                          key={`${result.type}-${result.id}-${index}`}
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ duration: 0.2, delay: index * 0.05 }}
-                        >
-                          <Box
-                            style={{
-                              padding: '0.75rem 1rem',
-                              cursor: 'pointer',
-                              borderBottom: index < results.length - 1 ? `1px solid ${borderColor}` : 'none',
-                              transition: 'background-color 0.2s ease',
-                              '&:hover': {
-                                backgroundColor: withAlpha(accent, 0.08, 'rgba(225, 29, 72, 0.08)')
-                              }
-                            }}
-                            onClick={() => handleResultClick(result)}
+                      <>
+                        {results.slice(0, 8).map((result, index) => (
+                          <motion.div
+                            key={`${result.type}-${result.id}-${index}`}
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ duration: 0.2, delay: index * 0.05 }}
                           >
-                            <Group gap="sm" align="flex-start">
-                              <Box style={{ color: getTypeColor(result.type), marginTop: '0.2rem' }}>
-                                {getTypeIcon(result.type)}
-                              </Box>
-                              <Box style={{ flex: 1, minWidth: 0 }}>
-                                <Group gap="xs" align="center" style={{ marginBottom: '0.25rem' }}>
-                                  <Text fw={600} size="sm" style={{ color: '#ffffff' }}>
-                                    {getDisplayTitle(result)}
-                                  </Text>
-                                  <Badge
-                                    size="xs"
-                                    variant="light"
-                                    style={{
-                                      backgroundColor: withAlpha(getTypeColor(result.type), 0.2, 'rgba(225, 29, 72, 0.2)'),
-                                      color: getTypeColor(result.type),
-                                      textTransform: 'capitalize'
-                                    }}
-                                  >
-                                    {result.type}
-                                  </Badge>
-                                  {result.hasSpoilers && (
+                            <Box
+                              className="search-result-item"
+                              style={{
+                                padding: '0.75rem 1rem',
+                                cursor: 'pointer',
+                                borderBottom: `1px solid ${borderColor}`
+                              }}
+                              onClick={() => handleResultClick(result)}
+                            >
+                              <Group gap="sm" align="flex-start">
+                                <Box style={{ color: getTypeColor(result.type), marginTop: '0.2rem' }}>
+                                  {getTypeIcon(result.type)}
+                                </Box>
+                                <Box style={{ flex: 1, minWidth: 0 }}>
+                                  <Group gap="xs" align="center" style={{ marginBottom: '0.25rem' }}>
+                                    <Text fw={600} size="sm" style={{ color: '#ffffff' }}>
+                                      {getDisplayTitle(result)}
+                                    </Text>
                                     <Badge
                                       size="xs"
-                                      variant="filled"
+                                      variant="light"
                                       style={{
-                                        backgroundColor: SPOILER_COLOR_FALLBACK,
-                                        color: '#ffffff'
+                                        backgroundColor: withAlpha(getTypeColor(result.type), 0.2, 'rgba(225, 29, 72, 0.2)'),
+                                        color: getTypeColor(result.type),
+                                        textTransform: 'capitalize'
                                       }}
                                     >
-                                      Spoiler
+                                      {result.type}
                                     </Badge>
-                                  )}
-                                </Group>
-                                <Text
-                                  size="xs"
-                                  c="dimmed"
-                                  style={{
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-                                    display: '-webkit-box',
-                                    WebkitLineClamp: 2,
-                                    WebkitBoxOrient: 'vertical'
-                                  }}
-                                >
-                                  {result.description}
-                                </Text>
-                              </Box>
-                            </Group>
-                          </Box>
-                        </motion.div>
-                      ))
+                                    {result.hasSpoilers && (
+                                      <Badge
+                                        size="xs"
+                                        variant="filled"
+                                        style={{
+                                          backgroundColor: SPOILER_COLOR_FALLBACK,
+                                          color: '#ffffff'
+                                        }}
+                                      >
+                                        Spoiler
+                                      </Badge>
+                                    )}
+                                  </Group>
+                                  <Text
+                                    size="xs"
+                                    c="dimmed"
+                                    style={{
+                                      overflow: 'hidden',
+                                      textOverflow: 'ellipsis',
+                                      display: '-webkit-box',
+                                      WebkitLineClamp: 2,
+                                      WebkitBoxOrient: 'vertical'
+                                    }}
+                                  >
+                                    {result.description}
+                                  </Text>
+                                </Box>
+                              </Group>
+                            </Box>
+                          </motion.div>
+                        ))}
+                        {/* View all results link */}
+                        <Box
+                          style={{
+                            padding: '0.75rem 1rem',
+                            borderTop: `1px solid ${borderColor}`,
+                            backgroundColor: withAlpha(accent, 0.05, 'rgba(225, 29, 72, 0.05)')
+                          }}
+                        >
+                          <Button
+                            variant="subtle"
+                            fullWidth
+                            rightSection={<ArrowRight size={16} />}
+                            onClick={() => {
+                              setShowResults(false)
+                              router.push(`/search?q=${encodeURIComponent(query)}`)
+                            }}
+                            style={{
+                              color: accent,
+                              fontWeight: 600
+                            }}
+                          >
+                            View all {results.length > 8 ? `${results.length}+ ` : ''}results for "{query}"
+                          </Button>
+                        </Box>
+                      </>
                     )}
                   </Stack>
                 </ScrollArea>

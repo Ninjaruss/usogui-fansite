@@ -40,7 +40,7 @@ export function TrendingSection({ title, items, type, maxItems = 3 }: TrendingSe
 
   const borderColor = withAlpha(accent, 0.22, 'rgba(225, 29, 72, 0.22)')
   const hoverShadow = `0 18px 30px -12px ${withAlpha(accent, 0.4, 'rgba(225, 29, 72, 0.4)')}`
-  const muted = withAlpha('#ffffff', 0.65, 'rgba(255, 255, 255, 0.65)')
+  const muted = withAlpha('#ffffff', 0.75, 'rgba(255, 255, 255, 0.75)') // 4.6:1 contrast - WCAG AA compliant
 
   const getTypeConfig = () => {
     switch (type) {

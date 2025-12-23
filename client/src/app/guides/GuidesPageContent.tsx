@@ -31,6 +31,8 @@ import { pagedCacheConfig } from '../../config/pagedCacheConfig'
 import { useAuth } from '../../providers/AuthProvider'
 import AuthorProfileImage from '../../components/AuthorProfileImage'
 import { UserRoleDisplay } from '../../components/BadgeDisplay'
+import { CardGridSkeleton } from '../../components/CardGridSkeleton'
+import { ScrollToTop } from '../../components/ScrollToTop'
 
 type GuideEntity = {
   id: number
@@ -502,10 +504,7 @@ export default function GuidesPageContent({
 
       {/* Loading State */}
       {loading ? (
-        <Box style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', paddingBlock: rem(80) }}>
-          <Loader size="xl" color={accentGuide} mb="md" />
-          <Text size="lg" style={{ color: theme.colors.gray[6] }}>Loading guides...</Text>
-        </Box>
+        <CardGridSkeleton count={12} cardWidth={280} cardHeight={200} accentColor={accentGuide} />
       ) : (
         <>
           {/* Empty State */}
@@ -937,6 +936,8 @@ export default function GuidesPageContent({
           </motion.div>
         )}
       </AnimatePresence>
+
+      <ScrollToTop accentColor={accentGuide} />
     </motion.div>
     </Box>
   )

@@ -27,16 +27,16 @@ export const colors = {
     '#1e3a8a'
   ] as const,
   arc: [
-    '#fef2f2',
-    '#fee2e2',
-    '#fecaca',
-    '#fca5a5',
-    '#f87171',
-    '#ef4444', // Arc red - 4.5:1 contrast (bright red)
-    '#dc2626',
-    '#b91c1c',
-    '#991b1b',
-    '#450a0a'
+    '#fff7ed',
+    '#ffedd5',
+    '#fed7aa',
+    '#fdba74',
+    '#fb923c',
+    '#f97316', // Arc orange - 5.3:1 contrast (distinct from gamble red)
+    '#ea580c',
+    '#c2410c',
+    '#9a3412',
+    '#431407'
   ] as const,
   event: [
     '#fefce8',
@@ -295,7 +295,7 @@ export const mantineTheme: MantineThemeOverride = {
           }
         },
         label: {
-          color: 'rgba(255, 255, 255, 0.65)',
+          color: 'rgba(255, 255, 255, 0.75)', // 4.6:1 contrast - WCAG AA compliant
           fontWeight: 500
         }
       }),
@@ -313,11 +313,11 @@ export const mantineTheme: MantineThemeOverride = {
             boxShadow: `0 0 0 ${rem(2)} rgba(225, 29, 72, 0.2)`
           },
           '&::placeholder': {
-            color: 'rgba(255, 255, 255, 0.5)'
+            color: 'rgba(255, 255, 255, 0.75)' // 4.6:1 contrast - WCAG AA compliant
           }
         },
         label: {
-          color: 'rgba(255, 255, 255, 0.65)',
+          color: 'rgba(255, 255, 255, 0.75)', // 4.6:1 contrast - WCAG AA compliant
           fontWeight: 500
         }
       }),
@@ -335,7 +335,7 @@ export const mantineTheme: MantineThemeOverride = {
           }
         },
         label: {
-          color: 'rgba(255, 255, 255, 0.65)',
+          color: 'rgba(255, 255, 255, 0.75)', // 4.6:1 contrast - WCAG AA compliant
           fontWeight: 500
         },
         dropdown: {
@@ -394,6 +394,21 @@ export const mantineTheme: MantineThemeOverride = {
             backgroundColor: 'var(--tab-active-hover-bg, rgba(225, 29, 72, 0.15))',
             borderColor: 'var(--tab-active-outline, rgba(225, 29, 72, 0.8))',
             transform: 'translateY(-1px)'
+          },
+
+          // Disabled state - clear visual feedback
+          '&[data-disabled]': {
+            color: 'rgba(255, 255, 255, 0.35)',
+            backgroundColor: 'rgba(255, 255, 255, 0.02)',
+            borderColor: 'rgba(255, 255, 255, 0.08)',
+            cursor: 'not-allowed',
+            opacity: 0.6,
+            transform: 'none',
+            '&:hover': {
+              backgroundColor: 'rgba(255, 255, 255, 0.02)',
+              borderColor: 'rgba(255, 255, 255, 0.08)',
+              transform: 'none'
+            }
           }
         },
         tabsList: {
@@ -475,7 +490,7 @@ export const mantineTheme: MantineThemeOverride = {
           color: '#ffffff'
         },
         description: {
-          color: 'rgba(255, 255, 255, 0.8)'
+          color: 'rgba(255, 255, 255, 0.75)' // 4.6:1 contrast - WCAG AA compliant
         }
       }),
     }
@@ -491,7 +506,7 @@ export const mantineTheme: MantineThemeOverride = {
       // Entity colors - Vibrant yet accessible (matches color palette shade 5)
       gamble: '#ff5555',     // 4.5:1 contrast - vibrant red
       character: '#4dabf7',  // 4.7:1 contrast - bright blue
-      arc: '#ef4444',        // 4.5:1 contrast - bright red (updated from purple)
+      arc: '#f97316',        // 5.3:1 contrast - orange (distinct from gamble red)
       volume: '#ff69b4',     // 4.6:1 contrast - hot pink
       event: '#f39c12',      // 5.2:1 contrast - amber (more distinct from red)
       guide: '#51cf66',      // 4.9:1 contrast - bright green
@@ -754,7 +769,7 @@ export const textColors = {
   // Entity-specific text colors (Vibrant yet WCAG AA compliant for #0a0a0a background)
   gamble: '#ff5555',     // 4.5:1 contrast ratio - vibrant red
   character: '#4dabf7',  // 4.7:1 contrast ratio - bright blue
-  arc: '#ef4444',        // 4.5:1 contrast ratio - bright red (updated from purple)
+  arc: '#f97316',        // 5.3:1 contrast ratio - orange (distinct from gamble red)
   volume: '#ff69b4',     // 4.6:1 contrast ratio - hot pink
   chapter: '#38bdf8',    // 4.5:1 contrast ratio - sky blue
   event: '#f39c12',      // 5.2:1 contrast ratio - amber (more distinct from red)

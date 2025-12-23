@@ -10,10 +10,10 @@ import {
   Text,
   Tooltip,
   rem,
-  useMantineTheme,
-  type MantineTheme
+  useMantineTheme
 } from '@mantine/core'
-import { getEntityThemeColor, semanticColors, textColors, getAlphaColor } from '../lib/mantine-theme'
+import { getEntityThemeColor, getAlphaColor } from '../lib/mantine-theme'
+import { getEventColorKey, getEventColorHex, getEventLabel, getEventIcon } from '../lib/timeline-constants'
 import { Calendar, BookOpen, Eye, EyeOff, X, AlertTriangle } from 'lucide-react'
 import Link from 'next/link'
 import { useProgress } from '../providers/ProgressProvider'
@@ -45,24 +45,6 @@ interface CharacterTimelineProps {
   characterName: string
   firstAppearanceChapter: number
 }
-
-const EVENT_COLOR_KEYS: Record<string, keyof MantineTheme['colors']> = {
-  gamble: 'orange',
-  decision: 'blue',
-  reveal: 'grape',
-  shift: 'red',
-  resolution: 'green'
-}
-
-const EVENT_LABELS: Record<string, string> = {
-  gamble: 'Gamble',
-  decision: 'Decision',
-  reveal: 'Reveal',
-  shift: 'Shift',
-  resolution: 'Resolution'
-}
-
-const DEFAULT_EVENT_COLOR: keyof MantineTheme['colors'] = 'gray'
 
 const globalStyles = `
   .timeline-event-highlight {
@@ -134,22 +116,6 @@ if (typeof document !== 'undefined' && !document.getElementById('character-timel
   styleSheet.id = 'character-timeline-styles'
   styleSheet.textContent = globalStyles
   document.head.appendChild(styleSheet)
-}
-
-const resolveEventColorKey = (type?: string | null): keyof MantineTheme['colors'] => {
-  if (!type) return DEFAULT_EVENT_COLOR
-  return EVENT_COLOR_KEYS[type] ?? DEFAULT_EVENT_COLOR
-}
-
-const getEventTypeLabel = (type?: string | null) => {
-  if (!type) return 'Event'
-  return EVENT_LABELS[type] ?? 'Event'
-}
-
-const resolveEventColorHex = (theme: MantineTheme, type?: string | null) => {
-  const key = resolveEventColorKey(type)
-  const palette = theme.colors[key]
-  return palette ? palette[5] : theme.colors.gray[5]
 }
 
 const CharacterTimeline = React.memo(function CharacterTimeline({
@@ -332,18 +298,20 @@ const CharacterTimeline = React.memo(function CharacterTimeline({
             </Text>
             <Group gap={8} wrap="wrap">
               {uniqueEventTypes.map((type) => {
-                const colorKey = resolveEventColorKey(type)
+                const colorKey = getEventColorKey(type)
                 const isSelected = selectedEventTypes.has(type)
+                const EventIcon = getEventIcon(type)
                 return (
                   <Badge
                     key={type}
                     color={colorKey}
                     variant={isSelected ? 'filled' : 'outline'}
                     radius="sm"
+                    leftSection={<EventIcon size={12} />}
                     onClick={() => toggleEventType(type)}
                     style={{ cursor: 'pointer' }}
                   >
-                    {getEventTypeLabel(type)}
+                    {getEventLabel(type)}
                   </Badge>
                 )
               })}
@@ -530,7 +498,8 @@ const TimelineDisplay = React.memo(function TimelineDisplay({
 
 const TimelineEventCard = React.memo(function TimelineEventCard({ event }: { event: TimelineEvent }) {
   const theme = useMantineTheme()
-  const eventColor = resolveEventColorHex(theme, event.type)
+  const eventColor = getEventColorHex(event.type)
+  const EventIcon = getEventIcon(event.type)
 
   return (
     <Box
@@ -564,8 +533,8 @@ const TimelineEventCard = React.memo(function TimelineEventCard({ event }: { eve
                 Ch. {event.chapterNumber}
               </Badge>
               {event.type && (
-                <Badge color={resolveEventColorKey(event.type)} radius="sm">
-                  {getEventTypeLabel(event.type)}
+                <Badge color={getEventColorKey(event.type)} radius="sm" leftSection={<EventIcon size={12} />}>
+                  {getEventLabel(event.type)}
                 </Badge>
               )}
             </Group>
@@ -633,7 +602,7 @@ function TimelineSpoilerWrapper({ event, children }: { event: TimelineEvent; chi
                 Chapter {chapterNumber} Spoiler
               </Text>
             </Group>
-            <Text size="xs" c="rgba(255,255,255,0.85)">
+            <Text size="xs" c="rgba(255,255,255,0.9)">
               Click to reveal
             </Text>
           </Stack>

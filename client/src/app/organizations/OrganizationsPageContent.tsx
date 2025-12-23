@@ -28,6 +28,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'motion/react'
 import { api } from '../../lib/api'
 import MediaThumbnail from '../../components/MediaThumbnail'
+import { CardGridSkeleton } from '../../components/CardGridSkeleton'
 
 interface Organization {
   id: number
@@ -361,10 +362,7 @@ export default function OrganizationsPageContent({
 
       {/* Loading State */}
       {loading ? (
-        <Box style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', paddingBlock: rem(80) }}>
-          <Loader size="xl" color={accentOrganization} mb="md" />
-          <Text size="lg" style={{ color: theme.colors.gray[6] }}>Loading organizations...</Text>
-        </Box>
+        <CardGridSkeleton count={12} cardWidth={200} cardHeight={280} accentColor={accentOrganization} />
       ) : (
         <>
           {/* Empty State */}
@@ -498,7 +496,7 @@ export default function OrganizationsPageContent({
                           ta="center"
                           style={{
                             lineHeight: 1.2,
-                            fontSize: rem(13),
+                            fontSize: rem(15),
                             background: `linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05))`,
                             backdropFilter: 'blur(4px)',
                             borderRadius: rem(6),

@@ -44,6 +44,7 @@ import {
   textColors
 } from '../../lib/mantine-theme'
 import { useProgress } from '../../providers/ProgressProvider'
+import { ScrollToTop } from '../../components/ScrollToTop'
 
 interface SearchResult {
   id: number
@@ -119,6 +120,8 @@ export default function SearchPageContent({
   const guideAccent = getEntityThemeColor(theme, 'guide')
   const gambleAccent = getEntityThemeColor(theme, 'gamble')
   const eventAccent = getEntityThemeColor(theme, 'event')
+  const characterAccent = getEntityThemeColor(theme, 'character')
+  const arcAccent = getEntityThemeColor(theme, 'arc')
 
   const [results, setResults] = useState<SearchResult[]>([])
   const [loading, setLoading] = useState(false)
@@ -457,9 +460,9 @@ export default function SearchPageContent({
           <Stack gap="md" align="center">
             <Search size={48} style={{ color: textColors.tertiary }} />
             <Stack gap="xs" align="center">
-              <Text fw={500}>No results found</Text>
+              <Text fw={500}>No results found for "{query}"</Text>
               <Text size="sm" c={textColors.tertiary}>
-                Try different keywords or check your spelling
+                Try different keywords, check your spelling, or browse content below
               </Text>
             </Stack>
             <Group gap="sm">
@@ -494,6 +497,16 @@ export default function SearchPageContent({
                 Clear search
               </Button>
             </Group>
+            <Text size="sm" c={textColors.tertiary}>
+              Or browse:{' '}
+              <Anchor component={Link} href="/characters" c={characterAccent}>Characters</Anchor>
+              {' · '}
+              <Anchor component={Link} href="/gambles" c={gambleAccent}>Gambles</Anchor>
+              {' · '}
+              <Anchor component={Link} href="/arcs" c={arcAccent}>Arcs</Anchor>
+              {' · '}
+              <Anchor component={Link} href="/guides" c={guideAccent}>Guides</Anchor>
+            </Text>
           </Stack>
         </Paper>
       )}
@@ -533,6 +546,8 @@ export default function SearchPageContent({
           />
         </Group>
       )}
+
+      <ScrollToTop accentColor={guideAccent} />
     </Stack>
     </Container>
     </Box>

@@ -19,54 +19,8 @@ import { AlertTriangle, ArrowRight, Calendar, Crown, Filter, X } from 'lucide-re
 import Link from 'next/link'
 import { useProgress } from '../providers/ProgressProvider'
 import { useSpoilerSettings } from '../hooks/useSpoilerSettings'
-import { getAlphaColor, getEntityThemeColor, semanticColors, textColors } from '../lib/mantine-theme'
-
-const EVENT_COLOR_KEYS: Record<string, keyof MantineTheme['colors']> = {
-  gamble: 'orange',
-  decision: 'blue',
-  reveal: 'grape',
-  shift: 'red',
-  resolution: 'green'
-}
-
-const EVENT_ICON_MAP: Record<string, React.ComponentType<{ size?: number }>> = {
-  gamble: Crown,
-  decision: ArrowRight,
-  reveal: Calendar,
-  shift: Filter,
-  resolution: X
-}
-
-const EVENT_LABEL_MAP: Record<string, string> = {
-  gamble: 'Gamble',
-  decision: 'Decision',
-  reveal: 'Reveal',
-  shift: 'Shift',
-  resolution: 'Resolution'
-}
-
-const DEFAULT_EVENT_COLOR: keyof MantineTheme['colors'] = 'red'
-
-const resolveEventColorKey = (type?: string | null): keyof MantineTheme['colors'] => {
-  if (!type) return DEFAULT_EVENT_COLOR
-  return EVENT_COLOR_KEYS[type] ?? DEFAULT_EVENT_COLOR
-}
-
-const resolveEventColorHex = (theme: MantineTheme, type?: string | null) => {
-  const key = resolveEventColorKey(type)
-  const palette = theme.colors[key]
-  return palette ? palette[5] : theme.colors.red[5]
-}
-
-const getEventTypeLabel = (type?: string | null) => {
-  if (!type) return 'Event'
-  return EVENT_LABEL_MAP[type] ?? 'Event'
-}
-
-const getEventTypeIcon = (type?: string | null) => {
-  if (!type) return Calendar
-  return EVENT_ICON_MAP[type] ?? Calendar
-}
+import { getAlphaColor, getEntityThemeColor } from '../lib/mantine-theme'
+import { getEventColorKey, getEventColorHex, getEventLabel, getEventIcon, getPhaseColor } from '../lib/timeline-constants'
 
 interface GambleTimelineEvent {
   id: number
@@ -95,19 +49,6 @@ interface GambleTimelineProps {
   arcs: Arc[]
   gambleName: string
   gambleChapter: number
-}
-
-const PHASE_COLOR_KEYS: Record<string, keyof MantineTheme['colors']> = {
-  setup: 'blue',
-  gamble: 'orange',
-  reveals: 'grape',
-  resolution: 'green'
-}
-
-const resolvePhaseColor = (theme: MantineTheme, phase: string) => {
-  const key = PHASE_COLOR_KEYS[phase] ?? 'red'
-  const palette = theme.colors[key]
-  return palette ? palette[5] : theme.colors.red[5]
 }
 
 export default React.memo(function GambleTimeline({ events, arcs, gambleName, gambleChapter }: GambleTimelineProps) {
@@ -223,15 +164,17 @@ export default React.memo(function GambleTimeline({ events, arcs, gambleName, ga
             <Group gap={6} align="center" wrap="wrap">
               <Filter size={16} />
               {uniqueEventTypes.map((type) => {
-                const colorKey = resolveEventColorKey(type)
+                const colorKey = getEventColorKey(type)
                 const isSelected = selectedEventTypes.has(type)
-                const label = getEventTypeLabel(type)
+                const label = getEventLabel(type)
+                const EventIcon = getEventIcon(type)
                 return (
                   <Badge
                     key={type}
                     color={colorKey}
                     variant={isSelected ? 'filled' : 'outline'}
                     radius="sm"
+                    leftSection={<EventIcon size={12} />}
                     onClick={() => toggleEventType(type)}
                     style={{ cursor: 'pointer' }}
                   >
@@ -256,7 +199,7 @@ export default React.memo(function GambleTimeline({ events, arcs, gambleName, ga
           <TimelineDisplay
             phases={visiblePhases}
             arcs={arcs}
-            resolvePhaseColor={(phase) => resolvePhaseColor(theme, phase)}
+            resolvePhaseColor={(phase) => getPhaseColor(theme, phase)}
             theme={theme}
           />
         )}
@@ -338,8 +281,8 @@ const TimelineEventCard = React.memo(function TimelineEventCard({
   isLastInPhase: boolean
 }) {
   const arc = arcs.find((a) => a.id === event.arcId)
-  const iconColor = resolveEventColorHex(theme, event.type)
-  const EventIcon = getEventTypeIcon(event.type)
+  const iconColor = getEventColorHex(event.type)
+  const EventIcon = getEventIcon(event.type)
 
   return (
     <TimelineSpoilerWrapper event={event}>
@@ -382,8 +325,8 @@ const TimelineEventCard = React.memo(function TimelineEventCard({
               )}
 
               {event.type && (
-                <Badge color={resolveEventColorKey(event.type)} radius="sm">
-                  {getEventTypeLabel(event.type)}
+                <Badge color={getEventColorKey(event.type)} radius="sm" leftSection={<EventIcon size={12} />}>
+                  {getEventLabel(event.type)}
                 </Badge>
               )}
             </Group>
@@ -456,7 +399,7 @@ function TimelineSpoilerWrapper({ event, children }: { event: GambleTimelineEven
                 Chapter {chapterNumber} Spoiler
               </Text>
             </Group>
-            <Text size="xs" c="rgba(255,255,255,0.8)">
+            <Text size="xs" c="rgba(255,255,255,0.9)">
               Click to reveal
             </Text>
           </Stack>

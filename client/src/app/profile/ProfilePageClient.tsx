@@ -28,7 +28,9 @@ import {
   BookOpen,
   Edit,
   X,
-  FileText
+  FileText,
+  Quote,
+  Dices
 } from 'lucide-react'
 import Link from 'next/link'
 import { motion } from 'motion/react'
@@ -369,10 +371,14 @@ export default function ProfilePageClient() {
                 onMouseEnter={(e: any) => {
                   e.currentTarget.style.transform = 'scale(1.05)'
                   e.currentTarget.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.3)'
+                  const overlay = e.currentTarget.querySelector('.profile-edit-overlay')
+                  if (overlay) overlay.style.opacity = '1'
                 }}
                 onMouseLeave={(e: any) => {
                   e.currentTarget.style.transform = 'scale(1)'
                   e.currentTarget.style.boxShadow = 'none'
+                  const overlay = e.currentTarget.querySelector('.profile-edit-overlay')
+                  if (overlay) overlay.style.opacity = '0'
                 }}
                 onClick={() => {
                   if (user?.id && typeof user.id === 'number') {
@@ -387,23 +393,47 @@ export default function ProfilePageClient() {
                 }}
               >
                 <UserProfileImage user={user} size={140} />
+                {/* Full overlay on hover */}
                 <Box
+                  className="profile-edit-overlay"
                   style={{
                     position: 'absolute',
-                    bottom: 0,
+                    top: 0,
+                    left: 0,
                     right: 0,
-                    backgroundColor: theme.colors.blue[6],
+                    bottom: 0,
                     borderRadius: '50%',
-                    width: '32px',
-                    height: '32px',
+                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    border: `2px solid ${theme.white}`,
-                    opacity: 0.8
+                    opacity: 0,
+                    transition: 'opacity 0.2s ease'
                   }}
                 >
-                  <Edit size={16} color="white" />
+                  <Stack gap={4} align="center">
+                    <Edit size={24} color="white" />
+                    <Text size="xs" c="white" fw={500}>Change</Text>
+                  </Stack>
+                </Box>
+                {/* Always-visible edit badge */}
+                <Box
+                  style={{
+                    position: 'absolute',
+                    bottom: 4,
+                    right: 4,
+                    backgroundColor: theme.colors.blue[6],
+                    borderRadius: '50%',
+                    width: '36px',
+                    height: '36px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    border: `3px solid ${theme.white}`,
+                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)'
+                  }}
+                >
+                  <Edit size={18} color="white" />
                 </Box>
               </Box>
               <Stack gap="sm">
@@ -455,19 +485,27 @@ export default function ProfilePageClient() {
                 <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
                   <Stack gap="sm">
                     <Text size="sm" fw={500}>Favorite Quote:</Text>
-                    <Box 
-                      style={{ 
-                        cursor: 'pointer',
-                        padding: '8px',
-                        borderRadius: '4px',
-                        transition: 'background-color 0.2s'
+                    <Button
+                      variant="outline"
+                      styles={{
+                        root: {
+                          height: 'auto',
+                          minHeight: '48px',
+                          padding: '12px 16px',
+                          borderColor: profileData.favoriteQuote ? getEntityThemeColor(theme, 'quote') : 'rgba(255, 255, 255, 0.2)',
+                          borderStyle: 'dashed',
+                          backgroundColor: profileData.favoriteQuote ? 'rgba(255, 255, 255, 0.03)' : 'transparent',
+                          justifyContent: 'flex-start',
+                          textAlign: 'left',
+                          whiteSpace: 'normal',
+                          wordBreak: 'break-word'
+                        },
+                        label: {
+                          whiteSpace: 'normal',
+                          overflow: 'visible'
+                        }
                       }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.05)'
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = 'transparent'
-                      }}
+                      leftSection={<Quote size={16} style={{ flexShrink: 0 }} />}
                       onClick={() => {
                         if (quotes.length === 0 && !loading) {
                           notifications.show({
@@ -479,39 +517,42 @@ export default function ProfilePageClient() {
                           openQuoteModal();
                         }
                       }}
+                      fullWidth
                     >
-                      <Text size="sm" c={profileData.favoriteQuote ? undefined : 'dimmed'}>
-                        {loading ? 'Loading...' : 
-                         profileData.favoriteQuote ? 
+                      <Text size="sm" c={profileData.favoriteQuote ? undefined : 'dimmed'} style={{ lineHeight: 1.4 }}>
+                        {loading ? 'Loading...' :
+                         profileData.favoriteQuote ?
                           (() => {
                             const selectedQuote = quotes.find(q => q.id === parseInt(profileData.favoriteQuote) || 0);
                             if (selectedQuote?.text) {
-                              return selectedQuote.text.length > 100 
+                              return `"${selectedQuote.text.length > 100
                                 ? selectedQuote.text.substring(0, 100) + '...'
-                                : selectedQuote.text;
+                                : selectedQuote.text}"`;
                             }
                             return 'Selected quote not found';
                           })()
                           : 'Click to select a favorite quote'}
                       </Text>
-                    </Box>
+                    </Button>
                   </Stack>
 
                   <Stack gap="sm">
                     <Text size="sm" fw={500}>Favorite Gamble:</Text>
-                    <Box 
-                      style={{ 
-                        cursor: 'pointer',
-                        padding: '8px',
-                        borderRadius: '4px',
-                        transition: 'background-color 0.2s'
+                    <Button
+                      variant="outline"
+                      styles={{
+                        root: {
+                          height: 'auto',
+                          minHeight: '48px',
+                          padding: '12px 16px',
+                          borderColor: profileData.favoriteGamble ? getEntityThemeColor(theme, 'gamble') : 'rgba(255, 255, 255, 0.2)',
+                          borderStyle: 'dashed',
+                          backgroundColor: profileData.favoriteGamble ? 'rgba(255, 255, 255, 0.03)' : 'transparent',
+                          justifyContent: 'flex-start',
+                          textAlign: 'left'
+                        }
                       }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.05)'
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = 'transparent'
-                      }}
+                      leftSection={<Dices size={16} style={{ flexShrink: 0 }} />}
                       onClick={() => {
                         if (gambles.length === 0 && !loading) {
                           notifications.show({
@@ -523,6 +564,7 @@ export default function ProfilePageClient() {
                           openGambleModal();
                         }
                       }}
+                      fullWidth
                     >
                       {loading ? (
                         <Text size="sm" c="dimmed">Loading...</Text>
@@ -530,11 +572,9 @@ export default function ProfilePageClient() {
                         (() => {
                           const selected = gambles.find(g => g.id === parseInt(profileData.favoriteGamble) || 0)
                           return selected ? (
-                            <Link href={`/gambles/${selected.id}`} style={{ textDecoration: 'none', display: 'inline-block' }}>
-                              <Badge radius="lg" variant="outline" size="sm" style={{ borderColor: (theme.colors as any).gamble?.[5] ?? theme.colors.red[6], color: (theme.colors as any).gamble?.[5] ?? theme.colors.red[6], fontWeight: 700 }}>
-                                {selected.name}
-                              </Badge>
-                            </Link>
+                            <Badge radius="lg" variant="filled" size="md" style={{ backgroundColor: getEntityThemeColor(theme, 'gamble'), color: '#fff', fontWeight: 700 }}>
+                              {selected.name}
+                            </Badge>
                           ) : (
                             <Text size="sm" c="dimmed">Selected gamble not found</Text>
                           )
@@ -542,7 +582,7 @@ export default function ProfilePageClient() {
                       ) : (
                         <Text size="sm" c="dimmed">Click to select a favorite gamble</Text>
                       )}
-                    </Box>
+                    </Button>
                   </Stack>
                 </SimpleGrid>
               </Stack>

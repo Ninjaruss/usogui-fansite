@@ -705,6 +705,43 @@ export default function SubmitGuidePageContent() {
                 </Stack>
               </Box>
 
+              {/* Validation hints when form is incomplete */}
+              {!isFormValid && !loading && (
+                <Alert
+                  variant="light"
+                  radius="md"
+                  style={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+                    borderColor: 'rgba(255, 255, 255, 0.1)',
+                    padding: '12px 16px'
+                  }}
+                >
+                  <Stack gap={4}>
+                    <Text size="sm" fw={500} c="dimmed">Complete the following to submit:</Text>
+                    <Stack gap={2}>
+                      {!formData.title.trim() && (
+                        <Text size="xs" c="dimmed">• Enter a guide title</Text>
+                      )}
+                      {formData.title.trim() && formData.title.trim().length < MIN_TITLE_LENGTH && (
+                        <Text size="xs" c="dimmed">• Title needs {MIN_TITLE_LENGTH - formData.title.trim().length} more character{MIN_TITLE_LENGTH - formData.title.trim().length !== 1 ? 's' : ''}</Text>
+                      )}
+                      {!formData.description.trim() && (
+                        <Text size="xs" c="dimmed">• Enter a description</Text>
+                      )}
+                      {formData.description.trim() && formData.description.trim().length < MIN_DESCRIPTION_LENGTH && (
+                        <Text size="xs" c="dimmed">• Description needs {MIN_DESCRIPTION_LENGTH - formData.description.trim().length} more character{MIN_DESCRIPTION_LENGTH - formData.description.trim().length !== 1 ? 's' : ''}</Text>
+                      )}
+                      {!formData.content.trim() && (
+                        <Text size="xs" c="dimmed">• Write your guide content</Text>
+                      )}
+                      {formData.content.trim() && formData.content.trim().length < MIN_CONTENT_LENGTH && (
+                        <Text size="xs" c="dimmed">• Content needs {MIN_CONTENT_LENGTH - formData.content.trim().length} more character{MIN_CONTENT_LENGTH - formData.content.trim().length !== 1 ? 's' : ''}</Text>
+                      )}
+                    </Stack>
+                  </Stack>
+                </Alert>
+              )}
+
               <Button
                 type="submit"
                 size="lg"

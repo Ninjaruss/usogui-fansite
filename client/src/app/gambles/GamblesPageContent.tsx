@@ -26,11 +26,13 @@ import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { motion } from 'motion/react'
 import MediaThumbnail from '../../components/MediaThumbnail'
+import { CardGridSkeleton } from '../../components/CardGridSkeleton'
 import { api } from '../../lib/api'
 import { usePaged } from '../../hooks/usePagedCache'
 import { pagedCacheConfig } from '../../config/pagedCacheConfig'
 import { useHoverModal } from '../../hooks/useHoverModal'
 import { HoverModal } from '../../components/HoverModal'
+import { ScrollToTop } from '../../components/ScrollToTop'
 import { useProgress } from '../../providers/ProgressProvider'
 import { useSpoilerSettings } from '../../hooks/useSpoilerSettings'
 import { shouldHideSpoiler } from '../../lib/spoiler-utils'
@@ -97,7 +99,7 @@ export default function GamblesPageContent({
   const [totalPages, setTotalPages] = useState(initialTotalPages)
   const [total, setTotal] = useState(initialTotal)
   const [characterFilter, setCharacterFilter] = useState<string | null>(initialCharacterFilter || null)
-  const [sortBy, setSortBy] = useState<SortOption>((searchParams.get('sort') as SortOption) || 'name')
+  const [sortBy, setSortBy] = useState<SortOption>((searchParams.get('sort') as SortOption) || 'chapter')
 
   // Track revealed spoilers
   const [revealedGambles, setRevealedGambles] = useState<Set<number>>(new Set())
@@ -112,7 +114,10 @@ export default function GamblesPageContent({
     handleMouseEnter: handleGambleMouseEnter,
     handleMouseLeave: handleGambleMouseLeave,
     handleModalMouseEnter,
-    handleModalMouseLeave
+    handleModalMouseLeave,
+    handleTap: handleGambleTap,
+    closeModal,
+    isTouchDevice
   } = useHoverModal<Gamble>()
 
   const accentGamble = theme.other?.usogui?.gamble ?? theme.colors.red?.[5] ?? '#d32f2f'
@@ -209,7 +214,7 @@ export default function GamblesPageContent({
         const params = new URLSearchParams()
         if (value) params.set('search', value)
         if (characterFilter) params.set('character', characterFilter)
-        if (sortBy !== 'name') params.set('sort', sortBy)
+        if (sortBy !== 'chapter') params.set('sort', sortBy)
         params.set('page', '1')
         router.push(`/gambles?${params.toString()}`)
       }
@@ -224,7 +229,7 @@ export default function GamblesPageContent({
       const params = new URLSearchParams()
       if (debouncedSearch.trim()) params.set('search', debouncedSearch.trim())
       if (characterFilter) params.set('character', characterFilter)
-      if (sortBy !== 'name') params.set('sort', sortBy)
+      if (sortBy !== 'chapter') params.set('sort', sortBy)
       params.set('page', '1')
       router.push(`/gambles?${params.toString()}`)
     }
@@ -236,7 +241,7 @@ export default function GamblesPageContent({
     setCharacterFilter(null)
 
     const params = new URLSearchParams()
-    if (sortBy !== 'name') params.set('sort', sortBy)
+    if (sortBy !== 'chapter') params.set('sort', sortBy)
     params.set('page', '1')
 
     router.push(`/gambles?${params.toString()}`)
@@ -246,21 +251,21 @@ export default function GamblesPageContent({
     const params = new URLSearchParams()
     if (searchQuery) params.set('search', searchQuery)
     if (characterFilter) params.set('character', characterFilter)
-    if (sortBy !== 'name') params.set('sort', sortBy)
+    if (sortBy !== 'chapter') params.set('sort', sortBy)
     params.set('page', page.toString())
 
     router.push(`/gambles?${params.toString()}`)
   }, [router, searchQuery, characterFilter, sortBy])
 
   const handleSortChange = useCallback((value: string | null) => {
-    const newSort = (value as SortOption) || 'name'
+    const newSort = (value as SortOption) || 'chapter'
     setSortBy(newSort)
     setCurrentPage(1)
 
     const params = new URLSearchParams()
     if (searchQuery) params.set('search', searchQuery)
     if (characterFilter) params.set('character', characterFilter)
-    if (newSort !== 'name') params.set('sort', newSort)
+    if (newSort !== 'chapter') params.set('sort', newSort)
     params.set('page', '1')
 
     router.push(`/gambles?${params.toString()}`)
@@ -341,8 +346,15 @@ export default function GamblesPageContent({
               radius="xl"
               rightSection={
                 hasSearchQuery ? (
-                  <ActionIcon variant="subtle" color="gray" onClick={handleClearSearch} size="sm">
-                    <X size={16} />
+                  <ActionIcon
+                    variant="subtle"
+                    color="gray"
+                    onClick={handleClearSearch}
+                    size="lg"
+                    aria-label="Clear search"
+                    style={{ minWidth: 44, minHeight: 44 }}
+                  >
+                    <X size={18} />
                   </ActionIcon>
                 ) : null
               }
@@ -378,8 +390,14 @@ export default function GamblesPageContent({
               style={{ backgroundColor: getEntityThemeColor(theme, 'gamble') }}
               radius="xl"
               rightSection={
-                <ActionIcon size="xs" style={{ color: getEntityThemeColor(theme, 'gamble') }} variant="transparent" onClick={clearCharacterFilter}>
-                  <X size={12} />
+                <ActionIcon
+                  size="md"
+                  style={{ color: getEntityThemeColor(theme, 'gamble') }}
+                  variant="transparent"
+                  onClick={clearCharacterFilter}
+                  aria-label="Clear character filter"
+                >
+                  <X size={14} />
                 </ActionIcon>
               }
             >
@@ -406,10 +424,7 @@ export default function GamblesPageContent({
 
       {/* Loading State */}
       {loading ? (
-        <Box style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', paddingBlock: rem(80) }}>
-          <Loader size="xl" color={accentGamble} mb="md" />
-          <Text size="lg" style={{ color: theme.colors.gray[6] }}>Loading gambles...</Text>
-        </Box>
+        <CardGridSkeleton count={12} cardWidth={200} cardHeight={280} accentColor={accentGamble} />
       ) : (
         <>
           {/* Empty State */}
@@ -460,7 +475,27 @@ export default function GamblesPageContent({
                       radius="lg"
                       shadow="sm"
                       style={getPlayingCardStyles(theme, accentGamble)}
+                      onClick={(e) => {
+                        // On touch devices, first tap shows preview, second tap navigates
+                        if (isTouchDevice) {
+                          const isSpoilered = shouldHideSpoiler(
+                            gamble.chapterId,
+                            userProgress,
+                            spoilerSettings
+                          )
+                          const hasBeenRevealed = revealedGambles.has(gamble.id)
+                          if (!isSpoilered || hasBeenRevealed) {
+                            // If modal is not showing for this gamble, prevent navigation and show modal
+                            if (hoveredGamble?.id !== gamble.id) {
+                              e.preventDefault()
+                              handleGambleTap(gamble, e)
+                            }
+                            // If modal is already showing, allow navigation (second tap)
+                          }
+                        }
+                      }}
                       onMouseEnter={(e) => {
+                        if (isTouchDevice) return // Skip hover on touch devices
                         e.currentTarget.style.transform = 'translateY(-4px)'
                         e.currentTarget.style.boxShadow = '0 12px 32px rgba(0,0,0,0.25)'
 
@@ -479,6 +514,7 @@ export default function GamblesPageContent({
                         }
                       }}
                       onMouseLeave={(e) => {
+                        if (isTouchDevice) return // Skip hover on touch devices
                         e.currentTarget.style.transform = 'translateY(0)'
                         e.currentTarget.style.boxShadow = theme.shadows.sm
                         currentlyHoveredRef.current = null
@@ -560,16 +596,17 @@ export default function GamblesPageContent({
                           size="sm"
                           fw={700}
                           lineClamp={2}
-                          c={accentGamble}
                           ta="center"
                           style={{
-                            lineHeight: 1.2,
-                            fontSize: rem(13),
-                            background: `linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05))`,
+                            lineHeight: 1.3,
+                            fontSize: rem(15),
+                            color: '#ffffff',
+                            textShadow: '0 1px 3px rgba(0,0,0,0.8)',
+                            background: `linear-gradient(135deg, ${accentGamble}dd, ${accentGamble}aa)`,
                             backdropFilter: 'blur(4px)',
                             borderRadius: rem(6),
-                            padding: `${rem(4)} ${rem(8)}`,
-                            border: `1px solid rgba(255,255,255,0.1)`
+                            padding: `${rem(6)} ${rem(10)}`,
+                            border: `1px solid ${accentGamble}40`
                           }}
                         >
                           {gamble.name}
@@ -606,6 +643,8 @@ export default function GamblesPageContent({
         accentColor={accentGamble}
         onMouseEnter={handleModalMouseEnter}
         onMouseLeave={handleModalMouseLeave}
+        onClose={closeModal}
+        showCloseButton={isTouchDevice}
       >
         {hoveredGamble && (
           <>
@@ -709,6 +748,8 @@ export default function GamblesPageContent({
           </>
         )}
       </HoverModal>
+
+      <ScrollToTop accentColor={accentGamble} />
     </motion.div>
     </Box>
   )

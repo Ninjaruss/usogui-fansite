@@ -13,6 +13,7 @@ import {
   Group,
   Progress,
   SimpleGrid,
+  Skeleton,
   Stack,
   Text,
   Title,
@@ -155,21 +156,24 @@ export default function UserProfileClient({ initialUser }: UserProfileClientProp
   const stats = [
     {
       label: 'Guides Written',
-      value: userStats ? userStats.guidesWritten : dataLoading ? '…' : '0',
+      value: userStats?.guidesWritten ?? 0,
       icon: <FileText size={22} color={guideColor} />,
-      color: guideColor
+      color: guideColor,
+      isLoading: dataLoading && !userStats
     },
     {
       label: 'Media Submitted',
-      value: userStats ? userStats.mediaSubmitted : dataLoading ? '…' : '0',
+      value: userStats?.mediaSubmitted ?? 0,
       icon: <Camera size={22} color={mediaColor} />,
-      color: mediaColor
+      color: mediaColor,
+      isLoading: dataLoading && !userStats
     },
     {
       label: 'Likes Received',
-      value: userStats ? userStats.likesReceived : dataLoading ? '…' : '0',
+      value: userStats?.likesReceived ?? 0,
       icon: <BookOpen size={22} color={eventColor} />,
-      color: eventColor
+      color: eventColor,
+      isLoading: dataLoading && !userStats
     }
   ]
 
@@ -272,9 +276,13 @@ export default function UserProfileClient({ initialUser }: UserProfileClientProp
                       <Stack gap="xs" align="center">
                         {stat.icon}
                         <Stack gap={2} align="center">
-                          <Text size="xl" fw={700} c={stat.color}>
-                            {stat.value}
-                          </Text>
+                          {stat.isLoading ? (
+                            <Skeleton height={28} width={40} radius="sm" />
+                          ) : (
+                            <Text size="xl" fw={700} c={stat.color}>
+                              {stat.value}
+                            </Text>
+                          )}
                           <Text size="xs" c={textColors.tertiary} fw={500}>
                             {stat.label}
                           </Text>

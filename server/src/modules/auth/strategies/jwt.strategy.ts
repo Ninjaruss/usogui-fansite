@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
@@ -21,7 +21,20 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   async validate(payload: any): Promise<Partial<User>> {
     const userId =
       typeof payload.sub === 'string' ? parseInt(payload.sub, 10) : payload.sub;
-    const user = await this.usersService.getUserProfile(userId);
+
+    let user: User;
+    try {
+      user = await this.usersService.getUserProfile(userId);
+    } catch {
+      // User no longer exists or was deleted - invalidate the token
+      throw new UnauthorizedException('User no longer exists');
+    }
+
+    // Verify the user account is still active/verified
+    if (!user.isEmailVerified) {
+      throw new UnauthorizedException('Email not verified');
+    }
+
     // Return all safe fields including profile preferences and selected character media
     return {
       id: user.id,

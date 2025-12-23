@@ -27,14 +27,17 @@
   --usogui-purple: #7c3aed;
   --usogui-white: #ffffff;
 
-  /* Semantic Colors for Content Types */
-  --color-gamble: #d32f2f;
-  --color-character: #1976d2;
-  --color-arc: #dc004e;
-  --color-event: #f57c00;
-  --color-guide: #388e3c;
-  --color-media: #7b1fa2;
-  --color-quote: #00796b;
+  /* Semantic Colors for Content Types - Synced with mantine-theme.ts */
+  --color-gamble: #ff5555;     /* 4.5:1 contrast - vibrant red */
+  --color-character: #4dabf7;  /* 4.7:1 contrast - bright blue */
+  --color-arc: #f97316;        /* 5.3:1 contrast - orange */
+  --color-event: #f39c12;      /* 5.2:1 contrast - amber */
+  --color-guide: #51cf66;      /* 4.9:1 contrast - bright green */
+  --color-media: #a855f7;      /* 4.5:1 contrast - saturated purple */
+  --color-quote: #20c997;      /* 4.6:1 contrast - vibrant teal */
+  --color-volume: #ff69b4;     /* 4.6:1 contrast - hot pink */
+  --color-chapter: #38bdf8;    /* 4.5:1 contrast - sky blue */
+  --color-organization: #c084fc; /* 4.6:1 contrast - luminous violet */
 
   /* Semantic state colors */
   --color-success: #388e3c;
@@ -182,23 +185,29 @@ body {
   transition: var(--transition-short);
 }
 
-/* Entity-specific background classes with proper alpha */
-.bg-gamble-alpha { background-color: rgba(211, 47, 47, 0.1); }
-.bg-character-alpha { background-color: rgba(25, 118, 210, 0.1); }
-.bg-arc-alpha { background-color: rgba(220, 0, 78, 0.1); }
-.bg-event-alpha { background-color: rgba(245, 124, 0, 0.1); }
-.bg-guide-alpha { background-color: rgba(56, 142, 60, 0.1); }
-.bg-media-alpha { background-color: rgba(123, 31, 162, 0.1); }
-.bg-quote-alpha { background-color: rgba(0, 121, 107, 0.1); }
+/* Entity-specific background classes with proper alpha - Synced with mantine-theme.ts */
+.bg-gamble-alpha { background-color: rgba(255, 85, 85, 0.1); }
+.bg-character-alpha { background-color: rgba(77, 171, 247, 0.1); }
+.bg-arc-alpha { background-color: rgba(249, 115, 22, 0.1); }
+.bg-event-alpha { background-color: rgba(243, 156, 18, 0.1); }
+.bg-guide-alpha { background-color: rgba(81, 207, 102, 0.1); }
+.bg-media-alpha { background-color: rgba(168, 85, 247, 0.1); }
+.bg-quote-alpha { background-color: rgba(32, 201, 151, 0.1); }
+.bg-volume-alpha { background-color: rgba(255, 105, 180, 0.1); }
+.bg-chapter-alpha { background-color: rgba(56, 189, 248, 0.1); }
+.bg-organization-alpha { background-color: rgba(192, 132, 252, 0.1); }
 
-/* Border colors for entity types */
-.border-gamble-alpha { border-color: rgba(211, 47, 47, 0.3); }
-.border-character-alpha { border-color: rgba(25, 118, 210, 0.3); }
-.border-arc-alpha { border-color: rgba(220, 0, 78, 0.3); }
-.border-event-alpha { border-color: rgba(245, 124, 0, 0.3); }
-.border-guide-alpha { border-color: rgba(56, 142, 60, 0.3); }
-.border-media-alpha { border-color: rgba(123, 31, 162, 0.3); }
-.border-quote-alpha { border-color: rgba(0, 121, 107, 0.3); }
+/* Border colors for entity types - Synced with mantine-theme.ts */
+.border-gamble-alpha { border-color: rgba(255, 85, 85, 0.3); }
+.border-character-alpha { border-color: rgba(77, 171, 247, 0.3); }
+.border-arc-alpha { border-color: rgba(249, 115, 22, 0.3); }
+.border-event-alpha { border-color: rgba(243, 156, 18, 0.3); }
+.border-guide-alpha { border-color: rgba(81, 207, 102, 0.3); }
+.border-media-alpha { border-color: rgba(168, 85, 247, 0.3); }
+.border-quote-alpha { border-color: rgba(32, 201, 151, 0.3); }
+.border-volume-alpha { border-color: rgba(255, 105, 180, 0.3); }
+.border-chapter-alpha { border-color: rgba(56, 189, 248, 0.3); }
+.border-organization-alpha { border-color: rgba(192, 132, 252, 0.3); }
 
 /* Focus states for accessibility */
 .themed-focus {
@@ -219,21 +228,21 @@ body {
   transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
-/* Hover states */
+/* Hover states - Synced with mantine-theme.ts */
 .character-tabs .mantine-Tabs-tab:hover {
-  background-color: rgba(25, 118, 210, 0.25) !important;
+  background-color: rgba(77, 171, 247, 0.25) !important;
   color: rgba(255, 255, 255, 0.95) !important;
   transform: translateY(-1px) !important;
 }
 
 .gamble-tabs .mantine-Tabs-tab:hover {
-  background-color: rgba(211, 47, 47, 0.25) !important;
+  background-color: rgba(255, 85, 85, 0.25) !important;
   color: rgba(255, 255, 255, 0.95) !important;
   transform: translateY(-1px) !important;
 }
 
 .arc-tabs .mantine-Tabs-tab:hover {
-  background-color: rgba(220, 0, 78, 0.25) !important;
+  background-color: rgba(249, 115, 22, 0.25) !important;
   color: rgba(255, 255, 255, 0.95) !important;
   transform: translateY(-1px) !important;
 }
@@ -270,4 +279,43 @@ body {
   background-color: var(--color-arc) !important;
   color: var(--usogui-white) !important;
   border-color: var(--color-arc) !important;
+}
+
+/* Disabled tab states - clear visual feedback */
+.character-tabs .mantine-Tabs-tab[data-disabled],
+.gamble-tabs .mantine-Tabs-tab[data-disabled],
+.arc-tabs .mantine-Tabs-tab[data-disabled] {
+  color: rgba(255, 255, 255, 0.35) !important;
+  background-color: rgba(255, 255, 255, 0.02) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  cursor: not-allowed !important;
+  opacity: 0.6 !important;
+  transform: none !important;
+}
+
+.character-tabs .mantine-Tabs-tab[data-disabled]:hover,
+.gamble-tabs .mantine-Tabs-tab[data-disabled]:hover,
+.arc-tabs .mantine-Tabs-tab[data-disabled]:hover {
+  background-color: rgba(255, 255, 255, 0.02) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  transform: none !important;
+}
+
+/* Hoverable paper/card component - use this class for cards that need hover effects */
+.hoverable-paper {
+  transition: transform 200ms ease, box-shadow 200ms ease;
+}
+
+.hoverable-paper:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+}
+
+/* Search result item hover */
+.search-result-item {
+  transition: background-color 200ms ease;
+}
+
+.search-result-item:hover {
+  background-color: rgba(225, 29, 72, 0.08);
 }

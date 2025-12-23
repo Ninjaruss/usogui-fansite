@@ -15,8 +15,10 @@ import {
 import { UsersService } from './users.service';
 import { User } from '../../entities/user.entity';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 import { QuotePopularityDto } from './dto/quote-popularity.dto';
 import { GamblePopularityDto } from './dto/gamble-popularity.dto';
+import { PasswordResetConfirmDto } from '../auth/dto/password-reset-confirm.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -295,25 +297,9 @@ export class UsersController {
   })
   @ApiResponse({ status: 400, description: 'Invalid or expired token' })
   @ApiResponse({ status: 400, description: 'Invalid password format' })
-  @ApiBody({
-    schema: {
-      type: 'object',
-      required: ['token', 'newPassword'],
-      properties: {
-        token: { type: 'string', example: 'abc123def456...' },
-        newPassword: {
-          type: 'string',
-          example: 'NewSecurePassword123!',
-          minLength: 8,
-        },
-      },
-    },
-  })
-  resetPassword(
-    @Body('token') token: string,
-    @Body('newPassword') newPassword: string,
-  ) {
-    return this.service.resetPassword(token, newPassword);
+  @ApiBody({ type: PasswordResetConfirmDto })
+  resetPassword(@Body() dto: PasswordResetConfirmDto) {
+    return this.service.resetPassword(dto.token, dto.newPassword);
   }
 
   // --- Email verification endpoint ---
@@ -762,7 +748,6 @@ export class UsersController {
         email: { type: 'string', example: 'john.updated@example.com' },
         role: { type: 'string', example: 'MODERATOR' },
         isEmailVerified: { type: 'boolean', example: true },
-        profileImageId: { type: 'string', format: 'uuid', nullable: true },
         favoriteQuoteId: { type: 'number', nullable: true },
         favoriteGambleId: { type: 'number', nullable: true },
         updatedAt: { type: 'string', format: 'date-time' },
@@ -774,31 +759,10 @@ export class UsersController {
   @ApiResponse({ status: 403, description: 'Forbidden - Admin role required' })
   @ApiResponse({ status: 404, description: 'User not found' })
   @ApiParam({ name: 'id', description: 'User ID', example: 1 })
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        username: { type: 'string', example: 'john_doe_updated' },
-        email: {
-          type: 'string',
-          format: 'email',
-          example: 'john.updated@example.com',
-        },
-        role: {
-          type: 'string',
-          enum: ['USER', 'MODERATOR', 'ADMIN'],
-          example: 'MODERATOR',
-        },
-        isEmailVerified: { type: 'boolean', example: true },
-        profileImageId: { type: 'string', format: 'uuid', nullable: true },
-        favoriteQuoteId: { type: 'number', nullable: true },
-        favoriteGambleId: { type: 'number', nullable: true },
-      },
-    },
-  })
+  @ApiBody({ type: UpdateUserDto })
   update(
     @Param('id', ParseIntPipe) id: number,
-    @Body() data: Partial<User>,
+    @Body() data: UpdateUserDto,
   ): Promise<User> {
     return this.service.update(id, data);
   }

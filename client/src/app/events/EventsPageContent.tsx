@@ -32,6 +32,8 @@ import { useProgress } from '../../providers/ProgressProvider'
 import { useSpoilerSettings } from '../../hooks/useSpoilerSettings'
 import { api } from '../../lib/api'
 import { usePaged } from '../../hooks/usePagedCache'
+import { CardGridSkeleton } from '../../components/CardGridSkeleton'
+import { ScrollToTop } from '../../components/ScrollToTop'
 import type { Arc, Event } from '../../types'
 import { EventStatus } from '../../types'
 
@@ -606,10 +608,7 @@ export default function EventsPageContent({
 
       {/* Loading State */}
       {loading ? (
-        <Box style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', paddingBlock: rem(80) }}>
-          <Loader size="xl" color={accentEvent} mb="md" />
-          <Text size="lg" style={{ color: theme.colors.gray[6] }}>Loading events...</Text>
-        </Box>
+        <CardGridSkeleton count={12} cardWidth={280} cardHeight={200} accentColor={accentEvent} />
       ) : (
         <>
           {/* Empty State */}
@@ -859,6 +858,8 @@ export default function EventsPageContent({
           </motion.div>
         )}
       </AnimatePresence>
+
+      <ScrollToTop accentColor={accentEvent} />
     </motion.div>
     </Box>
   )

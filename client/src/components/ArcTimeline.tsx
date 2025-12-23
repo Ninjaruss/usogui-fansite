@@ -1,8 +1,8 @@
 'use client'
 
-import React, { useCallback, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useMemo, useRef, useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import {
-  Alert,
   Badge,
   Box,
   Button,
@@ -11,11 +11,14 @@ import {
   Group,
   Stack,
   Text,
+  Tooltip,
   rem,
   useMantineTheme
 } from '@mantine/core'
-import { getEntityThemeColor, semanticColors, textColors } from '../lib/mantine-theme'
-import { BookOpen, Calendar, ArrowUpDown, CheckCircle2, Dice1, Eye, Users, AlertTriangle } from 'lucide-react'
+import { getEntityThemeColor, textColors, getAlphaColor, backgroundStyles } from '../lib/mantine-theme'
+import { getEventColorKey, getEventColorHex, getEventLabel, getEventIcon } from '../lib/timeline-constants'
+import { BookOpen, Calendar, ChevronDown, ChevronUp, Users, AlertTriangle } from 'lucide-react'
+import { motion, AnimatePresence } from 'motion/react'
 import Link from 'next/link'
 import { useSpoilerSettings } from '../hooks/useSpoilerSettings'
 import { useProgress } from '../providers/ProgressProvider'
@@ -54,47 +57,6 @@ if (typeof document !== 'undefined' && !document.getElementById('arc-timeline-st
   document.head.appendChild(styleSheet)
 }
 
-const EVENT_COLOR_MAP: Record<string, string> = {
-  gamble: '#ff5555',     // 4.5:1 contrast - vibrant red
-  decision: '#f39c12',   // 5.2:1 contrast - amber
-  reveal: '#4dabf7',     // 4.7:1 contrast - bright blue
-  shift: '#a855f7',      // 4.5:1 contrast - saturated purple
-  resolution: '#51cf66'  // 4.9:1 contrast - bright green
-}
-
-const EVENT_ICON_MAP: Record<string, React.ComponentType<{ size?: number }>> = {
-  gamble: Dice1,
-  decision: Users,
-  reveal: Eye,
-  shift: ArrowUpDown,
-  resolution: CheckCircle2
-}
-
-const EVENT_LABEL_MAP: Record<string, string> = {
-  gamble: 'Gamble',
-  decision: 'Decision',
-  reveal: 'Reveal',
-  shift: 'Shift',
-  resolution: 'Resolution'
-}
-
-const DEFAULT_EVENT_COLOR = 'red'
-
-const getEventTypeIcon = (type?: string) => {
-  if (!type) return Calendar
-  return EVENT_ICON_MAP[type] ?? Calendar
-}
-
-const getEventTypeColor = (type?: string) => {
-  if (!type) return DEFAULT_EVENT_COLOR
-  return EVENT_COLOR_MAP[type] ?? DEFAULT_EVENT_COLOR
-}
-
-const getEventTypeLabel = (type?: string) => {
-  if (!type) return 'Event'
-  return EVENT_LABEL_MAP[type] ?? 'Event'
-}
-
 const ArcTimeline = React.memo(function ArcTimeline({ events, arcName, startChapter, endChapter }: ArcTimelineProps) {
   const theme = useMantineTheme()
   const [selectedEventTypes, setSelectedEventTypes] = useState<Set<string>>(new Set())
@@ -102,9 +64,58 @@ const ArcTimeline = React.memo(function ArcTimeline({ events, arcName, startChap
   const [showAllEvents, setShowAllEvents] = useState(false)
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set())
   const timelineRef = useRef<HTMLDivElement>(null)
-  const [globalModal, setGlobalModal] = useState<{ show: boolean; event: TimelineEvent | null; position: { x: number; y: number } }>(
-    { show: false, event: null, position: { x: 0, y: 0 } }
+  const hideTimeoutRef = useRef<number | null>(null)
+  const hoveredElementRef = useRef<Element | null>(null)
+  const [globalModal, setGlobalModal] = useState<{ show: boolean; event: TimelineEvent | null; position: { x: number; y: number }; positionBelow: boolean }>(
+    { show: false, event: null, position: { x: 0, y: 0 }, positionBelow: false }
   )
+
+  // Update modal position on scroll/resize
+  const updateModalPosition = useCallback(() => {
+    if (!hoveredElementRef.current || !globalModal.event) return
+
+    const rect = hoveredElementRef.current.getBoundingClientRect()
+    const modalWidth = 260
+    const estimatedModalHeight = 140 // Reduced estimate for tighter positioning
+    const arrowHeight = 8
+    const navbarHeight = 60
+
+    let x = rect.left + rect.width / 2
+    // Position modal above with minimal gap (just arrow height)
+    let y = rect.top - estimatedModalHeight - arrowHeight
+    let positionBelow = false
+
+    // Check if modal would overlap with navbar - position below instead
+    if (y < navbarHeight) {
+      y = rect.bottom + arrowHeight
+      positionBelow = true
+    }
+
+    // Ensure modal doesn't go off-screen horizontally
+    const modalLeftEdge = x - modalWidth / 2
+    const modalRightEdge = x + modalWidth / 2
+    const buffer = 10
+
+    if (modalLeftEdge < buffer) {
+      x = modalWidth / 2 + buffer
+    } else if (modalRightEdge > window.innerWidth - buffer) {
+      x = window.innerWidth - modalWidth / 2 - buffer
+    }
+
+    setGlobalModal(prev => ({ ...prev, position: { x, y }, positionBelow }))
+  }, [globalModal.event])
+
+  // Listen for scroll and resize to update modal position
+  useEffect(() => {
+    if (globalModal.show && globalModal.event) {
+      window.addEventListener('scroll', updateModalPosition, true)
+      window.addEventListener('resize', updateModalPosition)
+      return () => {
+        window.removeEventListener('scroll', updateModalPosition, true)
+        window.removeEventListener('resize', updateModalPosition)
+      }
+    }
+  }, [globalModal.show, globalModal.event, updateModalPosition])
 
   const { uniqueEventTypes, uniqueCharacters } = useMemo(() => {
     const eventTypes = new Set<string>()
@@ -374,32 +385,70 @@ const ArcTimeline = React.memo(function ArcTimeline({ events, arcName, startChap
   }, [])
 
   const showEventModal = useCallback((event: TimelineEvent, targetElement: Element) => {
+    // Clear any pending hide timeout
+    if (hideTimeoutRef.current) {
+      window.clearTimeout(hideTimeoutRef.current)
+      hideTimeoutRef.current = null
+    }
+
+    // Store element reference for position updates
+    hoveredElementRef.current = targetElement
+
     const rect = targetElement.getBoundingClientRect()
-    const modalWidth = 280
-    const modalHeight = 150
-    const spacing = 15
+    const modalWidth = 260
+    const estimatedModalHeight = 140 // Reduced for tighter positioning
+    const arrowHeight = 8
+    const navbarHeight = 60
 
-    let modalX = rect.left + rect.width / 2
-    let modalY = rect.top - spacing
+    // Center horizontally on the card
+    let x = rect.left + rect.width / 2
+    // Position modal above with minimal gap
+    let y = rect.top - estimatedModalHeight - arrowHeight
+    let positionBelow = false
 
-    const rightOverflow = modalX + modalWidth / 2 - (window.innerWidth - 20)
-    const leftOverflow = modalX - modalWidth / 2 - 20
-
-    if (rightOverflow > 0) {
-      modalX -= rightOverflow
-    } else if (leftOverflow < 0) {
-      modalX -= leftOverflow
+    // Check if modal would overlap with navbar - position below instead
+    if (y < navbarHeight) {
+      y = rect.bottom + arrowHeight
+      positionBelow = true
     }
 
-    if (modalY - modalHeight < 20) {
-      modalY = rect.bottom + spacing
+    // Ensure modal doesn't go off-screen horizontally
+    const modalLeftEdge = x - modalWidth / 2
+    const modalRightEdge = x + modalWidth / 2
+    const buffer = 10
+
+    if (modalLeftEdge < buffer) {
+      x = modalWidth / 2 + buffer
+    } else if (modalRightEdge > window.innerWidth - buffer) {
+      x = window.innerWidth - modalWidth / 2 - buffer
     }
 
-    setGlobalModal({ show: true, event, position: { x: modalX, y: modalY } })
+    setGlobalModal({ show: true, event, position: { x, y }, positionBelow })
   }, [])
 
   const hideEventModal = useCallback(() => {
-    setGlobalModal({ show: false, event: null, position: { x: 0, y: 0 } })
+    // Use a small delay to allow moving to the modal
+    hideTimeoutRef.current = window.setTimeout(() => {
+      setGlobalModal({ show: false, event: null, position: { x: 0, y: 0 }, positionBelow: false })
+      hoveredElementRef.current = null
+    }, 150)
+  }, [])
+
+  const handleModalMouseEnter = useCallback(() => {
+    // Clear hide timeout when entering the modal
+    if (hideTimeoutRef.current) {
+      window.clearTimeout(hideTimeoutRef.current)
+      hideTimeoutRef.current = null
+    }
+  }, [])
+
+  const handleModalMouseLeave = useCallback(() => {
+    // Hide immediately when leaving the modal
+    if (hideTimeoutRef.current) {
+      window.clearTimeout(hideTimeoutRef.current)
+    }
+    setGlobalModal({ show: false, event: null, position: { x: 0, y: 0 }, positionBelow: false })
+    hoveredElementRef.current = null
   }, [])
 
   const visibleSections = useMemo(() => (showAllEvents ? timelineSections : timelineSections.slice(0, 4)), [showAllEvents, timelineSections])
@@ -457,7 +506,7 @@ const ArcTimeline = React.memo(function ArcTimeline({ events, arcName, startChap
                 </Text>
                 <Group gap={6} wrap="wrap">
                   {uniqueEventTypes.map((eventType) => {
-                    const Icon = getEventTypeIcon(eventType)
+                    const Icon = getEventIcon(eventType)
                     const isSelected = selectedEventTypes.has(eventType)
                     return (
                       <Badge
@@ -468,12 +517,12 @@ const ArcTimeline = React.memo(function ArcTimeline({ events, arcName, startChap
                         onClick={() => toggleEventTypeFilter(eventType)}
                         style={{
                           cursor: 'pointer',
-                          backgroundColor: isSelected ? getEventTypeColor(eventType) : 'transparent',
-                          borderColor: getEventTypeColor(eventType),
-                          color: isSelected ? textColors.primary : getEventTypeColor(eventType)
+                          backgroundColor: isSelected ? getEventColorHex(eventType) : 'transparent',
+                          borderColor: getEventColorHex(eventType),
+                          color: isSelected ? textColors.primary : getEventColorHex(eventType)
                         }}
                       >
-                        {getEventTypeLabel(eventType)}
+                        {getEventLabel(eventType)}
                       </Badge>
                     )
                   })}
@@ -619,43 +668,123 @@ const ArcTimeline = React.memo(function ArcTimeline({ events, arcName, startChap
           </Stack>
         )}
 
-        {globalModal.show && globalModal.event && (
-          <Box
-            style={{
-              position: 'fixed',
-              left: globalModal.position.x,
-              top: globalModal.position.y,
-              transform: 'translate(-50%, -100%)',
-              zIndex: 999999,
-              width: rem(280),
-              maxWidth: 'calc(100vw - 40px)',
-              pointerEvents: 'none'
-            }}
-          >
-            <Card withBorder radius="md" shadow="xl" p="md">
-              <Stack gap="sm">
-                <Text fw={600}>{globalModal.event.title}</Text>
-                <Group gap={6}>
-                  <Badge variant="outline" style={{ color: getEntityThemeColor(theme, 'gamble') }} radius="sm">
-                    Chapter {globalModal.event.chapterNumber}
-                  </Badge>
-                  {globalModal.event.type && (
-                    <Badge
-                      variant="filled"
-                      color={getEventTypeColor(globalModal.event.type)}
-                      radius="sm"
-                      leftSection={React.createElement(getEventTypeIcon(globalModal.event.type), { size: 12 })}
-                    >
-                      {getEventTypeLabel(globalModal.event.type)}
-                    </Badge>
-                  )}
-                </Group>
-                <Text size="sm" c="dimmed">
-                  {globalModal.event.description || 'No description available'}
-                </Text>
-              </Stack>
-            </Card>
-          </Box>
+        {/* Render modal in portal to avoid CSS containment issues */}
+        {typeof document !== 'undefined' && createPortal(
+          <AnimatePresence>
+            {globalModal.show && globalModal.event && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.15 }}
+                onMouseEnter={handleModalMouseEnter}
+                onMouseLeave={handleModalMouseLeave}
+                style={{
+                  position: 'fixed',
+                  left: globalModal.position.x,
+                  top: globalModal.position.y,
+                  transform: 'translateX(-50%)',
+                  zIndex: 999999,
+                  width: rem(260),
+                  maxWidth: 'calc(100vw - 40px)',
+                  pointerEvents: 'auto'
+                }}
+              >
+                {/* Pointer arrow - positioned based on modal placement */}
+                <Box
+                  style={{
+                    position: 'absolute',
+                    ...(globalModal.positionBelow
+                      ? {
+                          top: rem(-8),
+                          left: '50%',
+                          transform: 'translateX(-50%)',
+                          borderLeft: '8px solid transparent',
+                          borderRight: '8px solid transparent',
+                          borderBottom: `8px solid ${getEventColorHex(globalModal.event.type)}`
+                        }
+                      : {
+                          bottom: rem(-8),
+                          left: '50%',
+                          transform: 'translateX(-50%)',
+                          borderLeft: '8px solid transparent',
+                          borderRight: '8px solid transparent',
+                          borderTop: `8px solid ${getEventColorHex(globalModal.event.type)}`
+                        }),
+                    width: 0,
+                    height: 0,
+                    zIndex: 1
+                  }}
+                />
+                <Card
+                  withBorder
+                  radius="md"
+                  shadow="xl"
+                  p="sm"
+                  style={{
+                    backgroundColor: backgroundStyles.modal,
+                    border: `2px solid ${getEventColorHex(globalModal.event.type)}`,
+                    backdropFilter: 'blur(10px)'
+                  }}
+                >
+                  <Stack gap="xs">
+                    <Text fw={600} size="sm" style={{ userSelect: 'text' }}>{globalModal.event.title}</Text>
+                    <Group gap={6}>
+                      <Badge variant="outline" size="xs" style={{ color: getEntityThemeColor(theme, 'gamble') }} radius="sm">
+                        Chapter {globalModal.event.chapterNumber}
+                      </Badge>
+                      {globalModal.event.type && (() => {
+                        const EventIcon = getEventIcon(globalModal.event.type)
+                        return (
+                          <Badge
+                            variant="filled"
+                            radius="sm"
+                            size="xs"
+                            leftSection={<EventIcon size={10} />}
+                            style={{
+                              backgroundColor: getEventColorHex(globalModal.event.type),
+                              color: textColors.primary
+                            }}
+                          >
+                            {getEventLabel(globalModal.event.type)}
+                          </Badge>
+                        )
+                      })()}
+                    </Group>
+                    {globalModal.event.description && (
+                      <Text size="xs" c="dimmed" style={{ userSelect: 'text', lineHeight: 1.4 }}>
+                        {globalModal.event.description}
+                      </Text>
+                    )}
+                    {globalModal.event.characters && globalModal.event.characters.length > 0 && (
+                      <Group gap={4} wrap="wrap">
+                        {globalModal.event.characters.slice(0, 4).map((character, index) => (
+                          <Badge
+                            key={`modal-${globalModal.event!.id}-${character}-${index}`}
+                            variant="outline"
+                            radius="sm"
+                            size="xs"
+                            style={{
+                              borderColor: getEntityThemeColor(theme, 'character'),
+                              color: getEntityThemeColor(theme, 'character')
+                            }}
+                          >
+                            {character}
+                          </Badge>
+                        ))}
+                        {globalModal.event.characters.length > 4 && (
+                          <Badge variant="outline" style={{ color: getEntityThemeColor(theme, 'media') }} radius="sm" size="xs">
+                            +{globalModal.event.characters.length - 4} more
+                          </Badge>
+                        )}
+                      </Group>
+                    )}
+                  </Stack>
+                </Card>
+              </motion.div>
+            )}
+          </AnimatePresence>,
+          document.body
         )}
       </Stack>
     </Card>
@@ -679,6 +808,7 @@ const ArcTimelineSection = React.memo(function ArcTimelineSection({
 }) {
   const theme = useMantineTheme()
   const isExpanded = expandedSections.has(section.sectionType)
+  const hiddenCount = section.events.length - 1
 
   return (
     <Box id={`timeline-section-${section.sectionType}`} style={{ minWidth: rem(260), maxWidth: rem(360) }}>
@@ -690,16 +820,18 @@ const ArcTimelineSection = React.memo(function ArcTimelineSection({
         style={{
           background: `linear-gradient(135deg, rgba(124, 58, 237, 0.08), rgba(225, 29, 72, 0.05))`,
           cursor: 'pointer',
-          marginBottom: rem(8)
+          marginBottom: rem(8),
+          border: isExpanded ? `2px solid ${getEntityThemeColor(theme, 'arc')}` : undefined,
+          transition: 'all 150ms ease'
         }}
         onClick={() => toggleSectionExpansion(section.sectionType)}
       >
         <Stack gap="xs">
           <Group justify="space-between" align="flex-start">
-            <Text fw={600} size="sm" style={{ color: getEntityThemeColor(theme, 'arc') }}>
-              {section.sectionName}
+            <Text fw={600} size="sm" style={{ color: getEntityThemeColor(theme, 'arc'), flex: 1, minWidth: 0 }} lineClamp={1}>
+              {section.events[0]?.title || section.sectionName}
             </Text>
-            <Badge variant="outline" style={{ color: getEntityThemeColor(theme, 'gamble') }} radius="sm">
+            <Badge variant="outline" style={{ color: getEntityThemeColor(theme, 'gamble'), flexShrink: 0 }} radius="sm">
               {section.events.length} events
             </Badge>
           </Group>
@@ -708,8 +840,20 @@ const ArcTimelineSection = React.memo(function ArcTimelineSection({
               Chapters {section.earliestChapter}-{section.latestChapter}
             </Text>
           )}
-          <Group justify="center">
-            <ArrowUpDown size={16} style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 150ms' }} />
+          <Group justify="center" gap="xs">
+            {isExpanded ? (
+              <>
+                <ChevronUp size={16} />
+                <Text size="xs" c="dimmed">Click to collapse</Text>
+              </>
+            ) : (
+              <>
+                <ChevronDown size={16} />
+                <Text size="xs" c="dimmed">
+                  {hiddenCount > 0 ? `Click to expand (+${hiddenCount} more)` : 'Click to expand'}
+                </Text>
+              </>
+            )}
           </Group>
         </Stack>
       </Card>
@@ -730,8 +874,6 @@ function EventsInSection({
   onShowModal: (event: TimelineEvent, targetElement: Element) => void
   onHideModal: () => void
 }) {
-  const { shouldHideSpoiler } = useSpoilerSettings()
-
   if (!isExpanded) {
     const firstEvent = events[0]
     if (!firstEvent) return null
@@ -757,18 +899,61 @@ function EventsInSection({
 }
 
 function TimelineSpoilerWrapper({ event, children }: { event: TimelineEvent; children: React.ReactNode }) {
-  const { shouldHideSpoiler } = useSpoilerSettings()
+  const [revealed, setRevealed] = useState(false)
+  const { settings } = useSpoilerSettings()
   const { userProgress } = useProgress()
-  const shouldHide = shouldHideSpoiler(event.spoilerChapter ?? event.chapterNumber)
+  const theme = useMantineTheme()
 
-  if (!event.isSpoiler || !shouldHide) {
+  const effectiveProgress = settings.chapterTolerance > 0 ? settings.chapterTolerance : userProgress
+  const chapterNumber = event.chapterNumber
+  const spoilerChapter = event.spoilerChapter ?? chapterNumber
+
+  // Hide events that are ahead of user's progress (no explicit isSpoiler flag needed)
+  const shouldHide = !settings.showAllSpoilers && spoilerChapter > effectiveProgress
+
+  if (!shouldHide || revealed) {
     return <>{children}</>
   }
 
   return (
-    <Alert style={{ color: semanticColors.warning }} radius="md" title="Spoiler Warning" icon={<AlertTriangle size={18} />}>
-      Reveals content beyond your current progress (Ch. {userProgress}).
-    </Alert>
+    <Box style={{ position: 'relative' }}>
+      <Box style={{ opacity: 0.25, filter: 'blur(2px)', pointerEvents: 'none' }}>{children}</Box>
+      <Tooltip
+        label={`Chapter ${chapterNumber} spoiler – you're at Chapter ${effectiveProgress}. Click to reveal.`}
+        withArrow
+        position="top"
+      >
+        <Card
+          withBorder
+          radius="md"
+          shadow="lg"
+          p="sm"
+          onClick={() => setRevealed(true)}
+          style={{
+            position: 'absolute',
+            inset: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: getAlphaColor(theme.colors.red[7], 0.9),
+            cursor: 'pointer',
+            zIndex: 10
+          }}
+        >
+          <Stack gap={4} align="center">
+            <Group gap={6} align="center" c="white">
+              <AlertTriangle size={16} />
+              <Text size="xs" fw={700}>
+                Chapter {chapterNumber} Spoiler
+              </Text>
+            </Group>
+            <Text size="xs" c="rgba(255,255,255,0.9)">
+              Click to reveal
+            </Text>
+          </Stack>
+        </Card>
+      </Tooltip>
+    </Box>
   )
 }
 
@@ -784,12 +969,13 @@ function EventContent({
   onHideModal: () => void
 }) {
   const theme = useMantineTheme()
-  const eventRef = useRef<HTMLDivElement>(null)
-  const EventTypeIcon = getEventTypeIcon(event.type)
+  const EventTypeIcon = getEventIcon(event.type)
 
-  const handleMouseEnter = useCallback(() => {
-    if (eventRef.current && !isPreview) {
-      onShowModal(event, eventRef.current)
+  const handleMouseEnter = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (!isPreview) {
+      // Use first child element (the Card) for accurate positioning
+      const cardElement = e.currentTarget.firstElementChild || e.currentTarget
+      onShowModal(event, cardElement)
     }
   }, [event, onShowModal, isPreview])
 
@@ -800,83 +986,49 @@ function EventContent({
   }, [onHideModal, isPreview])
 
   return (
-    <Card
-      ref={eventRef}
+    <div
       id={`event-${event.id}`}
-      withBorder
-      radius="md"
-      shadow={isPreview ? 'xs' : 'sm'}
-      p={isPreview ? 'sm' : 'md'}
-      style={{ cursor: isPreview ? 'default' : 'pointer' }}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
+      style={{ cursor: isPreview ? 'default' : 'pointer', width: '100%' }}
     >
-      <Stack gap="xs">
-        <Group justify="space-between" align="flex-start" gap="sm">
-          <Group gap="xs" align="center" style={{ flex: 1, minWidth: 0 }}>
-            <EventTypeIcon size={16} />
+      <Card
+        data-event-card
+        withBorder
+        radius="sm"
+        shadow={isPreview ? 'xs' : 'sm'}
+        p="xs"
+      >
+        <Group justify="space-between" align="center" gap="xs" wrap="nowrap">
+          <Group gap={6} align="center" style={{ flex: 1, minWidth: 0 }}>
+            <Box
+              style={{
+                width: rem(24),
+                height: rem(24),
+                borderRadius: '50%',
+                background: getEventColorHex(event.type),
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+                color: '#fff'
+              }}
+            >
+              <EventTypeIcon size={12} />
+            </Box>
             <Text
-              size={isPreview ? 'xs' : 'sm'}
+              size="xs"
               fw={600}
-              c={getEventTypeColor(event.type)}
               style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
             >
               {event.title}
             </Text>
           </Group>
-          <Badge variant="outline" style={{ color: getEntityThemeColor(theme, 'gamble') }} radius="sm">
+          <Badge variant="outline" size="xs" style={{ color: getEntityThemeColor(theme, 'gamble'), flexShrink: 0 }} radius="sm">
             Ch. {event.chapterNumber}
           </Badge>
         </Group>
-
-        <Group gap={6} wrap="wrap">
-          {event.type && (
-            <Badge
-              variant="filled"
-              leftSection={<EventTypeIcon size={12} />}
-              radius="sm"
-              size="sm"
-              style={{
-                backgroundColor: getEventTypeColor(event.type),
-                borderColor: getEventTypeColor(event.type),
-                color: textColors.primary
-              }}
-            >
-              {getEventTypeLabel(event.type)}
-            </Badge>
-          )}
-        </Group>
-
-        {!isPreview && event.description && (
-          <Text size="xs" c="dimmed" style={{ lineHeight: 1.5 }}>
-            {event.description}
-          </Text>
-        )}
-
-        {!isPreview && event.characters && event.characters.length > 0 && (
-          <Group gap={4} wrap="wrap">
-            {event.characters.slice(0, 3).map((character, index) => (
-              <Badge
-                key={`${event.id}-${character}-${index}`}
-                variant="outline"
-                radius="sm"
-                size="xs"
-                style={{
-                  borderColor: getEntityThemeColor(theme, 'character'),
-                  color: getEntityThemeColor(theme, 'character')
-                }}
-              >
-                {character}
-              </Badge>
-            ))}
-            {event.characters.length > 3 && (
-              <Badge variant="outline" style={{ color: getEntityThemeColor(theme, 'media') }} radius="sm" size="xs">
-                +{event.characters.length - 3} more
-              </Badge>
-            )}
-          </Group>
-        )}
-      </Stack>
-    </Card>
+      </Card>
+    </div>
   )
 }

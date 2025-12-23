@@ -1,6 +1,8 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class AddGuideToMediaOwnerType1734040000000 implements MigrationInterface {
+export class AddGuideToMediaOwnerType1734040000000
+  implements MigrationInterface
+{
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Add 'guide' to the media_ownertype_enum type
     await queryRunner.query(`

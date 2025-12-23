@@ -25,6 +25,7 @@ import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'motion/react'
 import { api } from '../../lib/api'
+import { CardGridSkeleton } from '../../components/CardGridSkeleton'
 
 interface Chapter {
   id: number
@@ -382,10 +383,7 @@ export default function ChaptersPageContent({
 
       {/* Loading State */}
       {loading ? (
-        <Box style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', paddingBlock: rem(80) }}>
-          <Loader size="xl" color={accentChapter} mb="md" />
-          <Text size="lg" style={{ color: theme.colors.gray[6] }}>Loading chapters...</Text>
-        </Box>
+        <CardGridSkeleton count={12} cardWidth={200} cardHeight={280} accentColor={accentChapter} />
       ) : (
         <>
           {/* Empty State */}

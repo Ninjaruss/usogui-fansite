@@ -3,6 +3,7 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  Logger,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Not } from 'typeorm';
@@ -22,6 +23,7 @@ import { EmailService } from '../email/email.service';
 
 @Injectable()
 export class MediaService {
+  private readonly logger = new Logger(MediaService.name);
   private readonly isTestUser = (email: string | null) =>
     email === 'testuser@example.com';
 
@@ -373,8 +375,15 @@ export class MediaService {
       try {
         await b2Service.deleteFile(media.fileName);
       } catch (error) {
-        console.warn(`Failed to delete file from B2: ${media.fileName}`, error);
+        // Log the error with sufficient detail for cleanup/investigation
+        this.logger.error(
+          `Failed to delete file from B2 storage. ` +
+            `Media ID: ${id}, fileName: ${media.fileName}. ` +
+            `Orphaned file may require manual cleanup.`,
+          error instanceof Error ? error.stack : String(error),
+        );
         // Continue with database deletion even if B2 deletion fails
+        // The orphaned file will need to be cleaned up separately
       }
     }
 

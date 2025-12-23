@@ -37,13 +37,20 @@ async function bootstrap() {
       : Array.from(new Set([...defaultDevOrigins, ...configuredOrigins]));
 
   if (process.env.NODE_ENV === 'production' && corsOrigins.length === 0) {
-    console.warn(
-      '[CORS] No origins configured for production. Set CORS_ALLOWED_ORIGINS or FRONTEND_URL.',
+    console.error(
+      '[CORS] FATAL: No origins configured for production. Set CORS_ALLOWED_ORIGINS or FRONTEND_URL. Rejecting all cross-origin requests.',
     );
   }
 
   app.enableCors({
-    origin: corsOrigins.length > 0 ? corsOrigins : true,
+    // In production, reject all if no origins configured (fail-safe)
+    // In development, allow configured origins or default dev origins
+    origin:
+      corsOrigins.length > 0
+        ? corsOrigins
+        : process.env.NODE_ENV === 'production'
+          ? false // Reject all cross-origin requests if misconfigured in production
+          : true, // Allow all only in development
     credentials: true,
     // Ensure X-Total-Count is readable by browser clients (used for react-admin pagination)
     exposedHeaders: ['X-Total-Count'],

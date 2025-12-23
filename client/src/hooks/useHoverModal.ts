@@ -24,7 +24,10 @@ interface UseHoverModalReturn<T> {
   handleMouseLeave: () => void
   handleModalMouseEnter: () => void
   handleModalMouseLeave: () => void
+  handleTap: (item: T, event: React.MouseEvent | React.TouchEvent) => void
+  closeModal: () => void
   isHovering: boolean
+  isTouchDevice: boolean
 }
 
 export function useHoverModal<T>(options: UseHoverModalOptions = {}): UseHoverModalReturn<T> {
@@ -33,14 +36,29 @@ export function useHoverModal<T>(options: UseHoverModalOptions = {}): UseHoverMo
     modalHeight = 180,
     navbarHeight = 60,
     buffer = 10,
-    showDelay = 500,
-    hideDelay = 200
+    showDelay = 200,
+    hideDelay = 150
   } = options
 
   const [hoveredItem, setHoveredItem] = useState<T | null>(null)
   const [hoverPosition, setHoverPosition] = useState<HoverModalPosition | null>(null)
+  const [isTouchDevice, setIsTouchDevice] = useState(false)
   const hoverTimeoutRef = useRef<number | null>(null)
   const hoveredElementRef = useRef<HTMLElement | null>(null)
+
+  // Detect touch device on mount
+  useEffect(() => {
+    const checkTouchDevice = () => {
+      setIsTouchDevice(
+        'ontouchstart' in window ||
+        navigator.maxTouchPoints > 0 ||
+        window.matchMedia('(pointer: coarse)').matches
+      )
+    }
+    checkTouchDevice()
+    window.addEventListener('resize', checkTouchDevice)
+    return () => window.removeEventListener('resize', checkTouchDevice)
+  }, [])
 
   const updateModalPosition = useCallback((item?: T) => {
     const currentItem = item || hoveredItem
@@ -110,6 +128,34 @@ export function useHoverModal<T>(options: UseHoverModalOptions = {}): UseHoverMo
     hoveredElementRef.current = null
   }, [])
 
+  // Handle tap/click for touch devices - toggles the modal
+  const handleTap = useCallback((item: T, event: React.MouseEvent | React.TouchEvent) => {
+    const element = event.currentTarget as HTMLElement
+
+    // If tapping the same item that's already open, close it
+    if (hoveredItem === item) {
+      setHoveredItem(null)
+      setHoverPosition(null)
+      hoveredElementRef.current = null
+      return
+    }
+
+    // Otherwise, open modal for this item
+    hoveredElementRef.current = element
+    setHoveredItem(item)
+    updateModalPosition(item)
+  }, [hoveredItem, updateModalPosition])
+
+  // Close modal explicitly (for close button or outside tap)
+  const closeModal = useCallback(() => {
+    if (hoverTimeoutRef.current) {
+      window.clearTimeout(hoverTimeoutRef.current)
+    }
+    setHoveredItem(null)
+    setHoverPosition(null)
+    hoveredElementRef.current = null
+  }, [])
+
   // Cleanup timeout on unmount
   useEffect(() => {
     return () => {
@@ -144,7 +190,10 @@ export function useHoverModal<T>(options: UseHoverModalOptions = {}): UseHoverMo
     handleMouseLeave,
     handleModalMouseEnter,
     handleModalMouseLeave,
-    isHovering: hoveredItem !== null
+    handleTap,
+    closeModal,
+    isHovering: hoveredItem !== null,
+    isTouchDevice
   }
 }
 

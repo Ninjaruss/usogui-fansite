@@ -28,6 +28,8 @@ import Image from 'next/image'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { motion } from 'motion/react'
 import MediaThumbnail from '../../components/MediaThumbnail'
+import { CardGridSkeleton } from '../../components/CardGridSkeleton'
+import { ScrollToTop } from '../../components/ScrollToTop'
 import { api } from '../../lib/api'
 import { useAuth } from '../../providers/AuthProvider'
 import { useHoverModal } from '../../hooks/useHoverModal'
@@ -88,7 +90,7 @@ export default function ArcsPageContent({
   const [searchQuery, setSearchQuery] = useState(initialSearch)
   const [currentPage, setCurrentPage] = useState(initialPage)
   const [characterFilter, setCharacterFilter] = useState<string | null>(initialCharacter || null)
-  const [sortBy, setSortBy] = useState<SortOption>((searchParams.get('sort') as SortOption) || 'name')
+  const [sortBy, setSortBy] = useState<SortOption>((searchParams.get('sort') as SortOption) || 'startChapter')
 
   const [imageDialogOpen, setImageDialogOpen] = useState(false)
   const [selectedArc, setSelectedArc] = useState<Arc | null>(null)
@@ -111,7 +113,9 @@ export default function ArcsPageContent({
     handleMouseEnter: handleArcMouseEnter,
     handleMouseLeave: handleArcMouseLeave,
     handleModalMouseEnter,
-    handleModalMouseLeave
+    handleModalMouseLeave,
+    closeModal,
+    isTouchDevice
   } = useHoverModal<Arc>()
 
   const isModeratorOrAdmin = user?.role === 'moderator' || user?.role === 'admin'
@@ -190,7 +194,7 @@ export default function ArcsPageContent({
       if (newSearch) params.set('search', newSearch)
       if (newCharacter) params.set('character', newCharacter)
       if (newPage > 1) params.set('page', newPage.toString())
-      if (newSort && newSort !== 'name') params.set('sort', newSort)
+      if (newSort && newSort !== 'startChapter') params.set('sort', newSort)
       const href = params.toString() ? `/arcs?${params.toString()}` : '/arcs'
       router.push(href, { scroll: false })
     },
@@ -477,10 +481,7 @@ export default function ArcsPageContent({
 
       {/* Loading State */}
       {loading ? (
-        <Box style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', paddingBlock: rem(80) }}>
-          <Loader size="xl" color={accentArc} mb="md" />
-          <Text size="lg" style={{ color: theme.colors.gray[6] }}>Loading arcs...</Text>
-        </Box>
+        <CardGridSkeleton count={12} cardHeight={280} accentColor={accentArc} />
       ) : (
         <>
           {/* Empty State */}
@@ -661,7 +662,7 @@ export default function ArcsPageContent({
                             ta="center"
                             style={{
                               lineHeight: 1.2,
-                              fontSize: rem(13),
+                              fontSize: rem(15),
                               background: `linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05))`,
                               backdropFilter: 'blur(4px)',
                               borderRadius: rem(6),
@@ -878,6 +879,8 @@ export default function ArcsPageContent({
         accentColor={accentArc}
         onMouseEnter={handleModalMouseEnter}
         onMouseLeave={handleModalMouseLeave}
+        onClose={closeModal}
+        showCloseButton={isTouchDevice}
       >
         {hoveredArc && (
           <>
@@ -945,6 +948,8 @@ export default function ArcsPageContent({
           </>
         )}
       </HoverModal>
+
+      <ScrollToTop accentColor={accentArc} />
     </motion.div>
     </Box>
   )
