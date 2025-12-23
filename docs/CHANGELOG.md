@@ -1,6 +1,6 @@
 # Changelog and notes
 ## TODO:
-- Redis based rate limiting with caching middle ware for responses; add cache headers to specific routes
+- Make sure all search bars work as intended
 - Add proper README at the root of the project; add AGPL v3 license to allow people to copy but force them to open source as well
 - Donation linking to badges; badge system with perks
 
@@ -8,6 +8,7 @@
 - Arc timeline events compacted
 - Event headers now use the first event as the title
 - Spoiler added to arc events
+- Fixed bug where events list page did not show modal for revealed events
 
 ## 2025-12-22
 - QA checks for frontend pages including color design and mobile friendly buttons

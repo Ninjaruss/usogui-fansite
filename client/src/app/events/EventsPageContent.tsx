@@ -66,10 +66,12 @@ interface EventsPageContentProps {
 
 function EventSpoilerWrapper({
   event,
-  children
+  children,
+  onSpoilerRevealed
 }: {
   event: Event
   children: React.ReactNode
+  onSpoilerRevealed?: () => void
 }) {
   const [isRevealed, setIsRevealed] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
@@ -106,6 +108,7 @@ function EventSpoilerWrapper({
     e.preventDefault()
     e.stopPropagation()
     setIsRevealed(true)
+    onSpoilerRevealed?.()
   }
 
   const accentColor = theme.other?.usogui?.event ?? theme.colors.orange?.[6] ?? '#ea580c'
@@ -185,6 +188,9 @@ export default function EventsPageContent({
   const [selectedType, setSelectedType] = useState(initialType)
   const [selectedStatus, setSelectedStatus] = useState(initialStatus)
   const searchDebounceRef = useRef<number | null>(null)
+
+  // Track revealed spoilers
+  const [revealedEvents, setRevealedEvents] = useState<Set<number>>(new Set())
 
   // Hover modal state
   const [hoveredEvent, setHoveredEvent] = useState<Event | null>(null)
@@ -357,8 +363,11 @@ export default function EventsPageContent({
 
   // Hover modal handlers
   const handleEventMouseEnter = (event: Event, mouseEvent: React.MouseEvent) => {
-    // Don't show modal if spoiler should be hidden
-    if (shouldHideEventSpoiler(event)) {
+    // Only show modal if spoiler is not hidden OR has been revealed
+    const isSpoilered = shouldHideEventSpoiler(event)
+    const hasBeenRevealed = revealedEvents.has(event.id)
+
+    if (isSpoilered && !hasBeenRevealed) {
       return
     }
 
@@ -458,7 +467,12 @@ export default function EventsPageContent({
           },
         }}
       >
-        <EventSpoilerWrapper event={event}>
+        <EventSpoilerWrapper
+          event={event}
+          onSpoilerRevealed={() => {
+            setRevealedEvents(prev => new Set(prev).add(event.id))
+          }}
+        >
           <Stack gap={6} h="100%" justify="center" align="center">
             {/* Title */}
             <Title order={3} lineClamp={1} size="lg" c={accentEvent} style={{ lineHeight: 1.2, textAlign: 'center', width: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
