@@ -397,7 +397,7 @@ export const mantineTheme: MantineThemeOverride = {
           },
 
           // Disabled state - clear visual feedback
-          '&[data-disabled]': {
+          '&[dataDisabled]': {
             color: 'rgba(255, 255, 255, 0.35)',
             backgroundColor: 'rgba(255, 255, 255, 0.02)',
             borderColor: 'rgba(255, 255, 255, 0.08)',
