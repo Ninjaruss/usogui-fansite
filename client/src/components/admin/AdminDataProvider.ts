@@ -447,6 +447,27 @@ const cleanUpdateData = (resource: string, data: Record<string, unknown>) => {
     return relationshipCleaned
   }
 
+  if (resource === 'character-organizations') {
+    // Keep only the fields that are allowed in the CreateCharacterOrganizationDto/UpdateCharacterOrganizationDto
+    const allowedFields = [
+      'characterId', 'organizationId', 'role',
+      'startChapter', 'endChapter', 'spoilerChapter', 'notes'
+    ]
+
+    const membershipCleaned: Record<string, unknown> = {}
+    allowedFields.forEach(field => {
+      if (cleaned[field] !== undefined) {
+        membershipCleaned[field] = cleaned[field]
+      }
+    })
+
+    // Remove relationship objects
+    delete membershipCleaned.character
+    delete membershipCleaned.organization
+
+    return membershipCleaned
+  }
+
   // For all other resources, remove the id field as it should never be sent in update requests
   delete cleaned.id
   delete cleaned.createdAt

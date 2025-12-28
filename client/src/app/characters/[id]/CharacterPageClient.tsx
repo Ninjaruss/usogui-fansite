@@ -26,7 +26,7 @@ import {
   backgroundStyles,
   getCardStyles
 } from '../../../lib/mantine-theme'
-import { User, Crown, Calendar, BookOpen, Image as ImageIcon } from 'lucide-react'
+import { User, Crown, Calendar, BookOpen, Image as ImageIcon, Building2 } from 'lucide-react'
 import Link from 'next/link'
 import { motion } from 'motion/react'
 import { usePageView } from '../../../hooks/usePageView'
@@ -37,6 +37,7 @@ import EnhancedSpoilerMarkdown from '../../../components/EnhancedSpoilerMarkdown
 import type { Arc, Gamble, Guide, Quote } from '../../../types'
 import MediaThumbnail from '../../../components/MediaThumbnail'
 import CharacterRelationships from '../../../components/CharacterRelationships'
+import CharacterOrganizationMemberships from '../../../components/CharacterOrganizationMemberships'
 
 interface Character {
   id: number
@@ -92,7 +93,8 @@ export default function CharacterPageClient({
     gamble: getEntityThemeColor(theme, 'gamble'),
     guide: getEntityThemeColor(theme, 'guide'),
     quote: getEntityThemeColor(theme, 'quote'),
-    media: getEntityThemeColor(theme, 'media')
+    media: getEntityThemeColor(theme, 'media'),
+    organization: getEntityThemeColor(theme, 'organization')
   }
 
   return (
@@ -341,6 +343,20 @@ export default function CharacterPageClient({
                 characterId={character.id}
                 characterName={character.name}
               />
+
+              {/* Organization Memberships */}
+              <Card withBorder radius="lg" shadow="lg" style={getCardStyles(theme, entityColors.organization)}>
+                <Stack gap={theme.spacing.md} p={theme.spacing.md}>
+                  <Group gap={theme.spacing.sm}>
+                    <Building2 size={20} color={entityColors.organization} />
+                    <Title order={4} c={textColors.primary}>Organizations</Title>
+                  </Group>
+                  <CharacterOrganizationMemberships
+                    characterId={character.id}
+                    characterName={character.name}
+                  />
+                </Stack>
+              </Card>
 
               {/* Related Story Arcs */}
               {arcs.length > 0 && (

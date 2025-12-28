@@ -1,11 +1,5 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  ManyToMany,
-  JoinTable,
-} from 'typeorm';
-import { Character } from './character.entity';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import { CharacterOrganization } from './character-organization.entity';
 import {
   ApiProperty,
   ApiPropertyOptional,
@@ -33,7 +27,6 @@ export class Organization {
   description: string;
 
   @ApiHideProperty()
-  @ManyToMany(() => Character, (character) => character.organizations)
-  @JoinTable()
-  characters: Character[];
+  @OneToMany(() => CharacterOrganization, (co) => co.organization)
+  characterMemberships: CharacterOrganization[];
 }

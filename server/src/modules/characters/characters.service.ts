@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Character } from '../../entities/character.entity';
@@ -10,11 +6,10 @@ import { Gamble } from '../../entities/gamble.entity';
 import { Organization } from '../../entities/organization.entity';
 import { CreateCharacterDto } from './dto/create-character.dto';
 import { UpdateCharacterDto } from './dto/update-character.dto';
-import { UpdateCharacterImageDto } from './dto/update-character-image.dto';
 import { PageViewsService } from '../page-views/page-views.service';
 import { PageType } from '../../entities/page-view.entity';
 import { MediaService } from '../media/media.service';
-import { MediaOwnerType, MediaPurpose } from '../../entities/media.entity';
+import { MediaOwnerType } from '../../entities/media.entity';
 
 @Injectable()
 export class CharactersService {
@@ -55,7 +50,8 @@ export class CharactersService {
 
     const qb = this.repo
       .createQueryBuilder('character')
-      .leftJoinAndSelect('character.organizations', 'organizations');
+      .leftJoinAndSelect('character.organizationMemberships', 'memberships')
+      .leftJoinAndSelect('memberships.organization', 'organizations');
 
     if (name) {
       qb.andWhere(
@@ -102,44 +98,50 @@ export class CharactersService {
     const [data, total] = await qb.getManyAndCount();
     const totalPages = Math.ceil(total / limit);
 
+    // Transform data to include organizations array for backwards compatibility
+    const transformedData = data.map((character) => ({
+      ...character,
+      organizations:
+        character.organizationMemberships?.map((m) => m.organization) ?? [],
+      organizationMemberships: character.organizationMemberships,
+    }));
+
     return {
-      data,
+      data: transformedData,
       total,
       page,
       totalPages,
     };
   }
 
-  async findOne(id: number): Promise<Character> {
+  async findOne(
+    id: number,
+  ): Promise<Character & { organizations?: Organization[] }> {
     const character = await this.repo.findOne({
       where: { id },
-      relations: ['organizations'],
+      relations: [
+        'organizationMemberships',
+        'organizationMemberships.organization',
+      ],
     });
 
     if (!character) {
       throw new NotFoundException(`Character with id ${id} not found`);
     }
-    return character;
+
+    // Add organizations array for backwards compatibility
+    return {
+      ...character,
+      organizations:
+        character.organizationMemberships?.map((m) => m.organization) ?? [],
+    };
   }
 
   async create(createCharacterDto: CreateCharacterDto): Promise<Character> {
-    const { organizationIds, ...characterData } = createCharacterDto;
+    // organizationIds is now ignored - organizations are managed through CharacterOrganizations
+    const { organizationIds: _ignored, ...characterData } = createCharacterDto;
 
-    // Create the character first
     const character = this.repo.create(characterData);
-
-    // Handle organization relations if provided
-    if (organizationIds && organizationIds.length > 0) {
-      const organizations =
-        await this.organizationRepository.findByIds(organizationIds);
-      if (organizations.length !== organizationIds.length) {
-        throw new BadRequestException(
-          'One or more organization IDs are invalid',
-        );
-      }
-      character.organizations = organizations;
-    }
-
     return this.repo.save(character);
   }
 
@@ -149,35 +151,16 @@ export class CharactersService {
   ): Promise<Character> {
     const character = await this.repo.findOne({
       where: { id },
-      relations: ['organizations'],
     });
 
     if (!character) {
       throw new NotFoundException(`Character with id ${id} not found`);
     }
 
-    const { organizationIds, ...characterData } = updateCharacterDto;
+    // organizationIds is now ignored - organizations are managed through CharacterOrganizations
+    const { organizationIds: _ignored, ...characterData } = updateCharacterDto;
 
-    // Update basic character data
     Object.assign(character, characterData);
-
-    // Handle organization relations if provided
-    if (organizationIds !== undefined) {
-      if (organizationIds.length > 0) {
-        const organizations =
-          await this.organizationRepository.findByIds(organizationIds);
-        if (organizations.length !== organizationIds.length) {
-          throw new BadRequestException(
-            'One or more organization IDs are invalid',
-          );
-        }
-        character.organizations = organizations;
-      } else {
-        // Clear organizations if empty array provided
-        character.organizations = [];
-      }
-    }
-
     return this.repo.save(character);
   }
 
@@ -257,8 +240,8 @@ export class CharactersService {
 
     // Build the base query - search both through relationships and text mentions
     const whereClause = `
-      (ec."characterId" = $1 
-       OR LOWER(e.title) LIKE LOWER($2) 
+      (ec."characterId" = $1
+       OR LOWER(e.title) LIKE LOWER($2)
        OR LOWER(e.description) LIKE LOWER($2))
     `;
     const params = [characterId, searchTerm];
@@ -327,7 +310,7 @@ export class CharactersService {
 
     // Query quotes directly from the quotes table
     const query = `
-      SELECT q.*, c.name as character_name, u.username as submitted_by_username, 
+      SELECT q.*, c.name as character_name, u.username as submitted_by_username,
              COUNT(*) OVER() as total_count
       FROM quote q
       LEFT JOIN character c ON q."characterId" = c.id
@@ -382,7 +365,7 @@ export class CharactersService {
       FROM guide g
       LEFT JOIN "user" u ON g."authorId" = u.id
       INNER JOIN guide_characters gc ON g.id = gc."guideId"
-      WHERE g.status = 'approved' 
+      WHERE g.status = 'approved'
         AND gc."characterId" = $1
       ORDER BY g."likeCount" DESC, g."createdAt" DESC
       LIMIT $2 OFFSET $3
@@ -476,7 +459,7 @@ export class CharactersService {
       limit?: number;
     } = {},
   ) {
-    const character = await this.findOne(characterId);
+    await this.findOne(characterId);
 
     const result = await this.mediaService.findForEntityDisplay(
       MediaOwnerType.CHARACTER,
@@ -511,7 +494,7 @@ export class CharactersService {
       limit?: number;
     } = {},
   ) {
-    const character = await this.findOne(characterId);
+    await this.findOne(characterId);
 
     const result = await this.mediaService.findForGallery(
       MediaOwnerType.CHARACTER,
@@ -542,7 +525,7 @@ export class CharactersService {
     characterId: number,
     userProgress?: number,
   ) {
-    const character = await this.findOne(characterId);
+    await this.findOne(characterId);
 
     // First try to get the default entity display media
     const defaultMedia = await this.mediaService.getDefaultForOwner(

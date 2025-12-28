@@ -31,6 +31,7 @@ import { usePaged } from '../../hooks/usePagedCache'
 import { pagedCacheConfig } from '../../config/pagedCacheConfig'
 import { CardGridSkeleton } from '../../components/CardGridSkeleton'
 import { ScrollToTop } from '../../components/ScrollToTop'
+import TimelineSpoilerWrapper from '../../components/TimelineSpoilerWrapper'
 
 interface QuoteData {
   id: number
@@ -429,12 +430,13 @@ export default function QuotesPageContent({
             {quotes.map((quote, index) => (
               // base: 1 column, sm: 2 columns, md: 4 columns, lg: 6 columns
               <Grid.Col span={{ base: 12, sm: 6, md: 3, lg: 2 }} key={quote.id}>
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: index * 0.05 }}
-                >
-                  <Card
+                <TimelineSpoilerWrapper chapterNumber={quote.chapter ?? 1}>
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: index * 0.05 }}
+                  >
+                    <Card
                     withBorder
                     radius="lg"
                     shadow="sm"
@@ -526,7 +528,8 @@ export default function QuotesPageContent({
                       )}
                     </Stack>
                   </Card>
-                </motion.div>
+                  </motion.div>
+                </TimelineSpoilerWrapper>
               </Grid.Col>
             ))}
           </Grid>

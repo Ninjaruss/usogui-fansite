@@ -2,6 +2,13 @@
 ## TODO:
 - Donation linking to badges; badge system with perks
 
+## 2025-12-27
+### Changes
+- Fixed React Admin "Created item missing required id field" error for bidirectional relationship creation
+- Fixed double spoiler overlay on relationship cards (TimelineSpoilerWrapper now handles both card and thumbnail)
+- Fixed MediaThumbnail empty state sizing for medium containers (32-80px) - now shows proportional icon only
+- Added spoilers to quotes and organization pages
+
 ## 2025-12-25
 ### Changes
 - Added Character Relationships system with full CRUD operations
@@ -17,9 +24,6 @@
   - Grouped by relationship type with icons and badges
   - Separate sections for outgoing (character's relationships) and incoming (others' views)
   - Character thumbnails with links to related character pages
-- Fixed React Admin "Created item missing required id field" error for bidirectional relationship creation
-- Fixed double spoiler overlay on relationship cards (TimelineSpoilerWrapper now handles both card and thumbnail)
-- Fixed MediaThumbnail empty state sizing for medium containers (32-80px) - now shows proportional icon only
 
 ## 2025-12-24
 ### Changes

@@ -22,9 +22,10 @@ import { TagList, TagEdit, TagCreate } from '../../components/admin/Tags'
 import { OrganizationList, OrganizationEdit, OrganizationCreate } from '../../components/admin/Organizations'
 import { BadgeList, BadgeEdit, BadgeCreate, BadgeShow } from '../../components/admin/Badges'
 import { CharacterRelationshipList, CharacterRelationshipEdit, CharacterRelationshipCreate, CharacterRelationshipShow } from '../../components/admin/CharacterRelationships'
+import { CharacterOrganizationList, CharacterOrganizationEdit, CharacterOrganizationCreate, CharacterOrganizationShow } from '../../components/admin/CharacterOrganizations'
 
 // Icons
-import { Users, User, BookOpen, Crown, Zap, FileText, Image, Quote, Tag, Shield, Award, Link2 } from 'lucide-react'
+import { Users, User, BookOpen, Crown, Zap, FileText, Image, Quote, Tag, Shield, Award, Link2, Building2 } from 'lucide-react'
 
 // Convert icons to components
 const UsersIcon = () => <Users />
@@ -39,6 +40,7 @@ const TagIcon = () => <Tag />
 const ShieldIcon = () => <Shield />
 const AwardIcon = () => <Award />
 const Link2Icon = () => <Link2 />
+const Building2Icon = () => <Building2 />
 
 export default function AdminApp() {
   return (
@@ -143,6 +145,15 @@ export default function AdminApp() {
         show={CharacterRelationshipShow}
         icon={Link2Icon}
         options={{ label: 'Relationships' }}
+      />
+      <Resource
+        name="character-organizations"
+        list={CharacterOrganizationList}
+        edit={CharacterOrganizationEdit}
+        create={CharacterOrganizationCreate}
+        show={CharacterOrganizationShow}
+        icon={Building2Icon}
+        options={{ label: 'Org Memberships' }}
       />
     </Admin>
     </ThemeProvider>

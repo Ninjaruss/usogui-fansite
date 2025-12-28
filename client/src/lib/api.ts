@@ -414,6 +414,24 @@ class ApiClient {
     return this.get<any>(`/character-relationships/character/${characterId}${query ? `?${query}` : ''}`)
   }
 
+  async getCharacterOrganizations(characterId: number, userProgress?: number) {
+    const params = new URLSearchParams()
+    if (userProgress !== undefined) {
+      params.append('userProgress', userProgress.toString())
+    }
+    const query = params.toString()
+    return this.get<any[]>(`/character-organizations/character/${characterId}${query ? `?${query}` : ''}`)
+  }
+
+  async getOrganizationMembers(organizationId: number, userProgress?: number) {
+    const params = new URLSearchParams()
+    if (userProgress !== undefined) {
+      params.append('userProgress', userProgress.toString())
+    }
+    const query = params.toString()
+    return this.get<any[]>(`/character-organizations/organization/${organizationId}${query ? `?${query}` : ''}`)
+  }
+
   async getArcs(params?: {
     page?: number
     limit?: number

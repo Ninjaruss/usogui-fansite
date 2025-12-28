@@ -284,3 +284,25 @@ export interface CharacterRelationship {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface CharacterOrganization {
+  id: number;
+  characterId: number;
+  character?: {
+    id: number;
+    name: string;
+  };
+  organizationId: number;
+  organization?: {
+    id: number;
+    name: string;
+    description?: string;
+  };
+  role: string;
+  startChapter: number;
+  endChapter: number | null;
+  spoilerChapter: number;
+  notes: string | null;
+  createdAt: string;
+  updatedAt: string;
+}

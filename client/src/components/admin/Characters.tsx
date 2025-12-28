@@ -16,19 +16,13 @@ import {
   SimpleShowLayout,
   NumberInput,
   NumberField,
-  ReferenceArrayInput,
-  AutocompleteArrayInput,
-  ReferenceArrayField,
   FunctionField,
-  useRecordContext,
-  TopToolbar,
-  EditButton,
   ReferenceManyField,
   ReferenceField,
   WithRecord
 } from 'react-admin'
 import { Box, Card, CardContent, Typography, Grid, Chip, Button as MuiButton, Divider } from '@mui/material'
-import { Edit3, Plus, Users, ArrowRight } from 'lucide-react'
+import { Edit3, Plus, Users, ArrowRight, Building2 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import EnhancedSpoilerMarkdown from '../EnhancedSpoilerMarkdown'
 import { EditToolbar } from './EditToolbar'
@@ -101,9 +95,9 @@ export const CharacterShow = () => (
     <SimpleShowLayout>
       <TextField source="id" />
       <TextField source="name" />
-      <FunctionField 
-        label="Description" 
-        render={(record: any) => 
+      <FunctionField
+        label="Description"
+        render={(record: any) =>
           record.description ? (
             <EnhancedSpoilerMarkdown
               content={record.description}
@@ -119,8 +113,8 @@ export const CharacterShow = () => (
         }
       />
       <NumberField source="firstAppearanceChapter" />
-      <FunctionField 
-        label="Alternate Names" 
+      <FunctionField
+        label="Alternate Names"
         render={(record: any) => (
           <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
             {(record.alternateNames || []).map((name: string, index: number) => (
@@ -138,11 +132,117 @@ export const CharacterShow = () => (
           </Box>
         )}
       />
-      <ArrayField source="organizations" label="Organizations">
-        <SingleFieldList linkType={false}>
-          <ChipField source="name" />
-        </SingleFieldList>
-      </ArrayField>
+
+      {/* Organization Memberships */}
+      <Box sx={{ mt: 3 }}>
+        <Typography variant="h6" sx={{ color: '#10b981', mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Building2 size={20} />
+          Organization Memberships
+        </Typography>
+        <ReferenceManyField
+          reference="character-organizations"
+          target="characterId"
+          label={false}
+        >
+          <Datagrid
+            bulkActionButtons={false}
+            rowClick="show"
+            empty={
+              <Typography variant="body2" sx={{ color: 'text.secondary', py: 2 }}>
+                No organization memberships
+              </Typography>
+            }
+          >
+            <ReferenceField source="organizationId" reference="organizations" link="show" label="Organization">
+              <TextField source="name" />
+            </ReferenceField>
+            <FunctionField
+              label="Role"
+              render={(record: any) => (
+                <Chip
+                  label={record.role}
+                  size="small"
+                  sx={{
+                    backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                    color: '#10b981',
+                    fontWeight: 'bold'
+                  }}
+                />
+              )}
+            />
+            <FunctionField
+              label="Chapter Range"
+              render={(record: any) => (
+                <Chip
+                  label={record.endChapter ? `Ch. ${record.startChapter}-${record.endChapter}` : `Ch. ${record.startChapter}+`}
+                  size="small"
+                  variant="outlined"
+                />
+              )}
+            />
+          </Datagrid>
+        </ReferenceManyField>
+      </Box>
+
+      {/* Relationships */}
+      <Box sx={{ mt: 3 }}>
+        <Typography variant="h6" sx={{ color: '#8b5cf6', mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Users size={20} />
+          Relationships
+        </Typography>
+        <ReferenceManyField
+          reference="character-relationships"
+          target="sourceCharacterId"
+          label={false}
+        >
+          <Datagrid
+            bulkActionButtons={false}
+            rowClick="show"
+            empty={
+              <Typography variant="body2" sx={{ color: 'text.secondary', py: 2 }}>
+                No relationships defined
+              </Typography>
+            }
+          >
+            <FunctionField
+              label="To"
+              render={(record: any) => (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <ArrowRight size={14} />
+                  <ReferenceField source="targetCharacterId" reference="characters" link="show">
+                    <TextField source="name" />
+                  </ReferenceField>
+                </Box>
+              )}
+            />
+            <FunctionField
+              label="Type"
+              render={(record: any) => (
+                <Chip
+                  label={record.relationshipType}
+                  size="small"
+                  sx={{
+                    backgroundColor: `${getRelationshipColor(record.relationshipType)}20`,
+                    color: getRelationshipColor(record.relationshipType),
+                    fontWeight: 'bold',
+                    textTransform: 'capitalize'
+                  }}
+                />
+              )}
+            />
+            <FunctionField
+              label="Chapter"
+              render={(record: any) => (
+                <Chip
+                  label={record.endChapter ? `Ch. ${record.startChapter}-${record.endChapter}` : `Ch. ${record.startChapter}+`}
+                  size="small"
+                  variant="outlined"
+                />
+              )}
+            />
+          </Datagrid>
+        </ReferenceManyField>
+      </Box>
     </SimpleShowLayout>
   </Show>
 )
@@ -268,29 +368,6 @@ export const CharacterEdit = () => (
                       <TextInput source="" label="Alternate Name" fullWidth />
                     </SimpleFormIterator>
                   </ArrayInput>
-                </Box>
-              </Grid>
-
-              <Grid item xs={12} md={6}>
-                <Box sx={{
-                  p: 3,
-                  backgroundColor: 'rgba(16, 185, 129, 0.05)',
-                  borderRadius: 2,
-                  border: '1px solid rgba(16, 185, 129, 0.2)'
-                }}>
-                  <Typography variant="h6" sx={{ color: '#10b981', mb: 2, fontWeight: 'bold' }}>
-                    Organizations
-                  </Typography>
-                  <ReferenceArrayInput source="organizationIds" reference="organizations" label="Organizations">
-                    <AutocompleteArrayInput
-                      optionText="name"
-                      sx={{
-                        '& .MuiAutocomplete-root .MuiOutlinedInput-root': {
-                          backgroundColor: '#0f0f0f'
-                        }
-                      }}
-                    />
-                  </ReferenceArrayInput>
                 </Box>
               </Grid>
 
@@ -478,6 +555,123 @@ export const CharacterEdit = () => (
                   </Box>
                 </Box>
               </Grid>
+
+              {/* Organization Memberships Section */}
+              <Grid item xs={12}>
+                <Divider sx={{ my: 2, borderColor: 'rgba(16, 185, 129, 0.3)' }} />
+                <Box sx={{
+                  p: 3,
+                  backgroundColor: 'rgba(16, 185, 129, 0.05)',
+                  borderRadius: 2,
+                  border: '1px solid rgba(16, 185, 129, 0.2)'
+                }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                    <Typography variant="h6" sx={{ color: '#10b981', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Building2 size={20} />
+                      Organization Memberships
+                    </Typography>
+                    <WithRecord render={(record) => (
+                      <MuiButton
+                        component={Link}
+                        to={`/character-organizations/create?source=${encodeURIComponent(JSON.stringify({ characterId: record.id }))}`}
+                        size="small"
+                        variant="contained"
+                        startIcon={<Plus size={16} />}
+                        sx={{
+                          backgroundColor: '#10b981',
+                          '&:hover': { backgroundColor: '#059669' }
+                        }}
+                      >
+                        Add Membership
+                      </MuiButton>
+                    )} />
+                  </Box>
+
+                  <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.6)', mb: 2 }}>
+                    Track this character&apos;s organization memberships with roles and timeline
+                  </Typography>
+
+                  <ReferenceManyField
+                    reference="character-organizations"
+                    target="characterId"
+                    label={false}
+                  >
+                    <Datagrid
+                      bulkActionButtons={false}
+                      rowClick="edit"
+                      sx={{
+                        '& .RaDatagrid-table': { backgroundColor: 'transparent' },
+                        '& .RaDatagrid-headerCell': {
+                          backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                          color: '#10b981',
+                          fontWeight: 'bold'
+                        },
+                        '& .RaDatagrid-row': {
+                          '&:hover': { backgroundColor: 'rgba(16, 185, 129, 0.1)' }
+                        }
+                      }}
+                      empty={
+                        <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.5)', py: 2, textAlign: 'center' }}>
+                          No organization memberships defined
+                        </Typography>
+                      }
+                    >
+                      <ReferenceField source="organizationId" reference="organizations" link={false} label="Organization">
+                        <TextField source="name" />
+                      </ReferenceField>
+                      <FunctionField
+                        label="Role"
+                        render={(record: any) => (
+                          <Chip
+                            label={record.role}
+                            size="small"
+                            sx={{
+                              backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                              color: '#10b981',
+                              fontWeight: 'bold'
+                            }}
+                          />
+                        )}
+                      />
+                      <FunctionField
+                        label="Chapter Range"
+                        render={(record: any) => (
+                          <Chip
+                            label={record.endChapter ? `Ch. ${record.startChapter}-${record.endChapter}` : `Ch. ${record.startChapter}+`}
+                            size="small"
+                            variant="outlined"
+                          />
+                        )}
+                      />
+                      <FunctionField
+                        label="Spoiler Ch."
+                        render={(record: any) => (
+                          <Chip
+                            label={`Ch. ${record.spoilerChapter}`}
+                            size="small"
+                            variant="outlined"
+                            sx={{ borderColor: 'rgba(239, 68, 68, 0.5)', color: '#ef4444' }}
+                          />
+                        )}
+                      />
+                    </Datagrid>
+                  </ReferenceManyField>
+
+                  <Box sx={{ mt: 2, textAlign: 'center' }}>
+                    <WithRecord render={(record) => (
+                      <MuiButton
+                        component={Link}
+                        to={`/character-organizations?filter=${encodeURIComponent(JSON.stringify({ characterId: record.id }))}`}
+                        size="small"
+                        startIcon={<Building2 size={16} />}
+                        sx={{ color: '#10b981' }}
+                      >
+                        View All Memberships
+                      </MuiButton>
+                    )} />
+                  </Box>
+                </Box>
+              </Grid>
             </Grid>
           </SimpleForm>
         </CardContent>
@@ -600,28 +794,6 @@ export const CharacterCreate = () => (
                 </Box>
               </Grid>
 
-              <Grid item xs={12} md={6}>
-                <Box sx={{ 
-                  p: 3, 
-                  backgroundColor: 'rgba(16, 185, 129, 0.05)', 
-                  borderRadius: 2, 
-                  border: '1px solid rgba(16, 185, 129, 0.2)'
-                }}>
-                  <Typography variant="h6" sx={{ color: '#10b981', mb: 2, fontWeight: 'bold' }}>
-                    Relations
-                  </Typography>
-                  <ReferenceArrayInput source="organizationIds" reference="organizations" label="Organizations">
-                    <AutocompleteArrayInput 
-                      optionText="name"
-                      sx={{
-                        '& .MuiAutocomplete-root .MuiOutlinedInput-root': {
-                          backgroundColor: '#0f0f0f'
-                        }
-                      }}
-                    />
-                  </ReferenceArrayInput>
-                </Box>
-              </Grid>
             </Grid>
           </SimpleForm>
         </CardContent>

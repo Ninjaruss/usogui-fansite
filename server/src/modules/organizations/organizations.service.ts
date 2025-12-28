@@ -2,8 +2,9 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Organization } from '../../entities/organization.entity';
+import { Character } from '../../entities/character.entity';
 import { MediaService } from '../media/media.service';
-import { MediaOwnerType, MediaPurpose } from '../../entities/media.entity';
+import { MediaOwnerType } from '../../entities/media.entity';
 
 @Injectable()
 export class OrganizationsService {
@@ -24,7 +25,7 @@ export class OrganizationsService {
       limit?: number;
     } = {},
   ): Promise<{
-    data: Organization[];
+    data: (Organization & { characters?: Character[] })[];
     total: number;
     page: number;
     perPage: number;
@@ -33,7 +34,8 @@ export class OrganizationsService {
     const { name, sort, order = 'ASC', page = 1, limit = 1000 } = filters;
     const query = this.repo
       .createQueryBuilder('organization')
-      .leftJoinAndSelect('organization.characters', 'characters');
+      .leftJoinAndSelect('organization.characterMemberships', 'memberships')
+      .leftJoinAndSelect('memberships.character', 'characters');
 
     // Add name filter if provided
     if (name) {
@@ -52,17 +54,33 @@ export class OrganizationsService {
 
     const [data, total] = await query.getManyAndCount();
     const totalPages = Math.max(1, Math.ceil(total / limit));
-    return { data, total, page, perPage: limit, totalPages };
+
+    // Transform data to include characters array for backwards compatibility
+    const transformedData = data.map((org) => ({
+      ...org,
+      characters: org.characterMemberships?.map((m) => m.character) ?? [],
+      characterMemberships: org.characterMemberships,
+    }));
+
+    return { data: transformedData, total, page, perPage: limit, totalPages };
   }
 
-  async findOne(id: number): Promise<Organization> {
+  async findOne(
+    id: number,
+  ): Promise<Organization & { characters?: Character[] }> {
     const organization = await this.repo.findOne({
       where: { id },
-      relations: ['characters'],
+      relations: ['characterMemberships', 'characterMemberships.character'],
     });
     if (!organization)
       throw new NotFoundException(`Organization with ID ${id} not found`);
-    return organization;
+
+    // Add characters array for backwards compatibility
+    return {
+      ...organization,
+      characters:
+        organization.characterMemberships?.map((m) => m.character) ?? [],
+    };
   }
 
   create(data: Partial<Organization>): Promise<Organization> {
@@ -95,7 +113,7 @@ export class OrganizationsService {
       limit?: number;
     } = {},
   ) {
-    const organization = await this.findOne(organizationId);
+    await this.findOne(organizationId);
 
     const result = await this.mediaService.findForEntityDisplay(
       MediaOwnerType.ORGANIZATION,
@@ -132,7 +150,7 @@ export class OrganizationsService {
       limit?: number;
     } = {},
   ) {
-    const organization = await this.findOne(organizationId);
+    await this.findOne(organizationId);
 
     const result = await this.mediaService.findForGallery(
       MediaOwnerType.ORGANIZATION,
@@ -165,7 +183,7 @@ export class OrganizationsService {
     organizationId: number,
     userProgress?: number,
   ) {
-    const organization = await this.findOne(organizationId);
+    await this.findOne(organizationId);
 
     // Get all entity display media for this organization
     const allMedia = await this.mediaService.findForEntityDisplay(
@@ -179,7 +197,7 @@ export class OrganizationsService {
       return null;
     }
 
-    let selectedMedia: any = null;
+    let selectedMedia: (typeof allMedia.data)[0] | null = null;
 
     if (userProgress !== undefined) {
       // Find the media with the highest chapter number that doesn't exceed user progress

@@ -159,7 +159,10 @@ export class CharacterRelationshipsService {
    */
   async create(
     dto: CreateCharacterRelationshipDto,
-  ): Promise<CharacterRelationship | { primary: CharacterRelationship; reverse: CharacterRelationship }> {
+  ): Promise<
+    | CharacterRelationship
+    | { primary: CharacterRelationship; reverse: CharacterRelationship }
+  > {
     // Validate: no self-relationships
     if (dto.sourceCharacterId === dto.targetCharacterId) {
       throw new BadRequestException(
@@ -338,7 +341,6 @@ export class CharacterRelationshipsService {
 
     return relationship.spoilerChapter <= userProgress;
   }
-
 
   /**
    * Find all relationships between two specific characters (both directions)

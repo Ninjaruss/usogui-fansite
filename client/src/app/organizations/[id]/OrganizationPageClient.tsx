@@ -34,6 +34,7 @@ import MediaThumbnail from '../../../components/MediaThumbnail'
 import MediaGallery from '../../../components/MediaGallery'
 import { usePageView } from '../../../hooks/usePageView'
 import TimelineSpoilerWrapper from '../../../components/TimelineSpoilerWrapper'
+import OrganizationMembers from '../../../components/OrganizationMembers'
 
 interface Organization {
   id: number
@@ -226,7 +227,7 @@ export default function OrganizationPageClient({
         >
           <Tabs.List>
             <Tabs.Tab value="overview" leftSection={<Shield size={16} />}>Overview</Tabs.Tab>
-            <Tabs.Tab value="members" leftSection={<Users size={16} />} disabled={initialMembers.length === 0}>
+            <Tabs.Tab value="members" leftSection={<Users size={16} />}>
               Members
             </Tabs.Tab>
             <Tabs.Tab value="media" leftSection={<Crown size={16} />}>Media</Tabs.Tab>
@@ -302,138 +303,7 @@ export default function OrganizationPageClient({
           </Tabs.Panel>
 
           <Tabs.Panel value="members" pt={theme.spacing.md}>
-            <Stack gap={theme.spacing.lg}>
-              {initialMembers.length > 0 ? (
-                <Card withBorder radius="lg" shadow="lg" style={getCardStyles(theme, entityColors.character)}>
-                  <Stack gap={theme.spacing.md} p={theme.spacing.md}>
-                    <Group justify="space-between" align="center">
-                      <Group gap={theme.spacing.sm}>
-                        <Users size={20} color={entityColors.character} />
-                        <Title order={4} c={textColors.character}>Organization Members ({initialMembers.length})</Title>
-                      </Group>
-                      <Button
-                        component={Link}
-                        href={`/characters?organization=${encodeURIComponent(initialOrganization.name)}`}
-                        variant="outline"
-                        c={entityColors.character}
-                        size="sm"
-                        radius="xl"
-                        style={{
-                          fontWeight: 600,
-                          border: `2px solid ${entityColors.character}`,
-                          transition: `all ${theme.other?.transitions?.durationShort || 200}ms ease`
-                        }}
-                      >
-                        View All Characters
-                      </Button>
-                    </Group>
-
-                    <Grid gutter="lg">
-                      {initialMembers.map((member) => (
-                        <Grid.Col key={member.id} span={{ base: 12, sm: 6, md: 4 }}>
-                          <motion.div whileHover={{ y: -4, transition: { duration: 0.2 } }}>
-                            <Card withBorder radius="md" shadow="md" style={{
-                              overflow: 'hidden',
-                              border: `1px solid ${getAlphaColor(entityColors.character, 0.3)}`,
-                              transition: `all ${theme.other?.transitions?.durationShort || 200}ms ease`,
-                              '&:hover': {
-                                transform: theme.other?.effects?.cardHoverTransform || 'translateY(-2px)',
-                                boxShadow: theme.shadows.lg
-                              }
-                            }}>
-                              <Box
-                                style={{
-                                  position: 'relative',
-                                  width: '100%',
-                                  height: 200,
-                                  overflow: 'hidden'
-                                }}
-                              >
-                                <MediaThumbnail
-                                  entityType="character"
-                                  entityId={member.id}
-                                  entityName={member.name}
-                                  allowCycling={false}
-                                  maxWidth={120}
-                                  maxHeight={160}
-                                  className="character-thumbnail"
-                                />
-                              </Box>
-                              <Stack gap="sm" px="md" py="md">
-                                <Text
-                                  component={Link}
-                                  href={`/characters/${member.id}`}
-                                  fw={600}
-                                  c={entityColors.character}
-                                  size="lg"
-                                  style={{ textDecoration: 'none' }}
-                                >
-                                  {member.name}
-                                </Text>
-
-                                {member.alternateNames && member.alternateNames.length > 0 && (
-                                  <Stack gap={4}>
-                                    <Text size="xs" c={textColors.secondary} fw={500}>
-                                      Also known as:
-                                    </Text>
-                                    <Group gap={6} wrap="wrap">
-                                      {member.alternateNames.slice(0, 2).map((name: string, index: number) => (
-                                        <Badge
-                                          key={index}
-                                          variant="outline"
-                                          c={entityColors.media}
-                                          size="sm"
-                                          radius="xl"
-                                          style={{ borderColor: entityColors.media }}
-                                        >
-                                          {name}
-                                        </Badge>
-                                      ))}
-                                      {member.alternateNames.length > 2 && (
-                                        <Badge
-                                          variant="outline"
-                                          size="sm"
-                                          radius="xl"
-                                          c={entityColors.media}
-                                          style={{ opacity: 0.75, borderColor: entityColors.media }}
-                                        >
-                                          +{member.alternateNames.length - 2} more
-                                        </Badge>
-                                      )}
-                                    </Group>
-                                  </Stack>
-                                )}
-
-                                {member.firstAppearanceChapter && (
-                                  <Group gap="xs" align="center">
-                                    <Text size="xs" c={textColors.secondary}>
-                                      First appeared in Chapter {member.firstAppearanceChapter}
-                                    </Text>
-                                  </Group>
-                                )}
-                              </Stack>
-                            </Card>
-                          </motion.div>
-                        </Grid.Col>
-                      ))}
-                    </Grid>
-                  </Stack>
-                </Card>
-              ) : (
-                <Card withBorder radius="lg" shadow="lg" style={getCardStyles(theme, entityColors.character)}>
-                  <Stack align="center" gap="sm" p={theme.spacing.xl}>
-                    <Users size={48} color={textColors.secondary} style={{ opacity: 0.5 }} />
-                    <Title order={4} c={textColors.secondary}>
-                      No Known Members
-                    </Title>
-                    <Text size="sm" c={textColors.secondary} ta="center" maw={400}>
-                      This organization currently has no associated character members in our database. Member relationships may be added
-                      as the story progresses.
-                    </Text>
-                  </Stack>
-                </Card>
-              )}
-            </Stack>
+            <OrganizationMembers organizationId={initialOrganization.id} />
           </Tabs.Panel>
 
           <Tabs.Panel value="media" pt={theme.spacing.md}>
