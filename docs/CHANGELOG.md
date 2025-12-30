@@ -8,6 +8,8 @@
 - Fixed double spoiler overlay on relationship cards (TimelineSpoilerWrapper now handles both card and thumbnail)
 - Fixed MediaThumbnail empty state sizing for medium containers (32-80px) - now shows proportional icon only
 - Added spoilers to quotes and organization pages
+- Organization memberships added
+- Removed multiple unused files and removed compromised secrets found in cookies.txt through adding it in .gitignore
 
 ## 2025-12-25
 ### Changes
