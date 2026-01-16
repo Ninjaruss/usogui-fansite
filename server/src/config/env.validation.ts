@@ -25,6 +25,11 @@ class EnvironmentVariables {
   DATABASE_NAME: string;
 
   @IsString()
+  @IsOptional()
+  @IsIn(['true', 'false'])
+  DATABASE_SSL?: string;
+
+  @IsString()
   JWT_SECRET: string;
 
   @IsString()

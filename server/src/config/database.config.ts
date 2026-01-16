@@ -37,10 +37,20 @@ export const getDatabaseConfig = (configService: ConfigService) => {
       configService.get('ENABLE_SCHEMA_SYNC') === 'true',
     // Ensure schema sync is never run if migrations exist - additional safety
     migrationsTransactionMode: 'all' as const,
-    ssl: nodeEnv === 'production',
+    // SSL configuration for Supabase and other cloud PostgreSQL providers
+    ssl:
+      configService.get<string>('DATABASE_SSL') === 'true'
+        ? { rejectUnauthorized: false }
+        : false,
     logging: loggingOptions,
     // Add auto retry on lost connections
     retryAttempts: 5,
     retryDelay: 3000,
+    // Connection pool settings
+    extra: {
+      max: 20,
+      connectionTimeoutMillis: 10000,
+      idleTimeoutMillis: 30000,
+    },
   };
 };

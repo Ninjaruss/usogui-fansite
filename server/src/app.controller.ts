@@ -38,6 +38,28 @@ export class AppController {
     private readonly userRepository: Repository<User>,
   ) {}
 
+  @Get('health')
+  @ApiOperation({
+    summary: 'Health check endpoint for container orchestration',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Service is healthy',
+    schema: {
+      type: 'object',
+      properties: {
+        status: { type: 'string', example: 'ok' },
+        timestamp: { type: 'string', example: '2024-01-15T12:00:00.000Z' },
+      },
+    },
+  })
+  healthCheck() {
+    return {
+      status: 'ok',
+      timestamp: new Date().toISOString(),
+    };
+  }
+
   @Get()
   @ApiOperation({ summary: 'Get landing page data with trending content' })
   @ApiResponse({

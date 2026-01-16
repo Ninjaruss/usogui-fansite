@@ -26,6 +26,10 @@ export default new DataSource({
   synchronize: (isDevelopment || isTest) && process.env.ENABLE_SCHEMA_SYNC === 'true',
   // Ensure schema sync is never run if migrations exist - additional safety
   migrationsTransactionMode: 'all',
-  ssl: process.env.NODE_ENV === 'production',
+  // SSL configuration for Supabase and other cloud PostgreSQL providers
+  ssl:
+    process.env.DATABASE_SSL === 'true'
+      ? { rejectUnauthorized: false }
+      : false,
   logging: isDevelopment ? ['query', 'error'] : ['error'],
 });
