@@ -1,6 +1,6 @@
 import React from 'react'
 import { Menu, MenuItemLink, useSidebarState } from 'react-admin'
-import { Box, Typography, Divider } from '@mui/material'
+import { Typography, Divider } from '@mui/material'
 import {
   Users,
   User,
@@ -69,8 +69,8 @@ export const AdminMenu = () => {
 
       <Divider sx={{ my: 1 }} />
 
-      {/* Community Content Section */}
-      <SectionHeader>Community Content</SectionHeader>
+      {/* Community Submissions Section */}
+      <SectionHeader>Community Submissions</SectionHeader>
       <MenuItemLink
         to="/guides"
         primaryText="Guides"
@@ -89,12 +89,12 @@ export const AdminMenu = () => {
 
       <Divider sx={{ my: 1 }} />
 
-      {/* Other Section */}
-      <SectionHeader>Other</SectionHeader>
+      {/* Reference Data Section */}
+      <SectionHeader>Reference Data</SectionHeader>
       <MenuItemLink
-        to="/users"
-        primaryText="Users"
-        leftIcon={<Users size={20} />}
+        to="/organizations"
+        primaryText="Organizations"
+        leftIcon={<Shield size={20} />}
       />
       <MenuItemLink
         to="/quotes"
@@ -106,20 +106,30 @@ export const AdminMenu = () => {
         primaryText="Tags"
         leftIcon={<Tag size={20} />}
       />
-      <MenuItemLink
-        to="/organizations"
-        primaryText="Organizations"
-        leftIcon={<Shield size={20} />}
-      />
+
+      <Divider sx={{ my: 1 }} />
+
+      {/* Relationships Section */}
+      <SectionHeader>Relationships</SectionHeader>
       <MenuItemLink
         to="/character-relationships"
-        primaryText="Relationships"
+        primaryText="Character Relations"
         leftIcon={<Link2 size={20} />}
       />
       <MenuItemLink
         to="/character-organizations"
         primaryText="Org Memberships"
         leftIcon={<Building2 size={20} />}
+      />
+
+      <Divider sx={{ my: 1 }} />
+
+      {/* User Management Section */}
+      <SectionHeader>User Management</SectionHeader>
+      <MenuItemLink
+        to="/users"
+        primaryText="Users"
+        leftIcon={<Users size={20} />}
       />
     </Menu>
   )

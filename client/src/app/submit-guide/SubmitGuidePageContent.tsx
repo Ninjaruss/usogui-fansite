@@ -27,6 +27,7 @@ import {
 import { setTabAccentColors } from '../../lib/mantine-theme'
 import { FileText, Send, Plus, BookOpen, Eye } from 'lucide-react'
 import { useAuth } from '../../providers/AuthProvider'
+import { FormProgressIndicator, FormStep } from '../../components/FormProgressIndicator'
 import { api } from '../../lib/api'
 import { motion } from 'motion/react'
 import EntityEmbedHelperWithSearch from '../../components/EntityEmbedHelperWithSearch'
@@ -231,6 +232,13 @@ export default function SubmitGuidePageContent() {
 
   const isFormValid = !validateForm()
 
+  // Calculate progress steps for the indicator
+  const progressSteps: FormStep[] = [
+    { label: 'Title', completed: formData.title.trim().length >= MIN_TITLE_LENGTH, required: true },
+    { label: 'Description', completed: formData.description.trim().length >= MIN_DESCRIPTION_LENGTH, required: true },
+    { label: 'Content', completed: formData.content.trim().length >= MIN_CONTENT_LENGTH, required: true }
+  ]
+
   const characterOptions = characters.map((character) => ({ value: character.id.toString(), label: character.name }))
   const arcOptions = arcs.map((arc) => ({ value: arc.id.toString(), label: arc.name }))
   const gambleOptions = gambles.map((gamble) => ({ value: gamble.id.toString(), label: gamble.name }))
@@ -275,6 +283,8 @@ export default function SubmitGuidePageContent() {
             <Text size="sm" c="#51cf66">{success}</Text>
           </Alert>
         )}
+
+        <FormProgressIndicator steps={progressSteps} accentColor={guideAccent} />
 
         <Card
           className="guide-card"

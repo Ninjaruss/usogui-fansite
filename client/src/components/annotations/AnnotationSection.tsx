@@ -11,6 +11,11 @@ import {
   Collapse,
   Skeleton,
   Badge,
+  Modal,
+  TextInput,
+  Textarea,
+  NumberInput,
+  Switch,
   useMantineTheme,
 } from '@mantine/core'
 import {
@@ -95,6 +100,46 @@ export default function AnnotationSection({
     } catch (err) {
       console.error('Failed to delete annotation:', err)
       alert('Failed to delete annotation')
+    }
+  }
+
+  const [editingAnnotation, setEditingAnnotation] = useState<Annotation | null>(null)
+  const [editForm, setEditForm] = useState({ title: '', content: '', sourceUrl: '', chapterReference: undefined as number | undefined, isSpoiler: false, spoilerChapter: undefined as number | undefined })
+  const [editSaving, setEditSaving] = useState(false)
+
+  const handleEdit = (annotation: Annotation) => {
+    setEditingAnnotation(annotation)
+    setEditForm({
+      title: annotation.title,
+      content: annotation.content,
+      sourceUrl: annotation.sourceUrl || '',
+      chapterReference: annotation.chapterReference || undefined,
+      isSpoiler: annotation.isSpoiler,
+      spoilerChapter: annotation.spoilerChapter || undefined,
+    })
+  }
+
+  const handleEditSave = async () => {
+    if (!editingAnnotation) return
+    setEditSaving(true)
+    try {
+      const updated = await api.updateAnnotation(editingAnnotation.id, {
+        title: editForm.title,
+        content: editForm.content,
+        sourceUrl: editForm.sourceUrl || undefined,
+        chapterReference: editForm.chapterReference,
+        isSpoiler: editForm.isSpoiler,
+        spoilerChapter: editForm.isSpoiler ? editForm.spoilerChapter : undefined,
+      })
+      setAnnotations((prev) =>
+        prev.map((a) => (a.id === editingAnnotation.id ? { ...a, ...updated } : a))
+      )
+      setEditingAnnotation(null)
+    } catch (err) {
+      console.error('Failed to update annotation:', err)
+      alert('Failed to update annotation')
+    } finally {
+      setEditSaving(false)
     }
   }
 
@@ -194,6 +239,11 @@ export default function AnnotationSection({
                     annotation={annotation}
                     userProgress={userProgress}
                     isOwner={currentUserId === annotation.authorId}
+                    onEdit={
+                      currentUserId === annotation.authorId
+                        ? handleEdit
+                        : undefined
+                    }
                     onDelete={
                       currentUserId === annotation.authorId
                         ? handleDelete
@@ -219,6 +269,11 @@ export default function AnnotationSection({
                     annotation={annotation}
                     userProgress={userProgress}
                     isOwner={currentUserId === annotation.authorId}
+                    onEdit={
+                      currentUserId === annotation.authorId
+                        ? handleEdit
+                        : undefined
+                    }
                     onDelete={
                       currentUserId === annotation.authorId
                         ? handleDelete
@@ -231,6 +286,71 @@ export default function AnnotationSection({
           </>
         )}
       </Stack>
+
+      {/* Edit Modal */}
+      <Modal
+        opened={!!editingAnnotation}
+        onClose={() => setEditingAnnotation(null)}
+        title="Edit Annotation"
+        size="lg"
+        styles={{
+          header: { backgroundColor: theme.colors.dark[7], color: textColors.primary },
+          body: { backgroundColor: theme.colors.dark[7] },
+          content: { backgroundColor: theme.colors.dark[7] },
+        }}
+      >
+        <Stack gap="md">
+          <TextInput
+            label="Title"
+            required
+            value={editForm.title}
+            onChange={(e) => setEditForm((f) => ({ ...f, title: e.currentTarget.value }))}
+          />
+          <Textarea
+            label="Content"
+            required
+            minRows={5}
+            autosize
+            value={editForm.content}
+            onChange={(e) => setEditForm((f) => ({ ...f, content: e.currentTarget.value }))}
+          />
+          <TextInput
+            label="Source URL"
+            value={editForm.sourceUrl}
+            onChange={(e) => setEditForm((f) => ({ ...f, sourceUrl: e.currentTarget.value }))}
+          />
+          <NumberInput
+            label="Chapter Reference"
+            value={editForm.chapterReference ?? ''}
+            onChange={(val) => setEditForm((f) => ({ ...f, chapterReference: val ? Number(val) : undefined }))}
+          />
+          <Switch
+            label="Contains Spoilers"
+            checked={editForm.isSpoiler}
+            onChange={(e) => setEditForm((f) => ({ ...f, isSpoiler: e.currentTarget.checked }))}
+          />
+          {editForm.isSpoiler && (
+            <NumberInput
+              label="Spoiler Chapter"
+              value={editForm.spoilerChapter ?? ''}
+              onChange={(val) => setEditForm((f) => ({ ...f, spoilerChapter: val ? Number(val) : undefined }))}
+            />
+          )}
+          <Group justify="flex-end" gap="sm">
+            <Button variant="subtle" onClick={() => setEditingAnnotation(null)}>
+              Cancel
+            </Button>
+            <Button
+              color="violet"
+              loading={editSaving}
+              disabled={!editForm.title.trim() || !editForm.content.trim()}
+              onClick={handleEditSave}
+            >
+              Save Changes
+            </Button>
+          </Group>
+        </Stack>
+      </Modal>
     </Card>
   )
 }

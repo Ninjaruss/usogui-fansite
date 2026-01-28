@@ -5,6 +5,7 @@ import { ArrowLeft } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../../lib/api'
+import { AdminMenu } from './AdminMenu'
 
 const CustomAppBar = () => {
   const { permissions } = usePermissions()
@@ -133,5 +134,5 @@ const PendingCounter = () => {
 }
 
 export const AdminLayout = (props: any) => (
-  <Layout {...props} appBar={CustomAppBar} />
+  <Layout {...props} appBar={CustomAppBar} menu={AdminMenu} />
 )

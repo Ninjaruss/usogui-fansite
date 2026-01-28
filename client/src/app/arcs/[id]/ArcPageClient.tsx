@@ -24,7 +24,7 @@ import {
   setTabAccentColors,
   backgroundStyles
 } from '../../../lib/mantine-theme'
-import { ArrowLeft, ArrowUp, BookOpen, Calendar, Image as ImageIcon, Layers } from 'lucide-react'
+import { ArrowLeft, ArrowUp, BookOpen, Calendar, Image as ImageIcon, Layers, MessageSquare } from 'lucide-react'
 import Link from 'next/link'
 import EnhancedSpoilerMarkdown from '../../../components/EnhancedSpoilerMarkdown'
 import { motion } from 'motion/react'
@@ -35,6 +35,7 @@ import TimelineSpoilerWrapper from '../../../components/TimelineSpoilerWrapper'
 import MediaThumbnail from '../../../components/MediaThumbnail'
 import { ArcStructuredData } from '../../../components/StructuredData'
 import { AnnotationSection } from '../../../components/annotations'
+import { EntityQuickActions } from '../../../components/EntityQuickActions'
 import { useAuth } from '../../../providers/AuthProvider'
 import { AnnotationOwnerType } from '../../../types'
 
@@ -352,11 +353,17 @@ export default function ArcPageClient({ initialArc, initialEvents, initialGamble
               position="bottom"
               withArrow
             >
-              <Tabs.Tab value="timeline" leftSection={<Calendar size={16} />} disabled={initialEvents.length === 0}>
+              <Tabs.Tab
+                value="timeline"
+                leftSection={<Calendar size={16} />}
+                rightSection={initialEvents.length > 0 ? <Badge size="xs" variant="light" c={arcColor}>{initialEvents.length}</Badge> : null}
+                disabled={initialEvents.length === 0}
+              >
                 Timeline
               </Tabs.Tab>
             </Tooltip>
             <Tabs.Tab value="media" leftSection={<ImageIcon size={16} />}>Media</Tabs.Tab>
+            <Tabs.Tab value="annotations" leftSection={<MessageSquare size={16} />}>Annotations</Tabs.Tab>
           </Tabs.List>
 
           <Tabs.Panel value="overview" pt={theme.spacing.md}>
@@ -557,20 +564,28 @@ export default function ArcPageClient({ initialArc, initialEvents, initialGamble
               </Card>
             </Stack>
           </Tabs.Panel>
+
+          <Tabs.Panel value="annotations" pt={theme.spacing.md}>
+            <AnnotationSection
+              ownerType={AnnotationOwnerType.ARC}
+              ownerId={initialArc.id}
+              userProgress={user?.userProgress}
+              currentUserId={user?.id}
+              isAuthenticated={!!user}
+            />
+          </Tabs.Panel>
         </Tabs>
       </Card>
 
-      {/* Annotations Section */}
-      <AnnotationSection
-        ownerType={AnnotationOwnerType.ARC}
-        ownerId={initialArc.id}
-        userProgress={user?.userProgress}
-        currentUserId={user?.id}
-        isAuthenticated={!!user}
-      />
-
     </motion.div>
     </Stack>
+
+    {/* Quick Actions for authenticated users */}
+    <EntityQuickActions
+      entityType="arc"
+      entityId={initialArc.id}
+      isAuthenticated={!!user}
+    />
     </Container>
     </Box>
   )

@@ -21,8 +21,10 @@ import {
   useMantineTheme
 } from '@mantine/core'
 import { setTabAccentColors } from '../../lib/mantine-theme'
-import { Zap, Send } from 'lucide-react'
+import { Zap, Send, FileText, BookOpen, Users, AlertTriangle } from 'lucide-react'
 import { useAuth } from '../../providers/AuthProvider'
+import { FormProgressIndicator, FormStep } from '../../components/FormProgressIndicator'
+import { FormSection } from '../../components/FormSection'
 import { api } from '../../lib/api'
 import { motion } from 'motion/react'
 
@@ -187,6 +189,13 @@ export default function SubmitEventPageContent() {
 
   const isFormValid = !validateForm()
 
+  // Calculate progress steps for the indicator
+  const progressSteps: FormStep[] = [
+    { label: 'Title', completed: formData.title.trim().length >= MIN_TITLE_LENGTH, required: true },
+    { label: 'Description', completed: formData.description.trim().length >= MIN_DESCRIPTION_LENGTH, required: true },
+    { label: 'Chapter Number', completed: !!formData.chapterNumber && formData.chapterNumber >= 1, required: true }
+  ]
+
   const characterOptions = characters.map((character) => ({ value: character.id.toString(), label: character.name }))
   const arcOptions = arcs.map((arc) => ({ value: arc.id.toString(), label: arc.name }))
   const gambleOptions = gambles.map((gamble) => ({ value: gamble.id.toString(), label: gamble.name }))
@@ -232,6 +241,8 @@ export default function SubmitEventPageContent() {
           </Alert>
         )}
 
+        <FormProgressIndicator steps={progressSteps} accentColor={eventAccent} />
+
         <Card
           className="event-card"
           shadow="lg"
@@ -246,193 +257,219 @@ export default function SubmitEventPageContent() {
         >
           <form onSubmit={handleSubmit}>
             <Stack gap="xl" p="xl">
-              <Stack gap="md">
-                <TextInput
-                  label="Event Title"
-                  placeholder="e.g., 'Baku reveals the winning card' or 'Start of the 17 Steps gamble'"
-                  value={formData.title}
-                  onChange={(event) => handleInputChange('title', event.currentTarget.value)}
-                  required
-                  error={
-                    formData.title.length > 0 && formData.title.trim().length < MIN_TITLE_LENGTH
-                      ? `Title must be at least ${MIN_TITLE_LENGTH} characters long`
-                      : undefined
-                  }
-                  description="Choose a clear, descriptive title for this event (minimum 3 characters)"
-                  styles={{
-                    input: {
-                      backgroundColor: theme.colors.dark?.[5] ?? '#0b0b0b',
-                      color: theme.colors.gray?.[0] ?? '#fff',
-                      borderColor: 'rgba(255,255,255,0.06)',
-                      '&:focus': {
-                        borderColor: eventAccent,
-                        boxShadow: `0 0 0 2px rgba(250, 176, 5, 0.2)`
-                      }
-                    },
-                    label: {
-                      color: eventAccent,
-                      fontWeight: 600
+              {/* Basic Information Section */}
+              <FormSection
+                title="Basic Information"
+                description="Core details about the event"
+                icon={<FileText size={20} color={eventAccent} />}
+                accentColor={eventAccent}
+                required
+              >
+                <Stack gap="md">
+                  <TextInput
+                    label="Event Title"
+                    placeholder="e.g., 'Baku reveals the winning card' or 'Start of the 17 Steps gamble'"
+                    value={formData.title}
+                    onChange={(event) => handleInputChange('title', event.currentTarget.value)}
+                    required
+                    error={
+                      formData.title.length > 0 && formData.title.trim().length < MIN_TITLE_LENGTH
+                        ? `Title must be at least ${MIN_TITLE_LENGTH} characters long`
+                        : undefined
                     }
-                  }}
-                />
-
-                <Textarea
-                  label="Event Description"
-                  placeholder="Describe what happens in this event. Include relevant context and details about the significance of this moment."
-                  value={formData.description}
-                  onChange={(event) => handleInputChange('description', event.currentTarget.value)}
-                  required
-                  minRows={4}
-                  autosize
-                  error={
-                    formData.description.length > 0 && formData.description.trim().length < MIN_DESCRIPTION_LENGTH
-                      ? `Description must be at least ${MIN_DESCRIPTION_LENGTH} characters long`
-                      : undefined
-                  }
-                  description={`Describe the event in detail (${formData.description.length}/10+ characters)`}
-                  styles={{
-                    input: {
-                      backgroundColor: theme.colors.dark?.[5] ?? '#0b0b0b',
-                      color: theme.colors.gray?.[0] ?? '#fff',
-                      borderColor: 'rgba(255,255,255,0.06)',
-                      '&:focus': {
-                        borderColor: eventAccent,
-                        boxShadow: `0 0 0 2px rgba(250, 176, 5, 0.2)`
+                    description={`Minimum ${MIN_TITLE_LENGTH} characters`}
+                    styles={{
+                      input: {
+                        backgroundColor: theme.colors.dark?.[5] ?? '#0b0b0b',
+                        color: theme.colors.gray?.[0] ?? '#fff',
+                        borderColor: 'rgba(255,255,255,0.06)',
+                        '&:focus': {
+                          borderColor: eventAccent,
+                          boxShadow: `0 0 0 2px rgba(250, 176, 5, 0.2)`
+                        }
+                      },
+                      label: {
+                        color: eventAccent,
+                        fontWeight: 600
                       }
-                    },
-                    label: {
-                      color: eventAccent,
-                      fontWeight: 600
-                    }
-                  }}
-                />
+                    }}
+                  />
 
-                <NumberInput
-                  label="Chapter Number"
-                  placeholder="Enter chapter number"
-                  value={formData.chapterNumber}
-                  onChange={(value) => handleInputChange('chapterNumber', value)}
-                  required
-                  min={1}
-                  description="The chapter where this event occurs"
-                  styles={{
-                    input: {
-                      backgroundColor: theme.colors.dark?.[5] ?? '#0b0b0b',
-                      color: theme.colors.gray?.[0] ?? '#fff',
-                      borderColor: 'rgba(255,255,255,0.06)',
-                      '&:focus': {
-                        borderColor: eventAccent,
-                        boxShadow: `0 0 0 2px rgba(250, 176, 5, 0.2)`
+                  <Textarea
+                    label="Event Description"
+                    placeholder="Describe what happens in this event. Include relevant context and details about the significance of this moment."
+                    value={formData.description}
+                    onChange={(event) => handleInputChange('description', event.currentTarget.value)}
+                    required
+                    minRows={4}
+                    autosize
+                    error={
+                      formData.description.length > 0 && formData.description.trim().length < MIN_DESCRIPTION_LENGTH
+                        ? `Description must be at least ${MIN_DESCRIPTION_LENGTH} characters long`
+                        : undefined
+                    }
+                    description={`${formData.description.length}/${MIN_DESCRIPTION_LENGTH}+ characters`}
+                    styles={{
+                      input: {
+                        backgroundColor: theme.colors.dark?.[5] ?? '#0b0b0b',
+                        color: theme.colors.gray?.[0] ?? '#fff',
+                        borderColor: 'rgba(255,255,255,0.06)',
+                        '&:focus': {
+                          borderColor: eventAccent,
+                          boxShadow: `0 0 0 2px rgba(250, 176, 5, 0.2)`
+                        }
+                      },
+                      label: {
+                        color: eventAccent,
+                        fontWeight: 600
                       }
-                    },
-                    label: {
-                      color: eventAccent,
-                      fontWeight: 600
-                    }
-                  }}
-                />
+                    }}
+                  />
 
-                <Select
-                  label="Event Type"
-                  placeholder="Select event type (optional)"
-                  value={formData.type}
-                  onChange={(value) => handleInputChange('type', value || '')}
-                  data={EVENT_TYPE_OPTIONS}
-                  clearable
-                  description="Categorize this event by type"
-                  styles={{
-                    input: {
-                      backgroundColor: theme.colors.dark?.[5] ?? '#0b0b0b',
-                      color: theme.colors.gray?.[0] ?? '#fff',
-                      borderColor: 'rgba(255,255,255,0.06)',
-                      '&:focus': {
-                        borderColor: eventAccent,
-                        boxShadow: `0 0 0 2px rgba(250, 176, 5, 0.2)`
+                  <NumberInput
+                    label="Chapter Number"
+                    placeholder="Enter chapter number"
+                    value={formData.chapterNumber}
+                    onChange={(value) => handleInputChange('chapterNumber', value)}
+                    required
+                    min={1}
+                    description="The chapter where this event occurs"
+                    styles={{
+                      input: {
+                        backgroundColor: theme.colors.dark?.[5] ?? '#0b0b0b',
+                        color: theme.colors.gray?.[0] ?? '#fff',
+                        borderColor: 'rgba(255,255,255,0.06)',
+                        '&:focus': {
+                          borderColor: eventAccent,
+                          boxShadow: `0 0 0 2px rgba(250, 176, 5, 0.2)`
+                        }
+                      },
+                      label: {
+                        color: eventAccent,
+                        fontWeight: 600
                       }
-                    },
-                    label: {
-                      color: eventAccent,
-                      fontWeight: 600
-                    },
-                    dropdown: {
-                      backgroundColor: theme.colors.dark?.[7] ?? '#1a1a1a',
-                      borderColor: 'rgba(255,255,255,0.1)'
-                    }
-                  }}
-                  classNames={{ option: styles.selectOption }}
-                />
+                    }}
+                  />
+                </Stack>
+              </FormSection>
 
-                <Select
-                  label="Story Arc"
-                  placeholder="Select arc (optional)"
-                  value={formData.arcId?.toString() || null}
-                  onChange={(value) => handleInputChange('arcId', value ? parseInt(value) : null)}
-                  data={arcOptions}
-                  clearable
-                  searchable
-                  description="The story arc this event belongs to"
-                  styles={{
-                    input: {
-                      backgroundColor: theme.colors.dark?.[5] ?? '#0b0b0b',
-                      color: theme.colors.gray?.[0] ?? '#fff',
-                      borderColor: 'rgba(255,255,255,0.06)',
-                      '&:focus': {
-                        borderColor: eventAccent,
-                        boxShadow: `0 0 0 2px rgba(250, 176, 5, 0.2)`
+              {/* Event Classification Section */}
+              <FormSection
+                title="Event Classification"
+                description="Categorize and link to related content"
+                icon={<BookOpen size={20} color={eventAccent} />}
+                accentColor={eventAccent}
+              >
+                <Stack gap="md">
+                  <Select
+                    label="Event Type"
+                    placeholder="Select event type"
+                    value={formData.type}
+                    onChange={(value) => handleInputChange('type', value || '')}
+                    data={EVENT_TYPE_OPTIONS}
+                    clearable
+                    description="Categorize this event by type"
+                    styles={{
+                      input: {
+                        backgroundColor: theme.colors.dark?.[5] ?? '#0b0b0b',
+                        color: theme.colors.gray?.[0] ?? '#fff',
+                        borderColor: 'rgba(255,255,255,0.06)',
+                        '&:focus': {
+                          borderColor: eventAccent,
+                          boxShadow: `0 0 0 2px rgba(250, 176, 5, 0.2)`
+                        }
+                      },
+                      label: {
+                        color: 'rgba(255,255,255,0.7)',
+                        fontWeight: 500
+                      },
+                      dropdown: {
+                        backgroundColor: theme.colors.dark?.[7] ?? '#1a1a1a',
+                        borderColor: 'rgba(255,255,255,0.1)'
                       }
-                    },
-                    label: {
-                      color: eventAccent,
-                      fontWeight: 600
-                    },
-                    dropdown: {
-                      backgroundColor: theme.colors.dark?.[7] ?? '#1a1a1a',
-                      borderColor: 'rgba(255,255,255,0.1)'
-                    }
-                  }}
-                  classNames={{ option: styles.selectOption }}
-                />
+                    }}
+                    classNames={{ option: styles.selectOption }}
+                  />
 
-                <Select
-                  label="Related Gamble"
-                  placeholder="Select gamble (optional)"
-                  value={formData.gambleId?.toString() || null}
-                  onChange={(value) => handleInputChange('gambleId', value ? parseInt(value) : null)}
-                  data={gambleOptions}
-                  clearable
-                  searchable
-                  description="If this event is part of a gamble"
-                  styles={{
-                    input: {
-                      backgroundColor: theme.colors.dark?.[5] ?? '#0b0b0b',
-                      color: theme.colors.gray?.[0] ?? '#fff',
-                      borderColor: 'rgba(255,255,255,0.06)',
-                      '&:focus': {
-                        borderColor: eventAccent,
-                        boxShadow: `0 0 0 2px rgba(250, 176, 5, 0.2)`
+                  <Select
+                    label="Story Arc"
+                    placeholder="Select arc"
+                    value={formData.arcId?.toString() || null}
+                    onChange={(value) => handleInputChange('arcId', value ? parseInt(value) : null)}
+                    data={arcOptions}
+                    clearable
+                    searchable
+                    description="The story arc this event belongs to"
+                    styles={{
+                      input: {
+                        backgroundColor: theme.colors.dark?.[5] ?? '#0b0b0b',
+                        color: theme.colors.gray?.[0] ?? '#fff',
+                        borderColor: 'rgba(255,255,255,0.06)',
+                        '&:focus': {
+                          borderColor: eventAccent,
+                          boxShadow: `0 0 0 2px rgba(250, 176, 5, 0.2)`
+                        }
+                      },
+                      label: {
+                        color: 'rgba(255,255,255,0.7)',
+                        fontWeight: 500
+                      },
+                      dropdown: {
+                        backgroundColor: theme.colors.dark?.[7] ?? '#1a1a1a',
+                        borderColor: 'rgba(255,255,255,0.1)'
                       }
-                    },
-                    label: {
-                      color: eventAccent,
-                      fontWeight: 600
-                    },
-                    dropdown: {
-                      backgroundColor: theme.colors.dark?.[7] ?? '#1a1a1a',
-                      borderColor: 'rgba(255,255,255,0.1)'
-                    }
-                  }}
-                  classNames={{ option: styles.selectOption }}
-                />
+                    }}
+                    classNames={{ option: styles.selectOption }}
+                  />
 
+                  <Select
+                    label="Related Gamble"
+                    placeholder="Select gamble"
+                    value={formData.gambleId?.toString() || null}
+                    onChange={(value) => handleInputChange('gambleId', value ? parseInt(value) : null)}
+                    data={gambleOptions}
+                    clearable
+                    searchable
+                    description="If this event is part of a gamble"
+                    styles={{
+                      input: {
+                        backgroundColor: theme.colors.dark?.[5] ?? '#0b0b0b',
+                        color: theme.colors.gray?.[0] ?? '#fff',
+                        borderColor: 'rgba(255,255,255,0.06)',
+                        '&:focus': {
+                          borderColor: eventAccent,
+                          boxShadow: `0 0 0 2px rgba(250, 176, 5, 0.2)`
+                        }
+                      },
+                      label: {
+                        color: 'rgba(255,255,255,0.7)',
+                        fontWeight: 500
+                      },
+                      dropdown: {
+                        backgroundColor: theme.colors.dark?.[7] ?? '#1a1a1a',
+                        borderColor: 'rgba(255,255,255,0.1)'
+                      }
+                    }}
+                    classNames={{ option: styles.selectOption }}
+                  />
+                </Stack>
+              </FormSection>
+
+              {/* Characters Section */}
+              <FormSection
+                title="Characters Involved"
+                description="Select characters who appear in this event"
+                icon={<Users size={20} color={eventAccent} />}
+                accentColor={eventAccent}
+              >
                 <MultiSelect
-                  label="Characters Involved"
-                  placeholder="Select characters (optional)"
+                  label="Characters"
+                  placeholder="Select characters"
                   value={formData.characterIds.map(String)}
                   onChange={(values) => handleInputChange('characterIds', values.map((v) => parseInt(v)))}
                   data={characterOptions}
                   searchable
                   clearable
-                  description="Characters who appear in this event"
                   styles={{
                     input: {
                       backgroundColor: theme.colors.dark?.[5] ?? '#0b0b0b',
@@ -444,8 +481,8 @@ export default function SubmitEventPageContent() {
                       }
                     },
                     label: {
-                      color: eventAccent,
-                      fontWeight: 600
+                      color: 'rgba(255,255,255,0.7)',
+                      fontWeight: 500
                     },
                     dropdown: {
                       backgroundColor: theme.colors.dark?.[7] ?? '#1a1a1a',
@@ -458,10 +495,18 @@ export default function SubmitEventPageContent() {
                   }}
                   classNames={{ option: styles.selectOption }}
                 />
+              </FormSection>
 
+              {/* Spoiler Settings Section */}
+              <FormSection
+                title="Spoiler Settings"
+                description="Mark if this event contains story spoilers"
+                icon={<AlertTriangle size={20} color={eventAccent} />}
+                accentColor={eventAccent}
+              >
                 <NumberInput
                   label="Spoiler Chapter"
-                  placeholder="Enter chapter number (optional)"
+                  placeholder="Enter chapter number"
                   value={formData.spoilerChapter}
                   onChange={(value) => handleInputChange('spoilerChapter', value)}
                   min={1}
@@ -477,12 +522,12 @@ export default function SubmitEventPageContent() {
                       }
                     },
                     label: {
-                      color: eventAccent,
-                      fontWeight: 600
+                      color: 'rgba(255,255,255,0.7)',
+                      fontWeight: 500
                     }
                   }}
                 />
-              </Stack>
+              </FormSection>
 
               <Button
                 type="submit"

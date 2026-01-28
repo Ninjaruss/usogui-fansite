@@ -207,6 +207,17 @@ export const theme = createTheme({
           }
         }
       }
+    },
+    MuiDivider: {
+      styleOverrides: {
+        root: {
+          borderColor: 'rgba(255, 255, 255, 0.25)', // Increased opacity for better visibility
+          borderWidth: '1px',
+          '&.MuiDivider-fullWidth': {
+            borderColor: 'rgba(255, 255, 255, 0.25)',
+          }
+        }
+      }
     }
   }
 })

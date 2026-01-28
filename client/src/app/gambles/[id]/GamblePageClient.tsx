@@ -18,7 +18,7 @@ import {
   Tooltip,
   useMantineTheme
 } from '@mantine/core'
-import { Crown, Users, Trophy, Calendar, BookOpen, Image as ImageIcon } from 'lucide-react'
+import { Crown, Users, Trophy, Calendar, BookOpen, Image as ImageIcon, MessageSquare } from 'lucide-react'
 import Link from 'next/link'
 import EnhancedSpoilerMarkdown from '../../../components/EnhancedSpoilerMarkdown'
 import { motion } from 'motion/react'
@@ -32,6 +32,7 @@ import { GambleStructuredData } from '../../../components/StructuredData'
 import { BreadcrumbNav, createEntityBreadcrumbs } from '../../../components/Breadcrumb'
 import { api } from '../../../lib/api'
 import { AnnotationSection } from '../../../components/annotations'
+import { EntityQuickActions } from '../../../components/EntityQuickActions'
 import { useAuth } from '../../../providers/AuthProvider'
 import { AnnotationOwnerType } from '../../../types'
 import {
@@ -108,7 +109,7 @@ export default function GamblePageClient({ initialGamble }: GamblePageClientProp
   const getInitialTab = () => {
     if (typeof window !== 'undefined') {
       const hash = window.location.hash.slice(1)
-      if (['overview', 'timeline', 'media'].includes(hash)) {
+      if (['overview', 'timeline', 'media', 'annotations'].includes(hash)) {
         return hash
       }
     }
@@ -138,7 +139,7 @@ export default function GamblePageClient({ initialGamble }: GamblePageClientProp
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash.slice(1)
-      if (['overview', 'timeline', 'media'].includes(hash)) {
+      if (['overview', 'timeline', 'media', 'annotations'].includes(hash)) {
         setActiveTab(hash)
       } else if (!hash) {
         setActiveTab('overview')
@@ -365,11 +366,17 @@ export default function GamblePageClient({ initialGamble }: GamblePageClientProp
               position="bottom"
               withArrow
             >
-              <Tabs.Tab value="timeline" leftSection={<Calendar size={16} />} disabled={timelineEvents.length === 0 && timelineLoading}>
+              <Tabs.Tab
+                value="timeline"
+                leftSection={<Calendar size={16} />}
+                rightSection={timelineEvents.length > 0 ? <Badge size="xs" variant="light" c={gambleColor}>{timelineEvents.length}</Badge> : null}
+                disabled={timelineEvents.length === 0 && timelineLoading}
+              >
                 Timeline
               </Tabs.Tab>
             </Tooltip>
             <Tabs.Tab value="media" leftSection={<ImageIcon size={16} />}>Media</Tabs.Tab>
+            <Tabs.Tab value="annotations" leftSection={<MessageSquare size={16} />}>Annotations</Tabs.Tab>
           </Tabs.List>
 
           <Tabs.Panel value="overview" pt={theme.spacing.md}>
@@ -588,20 +595,28 @@ export default function GamblePageClient({ initialGamble }: GamblePageClientProp
               </Card>
             </Stack>
           </Tabs.Panel>
+
+          <Tabs.Panel value="annotations" pt={theme.spacing.md}>
+            <AnnotationSection
+              ownerType={AnnotationOwnerType.GAMBLE}
+              ownerId={initialGamble.id}
+              userProgress={user?.userProgress}
+              currentUserId={user?.id}
+              isAuthenticated={!!user}
+            />
+          </Tabs.Panel>
         </Tabs>
       </Card>
 
-      {/* Annotations Section */}
-      <AnnotationSection
-        ownerType={AnnotationOwnerType.GAMBLE}
-        ownerId={initialGamble.id}
-        userProgress={user?.userProgress}
-        currentUserId={user?.id}
-        isAuthenticated={!!user}
-      />
-
     </motion.div>
     </Stack>
+
+    {/* Quick Actions for authenticated users */}
+    <EntityQuickActions
+      entityType="gamble"
+      entityId={initialGamble.id}
+      isAuthenticated={!!user}
+    />
     </Container>
     </Box>
   )

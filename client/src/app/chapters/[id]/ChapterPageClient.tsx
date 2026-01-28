@@ -26,7 +26,7 @@ import {
   backgroundStyles,
   getCardStyles
 } from '../../../lib/mantine-theme'
-import { BookOpen, Hash, FileText, Users, MessageSquareQuote, CalendarSearch } from 'lucide-react'
+import { BookOpen, Hash, FileText, Users, MessageSquareQuote, CalendarSearch, MessageSquare } from 'lucide-react'
 import Link from 'next/link'
 import { motion } from 'motion/react'
 import TimelineSpoilerWrapper from '../../../components/TimelineSpoilerWrapper'
@@ -34,6 +34,7 @@ import { usePageView } from '../../../hooks/usePageView'
 import { BreadcrumbNav, createEntityBreadcrumbs } from '../../../components/Breadcrumb'
 import type { Chapter as ChapterResource } from '../../../types'
 import { AnnotationSection } from '../../../components/annotations'
+import { EntityQuickActions } from '../../../components/EntityQuickActions'
 import { useAuth } from '../../../providers/AuthProvider'
 import { AnnotationOwnerType } from '../../../types'
 
@@ -279,8 +280,13 @@ export default function ChapterPageClient({
                     position="bottom"
                     withArrow
                   >
-                    <Tabs.Tab value="events" leftSection={<CalendarSearch size={16} />} disabled={!Array.isArray(initialEvents) || initialEvents.length === 0}>
-                      Events ({Array.isArray(initialEvents) ? initialEvents.length : 0})
+                    <Tabs.Tab
+                      value="events"
+                      leftSection={<CalendarSearch size={16} />}
+                      rightSection={Array.isArray(initialEvents) && initialEvents.length > 0 ? <Badge size="xs" variant="light" c={entityColors.event}>{initialEvents.length}</Badge> : null}
+                      disabled={!Array.isArray(initialEvents) || initialEvents.length === 0}
+                    >
+                      Events
                     </Tabs.Tab>
                   </Tooltip>
                   <Tooltip
@@ -289,10 +295,16 @@ export default function ChapterPageClient({
                     position="bottom"
                     withArrow
                   >
-                    <Tabs.Tab value="quotes" leftSection={<MessageSquareQuote size={16} />} disabled={!Array.isArray(initialQuotes) || initialQuotes.length === 0}>
-                      Quotes ({Array.isArray(initialQuotes) ? initialQuotes.length : 0})
+                    <Tabs.Tab
+                      value="quotes"
+                      leftSection={<MessageSquareQuote size={16} />}
+                      rightSection={Array.isArray(initialQuotes) && initialQuotes.length > 0 ? <Badge size="xs" variant="light" c={entityColors.quote}>{initialQuotes.length}</Badge> : null}
+                      disabled={!Array.isArray(initialQuotes) || initialQuotes.length === 0}
+                    >
+                      Quotes
                     </Tabs.Tab>
                   </Tooltip>
+                  <Tabs.Tab value="annotations" leftSection={<MessageSquare size={16} />}>Annotations</Tabs.Tab>
                 </Tabs.List>
 
                 <Tabs.Panel value="overview" pt={theme.spacing.md}>
@@ -470,20 +482,28 @@ export default function ChapterPageClient({
                     </Card>
                   </Stack>
                 </Tabs.Panel>
+
+                <Tabs.Panel value="annotations" pt={theme.spacing.md}>
+                  <AnnotationSection
+                    ownerType={AnnotationOwnerType.CHAPTER}
+                    ownerId={initialChapter.id}
+                    userProgress={user?.userProgress}
+                    currentUserId={user?.id}
+                    isAuthenticated={!!user}
+                  />
+                </Tabs.Panel>
               </Tabs>
             </Card>
 
-            {/* Annotations Section */}
-            <AnnotationSection
-              ownerType={AnnotationOwnerType.CHAPTER}
-              ownerId={initialChapter.id}
-              userProgress={user?.userProgress}
-              currentUserId={user?.id}
-              isAuthenticated={!!user}
-            />
-
           </motion.div>
         </Stack>
+
+        {/* Quick Actions for authenticated users */}
+        <EntityQuickActions
+          entityType="chapter"
+          entityId={initialChapter.id}
+          isAuthenticated={!!user}
+        />
       </Container>
     </Box>
   )

@@ -23,6 +23,7 @@ import {
 import { getEntityThemeColor, semanticColors, textColors, setTabAccentColors } from '../../lib/mantine-theme'
 import { Upload, Link as LinkIcon, Image, Video, Music } from 'lucide-react'
 import { useAuth } from '../../providers/AuthProvider'
+import { FormProgressIndicator, FormStep } from '../../components/FormProgressIndicator'
 import { api } from '../../lib/api'
 import { motion } from 'motion/react'
 import MediaUploadForm from '../../components/MediaUploadForm'
@@ -342,6 +343,15 @@ export default function SubmitMediaPageContent() {
   const urlError = formData.url.length > 0 && !isValidUrl(formData.url) ? 'Please enter a valid URL' : null
   const isFormValid = !validateForm()
 
+  // Calculate progress steps for the indicator (URL mode only)
+  const progressSteps: FormStep[] = [
+    { label: 'Media URL', completed: formData.url.trim().length > 0 && isValidUrl(formData.url), required: true },
+    { label: 'Entity Type', completed: !!formData.ownerType, required: true },
+    { label: 'Specific Entity', completed: !!formData.ownerId, required: true }
+  ]
+
+  const mediaAccent = '#a855f7'
+
   return (
     <Container size="md" py="xl">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
@@ -382,6 +392,10 @@ export default function SubmitMediaPageContent() {
             >
               <Text size="sm" c="#51cf66">{success}</Text>
             </Alert>
+          )}
+
+          {activeTab === 'url' && (
+            <FormProgressIndicator steps={progressSteps} accentColor={mediaAccent} />
           )}
 
           <Card

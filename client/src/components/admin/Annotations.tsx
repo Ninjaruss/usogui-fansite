@@ -363,6 +363,62 @@ const AnnotationBulkActionButtons = () => (
   </Box>
 )
 
+// Per-row action buttons
+const AnnotationRowActions = () => {
+  const record = useRecordContext()
+  const notify = useNotify()
+  const refresh = useRefresh()
+
+  if (!record || record.status !== AnnotationStatus.PENDING) return null
+
+  const handleApprove = async (e: React.MouseEvent) => {
+    e.stopPropagation()
+    try {
+      await api.approveAnnotation(Number(record.id))
+      notify('Annotation approved', { type: 'success' })
+      refresh()
+    } catch {
+      notify('Error approving annotation', { type: 'error' })
+    }
+  }
+
+  const handleReject = async (e: React.MouseEvent) => {
+    e.stopPropagation()
+    const reason = prompt('Rejection reason:')
+    if (!reason) return
+    try {
+      await api.rejectAnnotation(Number(record.id), reason)
+      notify('Annotation rejected', { type: 'success' })
+      refresh()
+    } catch {
+      notify('Error rejecting annotation', { type: 'error' })
+    }
+  }
+
+  return (
+    <Box sx={{ display: 'flex', gap: 0.5 }}>
+      <MuiButton
+        size="small"
+        variant="outlined"
+        color="success"
+        onClick={handleApprove}
+        sx={{ minWidth: 'auto', px: 1, py: 0.25, fontSize: '0.7rem' }}
+      >
+        <Check size={14} />
+      </MuiButton>
+      <MuiButton
+        size="small"
+        variant="outlined"
+        color="error"
+        onClick={handleReject}
+        sx={{ minWidth: 'auto', px: 1, py: 0.25, fontSize: '0.7rem' }}
+      >
+        <X size={14} />
+      </MuiButton>
+    </Box>
+  )
+}
+
 // Main List Component
 export const AnnotationList = () => (
   <List
@@ -438,6 +494,8 @@ export const AnnotationList = () => (
       <BooleanField source="isSpoiler" />
 
       <DateField source="createdAt" sortable showTime sx={{ fontSize: '0.8rem' }} />
+
+      <FunctionField label="Actions" render={() => <AnnotationRowActions />} />
     </Datagrid>
   </List>
 )
