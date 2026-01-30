@@ -56,6 +56,7 @@ export class AuthController {
     let domain: string | undefined;
     if (isProduction) {
       const frontendUrl = this.configService.get<string>('FRONTEND_URL');
+      console.log('[AUTH COOKIE] FRONTEND_URL:', frontendUrl);
       if (frontendUrl) {
         try {
           const url = new URL(frontendUrl);
@@ -66,19 +67,23 @@ export class AuthController {
             // Get last two parts (domain.tld)
             domain = '.' + parts.slice(-2).join('.');
           }
+          console.log('[AUTH COOKIE] Setting cookie domain:', domain);
         } catch (error) {
           console.error('[AUTH] Failed to parse FRONTEND_URL for cookie domain:', error);
         }
       }
     }
 
-    return {
+    const options = {
       httpOnly: true,
       secure: isProduction,
       sameSite: isProduction ? 'none' : 'lax',
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
       ...(domain && { domain }), // Only set domain if we have one
     };
+
+    console.log('[AUTH COOKIE] Cookie options:', JSON.stringify(options));
+    return options as CookieOptions;
   }
 
   @ApiOperation({
@@ -197,8 +202,16 @@ export class AuthController {
   })
   @Post('refresh')
   async refresh(@Req() req: AuthenticatedRequest) {
+    console.log('[AUTH REFRESH] All cookies received:', JSON.stringify(req.cookies));
+    console.log('[AUTH REFRESH] Cookie header:', req.headers.cookie);
+    console.log('[AUTH REFRESH] Origin:', req.headers.origin);
+    console.log('[AUTH REFRESH] Referer:', req.headers.referer);
+
     const refresh = req.cookies?.refreshToken;
-    if (!refresh) throw new UnauthorizedException('No refresh token');
+    if (!refresh) {
+      console.error('[AUTH REFRESH] No refresh token in cookies');
+      throw new UnauthorizedException('No refresh token');
+    }
     const payload = await this.auth.refreshAccessToken(refresh);
     // Return access token and canonical user so client can refresh its stored user
     return { access_token: payload.access_token, user: payload.user };

@@ -35,6 +35,7 @@ export class AuthDiscordController {
     let domain: string | undefined;
     if (isProduction) {
       const frontendUrl = this.configService.get<string>('FRONTEND_URL');
+      console.log('[DISCORD COOKIE] FRONTEND_URL:', frontendUrl);
       if (frontendUrl) {
         try {
           const url = new URL(frontendUrl);
@@ -45,19 +46,23 @@ export class AuthDiscordController {
             // Get last two parts (domain.tld)
             domain = '.' + parts.slice(-2).join('.');
           }
+          console.log('[DISCORD COOKIE] Setting cookie domain:', domain);
         } catch (error) {
           console.error('[AUTH] Failed to parse FRONTEND_URL for cookie domain:', error);
         }
       }
     }
 
-    return {
+    const options = {
       httpOnly: true,
       secure: isProduction,
       sameSite: isProduction ? 'none' : 'lax',
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
       ...(domain && { domain }), // Only set domain if we have one
     };
+
+    console.log('[DISCORD COOKIE] Cookie options:', JSON.stringify(options));
+    return options as CookieOptions;
   }
 
   @ApiOperation({
@@ -91,18 +96,23 @@ export class AuthDiscordController {
   @Get('discord/callback')
   @UseGuards(DiscordAuthGuard)
   async discordCallback(@Req() req: Request, @Res() res: Response) {
+    console.log('[DISCORD CALLBACK] Starting callback');
     // Generate JWT token for the authenticated user
     const loginResult = await this.authService.login(req.user as User);
+    console.log('[DISCORD CALLBACK] Login result generated for user:', (req.user as User)?.username);
 
     // Set refresh token as httpOnly cookie before redirecting
     if (loginResult.refresh_token) {
+      console.log('[DISCORD CALLBACK] Setting refresh token cookie');
       res.cookie('refreshToken', loginResult.refresh_token, this.getRefreshTokenCookieOptions());
+      console.log('[DISCORD CALLBACK] Cookie set successfully');
     }
 
     // Direct redirect to frontend callback with access token only (refresh token is now in cookie)
     const frontendUrl =
       this.configService.get<string>('FRONTEND_URL') || 'http://localhost:3000';
     const redirectUrl = `${frontendUrl}/auth/callback?token=${loginResult.access_token}`;
+    console.log('[DISCORD CALLBACK] Redirecting to:', redirectUrl);
 
     res.redirect(redirectUrl);
   }
