@@ -17,10 +17,19 @@ function isValidReturnUrl(url: string): boolean {
 export default function AuthCallback() {
   const [status, setStatus] = useState('Processing authentication...')
   const [isError, setIsError] = useState(false)
+  const [hasProcessed, setHasProcessed] = useState(false)
 
   useEffect(() => {
+    // Prevent processing the callback multiple times (infinite loop guard)
+    if (hasProcessed) {
+      console.log('[AUTH CALLBACK] Already processed, skipping')
+      return
+    }
+
     const processAuth = async () => {
       try {
+        // Mark as processed immediately to prevent re-entry
+        setHasProcessed(true)
         // Extract tokens from URL
         const urlParams = new URLSearchParams(window.location.search)
         const token = urlParams.get('token')
@@ -80,6 +89,12 @@ export default function AuthCallback() {
           } catch (err) {
             console.error('[AUTH CALLBACK] Error setting cookie:', err)
           }
+
+          // IMPORTANT: Remove refresh token from URL for security
+          // Replace URL without the refreshToken parameter
+          const newUrl = new URL(window.location.href)
+          newUrl.searchParams.delete('refreshToken')
+          window.history.replaceState({}, '', newUrl.toString())
         }
 
         // SECURITY: Use BroadcastChannel to communicate token to main tab
@@ -142,7 +157,7 @@ export default function AuthCallback() {
     }
 
     processAuth()
-  }, [])
+  }, [hasProcessed])
 
   return (
     <div className="min-h-screen flex items-center justify-center">
