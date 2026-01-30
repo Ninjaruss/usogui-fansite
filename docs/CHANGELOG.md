@@ -1,8 +1,5 @@
 # Changelog and notes
 
-## TODO
-- I'd like to optimize the load time for my website. I have successfully deployed the site on Vercel, Supabase, and Flyio. 
-
 ## 2026-01-30
 - Site deployed on Flyio, Supabase, and Vercel! Some adjustments to secret keys (.env) and CORS stuff was needed before everything connected
 - Removal of external URL submissions except for videos/music

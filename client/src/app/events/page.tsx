@@ -6,7 +6,7 @@ import type { Event, Arc } from '../../types'
 import { EventStatus } from '../../types'
 
 interface EventsPageProps {
-  searchParams: Promise<{ page?: string; search?: string; type?: string; status?: string }>
+  searchParams: Promise<{ page?: string; search?: string; type?: string; status?: string; character?: string }>
 }
 
 interface GroupedEventsResponse {
@@ -21,18 +21,23 @@ export async function generateMetadata({ searchParams }: EventsPageProps) {
   const search = resolvedSearchParams.search
   const type = resolvedSearchParams.type
   const status = resolvedSearchParams.status as EventStatus | undefined
+  const character = resolvedSearchParams.character
 
   const title = search
     ? `Events matching "${search}" - Usogui Fansite`
+    : character
+    ? `${character} Events - Usogui Fansite`
     : 'Events - Usogui Fansite'
 
   const description = search
-    ? `Browse key Usogui events that match "${search}". Filter by type or status to explore the timeline.`
+    ? `Browse key Usogui events that match "${search}". Filter by type or character to explore the timeline.`
+    : character
+    ? `Explore key events featuring ${character}. Discover their important moments in the Usogui story.`
     : type
     ? `Explore Usogui events filtered by ${type}. Discover gambles, reveals, decisions, and more.`
     : status
       ? `Review Usogui events by status (${status}). Track approved or pending entries in the database.`
-      : 'Explore key moments in the Usogui story. Filter by type or status to navigate the timeline.'
+      : 'Explore key moments in the Usogui story. Filter by type or character to navigate the timeline.'
 
   return {
     title,
@@ -50,6 +55,7 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
   const search = resolvedSearchParams.search || ''
   const type = resolvedSearchParams.type || ''
   const status = (resolvedSearchParams.status as EventStatus | '') || ''
+  const character = resolvedSearchParams.character || ''
 
   let groupedEvents: GroupedEventsResponse = { arcs: [], noArc: [] }
   let error = ''
@@ -59,6 +65,7 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
       const params: Record<string, string | number> = { page: 1, limit: EVENTS_LIMIT, title: search }
       if (type) params.type = type
       if (status) params.status = status
+      if (character) params.character = character
       const response = await api.getEvents(params)
       groupedEvents = {
         arcs: [],
@@ -68,6 +75,7 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
       const params: Record<string, string> = {}
       if (type) params.type = type
       if (status) params.status = status
+      if (character) params.character = character
       groupedEvents = await api.getEventsGroupedByArc(params)
     }
   } catch (err: unknown) {
@@ -81,6 +89,7 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
         initialSearch={search}
         initialType={type}
         initialStatus={status}
+        initialCharacter={character}
         initialError={error}
       />
     </Container>

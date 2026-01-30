@@ -46,13 +46,6 @@ const eventTypeOptions = [
   { value: 'resolution', label: 'Resolution' }
 ]
 
-const eventStatusOptions = [
-  { value: '', label: 'All Statuses' },
-  { value: EventStatus.APPROVED, label: 'Approved' },
-  { value: EventStatus.PENDING, label: 'Pending' },
-  { value: EventStatus.REJECTED, label: 'Rejected' }
-]
-
 interface EventsPageContentProps {
   initialGroupedEvents: {
     arcs: Array<{ arc: Arc; events: Event[] }>
@@ -61,6 +54,7 @@ interface EventsPageContentProps {
   initialSearch: string
   initialType: string
   initialStatus: string
+  initialCharacter: string
   initialError: string
 }
 
@@ -170,6 +164,7 @@ export default function EventsPageContent({
   initialSearch,
   initialType,
   initialStatus,
+  initialCharacter,
   initialError
 }: EventsPageContentProps) {
   const theme = useMantineTheme()
@@ -187,6 +182,7 @@ export default function EventsPageContent({
   const [searchTerm, setSearchTerm] = useState(initialSearch)
   const [selectedType, setSelectedType] = useState(initialType)
   const [selectedStatus, setSelectedStatus] = useState(initialStatus)
+  const [selectedCharacter, setSelectedCharacter] = useState(initialCharacter)
   const searchDebounceRef = useRef<number | null>(null)
 
   // Track revealed spoilers
@@ -216,14 +212,14 @@ export default function EventsPageContent({
   }
 
   const updateUrl = useCallback(
-    (search: string, type: string, status: string) => {
+    (search: string, type: string, character: string) => {
       const params = new URLSearchParams(searchParams.toString())
       if (search) params.set('search', search)
       else params.delete('search')
       if (type) params.set('type', type)
       else params.delete('type')
-      if (status) params.set('status', status)
-      else params.delete('status')
+      if (character) params.set('character', character)
+      else params.delete('character')
       const qs = params.toString()
       router.push(qs ? `/events?${qs}` : '/events', { scroll: false })
     },
@@ -234,23 +230,23 @@ export default function EventsPageContent({
   const fetcher = useCallback(async (page = 1) => {
     // If there's a search term, return a flat list in noArc
     if (searchTerm) {
-      const params: Record<string, string | number> = { page: 1, limit: 100, title: searchTerm }
+      const params: Record<string, string | number> = { page: 1, limit: 100, title: searchTerm, status: EventStatus.APPROVED }
       if (selectedType) params.type = selectedType
-      if (selectedStatus) params.status = selectedStatus
+      if (selectedCharacter) params.character = selectedCharacter
       const resAny = await api.getEvents(params)
   const payload = { arcs: [], noArc: resAny.data || [] }
   return { data: payload, total: resAny.total ?? (resAny.data ? resAny.data.length : 0), page: 1, perPage: 100, totalPages: 1 } as any
     }
 
-    const params: Record<string, string> = {}
+    const params: Record<string, string> = { status: EventStatus.APPROVED }
     if (selectedType) params.type = selectedType
-    if (selectedStatus) params.status = selectedStatus
+    if (selectedCharacter) params.character = selectedCharacter
     const grouped = await api.getEventsGroupedByArc(params)
     const total = grouped.arcs.reduce((sum: number, g: any) => sum + (g.events?.length || 0), 0) + (grouped.noArc?.length || 0)
     return { data: grouped, total, page: 1, perPage: total || 1, totalPages: 1 } as any
-  }, [searchTerm, selectedType, selectedStatus])
+  }, [searchTerm, selectedType, selectedCharacter])
 
-  const { data: pageData, loading: pageLoading, error: pageError, refresh } = usePaged('events', 1, fetcher, { search: searchTerm, type: selectedType, status: selectedStatus }, { ttlMs: 120_000, persist: true, maxEntries: 100 })
+  const { data: pageData, loading: pageLoading, error: pageError, refresh } = usePaged('events', 1, fetcher, { search: searchTerm, type: selectedType, character: selectedCharacter }, { ttlMs: 120_000, persist: true, maxEntries: 100 })
 
   useEffect(() => {
     if (pageData) {
@@ -336,7 +332,7 @@ export default function EventsPageContent({
       if (searchDebounceRef.current) {
         clearTimeout(searchDebounceRef.current)
       }
-      updateUrl('', selectedType, selectedStatus)
+      updateUrl('', selectedType, selectedCharacter)
       refresh(true)
       return
     }
@@ -346,28 +342,21 @@ export default function EventsPageContent({
     }
 
     searchDebounceRef.current = window.setTimeout(() => {
-  updateUrl(value, selectedType, selectedStatus)
+  updateUrl(value, selectedType, selectedCharacter)
   refresh(true)
     }, 300)
   }
 
   const handleClearSearch = () => {
     setSearchTerm('')
-  updateUrl('', selectedType, selectedStatus)
+  updateUrl('', selectedType, selectedCharacter)
   refresh(true)
   }
 
   const handleTypeChange = (value: string | null) => {
     const newType = value || ''
     setSelectedType(newType)
-  updateUrl(searchTerm, newType, selectedStatus)
-  refresh(true)
-  }
-
-  const handleStatusChange = (value: string | null) => {
-    const newStatus = value || ''
-    setSelectedStatus(newStatus)
-  updateUrl(searchTerm, selectedType, newStatus)
+  updateUrl(searchTerm, newType, selectedCharacter)
   refresh(true)
   }
 
@@ -610,16 +599,35 @@ export default function EventsPageContent({
             size="md"
             style={{ minWidth: rem(150) }}
           />
-          <Select
-            placeholder="All Statuses"
-            value={selectedStatus}
-            onChange={handleStatusChange}
-            data={eventStatusOptions}
-            clearable
-            size="md"
-            style={{ minWidth: rem(150) }}
-          />
         </Group>
+
+        {/* Character Filter Badge */}
+        {selectedCharacter && (
+          <Group justify="center" gap="xs" align="center">
+            <Text size="sm" c="dimmed">Filtering by character:</Text>
+            <Badge
+              size="lg"
+              variant="filled"
+              color={getEntityThemeColor(theme, 'character')}
+              rightSection={
+                <ActionIcon
+                  size="xs"
+                  color="gray"
+                  variant="transparent"
+                  onClick={() => {
+                    setSelectedCharacter('')
+                    updateUrl(searchTerm, selectedType, '')
+                    refresh(true)
+                  }}
+                >
+                  <X size={12} />
+                </ActionIcon>
+              }
+            >
+              {selectedCharacter}
+            </Badge>
+          </Group>
+        )}
       </Box>
 
       {/* Loading State */}
@@ -637,14 +645,16 @@ export default function EventsPageContent({
               <Text size="lg" style={{ color: theme.colors.gray[6] }} mb="xl">
                 Try adjusting your search terms or filters
               </Text>
-              {(hasSearchQuery || selectedType || selectedStatus) && (
+              {(hasSearchQuery || selectedType || selectedCharacter) && (
                 <Button
                   variant="outline"
                   style={{ color: getEntityThemeColor(theme, 'event') }}
                   onClick={() => {
-                    handleClearSearch()
+                    setSearchTerm('')
                     setSelectedType('')
-                    setSelectedStatus('')
+                    setSelectedCharacter('')
+                    updateUrl('', '', '')
+                    refresh(true)
                   }}
                 >
                   Clear all filters

@@ -551,7 +551,7 @@ class ApiClient {
     return this.get<any>(`/gambles/${id}`)
   }
 
-  async getEvents(params?: { page?: number; limit?: number; title?: string }) {
+  async getEvents(params?: { page?: number; limit?: number; title?: string; type?: string; status?: string; character?: string }) {
     const searchParams = new URLSearchParams()
     if (params) {
       Object.entries(params).forEach(([key, value]) => {
@@ -572,7 +572,8 @@ class ApiClient {
   async getEventsGroupedByArc(params?: {
     userProgress?: number;
     type?: string;
-    status?: string
+    status?: string;
+    character?: string;
   }) {
     const searchParams = new URLSearchParams()
     if (params) {

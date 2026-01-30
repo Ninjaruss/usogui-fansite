@@ -21,6 +21,7 @@ export class EventsService {
     arc?: string;
     description?: string;
     type?: EventType;
+    character?: string;
     userProgress?: number;
     status?: EventStatus;
     page?: number;
@@ -58,6 +59,11 @@ export class EventsService {
         status: filters.status,
       });
     }
+    if (filters.character) {
+      query.andWhere('LOWER(characters.name) LIKE LOWER(:character)', {
+        character: `%${filters.character}%`,
+      });
+    }
 
     // Spoiler protection: only show events user can safely view
     if (filters.userProgress !== undefined) {
@@ -91,6 +97,7 @@ export class EventsService {
       type?: EventType;
       status?: EventStatus;
       arc?: string;
+      character?: string;
     },
   ): Promise<Event[]> {
     const query = this.repo
@@ -162,6 +169,7 @@ export class EventsService {
       type?: EventType;
       userProgress?: number;
       status?: EventStatus;
+      character?: string;
     },
   ): Promise<Event[]> {
     const query = this.repo
@@ -188,6 +196,11 @@ export class EventsService {
         status: filters.status,
       });
     }
+    if (filters.character) {
+      query.andWhere('LOWER(characters.name) LIKE LOWER(:character)', {
+        character: `%${filters.character}%`,
+      });
+    }
 
     // Spoiler protection: only show events user can safely view
     if (filters.userProgress !== undefined) {
@@ -209,6 +222,7 @@ export class EventsService {
       type?: EventType;
       userProgress?: number;
       status?: EventStatus;
+      character?: string;
     },
   ): Promise<Event[]> {
     const query = this.repo
@@ -233,6 +247,11 @@ export class EventsService {
     if (filters.status !== undefined) {
       query.andWhere('event.status = :status', {
         status: filters.status,
+      });
+    }
+    if (filters.character) {
+      query.andWhere('LOWER(characters.name) LIKE LOWER(:character)', {
+        character: `%${filters.character}%`,
       });
     }
 
@@ -423,6 +442,7 @@ export class EventsService {
     filters?: {
       type?: EventType;
       status?: EventStatus;
+      character?: string;
     },
   ): Promise<{
     arcs: Array<{
@@ -494,10 +514,12 @@ export class EventsService {
     userProgress?: number;
     type?: EventType;
     status?: EventStatus;
+    character?: string;
   }) {
     return this.getEventsGroupedByArc(filters?.userProgress, {
       type: filters?.type,
       status: filters?.status,
+      character: filters?.character,
     });
   }
 }

@@ -86,6 +86,11 @@ export class EventsController {
     enum: ['ASC', 'DESC'],
     description: 'Sort order (default: ASC)',
   })
+  @ApiQuery({
+    name: 'character',
+    required: false,
+    description: 'Filter by character name',
+  })
   async getAll(
     @Query('title') title?: string,
     @Query('arc') arc?: string,
@@ -94,6 +99,7 @@ export class EventsController {
     @Query('userProgress', new ParseIntPipe({ optional: true }))
     userProgress?: number,
     @Query('status') status?: EventStatus,
+    @Query('character') character?: string,
     @Query('page') page = '1',
     @Query('limit') limit = '20',
     @Query('sort') sort?: string,
@@ -104,6 +110,7 @@ export class EventsController {
       arc,
       description,
       type,
+      character,
       userProgress,
       status,
       page: parseInt(page),
@@ -306,16 +313,23 @@ export class EventsController {
     enum: EventStatus,
     description: 'Filter by approval status',
   })
+  @ApiQuery({
+    name: 'character',
+    required: false,
+    description: 'Filter by character name',
+  })
   async getGroupedByArc(
     @Query('userProgress', new ParseIntPipe({ optional: true }))
     userProgress?: number,
     @Query('type') type?: EventType,
     @Query('status') status?: EventStatus,
+    @Query('character') character?: string,
   ) {
     return await this.service.findGroupedByArc({
       userProgress,
       type,
       status,
+      character,
     });
   }
 
