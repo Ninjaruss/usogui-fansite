@@ -52,15 +52,30 @@ async function bootstrap() {
     );
   }
 
+  console.log(`[CORS] Allowed origins: ${JSON.stringify(corsOrigins)}`);
+
   app.enableCors({
-    // In production, reject all if no origins configured (fail-safe)
-    // In development, allow configured origins or default dev origins
-    origin:
-      corsOrigins.length > 0
-        ? corsOrigins
-        : process.env.NODE_ENV === 'production'
-          ? false // Reject all cross-origin requests if misconfigured in production
-          : true, // Allow all only in development
+    origin: (origin, callback) => {
+      // Allow requests with no origin (e.g. server-to-server, curl)
+      if (!origin) {
+        callback(null, true);
+        return;
+      }
+      if (corsOrigins.length > 0 && corsOrigins.includes(origin)) {
+        callback(null, true);
+      } else if (
+        corsOrigins.length === 0 &&
+        process.env.NODE_ENV !== 'production'
+      ) {
+        // Allow all only in development when no origins configured
+        callback(null, true);
+      } else {
+        console.warn(
+          `[CORS] Blocked request from origin: "${origin}". Allowed: ${JSON.stringify(corsOrigins)}`,
+        );
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     credentials: true,
     // Ensure X-Total-Count is readable by browser clients (used for react-admin pagination)
     exposedHeaders: ['X-Total-Count'],
