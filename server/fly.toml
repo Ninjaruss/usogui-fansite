@@ -38,9 +38,6 @@ primary_region = 'iad'
   RUN_MIGRATIONS = "true"
   NODE_OPTIONS = "--max-old-space-size=768"
 
-[deploy]
-  release_command = "yarn db:migrate"
-
 [[vm]]
   memory = '1gb'
   cpu_kind = 'shared'

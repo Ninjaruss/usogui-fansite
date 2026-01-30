@@ -69,6 +69,8 @@ ENV PORT=3001
 COPY --from=builder --chown=nestjs:nodejs /app/node_modules ./node_modules
 COPY --from=builder --chown=nestjs:nodejs /app/dist ./dist
 COPY --from=builder --chown=nestjs:nodejs /app/package.json ./package.json
+COPY --from=builder --chown=nestjs:nodejs /app/typeorm.config.ts ./typeorm.config.ts
+COPY --from=builder --chown=nestjs:nodejs /app/scripts ./scripts
 
 # Switch to non-root user
 USER nestjs
