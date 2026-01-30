@@ -30,35 +30,14 @@ export class AuthDiscordController {
   private getRefreshTokenCookieOptions(): CookieOptions {
     const isProduction = process.env.NODE_ENV === 'production';
 
-    // In production, extract root domain for cross-subdomain cookies
-    // e.g., "www.l-file.com" -> ".l-file.com" (works for both www and non-www)
-    let domain: string | undefined;
-    if (isProduction) {
-      const frontendUrl = this.configService.get<string>('FRONTEND_URL');
-      console.log('[DISCORD COOKIE] FRONTEND_URL:', frontendUrl);
-      if (frontendUrl) {
-        try {
-          const url = new URL(frontendUrl);
-          const hostname = url.hostname;
-          // Extract root domain (e.g., "www.l-file.com" -> "l-file.com")
-          const parts = hostname.split('.');
-          if (parts.length >= 2) {
-            // Get last two parts (domain.tld)
-            domain = '.' + parts.slice(-2).join('.');
-          }
-          console.log('[DISCORD COOKIE] Setting cookie domain:', domain);
-        } catch (error) {
-          console.error('[AUTH] Failed to parse FRONTEND_URL for cookie domain:', error);
-        }
-      }
-    }
-
+    // Do NOT set domain — the cookie will default to the API server's own domain.
+    // With sameSite=none + secure, the browser sends it on cross-origin requests.
     const options = {
       httpOnly: true,
       secure: isProduction,
       sameSite: isProduction ? 'none' : 'lax',
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-      ...(domain && { domain }), // Only set domain if we have one
+      path: '/',
     };
 
     console.log('[DISCORD COOKIE] Cookie options:', JSON.stringify(options));
