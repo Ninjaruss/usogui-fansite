@@ -101,17 +101,12 @@ export class AuthDiscordController {
     const loginResult = await this.authService.login(req.user as User);
     console.log('[DISCORD CALLBACK] Login result generated for user:', (req.user as User)?.username);
 
-    // Set refresh token as httpOnly cookie before redirecting
-    if (loginResult.refresh_token) {
-      console.log('[DISCORD CALLBACK] Setting refresh token cookie');
-      res.cookie('refreshToken', loginResult.refresh_token, this.getRefreshTokenCookieOptions());
-      console.log('[DISCORD CALLBACK] Cookie set successfully');
-    }
-
-    // Direct redirect to frontend callback with access token only (refresh token is now in cookie)
+    // Pass BOTH tokens to frontend callback
+    // Frontend will call /auth/set-cookie to store refresh token as httpOnly cookie
+    // This avoids third-party cookie blocking issues with popup-based OAuth
     const frontendUrl =
       this.configService.get<string>('FRONTEND_URL') || 'http://localhost:3000';
-    const redirectUrl = `${frontendUrl}/auth/callback?token=${loginResult.access_token}`;
+    const redirectUrl = `${frontendUrl}/auth/callback?token=${loginResult.access_token}&refreshToken=${loginResult.refresh_token}`;
     console.log('[DISCORD CALLBACK] Redirecting to:', redirectUrl);
 
     res.redirect(redirectUrl);
@@ -146,5 +141,32 @@ export class AuthDiscordController {
     }
 
     return res.json(loginResult);
+  }
+
+  @ApiOperation({
+    summary: 'Set refresh token cookie',
+    description:
+      'Exchanges a refresh token for an httpOnly cookie. Used after OAuth callback to store the refresh token securely.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Cookie set successfully',
+  })
+  @Post('set-cookie')
+  async setCookie(
+    @Body() body: { refreshToken: string },
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    console.log('[SET COOKIE] Setting refresh token cookie from frontend request');
+
+    if (!body.refreshToken) {
+      throw new Error('No refresh token provided');
+    }
+
+    // Set the refresh token as httpOnly cookie
+    res.cookie('refreshToken', body.refreshToken, this.getRefreshTokenCookieOptions());
+    console.log('[SET COOKIE] Cookie set successfully');
+
+    return { success: true };
   }
 }
