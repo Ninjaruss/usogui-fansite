@@ -449,14 +449,19 @@ export default function MediaGallery({
               <Box style={{ position: 'relative' }}>
                 <AspectRatio ratio={16 / 9} style={{ position: 'relative' }}>
                   {(() => {
-                    const mediaUrl = mediaItem.isUploaded
-                      ? `${API_BASE_URL}/media/${mediaItem.fileName}`
-                      : mediaItem.url
+                    // Get display URL - use thumbnail if available, otherwise try direct media URL
+                    let displayUrl = thumbnail
+                    if (!displayUrl) {
+                      // For items without thumbnail, try the direct URL (works for direct image links)
+                      displayUrl = mediaItem.isUploaded
+                        ? `${API_BASE_URL}/media/${mediaItem.fileName}`
+                        : (mediaItem.type === 'image' ? mediaItem.url : null)
+                    }
 
-                    return !failedImageIds.has(mediaItem.id) ? (
-                      isExternalUrl(mediaUrl) ? (
+                    return displayUrl && !failedImageIds.has(mediaItem.id) ? (
+                      isExternalUrl(displayUrl) ? (
                         <img
-                          src={mediaUrl}
+                          src={displayUrl}
                           alt={mediaItem.description || `Media submitted by ${mediaItem.submittedBy.username}`}
                           style={{
                             position: 'absolute',
@@ -470,7 +475,7 @@ export default function MediaGallery({
                         />
                       ) : (
                         <NextImage
-                          src={mediaUrl}
+                          src={displayUrl}
                           alt={mediaItem.description || `Media submitted by ${mediaItem.submittedBy.username}`}
                           fill
                           style={{ objectFit: 'cover' }}
@@ -479,7 +484,7 @@ export default function MediaGallery({
                         />
                       )
                     ) : (
-                      /* Fallback for failed images only */
+                      /* Fallback when no preview available or image failed to load */
                       <Box
                         style={{
                           display: 'flex',
@@ -495,7 +500,7 @@ export default function MediaGallery({
                       >
                         {getMediaTypeIcon(mediaItem.type)}
                         <Text size="xs" c="dimmed" ta="center">
-                          Failed to load
+                          {failedImageIds.has(mediaItem.id) ? 'Failed to load' : 'Click to view'}
                         </Text>
                       </Box>
                     )

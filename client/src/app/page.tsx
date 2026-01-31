@@ -103,7 +103,7 @@ export default function HomePage() {
         </Box>
 
         {/* Featured Volume Covers Section */}
-        <LazySection minHeight={350} delay={100}>
+        <LazySection minHeight={400} delay={100}>
           <DynamicVolumeShowcase
             volumes={showcaseConfig.volumes}
             layout={showcaseConfig.layout}

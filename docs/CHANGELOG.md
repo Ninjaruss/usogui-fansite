@@ -8,8 +8,8 @@
 - Editor role added
 - Tag system validation to enforce 5 tags max per guide
 - Guide submission form now includes tags input with creatable tag support
-- Volume showcase sizing reduced to prevent overlap with search bar
-- Media gallery now displays actual images/videos in grid instead of gray previews
+- Volume showcase sizing balanced - single layout now just slightly bigger than dual layout, both scale properly
+- Media gallery preview system improved to properly display YouTube thumbnails, uploaded images, and external direct image URLs
 - React-query cache invalidation added for proper users list refresh after badge awards/removals
 
 ## 2026-01-30

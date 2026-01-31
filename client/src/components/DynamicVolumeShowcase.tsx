@@ -133,7 +133,7 @@ export function DynamicVolumeShowcase({
   volumes,
   layout = volumes.length === 1 ? 'single' : 'dual',
   animations = defaultAnimations,
-  height = 'clamp(280px, 35vw, 350px)',
+  height = 'clamp(300px, 45vw, 400px)',
   className
 }: DynamicVolumeShowcaseProps) {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -210,8 +210,8 @@ export function DynamicVolumeShowcase({
         <Box
           style={{
             position: 'relative',
-            width: layout === 'single' ? 'clamp(160px, 22vw, 240px)' : 'clamp(180px, 28vw, 300px)',
-            height: layout === 'single' ? 'clamp(220px, 32vw, 320px)' : 'clamp(260px, 45vw, 440px)',
+            width: layout === 'single' ? 'clamp(200px, 30vw, 280px)' : 'clamp(180px, 28vw, 260px)',
+            height: layout === 'single' ? 'clamp(280px, 42vw, 380px)' : 'clamp(260px, 40vw, 360px)',
             cursor: 'pointer',
             transformStyle: 'preserve-3d',
             transition: 'transform 0.3s ease-out',
