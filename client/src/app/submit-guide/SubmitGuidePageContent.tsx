@@ -16,6 +16,7 @@ import {
   Select,
   Stack,
   Tabs,
+  TagsInput,
   Text,
   TextInput,
   Textarea,
@@ -643,22 +644,14 @@ export default function SubmitGuidePageContent() {
                     </Grid.Col>
 
                     <Grid.Col span={{ base: 12, md: 6, lg: 3 }}>
-                      <MultiSelect
+                      <TagsInput
                         label="Tags"
-                        placeholder="Select or create tags"
-                        data={tagOptions}
+                        placeholder="Type and press Enter to add tags"
+                        data={tagOptions.map(t => t.value)}
                         value={formData.tags}
                         onChange={(values) => handleInputChange('tags', values)}
-                        searchable
-                        creatable
-                        getCreateLabel={(query) => `+ Create "${query}"`}
-                        onCreate={(query) => {
-                          const newTag = { value: query, label: query }
-                          setTags((current) => [...current, { id: Date.now(), name: query }])
-                          return newTag
-                        }}
                         clearable
-                        nothingFoundMessage="No tags found"
+                        maxTags={5}
                         description="Add tags to categorize your guide (max 5)"
                         styles={{
                           input: {
@@ -680,10 +673,6 @@ export default function SubmitGuidePageContent() {
                             backgroundColor: 'transparent',
                             '&:hover': {
                               backgroundColor: guideAccent,
-                              color: '#000000'
-                            },
-                            '&[data-selected="true"]': {
-                              backgroundColor: `${guideAccent}dd`,
                               color: '#000000'
                             }
                           },
