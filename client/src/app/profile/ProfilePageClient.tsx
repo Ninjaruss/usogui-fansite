@@ -760,24 +760,26 @@ export default function ProfilePageClient() {
                         submission.type === 'event' ? <Calendar size={16} /> :
                         <MessageSquare size={16} />
 
-                      // Construct proper link for media submissions
+                      // Construct proper link for media submissions - link to entity pages
                       const getSubmissionLink = () => {
                         if (submission.type === 'guide') return `/guides/${submission.id}`
                         if (submission.type === 'event') return `/events/${submission.id}`
                         if (submission.type === 'annotation') return `/annotations/${submission.id}`
                         if (submission.type === 'media' && submission.ownerType && submission.ownerId) {
-                          return `/media?ownerType=${submission.ownerType}&ownerId=${submission.ownerId}`
+                          const entityPathMap: Record<string, string> = {
+                            character: 'characters',
+                            arc: 'arcs',
+                            event: 'events',
+                            gamble: 'gambles',
+                            organization: 'organizations',
+                            guide: 'guides',
+                            user: 'users',
+                            volume: 'volumes'
+                          }
+                          const basePath = entityPathMap[submission.ownerType] || 'media'
+                          return `/${basePath}/${submission.ownerId}#media`
                         }
                         return '#'
-                      }
-
-                      // Get entity label for media submissions
-                      const getEntityLabel = () => {
-                        if (submission.type === 'media' && submission.ownerType) {
-                          const typeLabel = submission.ownerType.charAt(0).toUpperCase() + submission.ownerType.slice(1)
-                          return typeLabel
-                        }
-                        return null
                       }
 
                       return (
@@ -801,11 +803,6 @@ export default function ProfilePageClient() {
                                   <Badge size="xs" variant="outline">
                                     {submission.type}
                                   </Badge>
-                                  {getEntityLabel() && (
-                                    <Badge size="xs" variant="dot">
-                                      {getEntityLabel()}
-                                    </Badge>
-                                  )}
                                   <Text size="xs" c="dimmed">
                                     {new Date(submission.createdAt).toLocaleDateString()}
                                   </Text>

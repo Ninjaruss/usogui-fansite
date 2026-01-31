@@ -598,6 +598,39 @@ export class UsersService {
       ),
     ]);
 
+    // Fetch entity names for media items
+    const mediaWithEntityNames = await Promise.all(
+      media.map(async (m) => {
+        let entityName = 'Unknown';
+        try {
+          if (m.ownerType && m.ownerId) {
+            const repoMap = {
+              character: this.repo.manager.getRepository('Character'),
+              arc: this.repo.manager.getRepository('Arc'),
+              event: this.repo.manager.getRepository('Event'),
+              gamble: this.repo.manager.getRepository('Gamble'),
+              organization: this.repo.manager.getRepository('Organization'),
+              guide: this.repo.manager.getRepository(Guide),
+              user: this.repo.manager.getRepository('User'),
+              volume: this.repo.manager.getRepository('Volume'),
+            };
+            const repo = repoMap[m.ownerType];
+            if (repo) {
+              const entity: any = await repo.findOne({
+                where: { id: m.ownerId },
+              });
+              if (entity) {
+                entityName = entity.name || entity.title || entity.username || 'Unknown';
+              }
+            }
+          }
+        } catch (error) {
+          console.error(`Failed to fetch entity name for media ${m.id}:`, error);
+        }
+        return { ...m, entityName };
+      })
+    );
+
     const submissions = [
       ...guides.map((g) => ({
         id: g.id,
@@ -606,16 +639,17 @@ export class UsersService {
         status: g.status,
         createdAt: g.createdAt,
       })),
-      ...media.map((m) => ({
+      ...mediaWithEntityNames.map((m) => ({
         id: m.id,
         type: 'media' as const,
-        title: m.description || m.fileName || 'Untitled Media',
+        title: m.entityName,
         status: m.status,
         createdAt: m.createdAt,
         description: m.description,
         ownerType: m.ownerType,
         ownerId: m.ownerId,
         url: m.url,
+        entityName: m.entityName,
       })),
       ...events.map((e: any) => ({
         id: e.id,
