@@ -130,6 +130,18 @@ export default function MediaGallery({
 }: MediaGalleryProps) {
   const theme = useMantineTheme()
   const isMobile = useMediaQuery(`(max-width: ${theme.breakpoints.sm})`)
+  const isTablet = useMediaQuery(`(max-width: ${theme.breakpoints.md})`)
+  const isLaptop = useMediaQuery(`(max-width: ${theme.breakpoints.lg})`)
+
+  // Determine column count based on screen size
+  const getColumnCount = () => {
+    if (compactMode) return isMobile ? 2 : isTablet ? 2 : 3
+    if (isMobile) return 2
+    if (isTablet) return 3
+    if (isLaptop) return 4
+    return 5
+  }
+
   const palette = useMemo(() => {
     const baseBlack = theme.other?.usogui?.black ?? '#0a0a0a'
     const accent = theme.other?.usogui?.red ?? theme.colors.red?.[5] ?? '#e11d48'
@@ -154,9 +166,28 @@ export default function MediaGallery({
   const [shouldLoadVideo, setShouldLoadVideo] = useState(false)
   const [hoveredMediaId, setHoveredMediaId] = useState<number | null>(null)
   const [failedImageIds, setFailedImageIds] = useState<Set<number>>(new Set())
+  const [touchStart, setTouchStart] = useState<number | null>(null)
 
   const handleImageError = (mediaId: number) => {
     setFailedImageIds(prev => new Set(prev).add(mediaId))
+  }
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStart(e.touches[0].clientX)
+  }
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStart === null) return
+    const touchEnd = e.changedTouches[0].clientX
+    const diff = touchStart - touchEnd
+    if (Math.abs(diff) > 50) {
+      if (diff > 0) {
+        handleNext()
+      } else {
+        handlePrevious()
+      }
+    }
+    setTouchStart(null)
   }
 
   // Filter state
@@ -275,6 +306,28 @@ export default function MediaGallery({
   const handleLoadVideo = () => {
     setShouldLoadVideo(true)
   }
+
+  // Keyboard navigation for lightbox
+  useEffect(() => {
+    if (!dialogOpen) return
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      switch (e.key) {
+        case 'ArrowLeft':
+          handlePrevious()
+          break
+        case 'ArrowRight':
+          handleNext()
+          break
+        case 'Escape':
+          handleCloseDialog()
+          break
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [dialogOpen])
 
   const getMediaThumbnail = (mediaItem: MediaItem) => {
 
@@ -418,13 +471,16 @@ export default function MediaGallery({
         </Paper>
       )}
 
-      <SimpleGrid
-        spacing={compactMode ? 'xs' : 'md'}
-        cols={{ base: compactMode ? 2 : 3, md: compactMode ? 2 : 3, lg: compactMode ? 3 : 4 }}
+      <Box
+        style={{
+          columnCount: getColumnCount(),
+          columnGap: compactMode ? '8px' : '12px'
+        }}
       >
         {filteredMedia.map((mediaItem) => {
           const thumbnail = getMediaThumbnail(mediaItem)
           const isHovered = hoveredMediaId === mediaItem.id
+          const ownerLabel = mediaItem.ownerType === 'user' ? 'Community' : mediaItem.ownerType
 
           return (
             <Card
@@ -438,531 +494,387 @@ export default function MediaGallery({
               style={{
                 cursor: 'pointer',
                 transition: 'transform 200ms ease, box-shadow 200ms ease',
-                transform: isHovered ? 'translateY(-4px) scale(1.02)' : 'none',
+                transform: isHovered ? 'scale(1.02)' : 'scale(1)',
                 boxShadow: isHovered
-                  ? '0 20px 30px -15px rgba(225, 29, 72, 0.45)'
-                  : '0 10px 20px -18px rgba(0, 0, 0, 0.65)',
+                  ? '0 12px 28px rgba(225, 29, 72, 0.4)'
+                  : theme.shadows.sm,
                 overflow: 'hidden',
-                backgroundColor: theme.colors.dark?.[6] ?? '#373A40'
+                backgroundColor: theme.colors.dark?.[6] ?? '#373A40',
+                breakInside: 'avoid',
+                marginBottom: compactMode ? '8px' : '12px',
+                zIndex: isHovered ? 10 : 1,
+                position: 'relative'
               }}
             >
               <Box style={{ position: 'relative' }}>
-                <AspectRatio ratio={16 / 9} style={{ position: 'relative' }}>
-                  {(() => {
-                    // Get display URL - use thumbnail if available, otherwise try direct media URL
-                    let displayUrl = thumbnail
-                    if (!displayUrl) {
-                      // For items without thumbnail, try the direct URL (works for direct image links)
-                      displayUrl = mediaItem.isUploaded
-                        ? `${API_BASE_URL}/media/${mediaItem.fileName}`
-                        : (mediaItem.type === 'image' ? mediaItem.url : null)
-                    }
+                {(() => {
+                  // Get display URL - use thumbnail if available, otherwise try direct media URL
+                  let displayUrl = thumbnail
+                  if (!displayUrl) {
+                    // For items without thumbnail, try the direct URL (works for direct image links)
+                    displayUrl = mediaItem.isUploaded
+                      ? `${API_BASE_URL}/media/${mediaItem.fileName}`
+                      : (mediaItem.type === 'image' ? mediaItem.url : null)
+                  }
 
-                    return displayUrl && !failedImageIds.has(mediaItem.id) ? (
-                      isExternalUrl(displayUrl) ? (
-                        <img
-                          src={displayUrl}
-                          alt={mediaItem.description || `Media submitted by ${mediaItem.submittedBy.username}`}
+                  return displayUrl && !failedImageIds.has(mediaItem.id) ? (
+                    <Box style={{ position: 'relative', width: '100%' }}>
+                      <img
+                        src={displayUrl}
+                        alt={mediaItem.description || `Media submitted by ${mediaItem.submittedBy.username}`}
+                        loading="lazy"
+                        style={{
+                          width: '100%',
+                          height: 'auto',
+                          display: 'block'
+                        }}
+                        onError={() => handleImageError(mediaItem.id)}
+                      />
+
+                      {/* Video play overlay */}
+                      {mediaItem.type === 'video' && (
+                        <Box
                           style={{
                             position: 'absolute',
-                            top: 0,
-                            left: 0,
-                            width: '100%',
-                            height: '100%',
-                            objectFit: 'cover'
+                            top: '50%',
+                            left: '50%',
+                            transform: 'translate(-50%, -50%)',
+                            backgroundColor: 'rgba(0,0,0,0.75)',
+                            borderRadius: '50%',
+                            padding: rem(12),
+                            color: 'white',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
                           }}
-                          onError={() => handleImageError(mediaItem.id)}
-                        />
-                      ) : (
-                        <NextImage
-                          src={displayUrl}
-                          alt={mediaItem.description || `Media submitted by ${mediaItem.submittedBy.username}`}
-                          fill
-                          style={{ objectFit: 'cover' }}
-                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
-                          onError={() => handleImageError(mediaItem.id)}
-                        />
-                      )
-                    ) : (
-                      /* Fallback when no preview available or image failed to load */
+                        >
+                          <Play size={20} fill="white" />
+                        </Box>
+                      )}
+
+                      {/* Hover overlay with details */}
                       <Box
                         style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          color: theme.colors.gray[5],
-                          width: '100%',
-                          height: '100%',
-                          backgroundColor: 'rgba(0,0,0,0.1)',
-                          flexDirection: 'column',
-                          gap: rem(8)
+                          position: 'absolute',
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                          background: 'linear-gradient(transparent, rgba(0,0,0,0.85))',
+                          padding: rem(12),
+                          paddingTop: rem(32),
+                          opacity: isHovered ? 1 : 0,
+                          transition: 'opacity 0.2s ease',
+                          pointerEvents: isHovered ? 'auto' : 'none'
                         }}
                       >
-                        {getMediaTypeIcon(mediaItem.type)}
-                        <Text size="xs" c="dimmed" ta="center">
-                          {failedImageIds.has(mediaItem.id) ? 'Failed to load' : 'Click to view'}
+                        {mediaItem.description && (
+                          <Text size="xs" c="white" fw={500} lineClamp={2} mb={6}>
+                            {mediaItem.description}
+                          </Text>
+                        )}
+                        <Group gap={6} wrap="wrap">
+                          <Badge
+                            size="xs"
+                            radius="sm"
+                            style={{
+                              backgroundColor: palette.accent,
+                              color: '#fff',
+                              textTransform: 'capitalize'
+                            }}
+                          >
+                            {ownerLabel}
+                          </Badge>
+                          {mediaItem.chapterNumber && (
+                            <Badge size="xs" variant="filled" color="dark">
+                              Ch. {mediaItem.chapterNumber}
+                            </Badge>
+                          )}
+                        </Group>
+                        <Text size="xs" c="dimmed" mt={4}>
+                          by {mediaItem.submittedBy.username}
                         </Text>
                       </Box>
-                    )
-                  })()}
-                </AspectRatio>
 
-                <Box
-                  style={{
-                    position: 'absolute',
-                    inset: 0,
-                    background: mediaItem.type === 'video'
-                      ? 'linear-gradient(135deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.6) 100%)'
-                      : 'linear-gradient(135deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.4) 100%)',
-                    opacity: isHovered ? 1 : 0,
-                    transition: 'opacity 200ms ease'
-                  }}
-                >
-                  <Group
-                    justify="space-between"
-                    style={{
-                      position: 'absolute',
-                      bottom: rem(12),
-                      left: rem(16),
-                      right: rem(16),
-                      color: '#ffffff'
-                    }}
-                  >
-                    <Group gap="xs">
+                      {/* Always visible badge */}
+                      <Badge
+                        variant="filled"
+                        size="xs"
+                        radius="sm"
+                        style={{
+                          position: 'absolute',
+                          top: rem(6),
+                          left: rem(6),
+                          backgroundColor: palette.accent,
+                          color: '#fff',
+                          textTransform: 'capitalize',
+                          fontSize: rem(10),
+                          opacity: isHovered ? 0 : 1,
+                          transition: 'opacity 0.2s ease'
+                        }}
+                      >
+                        {ownerLabel}
+                      </Badge>
+
+                      <ActionIcon
+                        variant="filled"
+                        size="sm"
+                        component="a"
+                        href={mediaItem.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        style={{
+                          position: 'absolute',
+                          top: rem(6),
+                          right: rem(6),
+                          backgroundColor: 'rgba(0,0,0,0.75)',
+                          color: 'white'
+                        }}
+                        aria-label="Open in new tab"
+                      >
+                        <ExternalLink size={12} />
+                      </ActionIcon>
+                    </Box>
+                  ) : (
+                    /* Fallback when no preview available or image failed to load */
+                    <Box
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: theme.colors.gray[5],
+                        width: '100%',
+                        height: rem(150),
+                        backgroundColor: 'rgba(0,0,0,0.1)',
+                        flexDirection: 'column',
+                        gap: rem(8)
+                      }}
+                    >
                       {getMediaTypeIcon(mediaItem.type)}
-                      <Text size="sm" fw={600}>
-                        {mediaItem.type.toUpperCase()}
+                      <Text size="xs" c="dimmed" ta="center">
+                        {failedImageIds.has(mediaItem.id) ? 'Failed to load' : 'Click to view'}
                       </Text>
-                    </Group>
-                    {mediaItem.type === 'video' ? <Play size={20} /> : <ExternalLink size={18} />}
-                  </Group>
-                </Box>
+                    </Box>
+                  )
+                })()}
 
-                {mediaItem.isUploaded && allowMultipleTypes && (
-                  <Badge
-                    size="sm"
-                    radius="sm"
-                    style={{
-                      position: 'absolute',
-                      top: rem(12),
-                      right: rem(12),
-                      backdropFilter: 'blur(10px)',
-                      backgroundColor: 'rgba(156, 39, 176, 0.95)',
-                      border: '1px solid rgba(255, 255, 255, 0.2)',
-                      color: '#fff',
-                      fontWeight: 600
-                    }}
-                  >
-                    Official
-                  </Badge>
-                )}
-
-                {/* Chapter number badge */}
-                {mediaItem.chapterNumber && (
-                  <Badge
-                    size="sm"
-                    radius="sm"
-                    style={{
-                      position: 'absolute',
-                      top: rem(12),
-                      left: rem(12),
-                      backdropFilter: 'blur(10px)',
-                      backgroundColor: 'rgba(225, 29, 72, 0.95)',
-                      border: '1px solid rgba(255, 255, 255, 0.2)',
-                      color: '#fff',
-                      fontWeight: 600
-                    }}
-                  >
-                    Ch. {mediaItem.chapterNumber}
-                  </Badge>
-                )}
               </Box>
-
-              {!compactMode && (
-                <Box style={{ padding: rem(16) }}>
-                  <Text
-                    size="sm"
-                    fw={500}
-                    style={{
-                      display: '-webkit-box',
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: 'vertical',
-                      overflow: 'hidden',
-                      marginBottom: rem(8),
-                      lineHeight: 1.4
-                    }}
-                  >
-                    {mediaItem.description || 'No description available'}
-                  </Text>
-                  <Group justify="space-between">
-                    <Text size="xs" c="dimmed" fw={500}>
-                      By {mediaItem.submittedBy.username}
-                    </Text>
-                    <Group gap="xs">
-                      {mediaItem.chapterNumber && (
-                        <Text size="xs" c="dimmed" style={{ opacity: 0.7 }}>
-                          Ch. {mediaItem.chapterNumber}
-                        </Text>
-                      )}
-                      <Text size="xs" c="dimmed" style={{ opacity: 0.7 }}>
-                        {new Date(mediaItem.createdAt).toLocaleDateString(undefined, {
-                          month: 'short',
-                          day: 'numeric'
-                        })}
-                      </Text>
-                    </Group>
-                  </Group>
-                </Box>
-              )}
             </Card>
           )
         })}
-      </SimpleGrid>
+      </Box>
 
       <Modal
         opened={dialogOpen}
         onClose={handleCloseDialog}
-        size="auto"
-        radius="lg"
-        fullScreen={isMobile}
+        size="90%"
         centered
-        transitionProps={{ transition: 'fade', duration: 200 }}
-        styles={{
-          content: {
-            width: '100%',
-            maxWidth: isMobile ? '100%' : MAX_DIALOG_WIDTH,
-            background: palette.panel,
-            border: palette.border
-          }
-        }}
-        title={
-          <Group h="100%" gap="sm" justify="space-between">
-            <Group gap="xs">
-              <Text size="lg" fw={600}>
-                {selectedMedia?.type === 'image'
-                  ? 'Image'
-                  : selectedMedia?.type === 'video'
-                    ? 'Video'
-                    : 'Media'}{' '}
-                Viewer
-              </Text>
-              {filteredMedia.length > 1 && (
-                <Text size="sm" c="dimmed">
-                  {currentImageIndex + 1} of {filteredMedia.length}
-                </Text>
-              )}
-            </Group>
-
-            <Group gap="xs">
-              {filteredMedia.length > 1 && (
-                <>
-                  <ActionIcon
-                    variant="subtle"
-                    onClick={handlePrevious}
-                    disabled={currentImageIndex === 0}
-                    aria-label="Previous media"
-                  >
-                    <ChevronLeft size={18} />
-                  </ActionIcon>
-                  <ActionIcon
-                    variant="subtle"
-                    onClick={handleNext}
-                    disabled={currentImageIndex === filteredMedia.length - 1}
-                    aria-label="Next media"
-                  >
-                    <ChevronRight size={18} />
-                  </ActionIcon>
-                </>
-              )}
-
-              {selectedMedia?.type === 'image' && (
-                <ActionIcon
-                  variant="subtle"
-                  onClick={handleImageZoom}
-                  aria-label={imageZoomed ? 'Zoom out' : 'Zoom in'}
-                >
-                  {imageZoomed ? <Maximize2 size={18} /> : <ZoomIn size={18} />}
-                </ActionIcon>
-              )}
-
-              <ActionIcon variant="subtle" onClick={handleCloseDialog} aria-label="Close">
-                <X size={18} />
-              </ActionIcon>
-            </Group>
-          </Group>
-        }
+        withCloseButton={false}
+        padding={0}
+        overlayProps={{ opacity: 0.9, color: '#000' }}
       >
         {selectedMedia && (
-          <Stack gap="lg">
-            <Box
+          <Box style={{ position: 'relative' }} onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
+            <ActionIcon
+              variant="subtle"
+              size="lg"
+              onClick={handleCloseDialog}
               style={{
-                position: 'relative',
-                height: imageZoomed ? '80vh' : '60vh',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: '#090909',
-                borderRadius: rem(12),
-                overflow: 'hidden'
+                position: 'absolute',
+                top: rem(16),
+                right: rem(16),
+                zIndex: 1000,
+                backgroundColor: 'rgba(0,0,0,0.7)',
+                color: 'white'
               }}
+              aria-label="Close viewer"
             >
-              {selectedMedia.type === 'image' ? (
-                <Transition mounted={true} transition="fade" duration={300}>
-                  {(styles) => (
-                    <Box
-                      style={{
-                        ...styles,
-                        position: 'relative',
-                        maxWidth: '100%',
-                        maxHeight: '100%',
-                        cursor: imageZoomed ? 'zoom-out' : 'zoom-in'
-                      }}
-                      onClick={handleImageZoom}
-                    >
-                      <img
-                        src={selectedMedia.isUploaded
-                          ? `${process.env.NEXT_PUBLIC_API_URL}/media/${selectedMedia.fileName}`
-                          : selectedMedia.url}
-                        alt={selectedMedia.description || `Media submitted by ${selectedMedia.submittedBy.username}`}
-                        style={{
-                          maxWidth: imageZoomed ? 'none' : '100%',
-                          maxHeight: imageZoomed ? 'none' : '80vh',
-                          width: imageZoomed ? 'auto' : '100%',
-                          height: imageZoomed ? 'auto' : 'auto',
-                          objectFit: imageZoomed ? 'none' : 'contain',
-                          transition: 'transform 300ms ease'
-                        }}
-                        onError={() => {
-                          // Show fallback instead of hiding - handled by parent component state
-                        }}
-                      />
-                    </Box>
-                  )}
-                </Transition>
-              ) : selectedMedia.type === 'video' ? (
-                <Box
-                  style={{
-                    width: '100%',
-                    minHeight: '60vh',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}
-                >
-                  <Box style={{ width: '100%', maxWidth: '100%' }}>
-                    {canEmbedVideo(selectedMedia.url) ? (
-                      <Box
-                        style={{
-                          position: 'relative',
-                          width: '100%',
-                          aspectRatio: '16 / 9',
-                          minHeight: rem(400),
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center'
-                        }}
-                      >
-                        {isDirectVideoUrl(selectedMedia.url) ? (
-                          <Transition mounted={true} transition="fade" duration={500}>
-                            {(styles) => (
-                              <video
-                                style={{
-                                  ...styles,
-                                  width: '100%',
-                                  height: '100%',
-                                  maxHeight: '70vh',
-                                  objectFit: 'contain',
-                                  backgroundColor: 'black'
-                                }}
-                                controls
-                                preload="metadata"
-                              >
-                                <source src={selectedMedia.url} />
-                                Your browser does not support the video tag.
-                              </video>
-                            )}
-                          </Transition>
-                        ) : !shouldLoadVideo ? (
-                          <Stack
-                            align="center"
-                            gap="md"
-                            justify="center"
-                            p="lg"
-                            style={{
-                              background: 'rgba(0,0,0,0.9)',
-                              borderRadius: rem(16),
-                              color: '#ffffff',
-                              border: '2px solid rgba(255,255,255,0.1)',
-                              width: '100%',
-                              maxWidth: rem(360)
-                            }}
-                          >
-                            {getMediaThumbnail(selectedMedia) && (
-                              <Box
-                                style={{
-                                  position: 'relative',
-                                  width: rem(320),
-                                  height: rem(180),
-                                  borderRadius: rem(12),
-                                  overflow: 'hidden',
-                                  boxShadow: '0 8px 32px rgba(0,0,0,0.4)'
-                                }}
-                              >
-                                {isExternalUrl(getMediaThumbnail(selectedMedia)!) ? (
-                                  <img
-                                    src={getMediaThumbnail(selectedMedia)!}
-                                    alt="Video thumbnail"
-                                    style={{
-                                      position: 'absolute',
-                                      top: 0,
-                                      left: 0,
-                                      width: '100%',
-                                      height: '100%',
-                                      objectFit: 'cover'
-                                    }}
-                                  />
-                                ) : (
-                                  <NextImage
-                                    src={getMediaThumbnail(selectedMedia)!}
-                                    alt="Video thumbnail"
-                                    fill
-                                    style={{ objectFit: 'cover' }}
-                                    sizes="320px"
-                                  />
-                                )}
-                              </Box>
-                            )}
-                            <Button
-                              size="md"
-                              leftSection={<Play size={18} />}
-                              onClick={handleLoadVideo}
-                              fullWidth
-                              styles={{
-                                root: {
-                                  backgroundImage: `linear-gradient(135deg, ${palette.secondaryAccent} 0%, ${palette.accent} 100%)`,
-                                  boxShadow: '0 4px 20px rgba(25, 118, 210, 0.4)'
-                                }
-                              }}
-                            >
-                              Play Video
-                            </Button>
-                            <Text size="sm" c="gray.4" ta="center">
-                              Click to load the video player with full controls
-                            </Text>
-                          </Stack>
-                        ) : (
-                          <Transition mounted={shouldLoadVideo} transition="fade" duration={500}>
-                            {(styles) => (
-                              <iframe
-                                src={getEmbedUrl(selectedMedia.url)!}
-                                frameBorder="0"
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
-                                allowFullScreen
-                                title={selectedMedia.description}
-                                style={{
-                                  ...styles,
-                                  position: 'absolute',
-                                  top: 0,
-                                  left: 0,
-                                  width: '100%',
-                                  height: '100%',
-                                  borderRadius: rem(8)
-                                }}
-                              />
-                            )}
-                          </Transition>
-                        )}
-                      </Box>
-                    ) : (
-                      <Stack
-                        align="center"
-                        gap="sm"
-                        p="lg"
-                        style={{
-                          textAlign: 'center',
-                          background: 'rgba(0,0,0,0.8)',
-                          borderRadius: rem(16),
-                          color: '#ffffff'
-                        }}
-                      >
-                        <Text size="lg" fw={600}>
-                          External Video
-                        </Text>
-                        <Text size="sm" c="gray.4">
-                          This video is hosted externally and cannot be embedded.
-                        </Text>
-                        <Button
-                          component="a"
-                          href={selectedMedia.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          leftSection={<ExternalLink size={18} />}
-                        >
-                          Open in New Tab
-                        </Button>
-                      </Stack>
-                    )}
-                  </Box>
-                </Box>
-              ) : (
-                <Stack
-                  align="center"
-                  gap="sm"
-                  p="xl"
-                  style={{ textAlign: 'center', background: palette.panel, borderRadius: rem(16) }}
-                >
-                  <ExternalLink size={48} color={theme.colors.gray[4]} />
-                  <Text size="lg" fw={600}>
-                    External Media
-                  </Text>
-                  <Button
-                    component="a"
-                    href={selectedMedia.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    leftSection={<ExternalLink size={18} />}
-                  >
-                    Open Media
-                  </Button>
-                </Stack>
-              )}
-            </Box>
+              <X size={20} />
+            </ActionIcon>
 
-            <Paper
-              radius="md"
-              p="md"
-              withBorder
-              style={{
-                background: palette.panel,
-                border: palette.border
-              }}
-            >
-              <Stack gap="sm">
-                <Text size="lg" fw={600}>
-                  {selectedMedia.description || 'No title'}
-                </Text>
-                <Group gap="md" wrap="wrap">
-                  <Text size="sm" c="dimmed">
-                    <strong>By:</strong> {selectedMedia.submittedBy.username}
-                  </Text>
-                  <Text size="sm" c="dimmed">
-                    <strong>Added:</strong> {new Date(selectedMedia.createdAt).toLocaleDateString()}
-                  </Text>
-                  <Text size="sm" c="dimmed">
-                    <strong>Owner:</strong> {selectedMedia.ownerType} {selectedMedia.ownerId}
-                  </Text>
-                  <Text size="sm" c="dimmed">
-                    <strong>Purpose:</strong> {selectedMedia.purpose.replace('_', ' ')}
-                  </Text>
-                  {selectedMedia.chapterNumber && (
-                    <Text size="sm" c="dimmed">
-                      <strong>Chapter:</strong> {selectedMedia.chapterNumber}
-                    </Text>
-                  )}
-                </Group>
-              </Stack>
-            </Paper>
-          </Stack>
+            {currentImageIndex > 0 && (
+              <ActionIcon
+                variant="subtle"
+                size="lg"
+                onClick={handlePrevious}
+                style={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: rem(16),
+                  transform: 'translateY(-50%)',
+                  zIndex: 1000,
+                  backgroundColor: 'rgba(0,0,0,0.7)',
+                  color: 'white'
+                }}
+                aria-label="Previous image"
+              >
+                <ChevronLeft size={24} />
+              </ActionIcon>
+            )}
+
+            {currentImageIndex < filteredMedia.length - 1 && (
+              <ActionIcon
+                variant="subtle"
+                size="lg"
+                onClick={handleNext}
+                style={{
+                  position: 'absolute',
+                  top: '50%',
+                  right: rem(16),
+                  transform: 'translateY(-50%)',
+                  zIndex: 1000,
+                  backgroundColor: 'rgba(0,0,0,0.7)',
+                  color: 'white'
+                }}
+                aria-label="Next image"
+              >
+                <ChevronRight size={24} />
+              </ActionIcon>
+            )}
+
+            <Stack gap={0}>
+              <Box style={{ maxHeight: '70vh', overflow: 'hidden' }}>
+                {selectedMedia.type === 'image' ? (
+                  <NextImage
+                    src={selectedMedia.isUploaded
+                      ? `${API_BASE_URL}/media/${selectedMedia.fileName}`
+                      : selectedMedia.url}
+                    alt={selectedMedia.description || 'Media preview'}
+                    width={1200}
+                    height={800}
+                    style={{
+                      width: '100%',
+                      height: 'auto',
+                      maxHeight: '70vh',
+                      objectFit: 'contain'
+                    }}
+                  />
+                ) : selectedMedia.type === 'video' ? (
+                  selectedMedia.url.includes('youtube.com') || selectedMedia.url.includes('youtu.be') ? (
+                    <iframe
+                      src={selectedMedia.url.replace('watch?v=', 'embed/')}
+                      title={selectedMedia.description}
+                      allowFullScreen
+                      style={{ width: '100%', minHeight: '60vh', border: 'none' }}
+                    />
+                  ) : canEmbedVideo(selectedMedia.url) ? (
+                    !shouldLoadVideo ? (
+                      <Button
+                        size="md"
+                        leftSection={<Play size={18} />}
+                        onClick={handleLoadVideo}
+                        style={{
+                          marginTop: '2rem'
+                        }}
+                      >
+                        Load Video
+                      </Button>
+                    ) : (
+                      <iframe
+                        src={getEmbedUrl(selectedMedia.url)!}
+                        frameBorder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+                        allowFullScreen
+                        title={selectedMedia.description}
+                        style={{ width: '100%', minHeight: '60vh', border: 'none' }}
+                      />
+                    )
+                  ) : (
+                    <video controls style={{ width: '100%', maxHeight: '70vh' }}>
+                      <source src={selectedMedia.url} />
+                      Your browser does not support the video tag.
+                    </video>
+                  )
+                ) : (
+                  <Box
+                    p="xl"
+                    ta="center"
+                    style={{
+                      minHeight: '300px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      background: 'rgba(0,0,0,0.1)'
+                    }}
+                  >
+                    {getMediaTypeIcon(selectedMedia.type)}
+                    <Text ml="md">Media type not supported for preview</Text>
+                  </Box>
+                )}
+              </Box>
+
+              <Paper p="md" radius={0}>
+                <Stack gap="md">
+                  <Group justify="space-between" align="flex-start">
+                    <Stack gap="xs" style={{ flex: 1 }}>
+                      <Group gap="xs" align="center">
+                        <Badge
+                          variant="light"
+                          c={palette.accent}
+                          size="sm"
+                          style={{
+                            backgroundColor: `${palette.accent}20`,
+                            borderColor: palette.accent
+                          }}
+                        >
+                          {selectedMedia.ownerType}
+                        </Badge>
+                        <Badge
+                          variant="outline"
+                          size="sm"
+                          c={palette.accent}
+                          style={{ borderColor: palette.accent }}
+                        >
+                          {selectedMedia.type}
+                        </Badge>
+                        {selectedMedia.chapterNumber && (
+                          <Badge
+                            variant="outline"
+                            size="sm"
+                            c={palette.secondaryAccent}
+                            style={{ borderColor: palette.secondaryAccent }}
+                          >
+                            Chapter {selectedMedia.chapterNumber}
+                          </Badge>
+                        )}
+                      </Group>
+
+                      {selectedMedia.description && (
+                        <Text size="sm" fw={500}>
+                          {selectedMedia.description}
+                        </Text>
+                      )}
+
+                      <Group gap="md" align="center">
+                        <Text size="sm" style={{ color: theme.colors.gray[6] }}>
+                          Submitted by {selectedMedia.submittedBy.username}
+                        </Text>
+
+                        {selectedMedia.createdAt && (
+                          <Text size="sm" style={{ color: theme.colors.gray[6] }}>
+                            {new Date(selectedMedia.createdAt).toLocaleDateString()}
+                          </Text>
+                        )}
+                      </Group>
+                    </Stack>
+
+                    <Group gap="xs">
+                      <ActionIcon
+                        variant="light"
+                        component="a"
+                        href={selectedMedia.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label="Open original"
+                      >
+                        <ExternalLink size={16} />
+                      </ActionIcon>
+                    </Group>
+                  </Group>
+                </Stack>
+              </Paper>
+            </Stack>
+          </Box>
         )}
       </Modal>
     </Box>
