@@ -208,6 +208,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.log('[AUTH PROVIDER] Logout signal detected from another tab')
         api.setToken(null)
         setUser(null)
+        // Clear sessionStorage to remove cached data (like guide likes)
+        sessionStorage.clear()
         // Clear the signal
         localStorage.removeItem('logout_signal')
         // Reload the page to clear all cached state
@@ -473,6 +475,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } finally {
       api.setToken(null)
       setUser(null)
+      // Clear sessionStorage to remove cached data (like guide likes)
+      sessionStorage.clear()
       // Signal other tabs to logout (non-sensitive, just a trigger)
       localStorage.setItem('logout_signal', Date.now().toString())
       // Redirect to home page after logout

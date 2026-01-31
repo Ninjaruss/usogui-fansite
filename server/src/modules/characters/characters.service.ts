@@ -236,16 +236,13 @@ export class CharactersService {
     }
 
     const offset = (page - 1) * limit;
-    const searchTerm = `%${character.name}%`;
 
-    // Build the base query - search through relationships (direct and gamble participants) and text mentions
+    // Build the base query - search through relationships (direct and gamble participants) only
     const whereClause = `
       (ec."characterId" = $1
-       OR gp."characterId" = $1
-       OR LOWER(e.title) LIKE LOWER($2)
-       OR LOWER(e.description) LIKE LOWER($2))
+       OR gp."characterId" = $1)
     `;
-    const params = [characterId, searchTerm];
+    const params = [characterId];
 
     // Note: Removed server-side spoiler filtering to allow client-side spoiler wrapping
     // Client will handle spoiler protection with SpoilerWrapper components

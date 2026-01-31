@@ -578,7 +578,7 @@ export class UsersService {
       limiter(() =>
         mediaRepo.find({
           where: { submittedBy: { id: userId } },
-          select: ['id', 'fileName', 'status', 'createdAt', 'description'],
+          select: ['id', 'fileName', 'status', 'createdAt', 'description', 'ownerType', 'ownerId', 'url'],
           order: { createdAt: 'DESC' },
         }),
       ),
@@ -612,6 +612,10 @@ export class UsersService {
         title: m.description || m.fileName || 'Untitled Media',
         status: m.status,
         createdAt: m.createdAt,
+        description: m.description,
+        ownerType: m.ownerType,
+        ownerId: m.ownerId,
+        url: m.url,
       })),
       ...events.map((e: any) => ({
         id: e.id,

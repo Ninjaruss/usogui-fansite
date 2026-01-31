@@ -493,6 +493,15 @@ export class EventsService {
       });
     }
 
+    if (filters?.character) {
+      eventsQuery.andWhere(
+        '(LOWER(characters.name) LIKE LOWER(:character) OR LOWER(gambleParticipants.name) LIKE LOWER(:character))',
+        {
+          character: `%${filters.character}%`,
+        },
+      );
+    }
+
     eventsQuery.orderBy('event.chapterNumber', 'ASC');
     const events = await eventsQuery.getMany();
 

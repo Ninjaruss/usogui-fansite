@@ -1,5 +1,11 @@
 # Changelog and notes
 
+## TODO
+- Fix filtering events based on character when linked form character detail page (also, fix character timeline to display only events related to them)
+- Fix how contributions are linked and shown for user detail page and profile page; it should have what entity the media was linked to (and chapter if applicable), the description, and link to the media; the media view button does not work (example: clicking on a media I uploaded will go to invalid url https://l-file.com/mediad940d65f-0fa5-4699-bd7b-389414faa11a)
+- Logging out still doesn't properly reset the state as a liked guide still shows as liked when logged out
+
+
 ## 2026-01-30
 - Site deployed on Flyio, Supabase, and Vercel! Some adjustments to secret keys (.env) and CORS stuff was needed before everything connected
 - Removal of external URL submissions except for videos/music

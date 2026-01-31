@@ -541,11 +541,25 @@ export default function UserProfileClient({ initialUser }: UserProfileClientProp
                     submission.type === 'media' ? 'Media' :
                     submission.type === 'event' ? 'Event' : 'Annotation'
 
-                  const typeLinkPrefix =
-                    submission.type === 'guide' ? '/guides/' :
-                    submission.type === 'media' ? '/media' :
-                    submission.type === 'event' ? '/events/' :
-                    '/annotations'
+                  // Construct proper link for media submissions
+                  const getSubmissionLink = () => {
+                    if (submission.type === 'guide') return `/guides/${submission.id}`
+                    if (submission.type === 'event') return `/events/${submission.id}`
+                    if (submission.type === 'annotation') return `/annotations/${submission.id}`
+                    if (submission.type === 'media' && submission.ownerType && submission.ownerId) {
+                      return `/media?ownerType=${submission.ownerType}&ownerId=${submission.ownerId}`
+                    }
+                    return '#'
+                  }
+
+                  // Get entity label for media submissions
+                  const getEntityLabel = () => {
+                    if (submission.type === 'media' && submission.ownerType) {
+                      const typeLabel = submission.ownerType.charAt(0).toUpperCase() + submission.ownerType.slice(1)
+                      return typeLabel
+                    }
+                    return null
+                  }
 
                   return (
                     <Card
@@ -564,17 +578,27 @@ export default function UserProfileClient({ initialUser }: UserProfileClientProp
                           <Text fw={500} size="sm" lineClamp={1} c={textColors.primary}>
                             {submission.title}
                           </Text>
+                          {submission.type === 'media' && submission.description && (
+                            <Text size="xs" c="dimmed" lineClamp={1}>
+                              {submission.description}
+                            </Text>
+                          )}
                           <Group gap="xs">
                             <Badge size="xs" variant="outline">
                               {typeLabel}
                             </Badge>
+                            {getEntityLabel() && (
+                              <Badge size="xs" variant="dot">
+                                {getEntityLabel()}
+                              </Badge>
+                            )}
                             <Text size="xs" c="dimmed">
                               {new Date(submission.createdAt).toLocaleDateString()}
                             </Text>
                           </Group>
                         </Stack>
                         {submission.type !== 'annotation' && (
-                          <Link href={`${typeLinkPrefix}${submission.id}`}>
+                          <Link href={getSubmissionLink()}>
                             <Button size="xs" variant="subtle">View</Button>
                           </Link>
                         )}
