@@ -31,6 +31,7 @@ import {
   useDataProvider,
   usePermissions
 } from 'react-admin'
+import { useQueryClient } from '@tanstack/react-query'
 import { useFormContext, useWatch } from 'react-hook-form'
 import {
   Dialog,
@@ -69,6 +70,7 @@ const BadgeAwardModal = ({ open, onClose, userId, username }: {
   const notify = useNotify()
   const refresh = useRefresh()
   const dataProvider = useDataProvider()
+  const queryClient = useQueryClient()
 
   // Fetch available badges when modal opens
   React.useEffect(() => {
@@ -124,6 +126,7 @@ const BadgeAwardModal = ({ open, onClose, userId, username }: {
       await create('badges/award', { data: badgeData });
 
       notify('Badge awarded successfully!', { type: 'success' });
+      await queryClient.invalidateQueries({ queryKey: ['users'] });
       refresh();
       onClose();
       setBadgeId('');
@@ -453,6 +456,7 @@ const UserBadgesField = () => {
   const record = useRecordContext();
   const notify = useNotify();
   const refresh = useRefresh();
+  const queryClient = useQueryClient();
   const [addModalOpen, setAddModalOpen] = React.useState(false);
   const [removeModalOpen, setRemoveModalOpen] = React.useState(false);
   const [badgeToRemove, setBadgeToRemove] = React.useState<{userBadge: any, badgeName: string} | null>(null);
@@ -489,6 +493,7 @@ const UserBadgesField = () => {
       }
 
       notify(`Badge "${badgeName}" removed successfully`, { type: 'success' });
+      await queryClient.invalidateQueries({ queryKey: ['users'] });
       refresh();
     } catch (error) {
       console.error('Error removing badge:', error);

@@ -448,52 +448,58 @@ export default function MediaGallery({
             >
               <Box style={{ position: 'relative' }}>
                 <AspectRatio ratio={16 / 9} style={{ position: 'relative' }}>
-                  {thumbnail && !failedImageIds.has(mediaItem.id) ? (
-                    isExternalUrl(thumbnail) ? (
-                      <img
-                        src={thumbnail}
-                        alt={mediaItem.description || `Media submitted by ${mediaItem.submittedBy.username}`}
+                  {(() => {
+                    const mediaUrl = mediaItem.isUploaded
+                      ? `${API_BASE_URL}/media/${mediaItem.fileName}`
+                      : mediaItem.url
+
+                    return !failedImageIds.has(mediaItem.id) ? (
+                      isExternalUrl(mediaUrl) ? (
+                        <img
+                          src={mediaUrl}
+                          alt={mediaItem.description || `Media submitted by ${mediaItem.submittedBy.username}`}
+                          style={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover'
+                          }}
+                          onError={() => handleImageError(mediaItem.id)}
+                        />
+                      ) : (
+                        <NextImage
+                          src={mediaUrl}
+                          alt={mediaItem.description || `Media submitted by ${mediaItem.submittedBy.username}`}
+                          fill
+                          style={{ objectFit: 'cover' }}
+                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                          onError={() => handleImageError(mediaItem.id)}
+                        />
+                      )
+                    ) : (
+                      /* Fallback for failed images only */
+                      <Box
                         style={{
-                          position: 'absolute',
-                          top: 0,
-                          left: 0,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: theme.colors.gray[5],
                           width: '100%',
                           height: '100%',
-                          objectFit: 'cover'
+                          backgroundColor: 'rgba(0,0,0,0.1)',
+                          flexDirection: 'column',
+                          gap: rem(8)
                         }}
-                        onError={() => handleImageError(mediaItem.id)}
-                      />
-                    ) : (
-                      <NextImage
-                        src={thumbnail}
-                        alt={mediaItem.description || `Media submitted by ${mediaItem.submittedBy.username}`}
-                        fill
-                        style={{ objectFit: 'cover' }}
-                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
-                        onError={() => handleImageError(mediaItem.id)}
-                      />
+                      >
+                        {getMediaTypeIcon(mediaItem.type)}
+                        <Text size="xs" c="dimmed" ta="center">
+                          Failed to load
+                        </Text>
+                      </Box>
                     )
-                  ) : (
-                    /* Fallback icon when no thumbnail or image failed to load */
-                    <Box
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: theme.colors.gray[5],
-                        width: '100%',
-                        height: '100%',
-                        backgroundColor: 'rgba(0,0,0,0.1)',
-                        flexDirection: 'column',
-                        gap: rem(8)
-                      }}
-                    >
-                      {getMediaTypeIcon(mediaItem.type)}
-                      <Text size="xs" c="dimmed" ta="center">
-                        {mediaItem.type === 'image' ? 'External Image' : 'Media'}
-                      </Text>
-                    </Box>
-                  )}
+                  })()}
                 </AspectRatio>
 
                 <Box

@@ -47,7 +47,8 @@ export default function SubmitGuidePageContent() {
     content: '',
     characterIds: [] as number[],
     arcId: null as number | null,
-    gambleIds: [] as number[]
+    gambleIds: [] as number[],
+    tags: [] as string[]
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -55,6 +56,7 @@ export default function SubmitGuidePageContent() {
   const [characters, setCharacters] = useState<Array<{ id: number; name: string }>>([])
   const [arcs, setArcs] = useState<Array<{ id: number; name: string }>>([])
   const [gambles, setGambles] = useState<Array<{ id: number; name: string }>>([])
+  const [tags, setTags] = useState<Array<{ id: number; name: string }>>([])
   const [loadingData, setLoadingData] = useState(true)
   const [activeTab, setActiveTab] = useState<'write' | 'preview'>('write')
 
@@ -115,7 +117,8 @@ export default function SubmitGuidePageContent() {
         content: formData.content.trim(),
         characterIds: formData.characterIds.length ? formData.characterIds : undefined,
         arcId: formData.arcId ?? undefined,
-        gambleIds: formData.gambleIds.length ? formData.gambleIds : undefined
+        gambleIds: formData.gambleIds.length ? formData.gambleIds : undefined,
+        tags: formData.tags.length ? formData.tags : undefined
       })
       setSuccess('Guide submitted! It is now pending review and you\'ll be notified when it\'s approved. Track your submissions on your profile page.')
       setFormData({
@@ -124,7 +127,8 @@ export default function SubmitGuidePageContent() {
         content: '',
         characterIds: [],
         arcId: null,
-        gambleIds: []
+        gambleIds: [],
+        tags: []
       })
       setActiveTab('write')
     } catch (submissionError: unknown) {
@@ -161,14 +165,16 @@ export default function SubmitGuidePageContent() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [charactersRes, arcsRes, gamblesRes] = await Promise.all([
+        const [charactersRes, arcsRes, gamblesRes, tagsRes] = await Promise.all([
           api.getCharacters({ limit: 500 }),
           api.getArcs({ limit: 200 }),
-          api.getGambles({ limit: 500 })
+          api.getGambles({ limit: 500 }),
+          api.getTags({ limit: 500 })
         ])
         setCharacters(charactersRes.data || [])
         setArcs(arcsRes.data || [])
         setGambles(gamblesRes.data || [])
+        setTags(tagsRes.data || [])
       } catch (loadError) {
         console.error('Error loading data:', loadError)
         setError('Failed to load form data. Please refresh the page.')
@@ -219,6 +225,7 @@ export default function SubmitGuidePageContent() {
   const characterOptions = characters.map((character) => ({ value: character.id.toString(), label: character.name }))
   const arcOptions = arcs.map((arc) => ({ value: arc.id.toString(), label: arc.name }))
   const gambleOptions = gambles.map((gamble) => ({ value: gamble.id.toString(), label: gamble.name }))
+  const tagOptions = tags.map((tag) => ({ value: tag.name, label: tag.name }))
 
   return (
     <Container size="md" py="xl">
@@ -487,7 +494,7 @@ export default function SubmitGuidePageContent() {
                   </Group>
 
                   <Grid gutter="lg">
-                    <Grid.Col span={{ base: 12, md: 4 }}>
+                    <Grid.Col span={{ base: 12, md: 6, lg: 3 }}>
                       <MultiSelect
                         label="Characters"
                         placeholder="Select related characters"
@@ -538,7 +545,7 @@ export default function SubmitGuidePageContent() {
                       />
                     </Grid.Col>
 
-                    <Grid.Col span={{ base: 12, md: 4 }}>
+                    <Grid.Col span={{ base: 12, md: 6, lg: 3 }}>
                       <Select
                         label="Arc"
                         placeholder="Select related arc"
@@ -584,7 +591,7 @@ export default function SubmitGuidePageContent() {
                       />
                     </Grid.Col>
 
-                    <Grid.Col span={{ base: 12, md: 4 }}>
+                    <Grid.Col span={{ base: 12, md: 6, lg: 3 }}>
                       <MultiSelect
                         label="Gambles"
                         placeholder="Select related gambles"
@@ -618,6 +625,64 @@ export default function SubmitGuidePageContent() {
                               color: '#000000'
                             },
                             '&[dataSelected="true"]': {
+                              backgroundColor: `${guideAccent}dd`,
+                              color: '#000000'
+                            }
+                          },
+                          pill: {
+                            backgroundColor: 'rgba(81, 207, 102, 0.2)',
+                            color: guideAccent,
+                            border: `1px solid ${guideAccent}50`
+                          },
+                          label: {
+                            color: guideAccent,
+                            fontWeight: 600
+                          }
+                        }}
+                      />
+                    </Grid.Col>
+
+                    <Grid.Col span={{ base: 12, md: 6, lg: 3 }}>
+                      <MultiSelect
+                        label="Tags"
+                        placeholder="Select or create tags"
+                        data={tagOptions}
+                        value={formData.tags}
+                        onChange={(values) => handleInputChange('tags', values)}
+                        searchable
+                        creatable
+                        getCreateLabel={(query) => `+ Create "${query}"`}
+                        onCreate={(query) => {
+                          const newTag = { value: query, label: query }
+                          setTags((current) => [...current, { id: Date.now(), name: query }])
+                          return newTag
+                        }}
+                        clearable
+                        nothingFoundMessage="No tags found"
+                        description="Add tags to categorize your guide (max 5)"
+                        styles={{
+                          input: {
+                            backgroundColor: theme.colors.dark?.[5] ?? '#0b0b0b',
+                            color: theme.colors.gray?.[0] ?? '#fff',
+                            borderColor: 'rgba(255,255,255,0.06)',
+                            '&:focus': {
+                              borderColor: guideAccent,
+                              boxShadow: `0 0 0 2px rgba(81, 207, 102, 0.2)`
+                            }
+                          },
+                          dropdown: {
+                            backgroundColor: theme.colors.dark?.[7] ?? '#070707',
+                            borderColor: guideAccent,
+                            border: `1px solid ${guideAccent}`
+                          },
+                          option: {
+                            color: '#ffffff',
+                            backgroundColor: 'transparent',
+                            '&:hover': {
+                              backgroundColor: guideAccent,
+                              color: '#000000'
+                            },
+                            '&[data-selected="true"]': {
                               backgroundColor: `${guideAccent}dd`,
                               color: '#000000'
                             }

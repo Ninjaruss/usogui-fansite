@@ -871,8 +871,6 @@ export const AdminDataProvider: DataProvider = {
         } catch {
           item.userBadges = []
         }
-        // Invalidate users list cache so changes appear immediately
-        invalidatePagedCache('users')
       }
 
       return { data: item as any }
