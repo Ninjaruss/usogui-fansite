@@ -11,7 +11,7 @@ interface PendingCounts {
 
 /**
  * Shared hook to fetch pending counts for all moderatable resources.
- * Auto-refreshes every 30 seconds.
+ * Auto-refreshes every 60 seconds.
  */
 export const usePendingCounts = () => {
   const [counts, setCounts] = useState<PendingCounts>({
@@ -69,8 +69,8 @@ export const usePendingCounts = () => {
 
     fetchCounts()
 
-    // Refresh counts every 30 seconds
-    const interval = setInterval(fetchCounts, 30000)
+    // Refresh counts every 60 seconds
+    const interval = setInterval(fetchCounts, 60000)
     return () => clearInterval(interval)
   }, [dataProvider])
 

@@ -17,7 +17,9 @@ import {
   ReferenceField,
   ReferenceInput,
   AutocompleteInput,
-  useGetList
+  useGetList,
+  SearchInput,
+  BulkDeleteButton
 } from 'react-admin'
 import { Typography, Chip, Box, Card, CardContent, Grid, Tooltip } from '@mui/material'
 import { Edit3, Plus, BookOpen, Layers, GitBranch } from 'lucide-react'
@@ -112,9 +114,24 @@ const ParentArcInput = () => {
   )
 }
 
+const arcFilters = [
+  <SearchInput key="q" source="q" placeholder="Search arcs" alwaysOn />,
+  <ReferenceInput key="parentId" source="parentId" reference="arcs" label="Parent Arc" alwaysOn>
+    <AutocompleteInput optionText="name" />
+  </ReferenceInput>,
+  <NumberInput key="startChapter" source="startChapter_gte" label="Start Chapter from" min={1} max={539} />,
+  <NumberInput key="endChapter" source="endChapter_lte" label="End Chapter to" min={1} max={539} />
+]
+
+const ArcBulkActionButtons = () => (
+  <>
+    <BulkDeleteButton mutationMode="pessimistic" />
+  </>
+)
+
 export const ArcList = () => (
-  <List sort={{ field: 'startChapter', order: 'ASC' }}>
-    <Datagrid rowClick="show">
+  <List sort={{ field: 'startChapter', order: 'ASC' }} filters={arcFilters}>
+    <Datagrid rowClick="show" bulkActionButtons={<ArcBulkActionButtons />}>
       <TextField source="id" sortable />
       <TextField source="name" sortable />
       <FunctionField

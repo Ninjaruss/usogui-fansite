@@ -13,16 +13,28 @@ import {
   Tab,
   ReferenceManyField,
   SingleFieldList,
-  ChipField
+  ChipField,
+  SearchInput,
+  BulkDeleteButton
 } from 'react-admin'
 import { Typography, Box, Card, CardContent, Grid } from '@mui/material'
 import { Edit3, Plus, Users, Building2 } from 'lucide-react'
 import EnhancedSpoilerMarkdown from '../EnhancedSpoilerMarkdown'
 import { EditToolbar } from './EditToolbar'
 
+const organizationFilters = [
+  <SearchInput key="q" source="q" placeholder="Search organizations" alwaysOn />
+]
+
+const OrganizationBulkActionButtons = () => (
+  <>
+    <BulkDeleteButton mutationMode="pessimistic" />
+  </>
+)
+
 export const OrganizationList = () => (
-  <List sort={{ field: 'name', order: 'ASC' }}>
-    <Datagrid rowClick="show">
+  <List sort={{ field: 'name', order: 'ASC' }} filters={organizationFilters}>
+    <Datagrid rowClick="show" bulkActionButtons={<OrganizationBulkActionButtons />}>
       <TextField source="id" sortable />
       <TextField source="name" sortable />
       <FunctionField

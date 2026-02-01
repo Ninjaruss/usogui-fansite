@@ -15,15 +15,35 @@ import {
   FunctionField,
   ReferenceField,
   TabbedShowLayout,
-  Tab
+  Tab,
+  SearchInput,
+  BulkDeleteButton
 } from 'react-admin'
 import { Typography, Box, Chip, Card, CardContent, Grid } from '@mui/material'
 import { Edit3, Plus, MessageSquareQuote, User as UserIcon, BookOpen } from 'lucide-react'
 import { EditToolbar } from './EditToolbar'
 
+const quoteFilters = [
+  <SearchInput key="q" source="q" placeholder="Search quotes" alwaysOn />,
+  <ReferenceInput key="characterId" source="characterId" reference="characters" label="Character" alwaysOn>
+    <AutocompleteInput optionText="name" />
+  </ReferenceInput>,
+  <NumberInput key="chapterFrom" source="chapterNumber_gte" label="Chapter from" min={1} max={539} />,
+  <NumberInput key="chapterTo" source="chapterNumber_lte" label="Chapter to" min={1} max={539} />
+]
+
+const QuoteBulkActionButtons = () => (
+  <>
+    <BulkDeleteButton mutationMode="pessimistic" />
+  </>
+)
+
 export const QuoteList = () => (
-  <List sort={{ field: 'chapterNumber', order: 'DESC' }}>
-    <Datagrid rowClick="show">
+  <List
+    sort={{ field: 'chapterNumber', order: 'DESC' }}
+    filters={quoteFilters}
+  >
+    <Datagrid rowClick="show" bulkActionButtons={<QuoteBulkActionButtons />}>
       <TextField source="id" sortable />
       <FunctionField
         label="Quote Text"

@@ -19,7 +19,11 @@ import {
   FunctionField,
   ReferenceManyField,
   ReferenceField,
-  WithRecord
+  WithRecord,
+  SearchInput,
+  ReferenceInput,
+  AutocompleteInput,
+  BulkDeleteButton
 } from 'react-admin'
 import { Box, Card, CardContent, Typography, Grid, Chip, Button as MuiButton, Divider } from '@mui/material'
 import { Edit3, Plus, Users, ArrowRight, Building2 } from 'lucide-react'
@@ -43,9 +47,24 @@ const getRelationshipColor = (type: string) => {
   }
 }
 
+const characterFilters = [
+  <SearchInput key="q" source="q" placeholder="Search characters" alwaysOn />,
+  <ReferenceInput key="organizationId" source="organizationId" reference="organizations" label="Organization" alwaysOn>
+    <AutocompleteInput optionText="name" />
+  </ReferenceInput>,
+  <NumberInput key="firstAppearanceFrom" source="firstAppearanceChapter_gte" label="First appearance from" min={1} max={539} />,
+  <NumberInput key="firstAppearanceTo" source="firstAppearanceChapter_lte" label="First appearance to" min={1} max={539} />
+]
+
+const CharacterBulkActionButtons = () => (
+  <>
+    <BulkDeleteButton mutationMode="pessimistic" />
+  </>
+)
+
 export const CharacterList = () => (
-  <List sort={{ field: 'name', order: 'ASC' }}>
-    <Datagrid rowClick="show">
+  <List sort={{ field: 'name', order: 'ASC' }} filters={characterFilters}>
+    <Datagrid rowClick="show" bulkActionButtons={<CharacterBulkActionButtons />}>
       <TextField source="id" sortable />
       <TextField source="name" sortable />
       <NumberField source="firstAppearanceChapter" label="First Chapter" sortable />

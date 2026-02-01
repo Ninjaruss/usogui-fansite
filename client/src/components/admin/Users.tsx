@@ -29,7 +29,9 @@ import {
   useNotify,
   useRefresh,
   useDataProvider,
-  usePermissions
+  usePermissions,
+  SearchInput,
+  BulkDeleteButton
 } from 'react-admin'
 import { useQueryClient } from '@tanstack/react-query'
 import { useFormContext, useWatch } from 'react-hook-form'
@@ -383,13 +385,44 @@ const BadgeRemovalModal = ({ open, onClose, userBadge, badgeName, onConfirm }: {
   );
 };
 
+const userFilters = [
+  <SearchInput key="q" source="q" placeholder="Search by username or email" alwaysOn />,
+  <SelectInput
+    key="role"
+    source="role"
+    label="Role"
+    alwaysOn
+    choices={[
+      { id: 'user', name: 'User' },
+      { id: 'moderator', name: 'Moderator' },
+      { id: 'editor', name: 'Editor' },
+      { id: 'admin', name: 'Admin' },
+    ]}
+  />,
+  <SelectInput
+    key="isEmailVerified"
+    source="isEmailVerified"
+    label="Email Verified"
+    choices={[
+      { id: 'true', name: 'Verified' },
+      { id: 'false', name: 'Not Verified' },
+    ]}
+  />
+]
+
+const UserBulkActionButtons = () => (
+  <>
+    <BulkDeleteButton mutationMode="pessimistic" />
+  </>
+)
+
 export const UserList = () => (
-  <List>
-    <Datagrid rowClick="show">
-      <TextField source="id" />
-      <TextField source="username" />
-      <EmailField source="email" />
-      <TextField source="role" />
+  <List filters={userFilters}>
+    <Datagrid rowClick="show" bulkActionButtons={<UserBulkActionButtons />}>
+      <TextField source="id" sortable />
+      <TextField source="username" sortable />
+      <EmailField source="email" sortable />
+      <TextField source="role" sortable />
       <FunctionField
         label="Badges"
         render={(record: any) => {

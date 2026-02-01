@@ -9,16 +9,28 @@ import {
   SimpleForm,
   SimpleShowLayout,
   TextInput,
-  FunctionField
+  FunctionField,
+  SearchInput,
+  BulkDeleteButton
 } from 'react-admin'
 import { Typography, Box, Chip, Card, CardContent, Grid } from '@mui/material'
 import { Edit3, Plus, Tag } from 'lucide-react'
 import EnhancedSpoilerMarkdown from '../EnhancedSpoilerMarkdown'
 import { EditToolbar } from './EditToolbar'
 
+const tagFilters = [
+  <SearchInput key="q" source="q" placeholder="Search tags" alwaysOn />
+]
+
+const TagBulkActionButtons = () => (
+  <>
+    <BulkDeleteButton mutationMode="pessimistic" />
+  </>
+)
+
 export const TagList = () => (
-  <List sort={{ field: 'name', order: 'ASC' }}>
-    <Datagrid rowClick="show">
+  <List sort={{ field: 'name', order: 'ASC' }} filters={tagFilters}>
+    <Datagrid rowClick="show" bulkActionButtons={<TagBulkActionButtons />}>
       <TextField source="id" sortable />
       <FunctionField
         label="Tag Name"

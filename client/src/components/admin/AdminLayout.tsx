@@ -101,10 +101,10 @@ const PendingCounter = () => {
         title="Click to view pending items breakdown"
       >
         <Typography variant="caption" sx={{ fontWeight: 'bold' }}>
-          {counts.total} PENDING APPROVAL
+          {counts.total} PENDING
         </Typography>
         <Typography variant="caption" sx={{ fontSize: '0.7rem', opacity: 0.9 }}>
-          ({counts.guides}g, {counts.media}m, {counts.events}e, {counts.annotations}a)
+          (Guides: {counts.guides}, Media: {counts.media}, Events: {counts.events}, Annotations: {counts.annotations})
         </Typography>
       </Box>
 
