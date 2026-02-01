@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { Layout, AppBar, usePermissions } from 'react-admin'
-import { Box, Typography, IconButton } from '@mui/material'
+import { Box, Typography, IconButton, Popover, List, ListItem, ListItemText, ListItemButton } from '@mui/material'
 import { ArrowLeft } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useNavigate } from 'react-router-dom'
-import { api } from '../../lib/api'
 import { AdminMenu } from './AdminMenu'
+import { usePendingCounts } from '../../hooks/usePendingCounts'
 
 const CustomAppBar = () => {
   const { permissions } = usePermissions()
@@ -57,79 +57,149 @@ const CustomAppBar = () => {
 }
 
 const PendingCounter = () => {
-  const [pendingCounts, setPendingCounts] = useState({ guides: 0, media: 0 })
-  const [loading, setLoading] = useState(true)
+  const { counts, loading } = usePendingCounts()
   const navigate = useNavigate()
+  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
 
-  useEffect(() => {
-    const fetchPendingCounts = async () => {
-      try {
-        const [guidesRes, mediaRes] = await Promise.all([
-          api.getGuidesAdmin({ status: 'pending', limit: 1 }),
-          api.getAllMedia({ status: 'pending', limit: 1 })
-        ])
+  if (loading || counts.total === 0) return null
 
-        setPendingCounts({
-          guides: guidesRes.total || 0,
-          media: mediaRes.total || 0
-        })
-      } catch (error) {
-        console.error('Failed to fetch pending counts:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchPendingCounts()
-
-    // Refresh counts every 30 seconds
-    const interval = setInterval(fetchPendingCounts, 30000)
-    return () => clearInterval(interval)
-  }, [])
-
-  const totalPending = pendingCounts.guides + pendingCounts.media
-
-  if (loading || totalPending === 0) return null
-
-  // Navigate to guides or media with pending filter using React Router
-  const handleClick = () => {
-    const filterParam = encodeURIComponent(JSON.stringify({ status: 'pending' }))
-    if (pendingCounts.guides > 0) {
-      navigate(`/guides?displayedFilters=${filterParam}&filter=${filterParam}&order=ASC&page=1&perPage=25&sort=id`)
-    } else if (pendingCounts.media > 0) {
-      navigate(`/media?displayedFilters=${filterParam}&filter=${filterParam}&order=ASC&page=1&perPage=25&sort=id`)
-    }
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget)
   }
 
+  const handleClose = () => {
+    setAnchorEl(null)
+  }
+
+  const handleNavigate = (resource: string) => {
+    const filterParam = encodeURIComponent(JSON.stringify({ status: 'pending' }))
+    navigate(`/${resource}?displayedFilters=${filterParam}&filter=${filterParam}&order=ASC&page=1&perPage=25&sort=id`)
+    handleClose()
+  }
+
+  const open = Boolean(anchorEl)
+
   return (
-    <Box
-      onClick={handleClick}
-      sx={{
-        ml: 2,
-        px: 1,
-        py: 0.5,
-        bgcolor: 'warning.main',
-        color: 'white',
-        borderRadius: 1,
-        display: 'flex',
-        alignItems: 'center',
-        gap: 0.5,
-        cursor: 'pointer',
-        '&:hover': {
-          bgcolor: 'warning.dark'
-        }
-      }}
-      title={`Click to view pending items - ${pendingCounts.guides} guides, ${pendingCounts.media} media`}
-    >
-      <Typography variant="caption" sx={{ fontWeight: 'bold' }}>
-        {totalPending} PENDING APPROVAL
-      </Typography>
-      {(pendingCounts.guides > 0 || pendingCounts.media > 0) && (
-        <Typography variant="caption" sx={{ fontSize: '0.7rem', opacity: 0.9 }}>
-          ({pendingCounts.guides} guides, {pendingCounts.media} media)
+    <>
+      <Box
+        onClick={handleClick}
+        sx={{
+          ml: 2,
+          px: 1,
+          py: 0.5,
+          bgcolor: 'warning.main',
+          color: 'white',
+          borderRadius: 1,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 0.5,
+          cursor: 'pointer',
+          '&:hover': {
+            bgcolor: 'warning.dark'
+          }
+        }}
+        title="Click to view pending items breakdown"
+      >
+        <Typography variant="caption" sx={{ fontWeight: 'bold' }}>
+          {counts.total} PENDING APPROVAL
         </Typography>
-      )}
-    </Box>
+        <Typography variant="caption" sx={{ fontSize: '0.7rem', opacity: 0.9 }}>
+          ({counts.guides}g, {counts.media}m, {counts.events}e, {counts.annotations}a)
+        </Typography>
+      </Box>
+
+      <Popover
+        open={open}
+        anchorEl={anchorEl}
+        onClose={handleClose}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'left',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'left',
+        }}
+        sx={{
+          '& .MuiPopover-paper': {
+            backgroundColor: '#1a1a1a',
+            border: '1px solid rgba(255, 152, 0, 0.3)',
+            minWidth: 250
+          }
+        }}
+      >
+        <List sx={{ p: 0 }}>
+          <ListItemButton onClick={() => handleNavigate('guides')} disabled={counts.guides === 0}>
+            <ListItemText
+              primary={
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Typography sx={{ color: counts.guides > 0 ? '#ffffff' : 'text.disabled' }}>
+                    Guides
+                  </Typography>
+                  <Typography sx={{
+                    color: counts.guides > 0 ? '#ff9800' : 'text.disabled',
+                    fontWeight: 'bold'
+                  }}>
+                    {counts.guides}
+                  </Typography>
+                </Box>
+              }
+            />
+          </ListItemButton>
+          <ListItemButton onClick={() => handleNavigate('media')} disabled={counts.media === 0}>
+            <ListItemText
+              primary={
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Typography sx={{ color: counts.media > 0 ? '#ffffff' : 'text.disabled' }}>
+                    Media
+                  </Typography>
+                  <Typography sx={{
+                    color: counts.media > 0 ? '#ff9800' : 'text.disabled',
+                    fontWeight: 'bold'
+                  }}>
+                    {counts.media}
+                  </Typography>
+                </Box>
+              }
+            />
+          </ListItemButton>
+          <ListItemButton onClick={() => handleNavigate('events')} disabled={counts.events === 0}>
+            <ListItemText
+              primary={
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Typography sx={{ color: counts.events > 0 ? '#ffffff' : 'text.disabled' }}>
+                    Events
+                  </Typography>
+                  <Typography sx={{
+                    color: counts.events > 0 ? '#ff9800' : 'text.disabled',
+                    fontWeight: 'bold'
+                  }}>
+                    {counts.events}
+                  </Typography>
+                </Box>
+              }
+            />
+          </ListItemButton>
+          <ListItemButton onClick={() => handleNavigate('annotations')} disabled={counts.annotations === 0}>
+            <ListItemText
+              primary={
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Typography sx={{ color: counts.annotations > 0 ? '#ffffff' : 'text.disabled' }}>
+                    Annotations
+                  </Typography>
+                  <Typography sx={{
+                    color: counts.annotations > 0 ? '#ff9800' : 'text.disabled',
+                    fontWeight: 'bold'
+                  }}>
+                    {counts.annotations}
+                  </Typography>
+                </Box>
+              }
+            />
+          </ListItemButton>
+        </List>
+      </Popover>
+    </>
   )
 }
 

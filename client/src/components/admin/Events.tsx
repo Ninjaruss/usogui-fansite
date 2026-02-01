@@ -685,6 +685,7 @@ const EventFilterToolbar = () => {
 export const EventList = () => (
   <List
     perPage={25}
+    filterDefaultValues={{ status: 'pending' }}
     sx={{
       '& .RaList-content': {
         '& > *:not(:last-child)': {

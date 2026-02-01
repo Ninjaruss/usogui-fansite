@@ -2,6 +2,11 @@
 
 ## TODO
 
+## 2026-02-01
+- Pending counter updated to include annotations
+- Additional counters/indicators for pending items
+- Default filter is now pending
+
 ## 2026-01-31
 - Users list cache refreshes when changes are made to a user's profile (improved with react-query predicate-based invalidation)
 - Showcase now rotates properly

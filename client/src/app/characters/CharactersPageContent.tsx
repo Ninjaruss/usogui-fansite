@@ -878,7 +878,11 @@ export default function CharactersPageContent({
 
       {/* Hover Modal */}
       <HoverModal
-        isOpen={!!hoveredCharacter}
+        isOpen={
+          !!hoveredCharacter &&
+          (!shouldHideSpoiler(hoveredCharacter.firstAppearanceChapter, userProgress, spoilerSettings) ||
+            revealedCharacters.has(hoveredCharacter.id))
+        }
         position={hoverPosition}
         accentColor={accentCharacter}
         onMouseEnter={handleModalMouseEnter}
@@ -886,7 +890,9 @@ export default function CharactersPageContent({
         onClose={closeModal}
         showCloseButton={isTouchDevice}
       >
-        {hoveredCharacter && (
+        {hoveredCharacter &&
+          (!shouldHideSpoiler(hoveredCharacter.firstAppearanceChapter, userProgress, spoilerSettings) ||
+            revealedCharacters.has(hoveredCharacter.id)) && (
           <>
             {/* Character Name */}
             <Title

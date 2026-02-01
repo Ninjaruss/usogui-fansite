@@ -711,6 +711,7 @@ const AnnotationRowActions = () => {
 export const AnnotationList = () => (
   <List
     perPage={25}
+    filterDefaultValues={{ status: 'pending' }}
     sx={{
       '& .RaList-content': {
         '& > *:not(:last-child)': {

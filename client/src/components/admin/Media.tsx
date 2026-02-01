@@ -1971,6 +1971,7 @@ export const MediaList = () => (
   <List
     perPage={25}
     filter={{ excludeChaptersVolumes: 'true' }}
+    filterDefaultValues={{ status: 'pending' }}
     sx={{
       '& .RaList-content': {
         '& > *:not(:last-child)': {

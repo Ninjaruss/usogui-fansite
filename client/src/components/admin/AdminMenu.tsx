@@ -1,6 +1,6 @@
 import React from 'react'
-import { Menu, MenuItemLink, useSidebarState } from 'react-admin'
-import { Typography, Divider } from '@mui/material'
+import { Menu, MenuItemLink, useSidebarState, usePermissions } from 'react-admin'
+import { Typography, Divider, Badge } from '@mui/material'
 import {
   Users,
   User,
@@ -16,6 +16,7 @@ import {
   Building2,
   MessageSquare
 } from 'lucide-react'
+import { usePendingCounts } from '../../hooks/usePendingCounts'
 
 const SectionHeader = ({ children }: { children: React.ReactNode }) => {
   const [open] = useSidebarState()
@@ -42,6 +43,9 @@ const SectionHeader = ({ children }: { children: React.ReactNode }) => {
 }
 
 export const AdminMenu = () => {
+  const { permissions } = usePermissions()
+  const { counts } = usePendingCounts()
+
   return (
     <Menu>
       {/* Core Content Section */}
@@ -74,17 +78,62 @@ export const AdminMenu = () => {
       <MenuItemLink
         to="/guides"
         primaryText="Guides"
-        leftIcon={<FileText size={20} />}
+        leftIcon={
+          <Badge
+            badgeContent={counts.guides}
+            color="warning"
+            sx={{
+              '& .MuiBadge-badge': {
+                fontSize: '0.65rem',
+                minWidth: '16px',
+                height: '16px',
+                padding: '0 4px'
+              }
+            }}
+          >
+            <FileText size={20} />
+          </Badge>
+        }
       />
       <MenuItemLink
         to="/media"
         primaryText="Media"
-        leftIcon={<Image size={20} />}
+        leftIcon={
+          <Badge
+            badgeContent={counts.media}
+            color="warning"
+            sx={{
+              '& .MuiBadge-badge': {
+                fontSize: '0.65rem',
+                minWidth: '16px',
+                height: '16px',
+                padding: '0 4px'
+              }
+            }}
+          >
+            <Image size={20} />
+          </Badge>
+        }
       />
       <MenuItemLink
         to="/annotations"
         primaryText="Annotations"
-        leftIcon={<MessageSquare size={20} />}
+        leftIcon={
+          <Badge
+            badgeContent={counts.annotations}
+            color="warning"
+            sx={{
+              '& .MuiBadge-badge': {
+                fontSize: '0.65rem',
+                minWidth: '16px',
+                height: '16px',
+                padding: '0 4px'
+              }
+            }}
+          >
+            <MessageSquare size={20} />
+          </Badge>
+        }
       />
 
       <Divider sx={{ my: 1 }} />
@@ -124,13 +173,17 @@ export const AdminMenu = () => {
 
       <Divider sx={{ my: 1 }} />
 
-      {/* User Management Section */}
-      <SectionHeader>User Management</SectionHeader>
-      <MenuItemLink
-        to="/users"
-        primaryText="Users"
-        leftIcon={<Users size={20} />}
-      />
+      {/* User Management Section - Admin Only */}
+      {permissions === 'admin' && (
+        <>
+          <SectionHeader>User Management</SectionHeader>
+          <MenuItemLink
+            to="/users"
+            primaryText="Users"
+            leftIcon={<Users size={20} />}
+          />
+        </>
+      )}
     </Menu>
   )
 }
