@@ -255,15 +255,6 @@ export default function QuotesPageContent({
 
   const hasSearchQuery = Boolean(searchQuery || characterId)
 
-  // Cleanup effect
-  useEffect(() => {
-    return () => {
-      if (hoverTimeoutRef.current) {
-        clearTimeout(hoverTimeoutRef.current)
-      }
-    }
-  }, [])
-
   return (
     <Box style={{ backgroundColor: backgroundStyles.page(theme), minHeight: '100vh' }}>
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>

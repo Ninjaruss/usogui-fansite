@@ -3,9 +3,18 @@
 ## TODO
 
 ## 2026-02-01
-- Pending counter updated to include annotations
-- Additional counters/indicators for pending items
-- Default filter is now pending
+### Admin Dashboard UX Improvements
+- **Created shared `usePendingCounts` hook**: Centralized pending count fetching for guides, media, events, and annotations with auto-refresh every 30s
+- **Enhanced AppBar pending counter**: Now tracks all 4 moderatable resources (guides, media, events, annotations) with dropdown menu showing per-resource breakdown
+- **Dashboard stat cards**: Added pending count badges to Community Guides, Media Submissions, and Events cards
+- **Quick actions with live counts**: All moderation quick actions now show live pending counts (e.g., "Review pending guides (5)") and dim when count is 0
+- **Smart default filters**: Guides, Media, Events, and Annotations list views now default to `status: pending` filter for faster moderation workflow
+- **Sidebar pending badges**: Guides, Media, and Annotations menu items show live pending count badges
+- **Role-adaptive dashboard layouts**:
+  - Moderators/Editors: Moderation Queue panel appears first with Content Creation shortcuts
+  - Admins: Quick Actions panel with System Overview showing total users and total pending items
+- **Role-based menu filtering**: User Management section now hidden for non-admins
+- **Fixed build error**: Removed duplicate cleanup effect in QuotesPageContent.tsx (useHoverModal already handles cleanup)
 
 ## 2026-01-31
 - Users list cache refreshes when changes are made to a user's profile (improved with react-query predicate-based invalidation)
