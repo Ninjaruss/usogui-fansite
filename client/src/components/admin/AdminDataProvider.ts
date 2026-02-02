@@ -501,7 +501,27 @@ export const AdminDataProvider: DataProvider = {
         if (value !== undefined && value !== null && value !== '' &&
             !Number.isNaN(value) && value !== 'NaN' &&
             key !== 'guideType') { // Skip guideType as it's handled client-side
-          cleanFilter[key] = String(value)
+
+          // Map 'q' parameter to resource-specific search parameters
+          let mappedKey = key
+          if (key === 'q') {
+            // Map generic 'q' search to resource-specific parameters
+            if (resource === 'characters') mappedKey = 'name'
+            else if (resource === 'quotes') mappedKey = 'search'
+            else if (resource === 'tags') mappedKey = 'name'
+            else if (resource === 'organizations') mappedKey = 'name'
+            else if (resource === 'arcs') mappedKey = 'name'
+            else if (resource === 'users') mappedKey = 'search'
+            else mappedKey = 'search' // Default to 'search' for other resources
+          }
+
+          // Map chapter range parameters for quotes
+          if (resource === 'quotes') {
+            if (key === 'chapterNumber_gte') mappedKey = 'chapterStart'
+            else if (key === 'chapterNumber_lte') mappedKey = 'chapterEnd'
+          }
+
+          cleanFilter[mappedKey] = String(value)
         }
       })
     }
