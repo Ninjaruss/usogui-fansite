@@ -586,6 +586,17 @@ export class GuidesService {
         guide.authorId = authorId;
       }
 
+      // If the author is editing a rejected guide, auto-resubmit (reset to pending)
+      if (
+        guide.status === GuideStatus.REJECTED &&
+        guide.authorId === currentUser.id &&
+        currentUser.role !== UserRole.ADMIN &&
+        currentUser.role !== UserRole.MODERATOR
+      ) {
+        guide.status = GuideStatus.PENDING;
+        guide.rejectionReason = null;
+      }
+
       // Update basic fields
       Object.assign(guide, guideData);
 

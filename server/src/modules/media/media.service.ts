@@ -3,6 +3,7 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  ForbiddenException,
   InternalServerErrorException,
   Logger,
 } from '@nestjs/common';
@@ -465,6 +466,33 @@ export class MediaService {
     }
 
     await this.mediaRepo.delete(id);
+  }
+
+  async removeWithAuth(
+    id: string,
+    currentUser: User,
+    b2Service?: any,
+  ): Promise<void> {
+    const media = await this.mediaRepo.findOne({
+      where: { id },
+      relations: ['submittedBy'],
+    });
+
+    if (!media) {
+      throw new NotFoundException(`Media with id ${id} not found`);
+    }
+
+    // Allow deletion by the submitter or by mods/admins
+    const isOwner = media.submittedBy?.id === currentUser.id;
+    const isModerator =
+      currentUser.role === UserRole.ADMIN ||
+      currentUser.role === UserRole.MODERATOR;
+
+    if (!isOwner && !isModerator) {
+      throw new ForbiddenException('You can only delete your own media');
+    }
+
+    return this.remove(id, b2Service);
   }
 
   async bulkApproveSubmissions(

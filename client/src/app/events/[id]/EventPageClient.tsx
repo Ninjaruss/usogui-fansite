@@ -223,7 +223,7 @@ export default function EventPageClient({ initialEvent }: EventPageClientProps) 
                           border: `1px solid ${getAlphaColor(entityColors.event, 0.4)}`
                         }}
                       >
-                        {initialEvent.status}
+                        {initialEvent.status === 'pending' ? 'Unverified' : initialEvent.status === 'approved' ? 'Verified' : initialEvent.status}
                       </Badge>
                       {initialEvent.characters && initialEvent.characters.length > 0 && (
                         <Badge

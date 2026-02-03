@@ -875,12 +875,12 @@ export class MediaController {
   }
 
   @Delete(':id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @Roles(UserRole.MODERATOR, UserRole.ADMIN)
   @ApiOperation({
     summary: 'Delete media',
-    description: 'Delete a media item (requires moderator or admin role)',
+    description:
+      'Delete a media item. Users can delete their own submissions; moderators and admins can delete any.',
   })
   @ApiResponse({
     status: 200,
@@ -895,12 +895,12 @@ export class MediaController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({
     status: 403,
-    description: 'Forbidden - requires moderator or admin role',
+    description: 'Forbidden - you can only delete your own media',
   })
   @ApiResponse({ status: 404, description: 'Media not found' })
   @ApiParam({ name: 'id', description: 'Media ID', example: 1 })
-  remove(@Param('id') id: string) {
-    return this.mediaService.remove(id, this.b2Service);
+  async remove(@Param('id') id: string, @CurrentUser() user: User) {
+    return this.mediaService.removeWithAuth(id, user, this.b2Service);
   }
 
   @Put(':id/approve')

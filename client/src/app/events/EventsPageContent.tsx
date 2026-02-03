@@ -48,8 +48,8 @@ const eventTypeOptions = [
 
 const eventStatusOptions = [
   { value: '', label: 'All Statuses' },
-  { value: EventStatus.APPROVED, label: 'Approved' },
-  { value: EventStatus.PENDING, label: 'Pending' },
+  { value: EventStatus.APPROVED, label: 'Verified' },
+  { value: EventStatus.PENDING, label: 'Unverified' },
   { value: EventStatus.REJECTED, label: 'Rejected' }
 ]
 
@@ -902,7 +902,7 @@ export default function EventsPageContent({
                     size="sm"
                     style={{ backgroundColor: `${statusColor(hoveredEvent.status)}20`, borderColor: statusColor(hoveredEvent.status) }}
                   >
-                    {hoveredEvent.status}
+                    {hoveredEvent.status === 'pending' ? 'Unverified' : hoveredEvent.status === 'approved' ? 'Verified' : hoveredEvent.status}
                   </Badge>
                 </Group>
               </Stack>

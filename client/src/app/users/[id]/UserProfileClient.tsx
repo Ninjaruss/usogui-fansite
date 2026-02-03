@@ -29,6 +29,8 @@ import UserProfileImage from '../../../components/UserProfileImage'
 // GambleChip removed — using inline Badge chips for favorite gamble
 import UserBadges from '../../../components/UserBadges'
 import { UserRoleDisplay } from '../../../components/BadgeDisplay'
+import SubmissionCard from '../../../components/SubmissionCard'
+import type { SubmissionItem } from '../../../components/SubmissionCard'
 import { MAX_CHAPTER } from '../../../lib/constants'
 
 interface PublicUser {
@@ -96,6 +98,8 @@ export default function UserProfileClient({ initialUser }: UserProfileClientProp
     likesReceived: number
   } | null>(null)
   const [dataLoading, setDataLoading] = useState(true)
+  const [contributionsVisible, setContributionsVisible] = useState(10)
+  const [guidesVisible, setGuidesVisible] = useState(6)
 
   // Note: User profiles don't support page view tracking in the current system
 
@@ -535,74 +539,25 @@ export default function UserProfileClient({ initialUser }: UserProfileClientProp
               </Group>
 
               <Stack gap="sm">
-                {submissions.map((submission: any) => {
-                  const typeLabel =
-                    submission.type === 'guide' ? 'Guide' :
-                    submission.type === 'media' ? 'Media' :
-                    submission.type === 'event' ? 'Event' : 'Annotation'
-
-                  // Construct proper link for media submissions - link to entity pages
-                  const getSubmissionLink = () => {
-                    if (submission.type === 'guide') return `/guides/${submission.id}`
-                    if (submission.type === 'event') return `/events/${submission.id}`
-                    if (submission.type === 'annotation') return `/annotations/${submission.id}`
-                    if (submission.type === 'media' && submission.ownerType && submission.ownerId) {
-                      const entityPathMap: Record<string, string> = {
-                        character: 'characters',
-                        arc: 'arcs',
-                        event: 'events',
-                        gamble: 'gambles',
-                        organization: 'organizations',
-                        guide: 'guides',
-                        user: 'users',
-                        volume: 'volumes'
-                      }
-                      const basePath = entityPathMap[submission.ownerType] || 'media'
-                      return `/${basePath}/${submission.ownerId}#media`
-                    }
-                    return '#'
-                  }
-
-                  return (
-                    <Card
-                      key={`${submission.type}-${submission.id}`}
-                      withBorder
-                      radius="md"
-                      padding="md"
-                      shadow="sm"
-                      style={{
-                        background: getAlphaColor(guideColor, 0.12),
-                        border: `1px solid ${getAlphaColor(guideColor, 0.35)}`
-                      }}
-                    >
-                      <Group justify="space-between" wrap="nowrap">
-                        <Stack gap={4} style={{ flex: 1, minWidth: 0 }}>
-                          <Text fw={500} size="sm" lineClamp={1} c={textColors.primary}>
-                            {submission.title}
-                          </Text>
-                          {submission.type === 'media' && submission.description && (
-                            <Text size="xs" c="dimmed" lineClamp={1}>
-                              {submission.description}
-                            </Text>
-                          )}
-                          <Group gap="xs">
-                            <Badge size="xs" variant="outline">
-                              {typeLabel}
-                            </Badge>
-                            <Text size="xs" c="dimmed">
-                              {new Date(submission.createdAt).toLocaleDateString()}
-                            </Text>
-                          </Group>
-                        </Stack>
-                        {submission.type !== 'annotation' && (
-                          <Link href={getSubmissionLink()}>
-                            <Button size="xs" variant="subtle">View</Button>
-                          </Link>
-                        )}
-                      </Group>
-                    </Card>
-                  )
-                })}
+                {submissions.slice(0, contributionsVisible).map((submission: any) => (
+                  <SubmissionCard
+                    key={`${submission.type}-${submission.id}`}
+                    submission={submission as SubmissionItem}
+                    cardStyle={{
+                      background: getAlphaColor(guideColor, 0.12),
+                      border: `1px solid ${getAlphaColor(guideColor, 0.35)}`
+                    }}
+                  />
+                ))}
+                {submissions.length > contributionsVisible && (
+                  <Button
+                    variant="subtle"
+                    fullWidth
+                    onClick={() => setContributionsVisible(v => v + 10)}
+                  >
+                    Show more ({submissions.length - contributionsVisible} remaining)
+                  </Button>
+                )}
               </Stack>
             </Stack>
           </Card>
@@ -665,7 +620,7 @@ export default function UserProfileClient({ initialUser }: UserProfileClientProp
               </Group>
 
               <SimpleGrid cols={{ base: 1, md: 2 }} spacing="md">
-                {guides.map((guide) => (
+                {guides.slice(0, guidesVisible).map((guide) => (
                   <Card
                     key={guide.id}
                     withBorder
@@ -688,11 +643,11 @@ export default function UserProfileClient({ initialUser }: UserProfileClientProp
                       >
                         {guide.title}
                       </Anchor>
-                      
+
                       <Text size="sm" c={textColors.tertiary} lineClamp={2}>
                         {guide.description}
                       </Text>
-                      
+
                       <Group justify="space-between" align="center" mt="xs">
                         <Group gap="md">
                           <Group gap="xs">
@@ -706,7 +661,7 @@ export default function UserProfileClient({ initialUser }: UserProfileClientProp
                             </Text>
                           </Group>
                         </Group>
-                        
+
                         <Text size="xs" c={textColors.tertiary}>
                           {new Date(guide.createdAt).toLocaleDateString('en-US', {
                             month: 'short',
@@ -719,6 +674,15 @@ export default function UserProfileClient({ initialUser }: UserProfileClientProp
                   </Card>
                 ))}
               </SimpleGrid>
+              {guides.length > guidesVisible && (
+                <Button
+                  variant="subtle"
+                  fullWidth
+                  onClick={() => setGuidesVisible(v => v + 6)}
+                >
+                  Show more ({guides.length - guidesVisible} remaining)
+                </Button>
+              )}
             </Stack>
           </Card>
         )}

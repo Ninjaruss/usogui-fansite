@@ -11,6 +11,7 @@ import {
   Divider,
   Group,
   Loader,
+  SegmentedControl,
   SimpleGrid,
   Skeleton,
   Stack,
@@ -33,9 +34,7 @@ import {
   FileText,
   Quote,
   Dices,
-  FileImage,
-  Calendar,
-  MessageSquare
+  AlertTriangle,
 } from 'lucide-react'
 import Link from 'next/link'
 import { motion } from 'motion/react'
@@ -49,6 +48,8 @@ import GambleSelectionPopup from '../../components/GambleSelectionPopup'
 import ProfilePictureSelector from '../../components/ProfilePictureSelector'
 import UserBadges from '../../components/UserBadges'
 import CustomRoleDisplay from '../../components/CustomRoleDisplay'
+import SubmissionCard from '../../components/SubmissionCard'
+import type { SubmissionItem } from '../../components/SubmissionCard'
 
 interface UserGuide {
   id: number
@@ -133,6 +134,14 @@ export default function ProfilePageClient() {
   const [saving, setSaving] = useState(false)
   const [savingCustomRole, setSavingCustomRole] = useState(false)
   const initialCustomRoleRef = useRef<string>('')
+
+  // Submission filters and pagination
+  const [submissionTypeFilter, setSubmissionTypeFilter] = useState('all')
+  const [submissionStatusFilter, setSubmissionStatusFilter] = useState('all')
+  const [submissionsVisible, setSubmissionsVisible] = useState(10)
+  // Guide filters and pagination
+  const [guideStatusFilter, setGuideStatusFilter] = useState('all')
+  const [guidesVisible, setGuidesVisible] = useState(6)
 
   const [quoteModalOpened, { open: openQuoteModal, close: closeQuoteModal }] = useDisclosure(false)
   const [gambleModalOpened, { open: openGambleModal, close: closeGambleModal }] = useDisclosure(false)
@@ -834,77 +843,81 @@ export default function ProfilePageClient() {
                 <Text fw={600} size="lg">My Submissions</Text>
 
                 {submissions.length > 0 ? (
-                  <Stack gap="sm">
-                    {submissions.map((submission: any) => {
-                      const statusColor =
-                        submission.status === 'approved' ? 'green' :
-                        submission.status === 'pending' ? 'yellow' : 'red'
+                  <>
+                    <Group gap="sm" wrap="wrap">
+                      <SegmentedControl
+                        size="xs"
+                        value={submissionTypeFilter}
+                        onChange={(v) => { setSubmissionTypeFilter(v); setSubmissionsVisible(10) }}
+                        data={[
+                          { label: 'All', value: 'all' },
+                          { label: 'Guides', value: 'guide' },
+                          { label: 'Media', value: 'media' },
+                          { label: 'Events', value: 'event' },
+                          { label: 'Annotations', value: 'annotation' },
+                        ]}
+                      />
+                      <SegmentedControl
+                        size="xs"
+                        value={submissionStatusFilter}
+                        onChange={(v) => { setSubmissionStatusFilter(v); setSubmissionsVisible(10) }}
+                        data={[
+                          { label: 'All', value: 'all' },
+                          { label: 'Pending', value: 'pending' },
+                          { label: 'Approved', value: 'approved' },
+                          { label: 'Rejected', value: 'rejected' },
+                        ]}
+                      />
+                    </Group>
 
-                      const typeIcon =
-                        submission.type === 'guide' ? <FileText size={16} /> :
-                        submission.type === 'media' ? <FileImage size={16} /> :
-                        submission.type === 'event' ? <Calendar size={16} /> :
-                        <MessageSquare size={16} />
+                    {(() => {
+                      const filtered = submissions.filter((s: any) => {
+                        if (submissionTypeFilter !== 'all' && s.type !== submissionTypeFilter) return false
+                        if (submissionStatusFilter !== 'all' && s.status !== submissionStatusFilter) return false
+                        return true
+                      })
+                      const visible = filtered.slice(0, submissionsVisible)
+                      const hasMore = filtered.length > submissionsVisible
 
-                      // Construct proper link for media submissions - link to entity pages
-                      const getSubmissionLink = () => {
-                        if (submission.type === 'guide') return `/guides/${submission.id}`
-                        if (submission.type === 'event') return `/events/${submission.id}`
-                        if (submission.type === 'annotation') return `/annotations/${submission.id}`
-                        if (submission.type === 'media' && submission.ownerType && submission.ownerId) {
-                          const entityPathMap: Record<string, string> = {
-                            character: 'characters',
-                            arc: 'arcs',
-                            event: 'events',
-                            gamble: 'gambles',
-                            organization: 'organizations',
-                            guide: 'guides',
-                            user: 'users',
-                            volume: 'volumes'
-                          }
-                          const basePath = entityPathMap[submission.ownerType] || 'media'
-                          return `/${basePath}/${submission.ownerId}#media`
-                        }
-                        return '#'
+                      if (filtered.length === 0) {
+                        return (
+                          <Text size="sm" c="dimmed" ta="center" py="md">
+                            No submissions match these filters.
+                          </Text>
+                        )
                       }
 
                       return (
-                        <Card key={`${submission.type}-${submission.id}`} padding="sm" radius="md" withBorder>
-                          <Group justify="space-between" wrap="nowrap">
-                            <Group gap="sm" style={{ flex: 1, minWidth: 0 }}>
-                              {typeIcon}
-                              <Stack gap={4} style={{ flex: 1, minWidth: 0 }}>
-                                <Text fw={500} size="sm" lineClamp={1}>
-                                  {submission.title}
-                                </Text>
-                                {submission.type === 'media' && submission.description && (
-                                  <Text size="xs" c="dimmed" lineClamp={1}>
-                                    {submission.description}
-                                  </Text>
-                                )}
-                                <Group gap="xs">
-                                  <Badge size="xs" variant="light" color={statusColor}>
-                                    {submission.status}
-                                  </Badge>
-                                  <Badge size="xs" variant="outline">
-                                    {submission.type}
-                                  </Badge>
-                                  <Text size="xs" c="dimmed">
-                                    {new Date(submission.createdAt).toLocaleDateString()}
-                                  </Text>
-                                </Group>
-                              </Stack>
-                            </Group>
-                            {submission.status === 'approved' && submission.type !== 'annotation' && (
-                              <Link href={getSubmissionLink()}>
-                                <Button size="xs" variant="subtle">View</Button>
-                              </Link>
-                            )}
-                          </Group>
-                        </Card>
+                        <Stack gap="sm">
+                          {visible.map((submission: any) => (
+                            <SubmissionCard
+                              key={`${submission.type}-${submission.id}`}
+                              submission={submission as SubmissionItem}
+                              isOwnerView
+                              onDeleteMedia={async (id) => {
+                                try {
+                                  await api.deleteMedia(id)
+                                  setSubmissions(prev => prev.filter(s => !(s.type === 'media' && s.id === id)))
+                                  notifications.show({ title: 'Media deleted', message: 'You can resubmit a new version.', color: 'green' })
+                                } catch {
+                                  notifications.show({ title: 'Error', message: 'Failed to delete media.', color: 'red' })
+                                }
+                              }}
+                            />
+                          ))}
+                          {hasMore && (
+                            <Button
+                              variant="subtle"
+                              fullWidth
+                              onClick={() => setSubmissionsVisible(v => v + 10)}
+                            >
+                              Show more ({filtered.length - submissionsVisible} remaining)
+                            </Button>
+                          )}
+                        </Stack>
                       )
-                    })}
-                  </Stack>
+                    })()}
+                  </>
                 ) : (
                   <Alert icon={<FileText size={16} />} title="No submissions yet" variant="light">
                     <Text>You haven&apos;t made any submissions yet. Start contributing to the community!</Text>
@@ -916,7 +929,7 @@ export default function ProfilePageClient() {
             {/* My Guides Section */}
             <Card shadow="sm" padding="md" radius="md">
               <Stack gap="md">
-                <Group justify="space-between">
+                <Group justify="space-between" wrap="wrap">
                   <Text fw={600} size="lg">My Guides</Text>
                   <Button component={Link} href="/submit-guide" leftSection={<FileText size={16} />}>
                     Create New Guide
@@ -924,39 +937,91 @@ export default function ProfilePageClient() {
                 </Group>
 
                 {userGuides.length > 0 ? (
-                  <SimpleGrid cols={{ base: 1, md: 2, lg: 3 }} spacing="md">
-                    {userGuides.map((guide) => (
-                      <Link key={guide.id} href={`/guides/${guide.id}`} style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
-                        <Card shadow="sm" padding="md" radius="md" style={{ cursor: 'pointer' }}>
-                          <Stack gap="sm">
-                            <Group justify="space-between">
-                              <Text fw={600} size="md" lineClamp={2} style={{ flex: 1 }}>{guide.title}</Text>
-                              <Badge
-                                variant="light"
-                                color={
-                                  guide.status === GuideStatus.APPROVED ? 'green' :
-                                  guide.status === GuideStatus.PENDING ? 'yellow' : 'red'
-                                }
-                                size="sm"
-                              >
-                                {guide.status}
-                              </Badge>
-                            </Group>
-                            {guide.description && (
-                              <Text size="sm" c="dimmed" lineClamp={3}>
-                                {guide.description}
-                              </Text>
-                            )}
-                            <Group gap="xs" mt="auto">
-                              <Text size="xs" c="dimmed">
-                                Updated {new Date(guide.updatedAt).toLocaleDateString()}
-                              </Text>
-                            </Group>
-                          </Stack>
-                        </Card>
-                      </Link>
-                    ))}
-                  </SimpleGrid>
+                  <>
+                    <SegmentedControl
+                      size="xs"
+                      value={guideStatusFilter}
+                      onChange={(v) => { setGuideStatusFilter(v); setGuidesVisible(6) }}
+                      data={[
+                        { label: 'All', value: 'all' },
+                        { label: 'Pending', value: 'pending' },
+                        { label: 'Approved', value: 'approved' },
+                        { label: 'Rejected', value: 'rejected' },
+                      ]}
+                    />
+
+                    {(() => {
+                      const filtered = userGuides.filter((g) => {
+                        if (guideStatusFilter !== 'all' && g.status !== guideStatusFilter) return false
+                        return true
+                      })
+                      const visible = filtered.slice(0, guidesVisible)
+                      const hasMore = filtered.length > guidesVisible
+
+                      if (filtered.length === 0) {
+                        return (
+                          <Text size="sm" c="dimmed" ta="center" py="md">
+                            No guides match this filter.
+                          </Text>
+                        )
+                      }
+
+                      return (
+                        <Stack gap="md">
+                          <SimpleGrid cols={{ base: 1, md: 2, lg: 3 }} spacing="md">
+                            {visible.map((guide) => {
+                              const isRejected = guide.status === GuideStatus.REJECTED
+                              const statusColor =
+                                guide.status === GuideStatus.APPROVED ? 'green' :
+                                guide.status === GuideStatus.PENDING ? 'yellow' : 'red'
+
+                              return (
+                                <Card key={guide.id} shadow="sm" padding="md" radius="md" withBorder>
+                                  <Stack gap="sm">
+                                    <Group justify="space-between">
+                                      <Text fw={600} size="md" lineClamp={2} style={{ flex: 1 }}>{guide.title}</Text>
+                                      <Badge variant="light" color={statusColor} size="sm">
+                                        {guide.status}
+                                      </Badge>
+                                    </Group>
+                                    {guide.description && (
+                                      <Text size="sm" c="dimmed" lineClamp={3}>
+                                        {guide.description}
+                                      </Text>
+                                    )}
+                                    {isRejected && (guide as any).rejectionReason && (
+                                      <Alert icon={<AlertTriangle size={14} />} color="red" variant="light" p="xs" radius="sm">
+                                        <Text size="xs">{(guide as any).rejectionReason}</Text>
+                                      </Alert>
+                                    )}
+                                    <Group justify="space-between" mt="auto">
+                                      <Text size="xs" c="dimmed">
+                                        Updated {new Date(guide.updatedAt).toLocaleDateString()}
+                                      </Text>
+                                      <Link href={`/guides/${guide.id}`}>
+                                        <Button size="xs" variant="subtle" leftSection={<Edit size={14} />}>
+                                          {isRejected ? 'Edit & Resubmit' : 'View'}
+                                        </Button>
+                                      </Link>
+                                    </Group>
+                                  </Stack>
+                                </Card>
+                              )
+                            })}
+                          </SimpleGrid>
+                          {hasMore && (
+                            <Button
+                              variant="subtle"
+                              fullWidth
+                              onClick={() => setGuidesVisible(v => v + 6)}
+                            >
+                              Show more ({filtered.length - guidesVisible} remaining)
+                            </Button>
+                          )}
+                        </Stack>
+                      )
+                    })()}
+                  </>
                 ) : (
                   <Alert icon={<BookOpen size={16} />} title="No guides yet" variant="light">
                     <Text>You haven&apos;t created any guides yet. Start sharing your knowledge with the community!</Text>

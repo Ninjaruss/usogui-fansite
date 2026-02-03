@@ -292,12 +292,22 @@ export class AnnotationsService {
       }
     }
 
-    // Regular users can only edit pending annotations
+    // Regular users can only edit pending or rejected annotations
     if (
-      annotation.status !== AnnotationStatus.PENDING &&
+      annotation.status === AnnotationStatus.APPROVED &&
       currentUser.role === UserRole.USER
     ) {
-      throw new ForbiddenException('Only pending annotations can be edited');
+      throw new ForbiddenException('Approved annotations cannot be edited');
+    }
+
+    // If the author is editing a rejected annotation, auto-resubmit (reset to pending)
+    if (
+      annotation.status === AnnotationStatus.REJECTED &&
+      annotation.authorId === currentUser.id &&
+      currentUser.role === UserRole.USER
+    ) {
+      annotation.status = AnnotationStatus.PENDING;
+      annotation.rejectionReason = null;
     }
 
     const { isSpoiler, spoilerChapter, ...rest } = updateAnnotationDto;

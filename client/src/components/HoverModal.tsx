@@ -56,21 +56,21 @@ export function HoverModal({
     <AnimatePresence>
       {isOpen && position && (
         <>
-          {/* Backdrop for touch devices - tap to close */}
+          {/* Backdrop for touch devices - visual only, allows taps to pass through */}
           {showCloseButton && onClose && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.15 }}
-              onClick={onClose}
               style={{
                 position: 'fixed',
                 inset: 0,
                 zIndex: 1000,
-                backgroundColor: 'transparent'
+                backgroundColor: 'rgba(0, 0, 0, 0.05)',
+                pointerEvents: 'none'
               }}
-              aria-label="Close preview"
+              aria-label="Preview backdrop"
             />
           )}
           <motion.div
