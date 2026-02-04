@@ -67,7 +67,7 @@ const cleanUpdateData = (resource: string, data: Record<string, unknown>) => {
   if (resource === 'gambles') {
     // Keep only the fields that are allowed in the CreateGambleDto/UpdateGambleDto
     const allowedFields = [
-      'name', 'description', 'rules', 'winCondition', 'chapterId', 'participantIds'
+      'name', 'description', 'rules', 'winCondition', 'explanation', 'chapterId', 'participantIds'
     ]
 
     const gambleCleaned: Record<string, unknown> = {}
@@ -264,7 +264,7 @@ const cleanUpdateData = (resource: string, data: Record<string, unknown>) => {
   if (resource === 'characters') {
     // Keep only the fields that are allowed in the CreateCharacterDto/UpdateCharacterDto
     const allowedFields = [
-      'name', 'description', 'firstAppearanceChapter', 'alternateNames', 'organizationIds'
+      'name', 'description', 'backstory', 'firstAppearanceChapter', 'alternateNames', 'organizationIds'
     ]
 
     const characterCleaned: Record<string, unknown> = {}
