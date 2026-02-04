@@ -20,6 +20,11 @@ export class CharacterResponseDto {
   description?: string;
 
   @ApiPropertyOptional({
+    description: 'Character backstory - detailed history',
+  })
+  backstory?: string;
+
+  @ApiPropertyOptional({
     description: 'First appearance chapter number',
     example: 1,
   })

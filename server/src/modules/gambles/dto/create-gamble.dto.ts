@@ -1,4 +1,10 @@
-import { IsString, IsNumber, IsOptional, IsArray } from 'class-validator';
+import {
+  IsString,
+  IsNumber,
+  IsOptional,
+  IsArray,
+  MaxLength,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateGambleDto {
@@ -32,6 +38,17 @@ export class CreateGambleDto {
   @IsOptional()
   @IsString()
   winCondition?: string;
+
+  @ApiPropertyOptional({
+    description:
+      'In-depth explanation of gamble mechanics, strategy, and analysis',
+    example:
+      'This gamble relies on psychological warfare and probability calculation. The key to victory is...',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(15000)
+  explanation?: string;
 
   @ApiProperty({
     description: 'ID of the chapter where this gamble occurs',

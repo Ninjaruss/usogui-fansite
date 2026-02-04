@@ -146,6 +146,23 @@ export const CharacterShow = () => (
           )
         }
       />
+      <FunctionField
+        label="Backstory"
+        render={(record: any) =>
+          record.backstory ? (
+            <EnhancedSpoilerMarkdown
+              content={record.backstory}
+              className="admin-backstory"
+              enableEntityEmbeds={true}
+              compactEntityCards={true}
+            />
+          ) : (
+            <Typography variant="body2" color="text.secondary">
+              No backstory
+            </Typography>
+          )
+        }
+      />
       <NumberField source="firstAppearanceChapter" />
       <FunctionField
         label="Alternate Names"
@@ -376,12 +393,19 @@ export const CharacterEdit = () => (
                     Basic Information
                   </Typography>
                   <TextInput source="name" required fullWidth />
-                  <TextInput 
-                    source="description" 
-                    multiline 
-                    rows={4} 
-                    fullWidth 
+                  <TextInput
+                    source="description"
+                    multiline
+                    rows={4}
+                    fullWidth
                     helperText="Supports Markdown formatting (bold, italic, lists, links, etc.)"
+                  />
+                  <TextInput
+                    source="backstory"
+                    multiline
+                    rows={8}
+                    fullWidth
+                    helperText="Detailed character history and background. Supports Markdown formatting."
                   />
                   <NumberInput source="firstAppearanceChapter" max={539} min={1} fullWidth />
                 </Box>
@@ -799,12 +823,19 @@ export const CharacterCreate = () => (
                     Basic Information
                   </Typography>
                   <TextInput source="name" required fullWidth />
-                  <TextInput 
-                    source="description" 
-                    multiline 
-                    rows={4} 
-                    fullWidth 
+                  <TextInput
+                    source="description"
+                    multiline
+                    rows={4}
+                    fullWidth
                     helperText="Supports Markdown formatting (bold, italic, lists, links, etc.)"
+                  />
+                  <TextInput
+                    source="backstory"
+                    multiline
+                    rows={8}
+                    fullWidth
+                    helperText="Detailed character history and background. Supports Markdown formatting."
                   />
                   <NumberInput source="firstAppearanceChapter" max={539} min={1} fullWidth />
                 </Box>

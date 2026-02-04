@@ -17,7 +17,7 @@ import {
   Title,
   useMantineTheme
 } from '@mantine/core'
-import { Crown, Users, Trophy, Calendar, BookOpen, Image as ImageIcon, MessageSquare } from 'lucide-react'
+import { Crown, Users, Trophy, Calendar, BookOpen, Image as ImageIcon, MessageSquare, Lightbulb } from 'lucide-react'
 import Link from 'next/link'
 import EnhancedSpoilerMarkdown from '../../../components/EnhancedSpoilerMarkdown'
 import { motion } from 'motion/react'
@@ -52,6 +52,7 @@ interface Gamble {
   description?: string
   rules: string
   winCondition?: string
+  explanation?: string
   chapterId: number
   participants?: Array<{
     id: number
@@ -439,6 +440,29 @@ export default function GamblePageClient({ initialGamble }: GamblePageClientProp
                       <EnhancedSpoilerMarkdown
                         content={initialGamble.winCondition}
                         className="gamble-win-condition"
+                        enableEntityEmbeds
+                        compactEntityCards={false}
+                      />
+                    </Box>
+                  </Stack>
+                </Card>
+              )}
+
+              {/* Explanation & Analysis Section */}
+              {initialGamble.explanation && (
+                <Card withBorder radius="lg" shadow="lg" style={{
+                  background: backgroundStyles.card,
+                  border: `1px solid ${getAlphaColor(gambleColor, 0.4)}`
+                }}>
+                  <Stack gap={theme.spacing.md} p={theme.spacing.lg}>
+                    <Group gap={theme.spacing.sm} align="center">
+                      <Lightbulb size={24} color={gambleColor} />
+                      <Title order={3} c={headerColors.h3}>Explanation & Analysis</Title>
+                    </Group>
+                    <Box style={{ lineHeight: 1.6 }}>
+                      <EnhancedSpoilerMarkdown
+                        content={initialGamble.explanation}
+                        className="gamble-explanation"
                         enableEntityEmbeds
                         compactEntityCards={false}
                       />

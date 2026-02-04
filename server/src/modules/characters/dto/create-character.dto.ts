@@ -44,6 +44,16 @@ export class CreateCharacterDto {
   description?: string;
 
   @ApiPropertyOptional({
+    description: 'Character backstory - detailed history and background',
+    example:
+      'Born into a family of gamblers, Baku learned the art of deception at an early age...',
+  })
+  @IsString()
+  @IsOptional()
+  @MaxLength(15000) // Higher limit than description for detailed backstory
+  backstory?: string;
+
+  @ApiPropertyOptional({
     description: 'First chapter appearance number',
     example: 1,
   })

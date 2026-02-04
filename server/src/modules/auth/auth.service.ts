@@ -29,7 +29,13 @@ export class AuthService {
 
   // --- Discord Authentication ---
   async validateDiscordUser(profile: any): Promise<User> {
-    const { id: discordId, username: discordUsername, avatar, email, global_name: displayName } = profile;
+    const {
+      id: discordId,
+      username: discordUsername,
+      avatar,
+      email,
+      global_name: displayName,
+    } = profile;
 
     // Check if user already exists
     let user = await this.usersService.findByDiscordId(discordId);

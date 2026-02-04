@@ -40,6 +40,7 @@ export interface Character {
   id: number;
   name: string;
   description: string;
+  backstory?: string;
   alternateNames: string[];
   firstAppearanceChapter: number;
   createdAt: string;
@@ -154,6 +155,7 @@ export interface Gamble {
   description?: string;
   rules: string;
   winCondition?: string;
+  explanation?: string;
   chapterId: number;
   participants?: Character[];
   createdAt: string;

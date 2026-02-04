@@ -409,7 +409,10 @@ export class MediaService {
 
     // Attempt to send email notification, but don't fail the rejection if email fails
     try {
-      if (media.submittedBy?.email && !this.isTestUser(media.submittedBy.email)) {
+      if (
+        media.submittedBy?.email &&
+        !this.isTestUser(media.submittedBy.email)
+      ) {
         await this.emailService.sendMediaRejectionNotification(
           media.submittedBy.email,
           media.description || 'your submission',
@@ -418,7 +421,10 @@ export class MediaService {
       }
     } catch (emailError) {
       // Log the error but don't propagate it - the rejection already succeeded
-      console.error('Failed to send rejection email (media still rejected):', emailError);
+      console.error(
+        'Failed to send rejection email (media still rejected):',
+        emailError,
+      );
     }
 
     return savedMedia;

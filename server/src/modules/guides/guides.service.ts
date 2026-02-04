@@ -605,7 +605,9 @@ export class GuidesService {
         if (tagNames.length > 0) {
           // Validate max 5 tags per guide
           if (tagNames.length > 5) {
-            throw new BadRequestException('A guide can have a maximum of 5 tags');
+            throw new BadRequestException(
+              'A guide can have a maximum of 5 tags',
+            );
           }
 
           // Batch fetch all existing tags in a single query

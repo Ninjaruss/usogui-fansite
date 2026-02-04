@@ -114,10 +114,10 @@ server/
 Key entities include:
 
 - **User**: User accounts with roles and authentication
-- **Character**: Usogui characters with detailed information
+- **Character**: Usogui characters with detailed information (includes `description` for brief intro and `backstory` for detailed history)
 - **Arc**: Story arcs with chapter relationships
 - **Volume/Chapter**: Manga structure
-- **Gamble**: Game mechanics and rules
+- **Gamble**: Game mechanics and rules (includes `rules`, `winCondition`, and `explanation` for in-depth analysis)
 - **Event**: Story events and timeline
 - **Organization**: Character groupings
 - **Guide**: Community-generated guides

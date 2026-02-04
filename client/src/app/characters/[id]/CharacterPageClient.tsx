@@ -50,6 +50,7 @@ interface Character {
   name: string
   alternateNames: string[] | null
   description: string | null
+  backstory?: string | null
   firstAppearanceChapter: number | null
   imageFileName?: string | null
   imageDisplayName?: string | null
@@ -400,6 +401,27 @@ export default function CharacterPageClient({
                   )}
                 </Stack>
               </Card>
+
+              {/* Character Backstory Section */}
+              {character.backstory && (
+                <Card withBorder radius="lg" shadow="lg" style={getCardStyles(theme, entityColors.character)}>
+                  <Stack gap={theme.spacing.md} p={theme.spacing.lg}>
+                    <Group gap={theme.spacing.sm} align="center">
+                      <BookOpen size={24} color={entityColors.character} />
+                      <Title order={3} c={headerColors.h3}>History & Background</Title>
+                    </Group>
+                    <TimelineSpoilerWrapper chapterNumber={character.firstAppearanceChapter ?? undefined}>
+                      <Box style={{ lineHeight: 1.6 }}>
+                        <EnhancedSpoilerMarkdown
+                          content={character.backstory}
+                          enableEntityEmbeds
+                          compactEntityCards={false}
+                        />
+                      </Box>
+                    </TimelineSpoilerWrapper>
+                  </Stack>
+                </Card>
+              )}
 
               {/* Character Relationships */}
               <CharacterRelationships

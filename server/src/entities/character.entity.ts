@@ -43,6 +43,15 @@ export class Character {
   description: string | null;
 
   @ApiPropertyOptional({
+    description:
+      'Character backstory - detailed history and background information',
+    example:
+      'Born into a family of gamblers, Baku learned the art of deception at an early age...',
+  })
+  @Column({ type: 'text', nullable: true })
+  backstory: string | null;
+
+  @ApiPropertyOptional({
     description: 'Chapter number where the character first appears',
     example: 1,
   })

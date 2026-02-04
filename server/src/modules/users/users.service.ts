@@ -587,7 +587,16 @@ export class UsersService {
       limiter(() =>
         mediaRepo.find({
           where: { submittedBy: { id: userId } },
-          select: ['id', 'fileName', 'status', 'createdAt', 'description', 'ownerType', 'ownerId', 'url'],
+          select: [
+            'id',
+            'fileName',
+            'status',
+            'createdAt',
+            'description',
+            'ownerType',
+            'ownerId',
+            'url',
+          ],
           order: { createdAt: 'DESC' },
         }),
       ),
@@ -629,15 +638,19 @@ export class UsersService {
                 where: { id: m.ownerId },
               });
               if (entity) {
-                entityName = entity.name || entity.title || entity.username || 'Unknown';
+                entityName =
+                  entity.name || entity.title || entity.username || 'Unknown';
               }
             }
           }
         } catch (error) {
-          console.error(`Failed to fetch entity name for media ${m.id}:`, error);
+          console.error(
+            `Failed to fetch entity name for media ${m.id}:`,
+            error,
+          );
         }
         return { ...m, entityName };
-      })
+      }),
     );
 
     const submissions = [

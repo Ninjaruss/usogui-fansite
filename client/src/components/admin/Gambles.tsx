@@ -262,9 +262,35 @@ export const GambleShow = () => (
                 )
               }
             />
+
+            <Typography variant="h6" gutterBottom sx={{ color: '#ffffff', fontWeight: 'bold', mt: 3 }}>Explanation & Analysis</Typography>
+            <FunctionField
+              source="explanation"
+              render={(record: any) =>
+                record.explanation ? (
+                  <Box sx={{
+                    p: 2,
+                    bgcolor: '#0f0f0f',
+                    borderRadius: 1,
+                    border: '1px solid rgba(211, 47, 47, 0.3)',
+                  }}>
+                    <EnhancedSpoilerMarkdown
+                      content={record.explanation}
+                      className="admin-gamble-explanation"
+                      enableEntityEmbeds={true}
+                      compactEntityCards={true}
+                    />
+                  </Box>
+                ) : (
+                  <Typography variant="body2" color="text.secondary">
+                    No explanation provided
+                  </Typography>
+                )
+              }
+            />
           </Box>
         </Tab>
-      
+
         <Tab label="Participants">
           <Box sx={{ p: 3, backgroundColor: '#0a0a0a' }}>
             <Typography variant="h6" gutterBottom sx={{ color: '#ffffff', fontWeight: 'bold', mb: 2 }}>Gamble Participants</Typography>
@@ -471,6 +497,16 @@ const GambleEditForm = () => {
             label="Win Conditions"
             helperText="What determines victory in this gamble (optional). Supports Markdown formatting."
           />
+
+          <Typography variant="subtitle1" gutterBottom sx={{ mt: 3, mb: 1, color: '#ffffff', fontWeight: 'bold' }}>Explanation & Analysis</Typography>
+          <TextInput
+            source="explanation"
+            multiline
+            rows={8}
+            fullWidth
+            label="Explanation"
+            helperText="In-depth explanation of gamble mechanics, strategy, and analysis (optional). Supports Markdown formatting."
+          />
         </Box>
       </FormTab>
 
@@ -662,6 +698,16 @@ export const GambleCreate = () => {
                 fullWidth
                 label="Win Conditions"
                 helperText="What determines victory in this gamble (optional). Supports Markdown formatting."
+              />
+
+              <Typography variant="subtitle1" gutterBottom sx={{ mt: 3, mb: 1, color: '#ffffff', fontWeight: 'bold' }}>Explanation & Analysis</Typography>
+              <TextInput
+                source="explanation"
+                multiline
+                rows={8}
+                fullWidth
+                label="Explanation"
+                helperText="In-depth explanation of gamble mechanics, strategy, and analysis (optional). Supports Markdown formatting."
               />
             </Box>
           </FormTab>

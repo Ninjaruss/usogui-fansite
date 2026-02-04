@@ -19,8 +19,8 @@ A comprehensive fansite dedicated to the Usogui manga series. The platform enabl
 
 ### Key Domain Models
 The database centers around manga content entities:
-- **Core Content**: Characters, Arcs, Volumes, Chapters
-- **Gambles**: Central theme of the manga - gambling matches with participants and outcomes
+- **Core Content**: Characters (with description and backstory fields), Arcs, Volumes, Chapters
+- **Gambles**: Central theme of the manga - gambling matches with participants, outcomes, rules, and explanations
 - **Community**: Users (role-based), Guides (community-written), Media (fan gallery), Quotes
 - **Organization**: Organizations, Events, Tags, Translations
 
