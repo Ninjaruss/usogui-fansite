@@ -207,6 +207,49 @@ export class BackblazeB2Service {
     }
   }
 
+  private async attemptUpload(
+    uploadUrl: B2UploadUrlResponse,
+    file: Buffer,
+    fullFileName: string,
+    contentType: string,
+    sha1Hash: string,
+  ): Promise<B2UploadResponse> {
+    const response = await fetch(uploadUrl.uploadUrl, {
+      method: 'POST',
+      headers: {
+        Authorization: uploadUrl.authorizationToken,
+        'X-Bz-File-Name': encodeURIComponent(fullFileName),
+        'Content-Type': contentType,
+        'Content-Length': file.length.toString(),
+        'X-Bz-Content-Sha1': sha1Hash,
+      },
+      body: new Uint8Array(file),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      let errorData: any;
+      try {
+        errorData = JSON.parse(errorText);
+      } catch {
+        errorData = { message: errorText };
+      }
+
+      this.logger.error(
+        `B2 upload failed: ${response.status}`,
+        JSON.stringify(errorData, null, 2),
+      );
+
+      // Throw with status code so we can handle retries
+      const error: any = new Error(`Upload failed: ${response.status}`);
+      error.status = response.status;
+      error.code = errorData.code;
+      throw error;
+    }
+
+    return (await response.json()) as B2UploadResponse;
+  }
+
   async uploadFile(
     file: Buffer,
     fileName: string,
@@ -231,54 +274,79 @@ export class BackblazeB2Service {
       );
     }
 
-    const uploadUrl = await this.getUploadUrl();
     const fullFileName = `${folder}/${fileName}`;
 
     // Calculate SHA1 hash of the file content
     const crypto = await import('crypto');
     const sha1Hash = crypto.createHash('sha1').update(file).digest('hex');
 
-    try {
-      const response = await fetch(uploadUrl.uploadUrl, {
-        method: 'POST',
-        headers: {
-          Authorization: uploadUrl.authorizationToken,
-          'X-Bz-File-Name': encodeURIComponent(fullFileName),
-          'Content-Type': contentType,
-          'Content-Length': file.length.toString(),
-          'X-Bz-Content-Sha1': sha1Hash,
-        },
-        body: new Uint8Array(file),
-      });
+    const maxRetries = 3;
+    let lastError: any;
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        this.logger.error(
-          `B2 upload failed: ${response.status} ${response.statusText}`,
-          errorText,
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      try {
+        // Get a fresh upload URL for each attempt
+        // This is important for 503 errors where the token may be expired
+        const uploadUrl = await this.getUploadUrl();
+
+        if (attempt > 0) {
+          this.logger.log(
+            `Retry attempt ${attempt + 1}/${maxRetries} for ${fileName}`,
+          );
+        }
+
+        const uploadResult = await this.attemptUpload(
+          uploadUrl,
+          file,
+          fullFileName,
+          contentType,
+          sha1Hash,
         );
-        throw new Error(
-          `Upload failed: ${response.status} ${response.statusText}`,
+
+        // Generate public URL
+        const publicUrl = this.generatePublicUrl(uploadResult.fileName);
+
+        this.logger.log(`Successfully uploaded ${uploadResult.fileName} to B2`);
+
+        return {
+          fileId: uploadResult.fileId,
+          fileName: uploadResult.fileName,
+          url: publicUrl,
+          key: uploadResult.fileName, // B2 object key is the full file name/path
+        };
+      } catch (error: any) {
+        lastError = error;
+
+        // Check if error is retryable (503, 500, 408, or network errors)
+        const isRetryable =
+          error.status === 503 ||
+          error.status === 500 ||
+          error.status === 408 ||
+          error.code === 'service_unavailable' ||
+          !error.status; // Network errors
+
+        if (!isRetryable || attempt === maxRetries - 1) {
+          // Don't retry for non-retryable errors or if this was the last attempt
+          break;
+        }
+
+        // Exponential backoff: 1s, 2s, 4s
+        const backoffMs = Math.pow(2, attempt) * 1000;
+        this.logger.warn(
+          `Upload attempt ${attempt + 1} failed with ${error.status || 'network error'}, retrying in ${backoffMs}ms...`,
         );
+        await new Promise((resolve) => setTimeout(resolve, backoffMs));
       }
-
-      const uploadResult = (await response.json()) as B2UploadResponse;
-
-      // Generate public URL
-      const publicUrl = this.generatePublicUrl(uploadResult.fileName);
-
-      this.logger.log(`Successfully uploaded ${uploadResult.fileName} to B2`);
-
-      return {
-        fileId: uploadResult.fileId,
-        fileName: uploadResult.fileName,
-        url: publicUrl,
-        key: uploadResult.fileName, // B2 object key is the full file name/path
-      };
-    } catch (error) {
-      this.logger.error('Failed to upload file to B2', error);
-      throw new InternalServerErrorException('Failed to upload file');
     }
+
+    // All retries failed
+    this.logger.error(
+      `Failed to upload file to B2 after ${maxRetries} attempts`,
+      lastError,
+    );
+    throw new InternalServerErrorException(
+      'Failed to upload file. Please try again later.',
+    );
   }
 
   /**

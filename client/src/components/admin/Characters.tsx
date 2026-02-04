@@ -341,9 +341,10 @@ export const CharacterEdit = () => (
         </Box>
 
         <CardContent sx={{ p: 4 }}>
-          <SimpleForm 
+          <SimpleForm
+            sanitizeEmptyValues={false}
             toolbar={
-              <EditToolbar 
+              <EditToolbar
                 resource="characters"
                 confirmTitle="Delete Character"
                 confirmMessage="Are you sure you want to delete this character? This will remove all associated data and cannot be undone."

@@ -1,8 +1,18 @@
 # Changelog and notes
 
 ## TODO
+- For media admin page, general filter should show everything except volumes
+
 
 ## 2026-02-04
+### Backblaze B2 Upload Retry Logic
+**Fixed 503 "service_unavailable" errors with automatic retry mechanism:**
+- **Retry Logic**: Implemented exponential backoff with up to 3 retry attempts for failed uploads
+- **Fresh Upload URLs**: Get a new upload URL on each retry attempt to handle expired tokens
+- **Retryable Errors**: Automatically retry on 503, 500, 408 status codes and network errors
+- **Better Error Logging**: Enhanced error messages with structured JSON logging for debugging
+- **Backoff Strategy**: Exponential backoff (1s, 2s, 4s) between retry attempts to avoid overwhelming B2 servers
+
 ### Database Performance & Migration Safety Optimization
 **Major performance improvements to prevent crashes and speed up operations 10-50x:**
 

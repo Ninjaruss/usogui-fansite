@@ -104,6 +104,7 @@ export class GamblesService {
     gamble.description = updateGambleDto.description ?? gamble.description;
     gamble.rules = updateGambleDto.rules ?? gamble.rules;
     gamble.winCondition = updateGambleDto.winCondition ?? gamble.winCondition;
+    gamble.explanation = updateGambleDto.explanation ?? gamble.explanation;
     gamble.chapterId = updateGambleDto.chapterId ?? gamble.chapterId;
 
     // Handle participants if provided
