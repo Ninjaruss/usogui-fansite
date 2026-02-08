@@ -1,4 +1,6 @@
 import { Metadata } from 'next'
+import { Suspense } from 'react'
+import { Container, Box, Loader } from '@mantine/core'
 import SubmitEventPageContent from './SubmitEventPageContent'
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -18,6 +20,20 @@ export async function generateMetadata(): Promise<Metadata> {
   }
 }
 
+function SubmitEventFallback() {
+  return (
+    <Container size="md" py="xl">
+      <Box style={{ display: 'flex', justifyContent: 'center' }}>
+        <Loader size="lg" />
+      </Box>
+    </Container>
+  )
+}
+
 export default function SubmitEventPage() {
-  return <SubmitEventPageContent />
+  return (
+    <Suspense fallback={<SubmitEventFallback />}>
+      <SubmitEventPageContent />
+    </Suspense>
+  )
 }

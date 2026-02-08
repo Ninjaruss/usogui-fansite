@@ -8,78 +8,19 @@ export class TagSeeder implements Seeder {
   async run(): Promise<void> {
     const tagRepository = this.dataSource.getRepository(Tag);
 
+    // Streamlined tags focused on analysis types
     const tags = [
       {
-        name: 'High Stakes',
-        description:
-          'Content involving high-stakes gambling scenarios with significant consequences',
+        name: 'Gamble Breakdown',
+        description: 'Analysis of gambling mechanics, rules, and strategies',
       },
       {
-        name: 'Psychological',
-        description:
-          'Events that focus on psychological manipulation, mind games, and mental strategy',
+        name: 'Character Study',
+        description: 'Deep dives into character psychology and motivations',
       },
       {
-        name: 'Action',
-        description:
-          'Fast-paced scenes with physical confrontations or intense situations',
-      },
-      {
-        name: 'Mystery',
-        description:
-          'Events involving mysteries, hidden information, or plot reveals',
-      },
-      {
-        name: 'Character Development',
-        description:
-          'Scenes that significantly develop character backgrounds, motivations, or relationships',
-      },
-      {
-        name: 'Plot Twist',
-        description:
-          'Unexpected turns in the story that change the direction of the narrative',
-      },
-      {
-        name: 'Gambling',
-        description: 'Scenes focused on various forms of gambling and gaming',
-      },
-      {
-        name: 'Kakerou',
-        description:
-          'Content related to the Kakerou organization and its activities',
-      },
-      {
-        name: 'Lie Detection',
-        description:
-          "Scenes showcasing Baku's ability to detect lies and deception",
-      },
-      {
-        name: 'Alliance',
-        description: 'Formation or development of alliances between characters',
-      },
-      {
-        name: 'Betrayal',
-        description:
-          'Events involving betrayal or broken trust between characters',
-      },
-      {
-        name: 'Strategy',
-        description:
-          'Scenes focusing on strategic planning and tactical thinking',
-      },
-      {
-        name: 'Backstory',
-        description: 'Revelations about character backgrounds and past events',
-      },
-      {
-        name: 'Tournament',
-        description:
-          'Events related to organized gambling tournaments and competitions',
-      },
-      {
-        name: 'Life or Death',
-        description:
-          'Situations where characters face life-threatening consequences',
+        name: 'Plot Analysis',
+        description: 'Story structure, arcs, foreshadowing, and twists',
       },
     ];
 

@@ -1,6 +1,12 @@
 # Changelog and notes
 
 ## TODO
+- Default view for media admin page should show general (excludes volumes) and pending review filter
+- Character backstory still doesn't show on the detail page
+- Gambles page only has 12 items, but for some reason shows that there's 2 pages
+- Add ui to allow the user to edit and resubmit their own submissions 
+- Streamline available tags for guides; remove duplicates and make more streamlined tags
+
 
 ## 2026-02-07
 - Media gallery image display update

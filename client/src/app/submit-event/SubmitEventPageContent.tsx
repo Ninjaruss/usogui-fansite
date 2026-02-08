@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import styles from './SubmitEventPageContent.module.css'
 import {
   Alert,
@@ -42,6 +43,10 @@ const EVENT_TYPE_OPTIONS = [
 export default function SubmitEventPageContent() {
   const theme = useMantineTheme()
   const { user, loading: authLoading } = useAuth()
+  const searchParams = useSearchParams()
+  const editEventId = searchParams.get('edit')
+  const isEditMode = Boolean(editEventId)
+
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -59,6 +64,7 @@ export default function SubmitEventPageContent() {
   const [arcs, setArcs] = useState<Array<{ id: number; name: string }>>([])
   const [gambles, setGambles] = useState<Array<{ id: number; name: string }>>([])
   const [loadingData, setLoadingData] = useState(true)
+  const [existingEvent, setExistingEvent] = useState<any>(null)
 
   // Set tab accent colors for event entity
   useEffect(() => {
@@ -106,7 +112,7 @@ export default function SubmitEventPageContent() {
 
     setLoading(true)
     try {
-      await api.createEvent({
+      const eventPayload = {
         title: formData.title.trim(),
         description: formData.description.trim(),
         chapterNumber: formData.chapterNumber as number,
@@ -115,23 +121,32 @@ export default function SubmitEventPageContent() {
         gambleId: formData.gambleId ?? undefined,
         spoilerChapter: formData.spoilerChapter || undefined,
         characterIds: formData.characterIds.length ? formData.characterIds : undefined
-      })
-      setSuccess('Event submitted! It is now pending review and you\'ll be notified when it\'s approved. Track your submissions on your profile page.')
-      setFormData({
-        title: '',
-        description: '',
-        chapterNumber: 1,
-        type: '',
-        arcId: null,
-        gambleId: null,
-        spoilerChapter: '',
-        characterIds: []
-      })
+      }
+
+      if (isEditMode && editEventId) {
+        // Edit mode: update existing event (uses /own endpoint for auto-resubmit)
+        await api.updateOwnEvent(parseInt(editEventId), eventPayload)
+        setSuccess('Event updated! If it was previously rejected, it has been resubmitted for review.')
+      } else {
+        // Create mode: submit new event
+        await api.createEvent(eventPayload)
+        setSuccess('Event submitted! It is now pending review and you\'ll be notified when it\'s approved. Track your submissions on your profile page.')
+        setFormData({
+          title: '',
+          description: '',
+          chapterNumber: 1,
+          type: '',
+          arcId: null,
+          gambleId: null,
+          spoilerChapter: '',
+          characterIds: []
+        })
+      }
     } catch (submissionError: unknown) {
       if (submissionError instanceof Error) {
         setError(submissionError.message)
       } else {
-        setError('Failed to submit event. Please try again.')
+        setError(isEditMode ? 'Failed to update event. Please try again.' : 'Failed to submit event. Please try again.')
       }
     } finally {
       setLoading(false)
@@ -159,6 +174,32 @@ export default function SubmitEventPageContent() {
 
     loadData()
   }, [])
+
+  // Fetch existing event data when in edit mode
+  useEffect(() => {
+    if (isEditMode && editEventId) {
+      const fetchEventData = async () => {
+        try {
+          const eventData = await api.getEvent(parseInt(editEventId))
+          setExistingEvent(eventData)
+          setFormData({
+            title: eventData.title || '',
+            description: eventData.description || '',
+            chapterNumber: eventData.chapterNumber || 1,
+            type: eventData.type || '',
+            arcId: eventData.arcId || null,
+            gambleId: eventData.gambleId || null,
+            spoilerChapter: eventData.spoilerChapter || '',
+            characterIds: eventData.characters?.map((c: any) => c.id) || []
+          })
+        } catch (fetchError) {
+          console.error('Error fetching event:', fetchError)
+          setError('Failed to load event data. You may not have permission to edit this event.')
+        }
+      }
+      fetchEventData()
+    }
+  }, [isEditMode, editEventId])
 
   if (authLoading || loadingData) {
     return (
@@ -207,9 +248,11 @@ export default function SubmitEventPageContent() {
           <ThemeIcon size={64} radius="xl" variant="light" style={{ backgroundColor: 'rgba(250, 176, 5, 0.15)', color: eventAccent }}>
             <Zap size={32} color={eventAccent} />
           </ThemeIcon>
-          <Title order={1}>Submit an Event</Title>
+          <Title order={1}>{isEditMode ? 'Edit Event' : 'Submit an Event'}</Title>
           <Text size="lg" c="dimmed">
-            Document key moments, decisions, and revelations from the Usogui story
+            {isEditMode
+              ? 'Update your event submission details'
+              : 'Document key moments, decisions, and revelations from the Usogui story'}
           </Text>
         </Stack>
 
@@ -540,11 +583,15 @@ export default function SubmitEventPageContent() {
                   color: isFormValid ? '#000' : undefined
                 }}
               >
-                Submit Event for Review
+                {loading
+                  ? (isEditMode ? 'Updating...' : 'Submitting...')
+                  : (isEditMode ? 'Update Event' : 'Submit Event for Review')}
               </Button>
 
               <Text size="sm" c="dimmed" ta="center">
-                Your event will be reviewed by a moderator before being published.
+                {isEditMode
+                  ? 'Your updated event will be reviewed by a moderator.'
+                  : 'Your event will be reviewed by a moderator before being published.'}
               </Text>
             </Stack>
           </form>

@@ -25,8 +25,9 @@ import {
   backgroundStyles,
   getCardStyles
 } from '../../../lib/mantine-theme'
-import { CalendarSearch, BookOpen, Dice6, Users, Tag, Image as ImageIcon } from 'lucide-react'
+import { CalendarSearch, BookOpen, Dice6, Users, Tag, Image as ImageIcon, Edit } from 'lucide-react'
 import Link from 'next/link'
+import { useAuth } from '../../../providers/AuthProvider'
 import EnhancedSpoilerMarkdown from '../../../components/EnhancedSpoilerMarkdown'
 import { motion } from 'motion/react'
 import { usePageView } from '../../../hooks/usePageView'
@@ -42,9 +43,16 @@ interface EventPageClientProps {
 
 export default function EventPageClient({ initialEvent }: EventPageClientProps) {
   const theme = useMantineTheme()
+  const { user } = useAuth()
   const [activeTab, setActiveTab] = useState<string>('overview')
 
   usePageView('event', initialEvent.id.toString(), true)
+
+  // Check if current user can edit this event
+  const canEdit = user &&
+    initialEvent.createdBy?.id === user.id &&
+    (initialEvent.status === 'pending' || initialEvent.status === 'rejected')
+  const isRejected = initialEvent.status === 'rejected'
 
   // Set tab accent colors for event entity
   useEffect(() => {
@@ -151,23 +159,40 @@ export default function EventPageClient({ initialEvent }: EventPageClientProps) 
                       </Title>
                     </Group>
 
-                    {/* Chapter Badge */}
-                    <Badge
-                      variant="filled"
-                      size="lg"
-                      radius="md"
-                      style={{
-                        background: `linear-gradient(135deg, ${entityColors.event} 0%, ${entityColors.event}dd 100%)`,
-                        border: `1px solid ${entityColors.event}`,
-                        boxShadow: theme.shadows.md,
-                        fontSize: fontSize.sm,
-                        color: textColors.primary,
-                        fontWeight: 600,
-                        alignSelf: 'flex-start'
-                      }}
-                    >
-                      Chapter {initialEvent.chapterNumber}
-                    </Badge>
+                    {/* Chapter Badge and Edit Button */}
+                    <Group gap={theme.spacing.sm}>
+                      <Badge
+                        variant="filled"
+                        size="lg"
+                        radius="md"
+                        style={{
+                          background: `linear-gradient(135deg, ${entityColors.event} 0%, ${entityColors.event}dd 100%)`,
+                          border: `1px solid ${entityColors.event}`,
+                          boxShadow: theme.shadows.md,
+                          fontSize: fontSize.sm,
+                          color: textColors.primary,
+                          fontWeight: 600
+                        }}
+                      >
+                        Chapter {initialEvent.chapterNumber}
+                      </Badge>
+                      {canEdit && (
+                        <Button
+                          component={Link}
+                          href={`/submit-event?edit=${initialEvent.id}`}
+                          variant="outline"
+                          size="sm"
+                          radius="xl"
+                          leftSection={<Edit size={14} />}
+                          color={isRejected ? 'orange' : 'gray'}
+                          style={{
+                            fontWeight: 600
+                          }}
+                        >
+                          {isRejected ? 'Edit & Resubmit' : 'Edit'}
+                        </Button>
+                      )}
+                    </Group>
                   </Stack>
 
                   <Stack gap={theme.spacing.md} style={{ flex: 1, justifyContent: 'center' }}>

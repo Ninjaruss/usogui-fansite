@@ -1,8 +1,13 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Event, EventType, EventStatus } from '../../entities/event.entity';
 import { Character } from '../../entities/character.entity';
+import { User } from '../../entities/user.entity';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 
@@ -390,6 +395,86 @@ export class EventsService {
       throw new NotFoundException(`Event with ID ${id} not found after update`);
     }
     return result;
+  }
+
+  /**
+   * Update a user's own event submission
+   * Automatically resubmits (resets to pending) if the event was rejected
+   */
+  async updateOwnSubmission(
+    id: number,
+    data: UpdateEventDto,
+    user: User,
+  ): Promise<Event> {
+    const event = await this.repo.findOne({
+      where: { id },
+      relations: ['createdBy', 'characters'],
+    });
+
+    if (!event) {
+      throw new NotFoundException('Event not found');
+    }
+
+    if (!event.createdBy || event.createdBy.id !== user.id) {
+      throw new ForbiddenException('You can only edit your own submissions');
+    }
+
+    // Only allow editing pending or rejected submissions
+    if (event.status === EventStatus.APPROVED) {
+      throw new ForbiddenException('Cannot edit approved submissions');
+    }
+
+    const { characterIds, ...updateData } = data;
+
+    // Update fields if provided
+    if (updateData.title !== undefined) {
+      event.title = updateData.title;
+    }
+    if (updateData.description !== undefined) {
+      event.description = updateData.description;
+    }
+    if (updateData.chapterNumber !== undefined) {
+      event.chapterNumber = Number(updateData.chapterNumber) || 1;
+    }
+    if (updateData.type !== undefined) {
+      event.type = updateData.type;
+    }
+    if (updateData.arcId !== undefined) {
+      event.arcId = updateData.arcId && !isNaN(Number(updateData.arcId))
+        ? Number(updateData.arcId)
+        : (null as unknown as number);
+    }
+    if (updateData.gambleId !== undefined) {
+      event.gambleId = updateData.gambleId && !isNaN(Number(updateData.gambleId))
+        ? Number(updateData.gambleId)
+        : (null as unknown as number);
+    }
+    if (updateData.spoilerChapter !== undefined) {
+      event.spoilerChapter = updateData.spoilerChapter && !isNaN(Number(updateData.spoilerChapter))
+        ? Number(updateData.spoilerChapter)
+        : (null as unknown as number);
+    }
+
+    // Update character relationships if provided
+    if (characterIds !== undefined) {
+      const validCharacterIds = characterIds.filter(
+        (charId) => !isNaN(Number(charId)),
+      );
+
+      if (validCharacterIds.length > 0) {
+        const characters = await this.characterRepo.findByIds(
+          validCharacterIds.map((cid) => Number(cid)),
+        );
+        event.characters = characters;
+      } else {
+        event.characters = [];
+      }
+    }
+
+    // Reset status to pending when resubmitting
+    event.status = EventStatus.PENDING;
+
+    return this.repo.save(event);
   }
 
   remove(id: number) {

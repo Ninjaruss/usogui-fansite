@@ -28,6 +28,8 @@ import { UpdateEventDto } from './dto/update-event.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { User } from '../../entities/user.entity';
 import { UserRole } from '../../entities/user.entity';
 
 @ApiTags('events')
@@ -259,6 +261,36 @@ export class EventsController {
   @ApiBody({ type: CreateEventDto })
   async create(@Body(ValidationPipe) createEventDto: CreateEventDto) {
     return await this.service.create(createEventDto);
+  }
+
+  @Put(':id/own')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Update own event submission',
+    description:
+      'Update your own event submission. Only works for pending or rejected events. Rejected events will be automatically resubmitted for review.',
+  })
+  @ApiParam({ name: 'id', description: 'Event ID', type: 'number' })
+  @ApiBody({ type: UpdateEventDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Event updated successfully',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - not your submission or already approved',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Event not found',
+  })
+  async updateOwnSubmission(
+    @Param('id', ParseIntPipe) id: number,
+    @Body(ValidationPipe) updateEventDto: UpdateEventDto,
+    @CurrentUser() user: User,
+  ) {
+    return await this.service.updateOwnSubmission(id, updateEventDto, user);
   }
 
   @Put(':id')

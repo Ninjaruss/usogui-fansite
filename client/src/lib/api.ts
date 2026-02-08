@@ -1335,6 +1335,10 @@ class ApiClient {
     return this.put<any>(`/events/${id}`, data)
   }
 
+  async updateOwnEvent(id: number, data: any) {
+    return this.put<any>(`/events/${id}/own`, data)
+  }
+
   async deleteEvent(id: number) {
     return this.delete<any>(`/events/${id}`)
   }

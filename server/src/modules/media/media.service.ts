@@ -487,9 +487,12 @@ export class MediaService {
       const uniqueFileName = `${uuid}.${ext}`;
 
       // Determine usage type based on purpose
-      const usageType = media.purpose === MediaPurpose.ENTITY_DISPLAY
-        ? (media.ownerType === MediaOwnerType.CHARACTER ? MediaUsageType.CHARACTER_IMAGE : MediaUsageType.GALLERY_UPLOAD)
-        : MediaUsageType.GALLERY_UPLOAD;
+      const usageType =
+        media.purpose === MediaPurpose.ENTITY_DISPLAY
+          ? media.ownerType === MediaOwnerType.CHARACTER
+            ? MediaUsageType.CHARACTER_IMAGE
+            : MediaUsageType.GALLERY_UPLOAD
+          : MediaUsageType.GALLERY_UPLOAD;
 
       try {
         // Upload new file to B2

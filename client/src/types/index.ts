@@ -55,6 +55,7 @@ export interface Event {
   spoilerChapter?: number;
   type: 'gamble' | 'decision' | 'reveal' | 'shift' | 'resolution';
   status: EventStatus;
+  rejectionReason?: string | null;
   gambleId?: number;
   gamble?: Gamble;
   arcId?: number;
@@ -70,6 +71,10 @@ export interface Event {
     id: number;
     name: string;
   }>;
+  createdBy?: {
+    id: number;
+    username: string;
+  };
   createdAt: string;
   updatedAt: string;
 }

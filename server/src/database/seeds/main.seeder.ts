@@ -61,7 +61,8 @@ export class MainSeeder {
       if (!skipEvents) testDataSeeders.push(new EventSeeder(this.dataSource));
       if (!skipMedia) testDataSeeders.push(new MediaSeeder(this.dataSource));
       if (!skipGuides) testDataSeeders.push(new GuideSeeder(this.dataSource));
-      if (!skipAnnotations) testDataSeeders.push(new AnnotationSeeder(this.dataSource));
+      if (!skipAnnotations)
+        testDataSeeders.push(new AnnotationSeeder(this.dataSource));
     }
 
     const seeders = [...coreSeeders, ...testDataSeeders];
@@ -78,13 +79,36 @@ export class MainSeeder {
           '   Skipped: UserSeeder, EventSeeder, MediaSeeder, GuideSeeder, AnnotationSeeder',
         ),
       );
-    } else if (skipUsers || skipEvents || skipMedia || skipGuides || skipAnnotations) {
-      this.logger.log(chalk.yellow('⚠️  Skipping seeders based on environment variables:'));
-      if (skipUsers) this.logger.log(chalk.yellow('   - UserSeeder (SKIP_USER_SEEDER=true)'));
-      if (skipEvents) this.logger.log(chalk.yellow('   - EventSeeder (SKIP_EVENT_SEEDER=true)'));
-      if (skipMedia) this.logger.log(chalk.yellow('   - MediaSeeder (SKIP_MEDIA_SEEDER=true)'));
-      if (skipGuides) this.logger.log(chalk.yellow('   - GuideSeeder (SKIP_GUIDE_SEEDER=true)'));
-      if (skipAnnotations) this.logger.log(chalk.yellow('   - AnnotationSeeder (SKIP_ANNOTATION_SEEDER=true)'));
+    } else if (
+      skipUsers ||
+      skipEvents ||
+      skipMedia ||
+      skipGuides ||
+      skipAnnotations
+    ) {
+      this.logger.log(
+        chalk.yellow('⚠️  Skipping seeders based on environment variables:'),
+      );
+      if (skipUsers)
+        this.logger.log(
+          chalk.yellow('   - UserSeeder (SKIP_USER_SEEDER=true)'),
+        );
+      if (skipEvents)
+        this.logger.log(
+          chalk.yellow('   - EventSeeder (SKIP_EVENT_SEEDER=true)'),
+        );
+      if (skipMedia)
+        this.logger.log(
+          chalk.yellow('   - MediaSeeder (SKIP_MEDIA_SEEDER=true)'),
+        );
+      if (skipGuides)
+        this.logger.log(
+          chalk.yellow('   - GuideSeeder (SKIP_GUIDE_SEEDER=true)'),
+        );
+      if (skipAnnotations)
+        this.logger.log(
+          chalk.yellow('   - AnnotationSeeder (SKIP_ANNOTATION_SEEDER=true)'),
+        );
     }
 
     let success = true;

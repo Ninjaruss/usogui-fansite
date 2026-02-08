@@ -77,6 +77,7 @@ function getSubmissionLink(submission: SubmissionItem): string {
 
 function getEditLink(submission: SubmissionItem): string | null {
   if (submission.type === 'guide') return `/guides/${submission.id}`
+  if (submission.type === 'event') return `/submit-event?edit=${submission.id}`
   if (submission.type === 'annotation' && submission.ownerType && submission.ownerId) {
     const entityPathMap: Record<string, string> = {
       character: 'characters',
@@ -124,6 +125,7 @@ export default function SubmissionCard({
   const canEdit = isOwnerView && editLink && (
     submission.type === 'guide' ||
     submission.type === 'annotation' ||
+    submission.type === 'event' ||
     (submission.type === 'media' && (submission.status === 'pending' || submission.status === 'rejected'))
   )
   const canDelete = isOwnerView && submission.type === 'media' && isRejected && onDeleteMedia
