@@ -829,78 +829,6 @@ export default function ProfilePageClient() {
               </Stack>
             </Card>
 
-            {/* Settings Section */}
-            <Card shadow="sm" padding="md" radius="md">
-              <Stack gap="md">
-                <Text fw={600} size="lg">Settings</Text>
-                
-                {/* Custom Role Editor */}
-                <Stack gap="sm">
-                  <Text fw={500} size="md">Custom Role</Text>
-                  {!hasActiveSupporterBadge ? (
-                    <Alert style={{ color: getEntityThemeColor(theme, 'character') }} variant="light">
-                      <Stack gap="xs">
-                        <Text size="sm" fw={500}>Custom roles are exclusive to active supporters!</Text>
-                        <Text size="sm">
-                          Support us on Ko-fi to unlock custom role customization and help keep this fansite running.
-                        </Text>
-                        <Button
-                          component="a"
-                          href="https://ko-fi.com/ninjaruss"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          size="sm"
-                          style={{ color: getEntityThemeColor(theme, 'character') }}
-                        >
-                          ☕ Support on Ko-fi
-                        </Button>
-                      </Stack>
-                    </Alert>
-                  ) : (
-                    <>
-                      <Text size="sm" c="dimmed">
-                        Customize how your role appears to other users
-                      </Text>
-                      <Stack gap="xs">
-                        <TextInput
-                          placeholder="Enter custom role (e.g., 'Gambling Expert')"
-                          value={profileData.customRole}
-                          onChange={(e) => {
-                            setProfileData(prev => ({ ...prev, customRole: e.target.value }))
-                          }}
-                          maxLength={50}
-                        />
-                        <Group gap="xs">
-                          <Button
-                            onClick={saveCustomRole}
-                            loading={savingCustomRole}
-                            disabled={savingCustomRole || profileData.customRole === initialCustomRoleRef.current}
-                            size="sm"
-                            variant="filled"
-                            style={{ backgroundColor: getEntityThemeColor(theme, 'character') }}
-                          >
-                            Save Custom Role
-                          </Button>
-                          {profileData.customRole !== initialCustomRoleRef.current && (
-                            <Button
-                              onClick={() => {
-                                setProfileData(prev => ({ ...prev, customRole: initialCustomRoleRef.current }))
-                              }}
-                              size="sm"
-                              variant="subtle"
-                              color="gray"
-                            >
-                              Cancel
-                            </Button>
-                          )}
-                        </Group>
-                      </Stack>
-                    </>
-                  )}
-                </Stack>
-              </Stack>
-            </Card>
-
             {/* My Content Section - Unified Guides, Media, Events, Annotations */}
             <Card shadow="md" padding="lg" radius="md" withBorder>
               <Stack gap="lg">
@@ -1376,6 +1304,78 @@ export default function ProfilePageClient() {
                     })()}
                   </Tabs.Panel>
                 </Tabs>
+              </Stack>
+            </Card>
+
+            {/* Settings Section */}
+            <Card shadow="sm" padding="md" radius="md">
+              <Stack gap="md">
+                <Text fw={600} size="lg">Settings</Text>
+                
+                {/* Custom Role Editor */}
+                <Stack gap="sm">
+                  <Text fw={500} size="md">Custom Role</Text>
+                  {!hasActiveSupporterBadge ? (
+                    <Alert style={{ color: getEntityThemeColor(theme, 'character') }} variant="light">
+                      <Stack gap="xs">
+                        <Text size="sm" fw={500}>Custom roles are exclusive to active supporters!</Text>
+                        <Text size="sm">
+                          Support us on Ko-fi to unlock custom role customization and help keep this fansite running.
+                        </Text>
+                        <Button
+                          component="a"
+                          href="https://ko-fi.com/ninjaruss"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          size="sm"
+                          style={{ color: getEntityThemeColor(theme, 'character') }}
+                        >
+                          ☕ Support on Ko-fi
+                        </Button>
+                      </Stack>
+                    </Alert>
+                  ) : (
+                    <>
+                      <Text size="sm" c="dimmed">
+                        Customize how your role appears to other users
+                      </Text>
+                      <Stack gap="xs">
+                        <TextInput
+                          placeholder="Enter custom role (e.g., 'Gambling Expert')"
+                          value={profileData.customRole}
+                          onChange={(e) => {
+                            setProfileData(prev => ({ ...prev, customRole: e.target.value }))
+                          }}
+                          maxLength={50}
+                        />
+                        <Group gap="xs">
+                          <Button
+                            onClick={saveCustomRole}
+                            loading={savingCustomRole}
+                            disabled={savingCustomRole || profileData.customRole === initialCustomRoleRef.current}
+                            size="sm"
+                            variant="filled"
+                            style={{ backgroundColor: getEntityThemeColor(theme, 'character') }}
+                          >
+                            Save Custom Role
+                          </Button>
+                          {profileData.customRole !== initialCustomRoleRef.current && (
+                            <Button
+                              onClick={() => {
+                                setProfileData(prev => ({ ...prev, customRole: initialCustomRoleRef.current }))
+                              }}
+                              size="sm"
+                              variant="subtle"
+                              color="gray"
+                            >
+                              Cancel
+                            </Button>
+                          )}
+                        </Group>
+                      </Stack>
+                    </>
+                  )}
+                </Stack>
               </Stack>
             </Card>
           </Stack>

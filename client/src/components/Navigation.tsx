@@ -894,7 +894,7 @@ const Navigation: React.FC = () => {
                   }}
                   styles={{ item: menuHoverStyles }}
                 >
-                  Profile & Submissions
+                  Profile
                 </Menu.Item>
                 <Menu.Item
                   component={Link}
@@ -1034,7 +1034,7 @@ const Navigation: React.FC = () => {
                   }}
                   styles={{ item: menuHoverStyles }}
                 >
-                  Profile & Submissions
+                  Profile
                 </Menu.Item>
                 <Menu.Item
                   component={Link}
