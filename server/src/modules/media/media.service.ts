@@ -33,6 +33,76 @@ export class MediaService {
   private readonly isTestUser = (email: string | null) =>
     email === 'testuser@example.com';
 
+  /**
+   * Auto-detect media type from URL
+   * Detects based on platform (YouTube, Vimeo, TikTok, SoundCloud) or file extension
+   */
+  private detectMediaTypeFromUrl(url: string): MediaType {
+    const lowerUrl = url.toLowerCase();
+
+    // Video platforms
+    if (
+      lowerUrl.includes('youtube.com') ||
+      lowerUrl.includes('youtu.be') ||
+      lowerUrl.includes('vimeo.com') ||
+      lowerUrl.includes('tiktok.com') ||
+      lowerUrl.includes('vm.tiktok.com')
+    ) {
+      return MediaType.VIDEO;
+    }
+
+    // Audio platforms
+    if (lowerUrl.includes('soundcloud.com')) {
+      return MediaType.AUDIO;
+    }
+
+    // Check file extensions
+    const extensionMatch = lowerUrl.match(/\.([a-z0-9]+)(?:\?|$)/i);
+    if (extensionMatch) {
+      const ext = extensionMatch[1].toLowerCase();
+
+      // Image extensions
+      if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'ico'].includes(ext)) {
+        return MediaType.IMAGE;
+      }
+
+      // Video extensions
+      if (['mp4', 'webm', 'mov', 'avi', 'mkv', 'flv', 'wmv', 'm4v'].includes(ext)) {
+        return MediaType.VIDEO;
+      }
+
+      // Audio extensions
+      if (['mp3', 'wav', 'ogg', 'flac', 'aac', 'm4a', 'wma'].includes(ext)) {
+        return MediaType.AUDIO;
+      }
+    }
+
+    // Default to video for unknown URLs (most common for external submissions)
+    return MediaType.VIDEO;
+  }
+
+  /**
+   * Auto-detect media type from MIME type
+   */
+  private detectMediaTypeFromMimeType(mimeType: string): MediaType {
+    const lowerMime = mimeType.toLowerCase();
+
+    if (lowerMime.startsWith('image/')) {
+      return MediaType.IMAGE;
+    }
+
+    if (lowerMime.startsWith('video/')) {
+      return MediaType.VIDEO;
+    }
+
+    if (lowerMime.startsWith('audio/')) {
+      return MediaType.AUDIO;
+    }
+
+    // Default to image for uploaded files (most common)
+    return MediaType.IMAGE;
+  }
+
   constructor(
     @InjectRepository(Media)
     private readonly mediaRepo: Repository<Media>,
@@ -44,8 +114,11 @@ export class MediaService {
   ) {}
 
   async create(data: CreateMediaDto, user: User): Promise<Media> {
+    // Auto-detect media type from URL if not provided
+    const detectedType = data.type || this.detectMediaTypeFromUrl(data.url);
+
     // Reject image URLs - images must be uploaded
-    if (data.type === MediaType.IMAGE) {
+    if (detectedType === MediaType.IMAGE) {
       throw new BadRequestException(
         'Image URLs are not allowed. Please upload images using the /media/upload endpoint.',
       );
@@ -55,11 +128,11 @@ export class MediaService {
     this.validateMediaPurpose(data);
 
     // Normalize the URL based on the media type
-    const normalizedUrl = this.urlNormalizer.normalize(data.url, data.type);
+    const normalizedUrl = this.urlNormalizer.normalize(data.url, detectedType);
 
     const media = this.mediaRepo.create({
       url: normalizedUrl,
-      type: data.type,
+      type: detectedType,
       description: data.description,
       ownerType: data.ownerType,
       ownerId: data.ownerId,
@@ -85,6 +158,10 @@ export class MediaService {
       file,
       file.mimetype,
     );
+
+    // Auto-detect media type from validated MIME type if not provided
+    const detectedType =
+      data.type || this.detectMediaTypeFromMimeType(validationResult.mimeType);
 
     // Generate UUID-based filename with usageType folder
     const crypto = await import('crypto');
@@ -147,7 +224,7 @@ export class MediaService {
         height: validationResult.height,
         isUploaded: true,
         usageType: data.usageType,
-        type: data.type,
+        type: detectedType,
         description: data.description,
         ownerType: data.ownerType,
         ownerId: data.ownerId,

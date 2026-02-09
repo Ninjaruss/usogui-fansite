@@ -17,13 +17,15 @@ import {
 import { Transform } from 'class-transformer';
 
 export class UploadMediaDto {
-  @ApiProperty({
-    description: 'Type of media content',
+  @ApiPropertyOptional({
+    description:
+      'Type of media content. If not provided, will be auto-detected from the file MIME type.',
     enum: MediaType,
     example: MediaType.IMAGE,
   })
+  @IsOptional()
   @IsEnum(MediaType)
-  type: MediaType;
+  type?: MediaType;
 
   @ApiPropertyOptional({
     description: 'Description of the media content',

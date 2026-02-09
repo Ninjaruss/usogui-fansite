@@ -193,6 +193,8 @@ export class UsersController {
             guidesWritten: { type: 'number', example: 5 },
             mediaSubmitted: { type: 'number', example: 12 },
             likesReceived: { type: 'number', example: 28 },
+            annotationsSubmitted: { type: 'number', example: 8 },
+            eventsSubmitted: { type: 'number', example: 3 },
           },
         },
         createdAt: { type: 'string', format: 'date-time' },
@@ -581,7 +583,7 @@ export class UsersController {
   @ApiOperation({
     summary: 'Get current user profile statistics',
     description:
-      'Get statistics for the current user including guides written, media submitted, and likes received',
+      'Get statistics for the current user including guides written, media submitted, likes received, annotations submitted, and events submitted',
   })
   @ApiResponse({
     status: 200,
@@ -604,6 +606,16 @@ export class UsersController {
           example: 28,
           description: 'Total number of likes received on all approved guides',
         },
+        annotationsSubmitted: {
+          type: 'number',
+          example: 8,
+          description: 'Number of approved annotations submitted by the user',
+        },
+        eventsSubmitted: {
+          type: 'number',
+          example: 3,
+          description: 'Number of approved events submitted by the user',
+        },
       },
     },
   })
@@ -612,6 +624,8 @@ export class UsersController {
     guidesWritten: number;
     mediaSubmitted: number;
     likesReceived: number;
+    annotationsSubmitted: number;
+    eventsSubmitted: number;
   }> {
     return this.service.getUserProfileStats(user.id);
   }
@@ -700,8 +714,10 @@ export class UsersController {
   @ApiResponse({ status: 403, description: 'Forbidden - Admin role required' })
   @ApiResponse({ status: 404, description: 'User not found' })
   @ApiParam({ name: 'id', description: 'User ID', example: 1 })
-  getOne(@Param('id', ParseIntPipe) id: number): Promise<User> {
-    return this.service.findOne(id);
+  async getOne(@Param('id', ParseIntPipe) id: number) {
+    const user = await this.service.findOne(id);
+    const stats = await this.service.getUserProfileStats(id);
+    return { ...user, stats };
   }
 
   @Post()

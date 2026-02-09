@@ -765,6 +765,33 @@ export const UserShow = () => (
       />
       <DateField source="createdAt" />
       <DateField source="updatedAt" />
+
+      {/* Submission Stats Section */}
+      <FunctionField
+        label="Submission Statistics"
+        render={(record: any) => {
+          if (!record?.stats) return <span>No stats available</span>
+          return (
+            <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap', marginTop: '8px' }}>
+              <div>
+                <strong>Guides Written:</strong> {record.stats.guidesWritten ?? 0}
+              </div>
+              <div>
+                <strong>Media Submitted:</strong> {record.stats.mediaSubmitted ?? 0}
+              </div>
+              <div>
+                <strong>Annotations Submitted:</strong> {record.stats.annotationsSubmitted ?? 0}
+              </div>
+              <div>
+                <strong>Events Submitted:</strong> {record.stats.eventsSubmitted ?? 0}
+              </div>
+              <div>
+                <strong>Likes Received:</strong> {record.stats.likesReceived ?? 0}
+              </div>
+            </div>
+          )
+        }}
+      />
     </SimpleShowLayout>
   </Show>
 )

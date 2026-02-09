@@ -14,6 +14,8 @@ import { Character } from '../../entities/character.entity';
 import { Media, MediaStatus, MediaPurpose } from '../../entities/media.entity';
 import { Guide, GuideStatus } from '../../entities/guide.entity';
 import { GuideLike } from '../../entities/guide-like.entity';
+import { Annotation, AnnotationStatus } from '../../entities/annotation.entity';
+import { Event, EventStatus } from '../../entities/event.entity';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { randomBytes } from 'crypto';
 import { createQueryLimiter } from '../../utils/db-query-limiter';
@@ -222,10 +224,30 @@ export class UsersService {
       .andWhere('guide.status = :status', { status: GuideStatus.APPROVED })
       .getCount();
 
+    // Get annotations submitted count (approved only)
+    const annotationRepo = this.repo.manager.getRepository(Annotation);
+    const annotationsSubmitted = await annotationRepo
+      .createQueryBuilder('annotation')
+      .where('annotation.authorId = :userId', { userId: id })
+      .andWhere('annotation.status = :status', {
+        status: AnnotationStatus.APPROVED,
+      })
+      .getCount();
+
+    // Get events submitted count (approved only)
+    const eventRepo = this.repo.manager.getRepository(Event);
+    const eventsSubmitted = await eventRepo
+      .createQueryBuilder('event')
+      .where('event.createdBy = :userId', { userId: id })
+      .andWhere('event.status = :status', { status: EventStatus.APPROVED })
+      .getCount();
+
     return {
       guidesWritten,
       mediaSubmitted,
       likesReceived,
+      annotationsSubmitted,
+      eventsSubmitted,
     };
   }
 

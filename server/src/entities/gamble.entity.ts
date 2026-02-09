@@ -5,10 +5,12 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   ManyToMany,
+  OneToMany,
   JoinTable,
   Index,
 } from 'typeorm';
 import { Character } from './character.entity';
+import { GambleFaction } from './gamble-faction.entity';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 @Entity()
@@ -69,6 +71,15 @@ export class Gamble {
     inverseJoinColumn: { name: 'characterId', referencedColumnName: 'id' },
   })
   participants?: Character[];
+
+  @ApiPropertyOptional({
+    description: 'Factions/teams participating in this gamble',
+    type: () => [GambleFaction],
+  })
+  @OneToMany(() => GambleFaction, (faction) => faction.gamble, {
+    cascade: true,
+  })
+  factions?: GambleFaction[];
 
   // Media relationships are now handled polymorphically through ownerType/ownerId
 

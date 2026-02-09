@@ -31,15 +31,17 @@ export class CreateMediaDto {
   )
   url: string;
 
-  @ApiProperty({
-    description: 'Type of media content',
+  @ApiPropertyOptional({
+    description:
+      'Type of media content. If not provided, will be auto-detected from the URL.',
     enum: MediaType,
     example: MediaType.VIDEO,
   })
+  @IsOptional()
   @IsEnum(MediaType, {
     message: 'Type must be either image, video, or audio',
   })
-  type: MediaType;
+  type?: MediaType;
 
   @ApiPropertyOptional({
     description: 'Description of the media content',

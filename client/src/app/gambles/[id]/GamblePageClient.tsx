@@ -46,6 +46,31 @@ import {
   getCardStyles
 } from '../../../lib/mantine-theme'
 
+interface GambleFactionMember {
+  id: number
+  characterId: number
+  character: {
+    id: number
+    name: string
+    description?: string
+    alternateNames?: string[]
+  }
+  role?: 'leader' | 'member' | 'supporter' | 'observer' | null
+  displayOrder: number
+}
+
+interface GambleFaction {
+  id: number
+  name?: string | null
+  supportedGamblerId?: number | null
+  supportedGambler?: {
+    id: number
+    name: string
+  } | null
+  members: GambleFactionMember[]
+  displayOrder: number
+}
+
 interface Gamble {
   id: number
   name: string
@@ -60,6 +85,7 @@ interface Gamble {
     description?: string
     alternateNames?: string[]
   }>
+  factions?: GambleFaction[]
   chapter?: {
     id: number
     number: number
@@ -471,8 +497,142 @@ export default function GamblePageClient({ initialGamble }: GamblePageClientProp
                 </Card>
               )}
 
-              {/* Participants Section */}
-              {initialGamble.participants && initialGamble.participants.length > 0 && (
+              {/* Participants Section - Factions or Legacy */}
+              {initialGamble.factions && initialGamble.factions.length > 0 ? (
+                <Card withBorder radius="lg" shadow="lg" style={{
+                  background: backgroundStyles.card,
+                  border: `1px solid ${getAlphaColor(characterColor, 0.4)}`,
+                  transition: `all ${theme.other?.transitions?.durationShort || 200}ms ease-in-out`
+                }}>
+                  <Stack gap={theme.spacing.md} p={theme.spacing.md}>
+                    <Group justify="space-between" align="center">
+                      <Group gap={theme.spacing.sm}>
+                        <Users size={20} color={characterColor} />
+                        <Title order={4} c={textColors.character}>Participants</Title>
+                      </Group>
+                    </Group>
+                    <Grid gutter={theme.spacing.md}>
+                      {initialGamble.factions
+                        .sort((a, b) => a.displayOrder - b.displayOrder)
+                        .map((faction) => {
+                          const factionName = faction.name || (faction.supportedGambler ? `${faction.supportedGambler.name}'s Side` : 'Faction')
+                          return (
+                            <Grid.Col key={faction.id} span={{ base: 12, md: 6 }}>
+                              <Paper
+                                withBorder
+                                radius="lg"
+                                p={theme.spacing.md}
+                                shadow="md"
+                                style={{
+                                  border: `1px solid ${getAlphaColor(gambleColor, 0.3)}`,
+                                  background: getAlphaColor(theme.colors.dark[7], 0.5),
+                                  height: '100%'
+                                }}
+                              >
+                                <Stack gap={theme.spacing.sm}>
+                                  {/* Faction Header */}
+                                  <Group gap={theme.spacing.xs} align="center">
+                                    <Text fw={700} size="md" c={textColors.gamble}>
+                                      {factionName}
+                                    </Text>
+                                    {faction.supportedGambler && faction.name && (
+                                      <Badge
+                                        variant="light"
+                                        size="sm"
+                                        radius="md"
+                                        style={{
+                                          background: getAlphaColor(gambleColor, 0.2),
+                                          border: `1px solid ${getAlphaColor(gambleColor, 0.4)}`
+                                        }}
+                                        c={textColors.gamble}
+                                      >
+                                        Supporting {faction.supportedGambler.name}
+                                      </Badge>
+                                    )}
+                                  </Group>
+
+                                  {/* Faction Members */}
+                                  <Stack gap={theme.spacing.xs}>
+                                    {faction.members
+                                      .sort((a, b) => a.displayOrder - b.displayOrder)
+                                      .map((member) => (
+                                        <Link
+                                          key={member.id}
+                                          href={`/characters/${member.character.id}`}
+                                          style={{ textDecoration: 'none' }}
+                                        >
+                                          <Paper
+                                            withBorder
+                                            radius="md"
+                                            p={theme.spacing.sm}
+                                            style={{
+                                              border: `1px solid ${getAlphaColor(characterColor, 0.2)}`,
+                                              transition: `all ${theme.other?.transitions?.durationShort || 200}ms ease`,
+                                              cursor: 'pointer'
+                                            }}
+                                            onMouseEnter={(e) => {
+                                              e.currentTarget.style.transform = 'translateX(4px)'
+                                              e.currentTarget.style.borderColor = getAlphaColor(characterColor, 0.5)
+                                            }}
+                                            onMouseLeave={(e) => {
+                                              e.currentTarget.style.transform = 'translateX(0)'
+                                              e.currentTarget.style.borderColor = getAlphaColor(characterColor, 0.2)
+                                            }}
+                                          >
+                                            <Group justify="space-between" align="center">
+                                              <Group gap={theme.spacing.xs}>
+                                                <Text fw={600} size="sm" c={textColors.character}>
+                                                  {member.character.name}
+                                                </Text>
+                                                {member.role && (
+                                                  <Badge
+                                                    variant="outline"
+                                                    size="xs"
+                                                    radius="sm"
+                                                    c={textColors.secondary}
+                                                    style={{
+                                                      borderColor: getAlphaColor(theme.colors.gray[5], 0.5),
+                                                      textTransform: 'capitalize'
+                                                    }}
+                                                  >
+                                                    {member.role}
+                                                  </Badge>
+                                                )}
+                                              </Group>
+                                            </Group>
+                                            {member.character.alternateNames && member.character.alternateNames.length > 0 && (
+                                              <Group gap={theme.spacing.xs} wrap="wrap" mt={spacing.xs}>
+                                                {member.character.alternateNames.slice(0, 2).map((name) => (
+                                                  <Badge
+                                                    key={name}
+                                                    variant="light"
+                                                    size="xs"
+                                                    radius="md"
+                                                    style={{
+                                                      background: `${theme.colors.dark[5]}80`,
+                                                      border: `1px solid ${theme.colors.dark[4]}`,
+                                                      fontWeight: 500
+                                                    }}
+                                                    c={textColors.secondary}
+                                                  >
+                                                    {name}
+                                                  </Badge>
+                                                ))}
+                                              </Group>
+                                            )}
+                                          </Paper>
+                                        </Link>
+                                      ))}
+                                  </Stack>
+                                </Stack>
+                              </Paper>
+                            </Grid.Col>
+                          )
+                        })}
+                    </Grid>
+                  </Stack>
+                </Card>
+              ) : initialGamble.participants && initialGamble.participants.length > 0 ? (
                 <Card withBorder radius="lg" shadow="lg" style={{
                   background: backgroundStyles.card,
                   border: `1px solid ${getAlphaColor(characterColor, 0.4)}`,
@@ -555,7 +715,7 @@ export default function GamblePageClient({ initialGamble }: GamblePageClientProp
                     </Stack>
                   </Stack>
                 </Card>
-              )}
+              ) : null}
             </Stack>
           </Tabs.Panel>
 

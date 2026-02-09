@@ -3004,27 +3004,8 @@ export const MediaEdit = () => {
                 }}
               />
             </Grid>
-            <Grid item xs={6}>
-              <SelectInput 
-                source="type" 
-                choices={[
-                  { id: 'image', name: 'Image' },
-                  { id: 'video', name: 'Video' },
-                  { id: 'audio', name: 'Audio' },
-                ]}
-                required
-                fullWidth
-                label="Media Type"
-                sx={{ 
-                  '& .MuiInputBase-root': {
-                    backgroundColor: 'rgba(10, 10, 10, 0.8)',
-                    color: '#ffffff',
-                  }
-                }}
-              />
-            </Grid>
-            <Grid item xs={6}>
-              <SelectInput 
+            <Grid item xs={12}>
+              <SelectInput
                 source="purpose" 
                 choices={[
                   { id: 'gallery', name: 'Gallery' },
@@ -3183,15 +3164,6 @@ export const MediaCreate = () => (
   <Create>
     <SimpleForm>
       <TextInput source="url" required />
-      <SelectInput 
-        source="type" 
-        choices={[
-          { id: 'image', name: 'Image' },
-          { id: 'video', name: 'Video' },
-          { id: 'audio', name: 'Audio' },
-        ]}
-        required
-      />
       <TextInput source="description" multiline rows={4} />
       
       {/* Polymorphic relationship fields */}

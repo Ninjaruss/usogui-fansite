@@ -4,8 +4,55 @@ import {
   IsOptional,
   IsArray,
   MaxLength,
+  ValidateNested,
+  IsEnum,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
+import { FactionMemberRole } from '../../../entities/gamble-faction-member.entity';
+
+/**
+ * DTO for creating a faction within a gamble
+ */
+export class CreateFactionDto {
+  @ApiPropertyOptional({
+    description: 'Custom name for this faction (e.g., "Kakerou", "L\'air")',
+    example: 'Kakerou',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  name?: string;
+
+  @ApiPropertyOptional({
+    description: 'ID of the main gambler this faction supports',
+    example: 1,
+  })
+  @IsOptional()
+  @IsNumber()
+  supportedGamblerId?: number;
+
+  @ApiProperty({
+    description: 'Array of character IDs who are members of this faction',
+    example: [1, 2, 3],
+    type: [Number],
+  })
+  @IsArray()
+  @IsNumber({}, { each: true })
+  memberIds: number[];
+
+  @ApiPropertyOptional({
+    description:
+      'Array of roles corresponding to each member (same order as memberIds)',
+    example: ['leader', 'member', 'supporter'],
+    enum: FactionMemberRole,
+    isArray: true,
+  })
+  @IsOptional()
+  @IsArray()
+  @IsEnum(FactionMemberRole, { each: true })
+  memberRoles?: FactionMemberRole[];
+}
 
 export class CreateGambleDto {
   @ApiProperty({
@@ -59,7 +106,8 @@ export class CreateGambleDto {
   chapterId: number;
 
   @ApiPropertyOptional({
-    description: 'Array of character IDs who participated in this gamble',
+    description:
+      'Array of character IDs who participated in this gamble (legacy, use factions instead)',
     example: [1, 2, 3],
     type: [Number],
   })
@@ -67,4 +115,15 @@ export class CreateGambleDto {
   @IsArray()
   @IsNumber({}, { each: true })
   participantIds?: number[];
+
+  @ApiPropertyOptional({
+    description:
+      'Array of factions/teams participating in this gamble with their members',
+    type: [CreateFactionDto],
+  })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CreateFactionDto)
+  factions?: CreateFactionDto[];
 }

@@ -24,12 +24,11 @@ import {
 } from '@mantine/core'
 import { useDebouncedValue } from '@mantine/hooks'
 import {
-  getEntityThemeColor,
   backgroundStyles,
   getHeroStyles,
   getCardStyles
 } from '../../lib/mantine-theme'
-import { Search, Users as UsersIcon, BookOpen, ArrowUpDown, TrendingUp, Calendar, X } from 'lucide-react'
+import { Search, Users as UsersIcon, ArrowUpDown, X } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { api } from '../../lib/api'
@@ -59,14 +58,12 @@ interface PublicUser {
   discordId?: string | null
   discordAvatar?: string | null
   createdAt: string
-  guidesCount?: number
   userProgress?: number
 }
 
 const RESULTS_PER_PAGE = 12
-const TOTAL_CHAPTERS = 539
 
-type SortOption = 'username' | 'newest' | 'progress' | 'guides'
+type SortOption = 'username' | 'newest'
 
 export default function UsersPageContent() {
   const theme = useMantineTheme()
@@ -156,10 +153,6 @@ export default function UsersPageContent() {
         return usersCopy.sort((a, b) => a.username.localeCompare(b.username))
       case 'newest':
         return usersCopy.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-      case 'progress':
-        return usersCopy.sort((a, b) => (b.userProgress ?? 0) - (a.userProgress ?? 0))
-      case 'guides':
-        return usersCopy.sort((a, b) => (b.guidesCount ?? 0) - (a.guidesCount ?? 0))
       default:
         return usersCopy
     }
@@ -222,39 +215,6 @@ export default function UsersPageContent() {
 
   const rangeStart = (page - 1) * RESULTS_PER_PAGE + (users.length > 0 ? 1 : 0)
   const rangeEnd = rangeStart + users.length - 1
-
-  const { averageProgressPercentage, topProgressChapter, guideAuthors, totalGuidesOnPage } = useMemo(() => {
-    if (sortedUsers.length === 0) {
-      return {
-        averageProgressPercentage: 0,
-        topProgressChapter: 0,
-        guideAuthors: 0,
-        totalGuidesOnPage: 0
-      }
-    }
-
-    const progressValues = sortedUsers
-      .map(user => user.userProgress ?? 0)
-      .filter(progress => progress > 0)
-
-    const averageProgress = progressValues.length > 0
-      ? Math.round(
-          progressValues.reduce((sum, chapter) => sum + (chapter / TOTAL_CHAPTERS) * 100, 0) /
-          progressValues.length
-        )
-      : 0
-
-    const topProgress = progressValues.length > 0 ? Math.max(...progressValues) : 0
-    const authors = sortedUsers.filter(user => (user.guidesCount ?? 0) > 0).length
-    const guideCount = sortedUsers.reduce((sum, user) => sum + (user.guidesCount ?? 0), 0)
-
-    return {
-      averageProgressPercentage: averageProgress,
-      topProgressChapter: topProgress,
-      guideAuthors: authors,
-      totalGuidesOnPage: guideCount
-    }
-  }, [sortedUsers])
 
   return (
     <Box style={{ backgroundColor: backgroundStyles.page(theme), minHeight: '100vh' }}>
@@ -356,9 +316,7 @@ export default function UsersPageContent() {
                   leftSection={<ArrowUpDown size={16} />}
                   data={[
                     { value: 'newest', label: 'Newest Members' },
-                    { value: 'username', label: 'Username (A-Z)' },
-                    { value: 'progress', label: 'Reading Progress' },
-                    { value: 'guides', label: 'Most Guides' }
+                    { value: 'username', label: 'Username (A-Z)' }
                   ]}
                   w={{ base: '100%', md: 220 }}
                   styles={{
@@ -373,50 +331,6 @@ export default function UsersPageContent() {
                   }}
                 />
               </Group>
-
-              {total > 0 && (
-                <SimpleGrid cols={{ base: 2, sm: 2, md: 4 }} spacing="xs">
-                  <Paper p="xs" radius="sm" style={{ background: `${accentCommunity}10`, border: `1px solid ${accentCommunity}20` }}>
-                    <Group gap={6} wrap="nowrap">
-                      <UsersIcon size={14} color={accentCommunity} style={{ flexShrink: 0 }} />
-                      <Stack gap={0}>
-                        <Text size="lg" fw={700} lh={1.2}>{total.toLocaleString()}</Text>
-                        <Text size="xs" c="dimmed" lh={1.2}>Members</Text>
-                      </Stack>
-                    </Group>
-                  </Paper>
-
-                  <Paper p="xs" radius="sm" style={{ background: `${accentCommunity}10`, border: `1px solid ${accentCommunity}20` }}>
-                    <Group gap={6} wrap="nowrap">
-                      <BookOpen size={14} color={accentCommunity} style={{ flexShrink: 0 }} />
-                      <Stack gap={0}>
-                        <Text size="lg" fw={700} lh={1.2}>{guideAuthors}</Text>
-                        <Text size="xs" c="dimmed" lh={1.2}>Guide Authors</Text>
-                      </Stack>
-                    </Group>
-                  </Paper>
-
-                  <Paper p="xs" radius="sm" style={{ background: `${accentCommunity}10`, border: `1px solid ${accentCommunity}20` }}>
-                    <Group gap={6} wrap="nowrap">
-                      <TrendingUp size={14} color={accentCommunity} style={{ flexShrink: 0 }} />
-                      <Stack gap={0}>
-                        <Text size="lg" fw={700} lh={1.2}>{averageProgressPercentage}%</Text>
-                        <Text size="xs" c="dimmed" lh={1.2}>Avg Progress</Text>
-                      </Stack>
-                    </Group>
-                  </Paper>
-
-                  <Paper p="xs" radius="sm" style={{ background: `${accentCommunity}10`, border: `1px solid ${accentCommunity}20` }}>
-                    <Group gap={6} wrap="nowrap">
-                      <Calendar size={14} color={accentCommunity} style={{ flexShrink: 0 }} />
-                      <Stack gap={0}>
-                        <Text size="lg" fw={700} lh={1.2}>{topProgressChapter ? `Ch.${topProgressChapter}` : 'N/A'}</Text>
-                        <Text size="xs" c="dimmed" lh={1.2}>Top Chapter</Text>
-                      </Stack>
-                    </Group>
-                  </Paper>
-                </SimpleGrid>
-              )}
             </Stack>
           </Paper>
         </Container>
@@ -465,9 +379,7 @@ export default function UsersPageContent() {
                     </Group>
 
                     <SimpleGrid cols={{ base: 1, xs: 2, sm: 2, md: 3, lg: 4, xl: 5 }} spacing="sm">
-                      {sortedUsers.map((user, index) => {
-                        const progressPercentage = Math.round(((user.userProgress ?? 0) / TOTAL_CHAPTERS) * 100)
-                        return (
+                      {sortedUsers.map((user, index) => (
                           <motion.div
                             key={user.id}
                             initial={{ opacity: 0, y: 20 }}
@@ -518,52 +430,13 @@ export default function UsersPageContent() {
 
                                 <UserBadges userId={user.id} size="sm" maxDisplay={3} />
 
-                                <Stack gap={3} w="100%" mt="xs">
-                                  <Group justify="space-between" gap="xs">
-                                    <Text size="xs" c="dimmed">Progress</Text>
-                                    <Text size="xs" fw={500}>{progressPercentage}%</Text>
-                                  </Group>
-                                  <Box w="100%" style={{ backgroundColor: `${accentCommunity}15`, borderRadius: theme.radius.sm, height: rem(4) }}>
-                                    <Box
-                                      style={{
-                                        width: `${Math.min(progressPercentage, 100)}%`,
-                                        height: '100%',
-                                        borderRadius: theme.radius.sm,
-                                        background: `linear-gradient(90deg, ${accentCommunity}, ${getEntityThemeColor(theme, 'guide')})`
-                                      }}
-                                    />
-                                  </Box>
-                                </Stack>
-
-                                <Group gap="xs" justify="space-between" w="100%" mt="auto">
-                                  {user.guidesCount !== undefined && user.guidesCount > 0 ? (
-                                    <Badge
-                                      variant="light"
-                                      radius="sm"
-                                      size="xs"
-                                      c={getEntityThemeColor(theme, 'guide')}
-                                      style={{
-                                        backgroundColor: `${getEntityThemeColor(theme, 'guide')}15`
-                                      }}
-                                    >
-                                      <Group gap={4}>
-                                        <BookOpen size={10} />
-                                        <span>{user.guidesCount}</span>
-                                      </Group>
-                                    </Badge>
-                                  ) : (
-                                    <Box />
-                                  )}
-
-                                  <Text size="xs" c="dimmed" ta="right">
-                                    Ch. {user.userProgress ?? 0}
-                                  </Text>
-                                </Group>
+                                <Text size="xs" c="dimmed" ta="center" mt="auto">
+                                  Ch. {user.userProgress ?? 0}
+                                </Text>
                               </Stack>
                             </Card>
                           </motion.div>
-                        )
-                      })}
+                      ))}
                     </SimpleGrid>
 
                     {totalPages > 1 && (

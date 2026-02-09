@@ -293,11 +293,74 @@ export const GambleShow = () => (
 
         <Tab label="Participants">
           <Box sx={{ p: 3, backgroundColor: '#0a0a0a' }}>
-            <Typography variant="h6" gutterBottom sx={{ color: '#ffffff', fontWeight: 'bold', mb: 2 }}>Gamble Participants</Typography>
+            {/* Display factions if available */}
+            <FunctionField
+              render={(record: any) => {
+                if (record.factions && record.factions.length > 0) {
+                  return (
+                    <>
+                      <Typography variant="h6" gutterBottom sx={{ color: '#ffffff', fontWeight: 'bold', mb: 2 }}>
+                        Factions / Teams
+                      </Typography>
+                      {record.factions.map((faction: any, index: number) => (
+                        <Box
+                          key={faction.id || index}
+                          sx={{
+                            mb: 3,
+                            p: 2,
+                            backgroundColor: '#0f0f0f',
+                            border: '1px solid rgba(211, 47, 47, 0.3)',
+                            borderRadius: 1,
+                          }}
+                        >
+                          <Typography variant="subtitle1" sx={{ color: '#d32f2f', fontWeight: 'bold', mb: 1 }}>
+                            {faction.name || `Faction ${index + 1}`}
+                            {faction.supportedGambler && (
+                              <span style={{ color: 'rgba(255,255,255,0.7)', fontWeight: 'normal', marginLeft: 8 }}>
+                                (Supporting: {faction.supportedGambler.name})
+                              </span>
+                            )}
+                          </Typography>
+                          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                            {faction.members?.map((member: any) => (
+                              <Box
+                                key={member.id}
+                                sx={{
+                                  px: 1.5,
+                                  py: 0.5,
+                                  backgroundColor: 'rgba(211, 47, 47, 0.1)',
+                                  border: '1px solid rgba(211, 47, 47, 0.3)',
+                                  borderRadius: 1,
+                                  color: '#ffffff',
+                                  fontSize: '0.875rem',
+                                }}
+                              >
+                                {member.character?.name || 'Unknown'}
+                                {member.role && (
+                                  <span style={{ color: 'rgba(255,255,255,0.5)', marginLeft: 4 }}>
+                                    ({member.role})
+                                  </span>
+                                )}
+                              </Box>
+                            ))}
+                          </Box>
+                        </Box>
+                      ))}
+                    </>
+                  )
+                }
+                return null
+              }}
+            />
+
+            {/* Legacy participants display */}
+            <Typography variant="h6" gutterBottom sx={{ color: '#ffffff', fontWeight: 'bold', mb: 2 }}>
+              All Participants (Legacy)
+            </Typography>
             <ArrayField source="participants" label={false}>
-              <Datagrid 
-                bulkActionButtons={false} 
-                sx={{ 
+              <Datagrid
+                bulkActionButtons={false}
+                sx={{
                   boxShadow: 'none',
                   backgroundColor: '#0f0f0f',
                   border: '1px solid rgba(211, 47, 47, 0.3)',
@@ -514,9 +577,9 @@ const GambleEditForm = () => {
         <Box sx={{ maxWidth: 600, p: 3, backgroundColor: '#0a0a0a' }}>
           <Typography variant="h6" gutterBottom sx={{ color: '#d32f2f', mb: 2, fontWeight: 'bold' }}>Gamble Participants</Typography>
           <ReferenceArrayInput source="participantIds" reference="characters" perPage={200}>
-            <AutocompleteArrayInput 
-              optionText="name" 
-              helperText="Characters who participated in this gamble"
+            <AutocompleteArrayInput
+              optionText="name"
+              helperText="Characters who participated in this gamble (legacy - for quick selection)"
               fullWidth
               noOptionsText="No characters available"
               sx={{
@@ -526,6 +589,16 @@ const GambleEditForm = () => {
               }}
             />
           </ReferenceArrayInput>
+
+          <Box sx={{ mt: 4, p: 2, backgroundColor: 'rgba(211, 47, 47, 0.05)', borderRadius: 1, border: '1px solid rgba(211, 47, 47, 0.2)' }}>
+            <Typography variant="subtitle1" sx={{ color: '#d32f2f', fontWeight: 'bold', mb: 1 }}>
+              Faction / Team Management
+            </Typography>
+            <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+              Factions allow grouping participants into teams with optional names and supported gamblers.
+              View existing factions in the Show page. Advanced faction editing can be done via the API.
+            </Typography>
+          </Box>
         </Box>
       </FormTab>
 

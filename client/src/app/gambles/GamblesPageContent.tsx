@@ -45,6 +45,29 @@ type Participant = {
   alternateNames?: string[]
 }
 
+interface GambleFactionMember {
+  id: number
+  characterId: number
+  character: {
+    id: number
+    name: string
+  }
+  role?: 'leader' | 'member' | 'supporter' | 'observer' | null
+  displayOrder: number
+}
+
+interface GambleFaction {
+  id: number
+  name?: string | null
+  supportedGamblerId?: number | null
+  supportedGambler?: {
+    id: number
+    name: string
+  } | null
+  members: GambleFactionMember[]
+  displayOrder: number
+}
+
 interface Gamble {
   id: number
   name: string
@@ -53,6 +76,7 @@ interface Gamble {
   winCondition?: string
   chapterId: number
   participants?: Participant[]
+  factions?: GambleFaction[]
   createdAt: string
   updatedAt: string
 }
@@ -716,20 +740,86 @@ export default function GamblesPageContent({
               >
                 Ch. {hoveredGamble.chapterId}
               </Badge>
-              {hoveredGamble.participants && hoveredGamble.participants.length > 0 && (
-                <Badge
-                  variant="light"
-                  style={{ color: getEntityThemeColor(theme, 'event') }}
-                  size="sm"
-                  fw={500}
-                >
-                  {hoveredGamble.participants.length} participant{hoveredGamble.participants.length !== 1 ? 's' : ''}
-                </Badge>
-              )}
+              {(() => {
+                // Count participants from factions if available, otherwise use legacy participants
+                const participantCount = hoveredGamble.factions && hoveredGamble.factions.length > 0
+                  ? hoveredGamble.factions.reduce((sum, f) => sum + f.members.length, 0)
+                  : (hoveredGamble.participants?.length || 0)
+                const factionCount = hoveredGamble.factions?.length || 0
+                if (participantCount > 0) {
+                  return (
+                    <>
+                      <Badge
+                        variant="light"
+                        style={{ color: getEntityThemeColor(theme, 'event') }}
+                        size="sm"
+                        fw={500}
+                      >
+                        {participantCount} participant{participantCount !== 1 ? 's' : ''}
+                      </Badge>
+                      {factionCount > 0 && (
+                        <Badge
+                          variant="light"
+                          style={{ color: accentGamble }}
+                          size="sm"
+                          fw={500}
+                        >
+                          {factionCount} faction{factionCount !== 1 ? 's' : ''}
+                        </Badge>
+                      )}
+                    </>
+                  )
+                }
+                return null
+              })()}
             </Group>
 
-            {/* Participants */}
-            {hoveredGamble.participants && hoveredGamble.participants.length > 0 && (
+            {/* Participants - Factions or Legacy */}
+            {hoveredGamble.factions && hoveredGamble.factions.length > 0 ? (
+              <Stack gap="xs">
+                {hoveredGamble.factions
+                  .sort((a, b) => a.displayOrder - b.displayOrder)
+                  .slice(0, 2)
+                  .map((faction) => {
+                    const factionName = faction.name || (faction.supportedGambler ? `${faction.supportedGambler.name}'s Side` : 'Faction')
+                    return (
+                      <Box key={faction.id}>
+                        <Text size="xs" fw={600} c={accentGamble} ta="center" mb={2}>
+                          {factionName}
+                        </Text>
+                        <Group justify="center" gap="xs" wrap="wrap">
+                          {faction.members.slice(0, 3).map((member) => (
+                            <Badge
+                              key={member.id}
+                              variant="outline"
+                              style={{ color: getEntityThemeColor(theme, 'character') }}
+                              size="xs"
+                              fw={500}
+                            >
+                              {member.character.name}
+                            </Badge>
+                          ))}
+                          {faction.members.length > 3 && (
+                            <Badge
+                              variant="outline"
+                              style={{ color: getEntityThemeColor(theme, 'character') }}
+                              size="xs"
+                              fw={500}
+                            >
+                              +{faction.members.length - 3}
+                            </Badge>
+                          )}
+                        </Group>
+                      </Box>
+                    )
+                  })}
+                {hoveredGamble.factions.length > 2 && (
+                  <Text size="xs" c="dimmed" ta="center">
+                    +{hoveredGamble.factions.length - 2} more faction{hoveredGamble.factions.length - 2 !== 1 ? 's' : ''}
+                  </Text>
+                )}
+              </Stack>
+            ) : hoveredGamble.participants && hoveredGamble.participants.length > 0 ? (
               <Group justify="center" gap="xs" wrap="wrap">
                 {hoveredGamble.participants.slice(0, 3).map((participant) => (
                   <Badge
@@ -753,7 +843,7 @@ export default function GamblesPageContent({
                   </Badge>
                 )}
               </Group>
-            )}
+            ) : null}
 
             {/* Win Condition */}
             {hoveredGamble.winCondition && (
