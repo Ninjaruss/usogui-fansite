@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useDeferredValue } from 'react'
+import React, { useState, useEffect, useDeferredValue, startTransition } from 'react'
 import { useSearchParams } from 'next/navigation'
 import styles from './SubmitEventPageContent.module.css'
 import {
@@ -459,7 +459,11 @@ export default function SubmitEventPageContent() {
                 label="Story Arc"
                 placeholder="Select arc for all events"
                 value={sharedArcId?.toString() || null}
-                onChange={(value) => setSharedArcId(value ? parseInt(value) : null)}
+                onChange={(value) => {
+                  startTransition(() => {
+                    setSharedArcId(value ? parseInt(value) : null)
+                  })
+                }}
                 data={arcOptions}
                 clearable
                 styles={{
@@ -473,7 +477,11 @@ export default function SubmitEventPageContent() {
                 label="Related Gamble"
                 placeholder="Select gamble for all events"
                 value={sharedGambleId?.toString() || null}
-                onChange={(value) => setSharedGambleId(value ? parseInt(value) : null)}
+                onChange={(value) => {
+                  startTransition(() => {
+                    setSharedGambleId(value ? parseInt(value) : null)
+                  })
+                }}
                 data={gambleOptions}
                 clearable
                 styles={{
