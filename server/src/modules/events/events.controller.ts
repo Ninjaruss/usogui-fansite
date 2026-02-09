@@ -8,6 +8,7 @@ import {
   Param,
   Query,
   NotFoundException,
+  BadRequestException,
   UseGuards,
   ParseIntPipe,
   ValidationPipe,
@@ -172,6 +173,62 @@ export class EventsController {
     @Query('status') status?: EventStatus,
   ) {
     return await this.service.findByArc(arcId, {
+      title,
+      description,
+      type,
+      userProgress,
+      status,
+    });
+  }
+
+  @Get('by-gamble/:gambleId')
+  @ApiOperation({
+    summary: 'Get events by gamble',
+    description:
+      'Retrieve all events for a specific gamble with optional filtering',
+  })
+  @ApiParam({
+    name: 'gambleId',
+    description: 'Gamble ID to filter events',
+    type: 'number',
+  })
+  @ApiQuery({
+    name: 'title',
+    required: false,
+    description: 'Filter by event title',
+  })
+  @ApiQuery({
+    name: 'description',
+    required: false,
+    description: 'Filter by description content',
+  })
+  @ApiQuery({
+    name: 'type',
+    required: false,
+    enum: EventType,
+    description: 'Filter by event type',
+  })
+  @ApiQuery({
+    name: 'userProgress',
+    required: false,
+    description: "User's reading progress - only shows safe events",
+  })
+  @ApiQuery({
+    name: 'status',
+    required: false,
+    enum: EventStatus,
+    description: 'Filter by approval status',
+  })
+  async getByGamble(
+    @Param('gambleId', ParseIntPipe) gambleId: number,
+    @Query('title') title?: string,
+    @Query('description') description?: string,
+    @Query('type') type?: EventType,
+    @Query('userProgress', new ParseIntPipe({ optional: true }))
+    userProgress?: number,
+    @Query('status') status?: EventStatus,
+  ) {
+    return await this.service.findByGamble(gambleId, {
       title,
       description,
       type,
@@ -377,5 +434,37 @@ export class EventsController {
   async approve(@Param('id', ParseIntPipe) id: number) {
     await this.service.update(id, { status: EventStatus.APPROVED });
     return { message: 'Event approved successfully' };
+  }
+
+  @Put(':id/reject')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.MODERATOR, UserRole.EDITOR)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Reject an event',
+    description: 'Reject an event with a reason (requires admin/moderator/editor role)',
+  })
+  @ApiParam({ name: 'id', description: 'Event ID', type: 'number' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        rejectionReason: { type: 'string', description: 'Reason for rejection' },
+      },
+      required: ['rejectionReason'],
+    },
+  })
+  async reject(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('rejectionReason') rejectionReason: string,
+  ) {
+    if (!rejectionReason?.trim()) {
+      throw new BadRequestException('Rejection reason is required');
+    }
+    await this.service.update(id, {
+      status: EventStatus.REJECTED,
+      rejectionReason: rejectionReason.trim(),
+    });
+    return { message: 'Event rejected successfully' };
   }
 }

@@ -231,6 +231,64 @@ export class EventsService {
     return query.getMany();
   }
 
+  async findByGamble(
+    gambleId: number,
+    filters: {
+      title?: string;
+      description?: string;
+      type?: EventType;
+      userProgress?: number;
+      status?: EventStatus;
+      character?: string;
+    },
+  ): Promise<Event[]> {
+    const query = this.repo
+      .createQueryBuilder('event')
+      .leftJoinAndSelect('event.arc', 'arc')
+      .leftJoinAndSelect('event.characters', 'characters')
+      .leftJoinAndSelect('event.gamble', 'gamble')
+      .leftJoin('gamble.participants', 'gambleParticipants')
+      .where('event.gambleId = :gambleId', { gambleId });
+
+    if (filters.title) {
+      query.andWhere('LOWER(event.title) LIKE LOWER(:title)', {
+        title: `%${filters.title}%`,
+      });
+    }
+    if (filters.description) {
+      query.andWhere('LOWER(event.description) LIKE LOWER(:description)', {
+        description: `%${filters.description}%`,
+      });
+    }
+    if (filters.type) {
+      query.andWhere('event.type = :type', { type: filters.type });
+    }
+    if (filters.status !== undefined) {
+      query.andWhere('event.status = :status', {
+        status: filters.status,
+      });
+    }
+    if (filters.character) {
+      query.andWhere(
+        '(LOWER(characters.name) LIKE LOWER(:character) OR LOWER(gambleParticipants.name) LIKE LOWER(:character))',
+        {
+          character: `%${filters.character}%`,
+        },
+      );
+    }
+
+    // Spoiler protection: only show events user can safely view
+    if (filters.userProgress !== undefined) {
+      query.andWhere(
+        '(event.spoilerChapter IS NULL OR event.spoilerChapter <= :userProgress)',
+        { userProgress: filters.userProgress },
+      );
+    }
+
+    query.orderBy('event.chapterNumber', 'ASC');
+    return query.getMany();
+  }
+
   async findByChapter(
     chapterNumber: number,
     filters: {

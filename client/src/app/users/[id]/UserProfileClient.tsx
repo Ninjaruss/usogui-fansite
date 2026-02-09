@@ -12,6 +12,7 @@ import {
   Divider,
   Group,
   Progress,
+  SegmentedControl,
   SimpleGrid,
   Skeleton,
   Stack,
@@ -100,6 +101,7 @@ export default function UserProfileClient({ initialUser }: UserProfileClientProp
   const [dataLoading, setDataLoading] = useState(true)
   const [contributionsVisible, setContributionsVisible] = useState(10)
   const [guidesVisible, setGuidesVisible] = useState(6)
+  const [contributionFilter, setContributionFilter] = useState<string>('all')
 
   // Note: User profiles don't support page view tracking in the current system
 
@@ -538,26 +540,72 @@ export default function UserProfileClient({ initialUser }: UserProfileClientProp
                 </Group>
               </Group>
 
+              {/* Filter Controls */}
+              <SegmentedControl
+                value={contributionFilter}
+                onChange={(value) => {
+                  setContributionFilter(value)
+                  setContributionsVisible(10) // Reset visible count when filter changes
+                }}
+                data={[
+                  { label: 'All', value: 'all' },
+                  { label: 'Guides', value: 'guide' },
+                  { label: 'Media', value: 'media' },
+                  { label: 'Events', value: 'event' },
+                  { label: 'Annotations', value: 'annotation' },
+                ]}
+                styles={{
+                  root: {
+                    backgroundColor: getAlphaColor(accentColor, 0.15),
+                    border: `1px solid ${accentBorderColor}`,
+                  },
+                  indicator: {
+                    backgroundColor: guideColor,
+                  },
+                  label: {
+                    color: textColors.secondary,
+                    '&[data-active]': {
+                      color: '#ffffff',
+                    },
+                  },
+                }}
+              />
+
               <Stack gap="sm">
-                {submissions.slice(0, contributionsVisible).map((submission: any) => (
-                  <SubmissionCard
-                    key={`${submission.type}-${submission.id}`}
-                    submission={submission as SubmissionItem}
-                    cardStyle={{
-                      background: getAlphaColor(guideColor, 0.12),
-                      border: `1px solid ${getAlphaColor(guideColor, 0.35)}`
-                    }}
-                  />
-                ))}
-                {submissions.length > contributionsVisible && (
-                  <Button
-                    variant="subtle"
-                    fullWidth
-                    onClick={() => setContributionsVisible(v => v + 10)}
-                  >
-                    Show more ({submissions.length - contributionsVisible} remaining)
-                  </Button>
-                )}
+                {(() => {
+                  const filteredSubmissions = contributionFilter === 'all'
+                    ? submissions
+                    : submissions.filter((s: any) => s.type === contributionFilter)
+
+                  return (
+                    <>
+                      {filteredSubmissions.slice(0, contributionsVisible).map((submission: any) => (
+                        <SubmissionCard
+                          key={`${submission.type}-${submission.id}`}
+                          submission={submission as SubmissionItem}
+                          cardStyle={{
+                            background: getAlphaColor(guideColor, 0.12),
+                            border: `1px solid ${getAlphaColor(guideColor, 0.35)}`
+                          }}
+                        />
+                      ))}
+                      {filteredSubmissions.length === 0 && (
+                        <Text c={textColors.tertiary} ta="center" py="xl">
+                          No {contributionFilter === 'all' ? 'contributions' : `${contributionFilter}s`} found.
+                        </Text>
+                      )}
+                      {filteredSubmissions.length > contributionsVisible && (
+                        <Button
+                          variant="subtle"
+                          fullWidth
+                          onClick={() => setContributionsVisible(v => v + 10)}
+                        >
+                          Show more ({filteredSubmissions.length - contributionsVisible} remaining)
+                        </Button>
+                      )}
+                    </>
+                  )
+                })()}
               </Stack>
             </Stack>
           </Card>

@@ -580,7 +580,7 @@ export class UsersService {
       limiter(() =>
         guideRepo.find({
           where: { authorId: userId },
-          select: ['id', 'title', 'status', 'createdAt'],
+          select: ['id', 'title', 'status', 'createdAt', 'rejectionReason'],
           order: { createdAt: 'DESC' },
         }),
       ),
@@ -603,14 +603,32 @@ export class UsersService {
       limiter(() =>
         eventRepo.find({
           where: { createdBy: { id: userId } },
-          select: ['id', 'title', 'status', 'createdAt'],
+          select: [
+            'id',
+            'title',
+            'status',
+            'createdAt',
+            'description',
+            'arcId',
+            'gambleId',
+            'rejectionReason',
+          ],
           order: { createdAt: 'DESC' },
         }),
       ),
       limiter(() =>
         annotationRepo.find({
           where: { author: { id: userId } },
-          select: ['id', 'content', 'status', 'createdAt'],
+          select: [
+            'id',
+            'title',
+            'content',
+            'status',
+            'createdAt',
+            'ownerType',
+            'ownerId',
+            'rejectionReason',
+          ],
           order: { createdAt: 'DESC' },
         }),
       ),
@@ -660,6 +678,7 @@ export class UsersService {
         title: g.title,
         status: g.status,
         createdAt: g.createdAt,
+        rejectionReason: g.rejectionReason,
       })),
       ...mediaWithEntityNames.map((m) => ({
         id: m.id,
@@ -679,13 +698,20 @@ export class UsersService {
         title: e.title,
         status: e.status,
         createdAt: e.createdAt,
+        description: e.description,
+        ownerType: e.gambleId ? 'gamble' : e.arcId ? 'arc' : null,
+        ownerId: e.gambleId || e.arcId || null,
+        rejectionReason: e.rejectionReason,
       })),
       ...annotations.map((a: any) => ({
         id: a.id,
         type: 'annotation' as const,
-        title: a.content?.substring(0, 100) || 'Annotation',
+        title: a.title || a.content?.substring(0, 100) || 'Annotation',
         status: a.status,
         createdAt: a.createdAt,
+        ownerType: a.ownerType,
+        ownerId: a.ownerId,
+        rejectionReason: a.rejectionReason,
       })),
     ];
 

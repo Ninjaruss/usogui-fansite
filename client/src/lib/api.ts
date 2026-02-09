@@ -1347,6 +1347,30 @@ class ApiClient {
     return this.delete<any>(`/events/${id}`)
   }
 
+  async approveEvent(id: number) {
+    return this.put<any>(`/events/${id}/approve`, {})
+  }
+
+  async rejectEvent(id: number, rejectionReason: string) {
+    return this.put<any>(`/events/${id}/reject`, { rejectionReason })
+  }
+
+  async getEventsByArc(arcId: number, options?: { status?: string; userProgress?: number }) {
+    const params = new URLSearchParams()
+    if (options?.status) params.append('status', options.status)
+    if (options?.userProgress) params.append('userProgress', options.userProgress.toString())
+    const query = params.toString()
+    return this.get<any[]>(`/events/by-arc/${arcId}${query ? `?${query}` : ''}`)
+  }
+
+  async getEventsByGamble(gambleId: number, options?: { status?: string; userProgress?: number }) {
+    const params = new URLSearchParams()
+    if (options?.status) params.append('status', options.status)
+    if (options?.userProgress) params.append('userProgress', options.userProgress.toString())
+    const query = params.toString()
+    return this.get<any[]>(`/events/by-gamble/${gambleId}${query ? `?${query}` : ''}`)
+  }
+
   // Admin guide methods (authenticated)
   async getGuidesAdmin(params?: { 
     page?: number; 

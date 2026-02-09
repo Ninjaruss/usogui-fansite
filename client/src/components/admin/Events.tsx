@@ -50,7 +50,11 @@ import {
   AppBar,
   TextField as MuiTextField,
   Tab,
-  Tabs
+  Tabs,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions
 } from '@mui/material'
 import {
   Check,
@@ -459,6 +463,164 @@ const EventBulkActionButtons = () => (
   </Box>
 )
 
+// Individual Approve Button
+const ApproveEventButton = () => {
+  const record = useRecordContext()
+  const notify = useNotify()
+  const refresh = useRefresh()
+
+  const handleApprove = async () => {
+    if (!record) return
+
+    try {
+      await api.approveEvent(Number(record.id))
+      notify('Event approved successfully')
+      refresh()
+    } catch (error: any) {
+      console.error('Error approving event:', error)
+      const errorMessage = error?.details?.message || error?.message || 'Error approving event'
+      notify(errorMessage, { type: 'error' })
+    }
+  }
+
+  if (record?.status !== EventStatus.PENDING) return null
+
+  return (
+    <Button
+      label="Approve"
+      onClick={handleApprove}
+      color="primary"
+      startIcon={<Check size={16} />}
+    />
+  )
+}
+
+// Event Rejection Modal
+const EventRejectionModal = ({ open, onClose, eventId, eventTitle, onSuccess }: {
+  open: boolean;
+  onClose: () => void;
+  eventId: number;
+  eventTitle: string;
+  onSuccess: () => void;
+}) => {
+  const [reason, setReason] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const notify = useNotify();
+
+  const handleSubmit = async () => {
+    if (!reason.trim()) {
+      notify('Please enter a rejection reason', { type: 'warning' });
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      await api.rejectEvent(eventId, reason.trim());
+      notify('Event rejected successfully', { type: 'success' });
+      onSuccess();
+      onClose();
+      setReason('');
+    } catch (error: any) {
+      console.error('Error rejecting event:', error);
+      const errorMessage = error?.details?.message || error?.message || 'Error rejecting event';
+      notify(errorMessage, { type: 'error' });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleClose = () => {
+    if (!submitting) {
+      setReason('');
+      onClose();
+    }
+  };
+
+  return (
+    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
+      <DialogTitle sx={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 2,
+        backgroundColor: 'rgba(244, 67, 54, 0.1)',
+        borderBottom: '1px solid rgba(244, 67, 54, 0.3)',
+        color: '#f44336',
+        fontWeight: 'bold'
+      }}>
+        <X size={24} />
+        Reject Event
+      </DialogTitle>
+      <DialogContent sx={{ pt: 3 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
+          <Typography variant="body1">
+            Are you sure you want to reject the event <strong>"{eventTitle}"</strong>?
+          </Typography>
+
+          <MuiTextField
+            fullWidth
+            required
+            multiline
+            rows={3}
+            label="Rejection Reason"
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            placeholder="Explain why this event is being rejected..."
+            helperText="This reason will be shown to the author"
+            error={!reason.trim() && reason.length > 0}
+            sx={{
+              '& .MuiOutlinedInput-root': {
+                backgroundColor: '#0f0f0f',
+              }
+            }}
+          />
+        </Box>
+      </DialogContent>
+      <DialogActions sx={{ p: 2, gap: 1 }}>
+        <MuiButton onClick={handleClose} disabled={submitting} variant="outlined">
+          Cancel
+        </MuiButton>
+        <MuiButton
+          onClick={handleSubmit}
+          disabled={submitting || !reason.trim()}
+          variant="contained"
+          color="error"
+        >
+          {submitting ? 'Rejecting...' : 'Reject Event'}
+        </MuiButton>
+      </DialogActions>
+    </Dialog>
+  );
+};
+
+// Individual Reject Button
+const RejectEventButton = () => {
+  const record = useRecordContext()
+  const refresh = useRefresh()
+  const [modalOpen, setModalOpen] = useState(false)
+
+  if (record?.status !== EventStatus.PENDING) return null
+
+  return (
+    <>
+      <Button
+        label="Reject"
+        onClick={() => setModalOpen(true)}
+        color="secondary"
+        startIcon={<X size={16} />}
+      />
+      {record && (
+        <EventRejectionModal
+          open={modalOpen}
+          onClose={() => setModalOpen(false)}
+          eventId={Number(record.id)}
+          eventTitle={record.title || 'Untitled Event'}
+          onSuccess={refresh}
+        />
+      )}
+    </>
+  )
+}
+
 // Custom Filter Toolbar Component
 const EventFilterToolbar = () => {
   const { filterValues, setFilters } = useListContext()
@@ -776,6 +938,12 @@ export const EventList = () => (
       {/* Status - Prominent Display */}
       <Box sx={{ width: '110px', display: 'flex', justifyContent: 'center' }}>
         <EventStatusField source="status" />
+      </Box>
+
+      {/* Individual Actions */}
+      <Box sx={{ display: 'flex', gap: 1, minWidth: '160px', justifyContent: 'center' }}>
+        <ApproveEventButton />
+        <RejectEventButton />
       </Box>
 
       {/* Event Details */}

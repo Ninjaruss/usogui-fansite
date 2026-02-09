@@ -103,6 +103,13 @@ export class Event {
   status: EventStatus;
 
   @ApiPropertyOptional({
+    description: 'Reason for rejection if the event was rejected',
+    example: 'Content is inaccurate or misleading',
+  })
+  @Column({ type: 'varchar', nullable: true, length: 500 })
+  rejectionReason: string | null;
+
+  @ApiPropertyOptional({
     description: 'Story arc this event belongs to',
     type: () => Arc,
   })

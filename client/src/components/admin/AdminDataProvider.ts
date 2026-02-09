@@ -24,7 +24,7 @@ const cleanUpdateData = (resource: string, data: Record<string, unknown>) => {
     // Keep only the fields that are allowed in the CreateEventDto/UpdateEventDto
     const allowedFields = [
       'title', 'description', 'type', 'status', 'arcId', 'gambleId',
-      'chapterNumber', 'spoilerChapter', 'characterIds'
+      'chapterNumber', 'spoilerChapter', 'characterIds', 'rejectionReason'
     ]
 
     const eventCleaned: Record<string, unknown> = {}
