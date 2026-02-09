@@ -532,11 +532,12 @@ export default function SubmitEventPageContent() {
           {/* Right Column: Timeline */}
           <Box>
             <Title order={3} c={eventAccent} mb="md">Existing Events</Title>
-            <EventTimeline
+            {/* TEMPORARY: Commenting out to debug Select error */}
+            {/* <EventTimeline
               arcId={sharedArcId}
               gambleId={sharedGambleId}
               accentColor={eventAccent}
-            />
+            /> */}
           </Box>
         </SimpleGrid>
       </motion.div>
