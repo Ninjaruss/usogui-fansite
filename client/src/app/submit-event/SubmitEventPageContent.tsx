@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useDeferredValue } from 'react'
 import { useSearchParams } from 'next/navigation'
 import styles from './SubmitEventPageContent.module.css'
 import {
@@ -55,6 +55,10 @@ export default function SubmitEventPageContent() {
   // Shared context for batch mode
   const [sharedArcId, setSharedArcId] = useState<number | null>(null)
   const [sharedGambleId, setSharedGambleId] = useState<number | null>(null)
+
+  // Deferred values to prevent Select component conflicts with EventTimeline updates
+  const deferredArcId = useDeferredValue(sharedArcId)
+  const deferredGambleId = useDeferredValue(sharedGambleId)
 
   // Single event form data (for edit mode)
   const [formData, setFormData] = useState({
@@ -532,12 +536,11 @@ export default function SubmitEventPageContent() {
           {/* Right Column: Timeline */}
           <Box>
             <Title order={3} c={eventAccent} mb="md">Existing Events</Title>
-            {/* TEMPORARY: Commenting out to debug Select error */}
-            {/* <EventTimeline
-              arcId={sharedArcId}
-              gambleId={sharedGambleId}
+            <EventTimeline
+              arcId={deferredArcId}
+              gambleId={deferredGambleId}
               accentColor={eventAccent}
-            /> */}
+            />
           </Box>
         </SimpleGrid>
       </motion.div>
