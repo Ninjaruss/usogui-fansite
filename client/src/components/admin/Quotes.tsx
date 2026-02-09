@@ -661,6 +661,7 @@ export const QuoteCreate = () => (
                       required
                       fullWidth
                       label="Quote"
+                      helperText="Enter the full quote text"
                     />
                   </Box>
                 </Grid>
@@ -676,7 +677,7 @@ export const QuoteCreate = () => (
                       Character
                     </Typography>
                     <ReferenceInput source="characterId" reference="characters" label="Spoken By" perPage={200}>
-                      <AutocompleteInput optionText="name" isRequired />
+                      <AutocompleteInput optionText="name" isRequired helperText="Select the character who said this quote" />
                     </ReferenceInput>
                   </Box>
                 </Grid>
@@ -698,12 +699,14 @@ export const QuoteCreate = () => (
                       label="Chapter Number"
                       max={539}
                       min={1}
+                      helperText="Chapter where this quote appears (1-539)"
                     />
                     <NumberInput
                       source="pageNumber"
                       fullWidth
                       label="Page Number"
                       min={1}
+                      helperText="Page number (optional)"
                     />
                   </Box>
                 </Grid>

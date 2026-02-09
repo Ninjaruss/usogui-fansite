@@ -65,7 +65,7 @@ export const GambleList = () => (
           }
 
           return (
-            <Box sx={{ maxWidth: '300px' }}>
+            <Box sx={{ maxWidth: '350px' }}>
               <Typography
                 variant="body2"
                 sx={{
@@ -91,7 +91,7 @@ export const GambleList = () => (
           <ChipField source="name" size="small" sx={{ mr: 0.5, mb: 0.5 }} />
         </SingleFieldList>
       </ArrayField>
-      <DateField source="createdAt" showTime={false} label="Created" />
+      <DateField source="createdAt" showTime={false} label="Created" sortable />
     </Datagrid>
   </List>
 )

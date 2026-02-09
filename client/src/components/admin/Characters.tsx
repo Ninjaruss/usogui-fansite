@@ -408,15 +408,15 @@ export const CharacterEdit = () => (
                     fullWidth
                     helperText="Detailed character history and background. Supports Markdown formatting."
                   />
-                  <NumberInput source="firstAppearanceChapter" max={539} min={1} fullWidth />
+                  <NumberInput source="firstAppearanceChapter" max={539} min={1} fullWidth helperText="Chapter number when this character first appears (1-539)" />
                 </Box>
               </Grid>
 
               <Grid item xs={12} md={6}>
-                <Box sx={{ 
-                  p: 3, 
-                  backgroundColor: 'rgba(245, 124, 0, 0.05)', 
-                  borderRadius: 2, 
+                <Box sx={{
+                  p: 3,
+                  backgroundColor: 'rgba(245, 124, 0, 0.05)',
+                  borderRadius: 2,
                   border: '1px solid rgba(245, 124, 0, 0.2)'
                 }}>
                   <Typography variant="h6" sx={{ color: '#f57c00', mb: 2, fontWeight: 'bold' }}>
@@ -424,7 +424,7 @@ export const CharacterEdit = () => (
                   </Typography>
                   <ArrayInput source="alternateNames">
                     <SimpleFormIterator>
-                      <TextInput source="" label="Alternate Name" fullWidth />
+                      <TextInput source="" label="Alternate Name" fullWidth helperText="Other names this character is known by" />
                     </SimpleFormIterator>
                   </ArrayInput>
                 </Box>
@@ -838,15 +838,15 @@ export const CharacterCreate = () => (
                     fullWidth
                     helperText="Detailed character history and background. Supports Markdown formatting."
                   />
-                  <NumberInput source="firstAppearanceChapter" max={539} min={1} fullWidth />
+                  <NumberInput source="firstAppearanceChapter" max={539} min={1} fullWidth helperText="Chapter number when this character first appears (1-539)" />
                 </Box>
               </Grid>
 
               <Grid item xs={12} md={6}>
-                <Box sx={{ 
-                  p: 3, 
-                  backgroundColor: 'rgba(245, 124, 0, 0.05)', 
-                  borderRadius: 2, 
+                <Box sx={{
+                  p: 3,
+                  backgroundColor: 'rgba(245, 124, 0, 0.05)',
+                  borderRadius: 2,
                   border: '1px solid rgba(245, 124, 0, 0.2)'
                 }}>
                   <Typography variant="h6" sx={{ color: '#f57c00', mb: 2, fontWeight: 'bold' }}>
@@ -854,7 +854,7 @@ export const CharacterCreate = () => (
                   </Typography>
                   <ArrayInput source="alternateNames">
                     <SimpleFormIterator>
-                      <TextInput source="" label="Alternate Name" fullWidth />
+                      <TextInput source="" label="Alternate Name" fullWidth helperText="Other names this character is known by" />
                     </SimpleFormIterator>
                   </ArrayInput>
                 </Box>

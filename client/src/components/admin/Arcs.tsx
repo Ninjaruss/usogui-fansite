@@ -26,6 +26,15 @@ import { Edit3, Plus, BookOpen, Layers, GitBranch } from 'lucide-react'
 import EnhancedSpoilerMarkdown from '../EnhancedSpoilerMarkdown'
 import { EditToolbar } from './EditToolbar'
 
+// Validation function for chapter range
+const validateChapterRange = (values: any) => {
+  const errors: any = {}
+  if (values.startChapter && values.endChapter && values.startChapter > values.endChapter) {
+    errors.endChapter = 'End chapter must be >= start chapter'
+  }
+  return errors
+}
+
 // Component to show arc type with sub-arc count tooltip
 const ArcTypeWithTooltip = ({ record }: { record: any }) => {
   // Fetch sub-arcs for this arc to get the count
@@ -186,7 +195,7 @@ export const ArcList = () => (
       <FunctionField
         label="Description"
         render={(record: any) => (
-          <Box sx={{ maxWidth: '300px' }}>
+          <Box sx={{ maxWidth: '350px' }}>
             <Typography
               variant="body2"
               sx={{
@@ -537,6 +546,7 @@ export const ArcShow = () => (
 export const ArcEdit = () => (
   <Edit>
     <SimpleForm
+      validate={validateChapterRange}
       toolbar={
         <EditToolbar
           resource="arcs"
@@ -733,7 +743,7 @@ export const ArcEdit = () => (
 
 export const ArcCreate = () => (
   <Create>
-    <SimpleForm>
+    <SimpleForm validate={validateChapterRange}>
       <Box sx={{
         backgroundColor: '#0a0a0a',
         width: '100%',
@@ -813,7 +823,7 @@ export const ArcCreate = () => (
                     <Typography variant="h6" sx={{ color: '#16a34a', mb: 2, fontWeight: 'bold' }}>
                       Basic Information
                     </Typography>
-                    <TextInput source="name" required fullWidth label="Arc Name" />
+                    <TextInput source="name" required fullWidth label="Arc Name" helperText="Enter the name of this story arc" />
                     <TextInput
                       source="description"
                       multiline

@@ -26,6 +26,15 @@ import { Box, Chip, Typography, Divider } from '@mui/material'
 import { ArrowRight } from 'lucide-react'
 import { RelationshipType } from '../../types'
 
+// Validation function for chapter range
+const validateChapterRange = (values: any) => {
+  const errors: any = {}
+  if (values.startChapter && values.endChapter && values.startChapter > values.endChapter) {
+    errors.endChapter = 'End chapter must be >= start chapter'
+  }
+  return errors
+}
+
 // Relationship type choices for the select input
 const RELATIONSHIP_TYPE_CHOICES = [
   { id: RelationshipType.ALLY, name: 'Ally' },
@@ -127,14 +136,14 @@ const RelationshipDirectionField = () => {
 
 // Filters for the list
 const relationshipFilters = [
-  <ReferenceInput key="source" source="sourceCharacterId" reference="characters" label="Character A" alwaysOn perPage={200}>
+  <ReferenceInput key="source" source="sourceCharacterId" reference="characters" label="Source Character" alwaysOn perPage={200}>
     <AutocompleteInput
       optionText="name"
       filterToQuery={(searchText: string) => ({ name: searchText })}
       sx={{ minWidth: 200 }}
     />
   </ReferenceInput>,
-  <ReferenceInput key="target" source="targetCharacterId" reference="characters" label="Character B" perPage={200}>
+  <ReferenceInput key="target" source="targetCharacterId" reference="characters" label="Target Character" perPage={200}>
     <AutocompleteInput
       optionText="name"
       filterToQuery={(searchText: string) => ({ name: searchText })}
@@ -175,7 +184,7 @@ export const CharacterRelationshipList = () => (
         render={() => <ChapterRangeField />}
       />
       <NumberField source="spoilerChapter" label="Spoiler Ch." />
-      <DateField source="createdAt" showTime />
+      <DateField source="createdAt" showTime sortable />
     </Datagrid>
   </List>
 )
@@ -253,74 +262,77 @@ export const CharacterRelationshipShow = () => (
 // Create component
 export const CharacterRelationshipCreate = () => (
   <Create>
-    <SimpleForm>
+    <SimpleForm validate={validateChapterRange}>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, maxWidth: 600 }}>
         <Typography variant="subtitle1" sx={{ fontWeight: 600, color: 'text.secondary' }}>
           Characters
         </Typography>
+        <Typography variant="body2" sx={{ color: 'text.secondary', mb: 1, fontSize: '0.8rem' }}>
+          e.g., If Baku sees Kaji as a Rival, then Baku is the Source and Kaji is the Target.
+        </Typography>
 
-        <ReferenceInput source="sourceCharacterId" reference="characters" label="Character A" perPage={200}>
+        <ReferenceInput source="sourceCharacterId" reference="characters" label="Source Character" perPage={200}>
           <AutocompleteInput
             optionText="name"
             filterToQuery={(searchText: string) => ({ name: searchText })}
             fullWidth
-            helperText="First character in the relationship"
+            helperText="The character who has this view of the other"
           />
         </ReferenceInput>
 
-        <ReferenceInput source="targetCharacterId" reference="characters" label="Character B" perPage={200}>
+        <ReferenceInput source="targetCharacterId" reference="characters" label="Target Character" perPage={200}>
           <AutocompleteInput
             optionText="name"
             filterToQuery={(searchText: string) => ({ name: searchText })}
             fullWidth
-            helperText="Second character in the relationship"
+            helperText="The character being viewed"
           />
         </ReferenceInput>
 
         <Divider sx={{ my: 1 }} />
 
         <Typography variant="subtitle1" sx={{ fontWeight: 600, color: 'text.secondary' }}>
-          A → B Relationship
+          Source's View of Target
         </Typography>
 
         <SelectInput
           source="relationshipType"
-          label="How A sees B"
+          label="How Source sees Target"
           choices={RELATIONSHIP_TYPE_CHOICES}
           fullWidth
-          helperText="Type of relationship from A's perspective toward B"
+          helperText="Type of relationship from Source's perspective toward Target"
         />
 
         <TextInput
           source="description"
-          label="A → B Description"
+          label="Source → Target Description"
           multiline
           rows={2}
           fullWidth
-          helperText="How A relates to B (optional)"
+          helperText="How Source relates to Target (optional)"
         />
 
         <Divider sx={{ my: 1 }} />
 
         <Typography variant="subtitle1" sx={{ fontWeight: 600, color: 'text.secondary' }}>
-          B → A Relationship (Optional)
+          Target's View of Source (Optional)
         </Typography>
 
         <SelectInput
           source="reverseRelationshipType"
-          label="How B sees A"
+          label="How Target sees Source"
           choices={REVERSE_RELATIONSHIP_CHOICES}
           fullWidth
-          helperText="Leave empty to create only a one-way relationship, or select the same type for symmetric relationships"
+          helperText="Leave empty for one-way relationship, or select same type for symmetric relationships"
         />
 
         <TextInput
           source="reverseDescription"
-          label="B → A Description"
+          label="Target → Source Description"
           multiline
           rows={2}
           fullWidth
-          helperText="How B relates to A (optional, uses A→B description if not provided)"
+          helperText="How Target relates to Source (optional)"
         />
 
         <Divider sx={{ my: 1 }} />
@@ -357,26 +369,30 @@ export const CharacterRelationshipCreate = () => (
 // Edit component
 export const CharacterRelationshipEdit = () => (
   <Edit>
-    <SimpleForm>
+    <SimpleForm validate={validateChapterRange}>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, maxWidth: 600 }}>
         <Typography variant="subtitle1" sx={{ fontWeight: 600, color: 'text.secondary' }}>
           Characters
         </Typography>
 
+        <Typography variant="body2" sx={{ color: 'text.secondary', mb: 1, fontSize: '0.8rem' }}>
+          e.g., If Baku sees Kaji as a Rival, then Baku is the Source and Kaji is the Target.
+        </Typography>
+
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 2, bgcolor: 'action.hover', borderRadius: 1 }}>
-          <ReferenceInput source="sourceCharacterId" reference="characters" label="Character A" perPage={200}>
+          <ReferenceInput source="sourceCharacterId" reference="characters" label="Source Character" perPage={200}>
             <AutocompleteInput
               optionText="name"
               filterToQuery={(searchText: string) => ({ name: searchText })}
-              helperText="First character in the relationship"
+              helperText="The character who has this view of the other"
             />
           </ReferenceInput>
           <ArrowRight size={20} />
-          <ReferenceInput source="targetCharacterId" reference="characters" label="Character B" perPage={200}>
+          <ReferenceInput source="targetCharacterId" reference="characters" label="Target Character" perPage={200}>
             <AutocompleteInput
               optionText="name"
               filterToQuery={(searchText: string) => ({ name: searchText })}
-              helperText="Second character in the relationship"
+              helperText="The character being viewed"
             />
           </ReferenceInput>
         </Box>
@@ -384,35 +400,35 @@ export const CharacterRelationshipEdit = () => (
         <Divider sx={{ my: 1 }} />
 
         <Typography variant="subtitle1" sx={{ fontWeight: 600, color: 'text.secondary' }}>
-          A → B Relationship
+          Source's View of Target
         </Typography>
 
         <SelectInput
           source="relationshipType"
-          label="How A sees B"
+          label="How Source sees Target"
           choices={RELATIONSHIP_TYPE_CHOICES}
           fullWidth
-          helperText="Type of relationship from A's perspective toward B"
+          helperText="Type of relationship from Source's perspective toward Target"
         />
 
         <TextInput
           source="description"
-          label="A → B Description"
+          label="Source → Target Description"
           multiline
           rows={3}
           fullWidth
-          helperText="How A relates to B (optional)"
+          helperText="How Source relates to Target (optional)"
         />
 
         <Divider sx={{ my: 1 }} />
 
         <Typography variant="subtitle1" sx={{ fontWeight: 600, color: 'text.secondary' }}>
-          B → A Relationship (Optional)
+          Target's View of Source (Optional)
         </Typography>
 
         <SelectInput
           source="reverseRelationshipType"
-          label="How B sees A"
+          label="How Target sees Source"
           choices={REVERSE_RELATIONSHIP_CHOICES}
           fullWidth
           helperText="Leave empty to keep as one-way relationship, or select the same type for symmetric relationships"
@@ -420,11 +436,11 @@ export const CharacterRelationshipEdit = () => (
 
         <TextInput
           source="reverseDescription"
-          label="B → A Description"
+          label="Target → Source Description"
           multiline
           rows={3}
           fullWidth
-          helperText="How B relates to A (optional)"
+          helperText="How Target relates to Source (optional)"
         />
 
         <Divider sx={{ my: 1 }} />

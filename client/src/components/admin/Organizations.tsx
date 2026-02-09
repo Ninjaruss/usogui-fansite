@@ -43,7 +43,7 @@ export const OrganizationList = () => (
           <Typography
             variant="body2"
             sx={{
-              maxWidth: '400px',
+              maxWidth: '350px',
               display: '-webkit-box',
               WebkitLineClamp: 2,
               WebkitBoxOrient: 'vertical',
@@ -442,6 +442,7 @@ export const OrganizationCreate = () => (
                       required
                       fullWidth
                       label="Organization Name"
+                      helperText="Enter the name of this organization"
                     />
                     <TextInput
                       source="description"

@@ -24,6 +24,15 @@ import {
 import { Box, Chip, Typography, Divider } from '@mui/material'
 import { Building2, ArrowRight } from 'lucide-react'
 
+// Validation function for chapter range
+const validateChapterRange = (values: any) => {
+  const errors: any = {}
+  if (values.startChapter && values.endChapter && values.startChapter > values.endChapter) {
+    errors.endChapter = 'End chapter must be >= start chapter'
+  }
+  return errors
+}
+
 // Custom field to display chapter range
 const ChapterRangeField = () => {
   const record = useRecordContext()
@@ -129,7 +138,7 @@ export const CharacterOrganizationList = () => (
         render={() => <ChapterRangeField />}
       />
       <NumberField source="spoilerChapter" label="Spoiler Ch." />
-      <DateField source="createdAt" showTime />
+      <DateField source="createdAt" showTime sortable />
     </Datagrid>
   </List>
 )
@@ -209,7 +218,7 @@ export const CharacterOrganizationShow = () => (
 // Create component
 export const CharacterOrganizationCreate = () => (
   <Create>
-    <SimpleForm>
+    <SimpleForm validate={validateChapterRange}>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, maxWidth: 600 }}>
         <Typography variant="subtitle1" sx={{ fontWeight: 600, color: 'text.secondary' }}>
           Character & Organization
@@ -289,7 +298,7 @@ export const CharacterOrganizationCreate = () => (
 // Edit component
 export const CharacterOrganizationEdit = () => (
   <Edit>
-    <SimpleForm>
+    <SimpleForm validate={validateChapterRange}>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, maxWidth: 600 }}>
         <Typography variant="subtitle1" sx={{ fontWeight: 600, color: 'text.secondary' }}>
           Character & Organization

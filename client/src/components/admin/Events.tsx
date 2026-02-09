@@ -338,24 +338,23 @@ const BulkApproveButton = () => {
   const refresh = useRefresh()
   const unselectAll = useUnselectAll('events')
   const [loading, setLoading] = useState(false)
+  const [confirmOpen, setConfirmOpen] = useState(false)
+
+  // Filter to only pending events
+  const pendingIds = selectedIds.filter(id => {
+    const event = data?.find((e: any) => e.id === id)
+    return event?.status === EventStatus.PENDING
+  })
 
   const handleApprove = async () => {
-    if (selectedIds.length === 0) return
+    if (pendingIds.length === 0) {
+      notify('No pending events selected', { type: 'warning' })
+      setConfirmOpen(false)
+      return
+    }
 
     setLoading(true)
     try {
-      // Filter to only pending events
-      const pendingIds = selectedIds.filter(id => {
-        const event = data?.find((e: any) => e.id === id)
-        return event?.status === EventStatus.PENDING
-      })
-
-      if (pendingIds.length === 0) {
-        notify('No pending events selected', { type: 'warning' })
-        setLoading(false)
-        return
-      }
-
       await Promise.all(
         pendingIds.map(id =>
           api.put(`/events/${id}`, { status: EventStatus.APPROVED })
@@ -370,26 +369,53 @@ const BulkApproveButton = () => {
       notify('Error approving events', { type: 'error' })
     } finally {
       setLoading(false)
+      setConfirmOpen(false)
     }
   }
 
   return (
-    <MuiButton
-      onClick={handleApprove}
-      disabled={loading || selectedIds.length === 0}
-      variant="contained"
-      size="small"
-      startIcon={<Check size={16} />}
-      sx={{
-        backgroundColor: '#16a34a',
-        color: 'white',
-        '&:hover': { backgroundColor: '#15803d' },
-        fontWeight: 600,
-        textTransform: 'none'
-      }}
-    >
-      {loading ? 'Approving...' : `Approve (${selectedIds.length})`}
-    </MuiButton>
+    <>
+      <MuiButton
+        onClick={() => setConfirmOpen(true)}
+        disabled={loading || selectedIds.length === 0}
+        variant="contained"
+        size="small"
+        startIcon={<Check size={16} />}
+        sx={{
+          backgroundColor: '#16a34a',
+          color: 'white',
+          '&:hover': { backgroundColor: '#15803d' },
+          fontWeight: 600,
+          textTransform: 'none'
+        }}
+      >
+        {loading ? 'Approving...' : `Approve (${selectedIds.length})`}
+      </MuiButton>
+
+      <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)} maxWidth="xs" fullWidth>
+        <DialogTitle sx={{ backgroundColor: '#16a34a', color: 'white' }}>
+          Confirm Bulk Approve
+        </DialogTitle>
+        <DialogContent sx={{ pt: 3 }}>
+          <Typography>
+            Are you sure you want to approve {pendingIds.length} event(s)?
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ p: 2, gap: 1 }}>
+          <MuiButton onClick={() => setConfirmOpen(false)} variant="outlined">
+            Cancel
+          </MuiButton>
+          <MuiButton
+            onClick={handleApprove}
+            variant="contained"
+            disabled={loading}
+            sx={{ backgroundColor: '#16a34a', '&:hover': { backgroundColor: '#15803d' } }}
+          >
+            {loading ? 'Approving...' : 'Approve'}
+          </MuiButton>
+        </DialogActions>
+      </Dialog>
+    </>
   )
 }
 
@@ -400,24 +426,23 @@ const BulkRejectButton = () => {
   const refresh = useRefresh()
   const unselectAll = useUnselectAll('events')
   const [loading, setLoading] = useState(false)
+  const [confirmOpen, setConfirmOpen] = useState(false)
+
+  // Filter to only pending events
+  const pendingIds = selectedIds.filter(id => {
+    const event = data?.find((e: any) => e.id === id)
+    return event?.status === EventStatus.PENDING
+  })
 
   const handleReject = async () => {
-    if (selectedIds.length === 0) return
+    if (pendingIds.length === 0) {
+      notify('No pending events selected', { type: 'warning' })
+      setConfirmOpen(false)
+      return
+    }
 
     setLoading(true)
     try {
-      // Filter to only pending events
-      const pendingIds = selectedIds.filter(id => {
-        const event = data?.find((e: any) => e.id === id)
-        return event?.status === EventStatus.PENDING
-      })
-
-      if (pendingIds.length === 0) {
-        notify('No pending events selected', { type: 'warning' })
-        setLoading(false)
-        return
-      }
-
       await Promise.all(
         pendingIds.map(id =>
           api.put(`/events/${id}`, { status: EventStatus.REJECTED })
@@ -432,26 +457,53 @@ const BulkRejectButton = () => {
       notify('Error rejecting events', { type: 'error' })
     } finally {
       setLoading(false)
+      setConfirmOpen(false)
     }
   }
 
   return (
-    <MuiButton
-      onClick={handleReject}
-      disabled={loading || selectedIds.length === 0}
-      variant="contained"
-      size="small"
-      startIcon={<X size={16} />}
-      sx={{
-        backgroundColor: '#dc2626',
-        color: 'white',
-        '&:hover': { backgroundColor: '#b91c1c' },
-        fontWeight: 600,
-        textTransform: 'none'
-      }}
-    >
-      {loading ? 'Rejecting...' : `Reject (${selectedIds.length})`}
-    </MuiButton>
+    <>
+      <MuiButton
+        onClick={() => setConfirmOpen(true)}
+        disabled={loading || selectedIds.length === 0}
+        variant="contained"
+        size="small"
+        startIcon={<X size={16} />}
+        sx={{
+          backgroundColor: '#dc2626',
+          color: 'white',
+          '&:hover': { backgroundColor: '#b91c1c' },
+          fontWeight: 600,
+          textTransform: 'none'
+        }}
+      >
+        {loading ? 'Rejecting...' : `Reject (${selectedIds.length})`}
+      </MuiButton>
+
+      <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)} maxWidth="xs" fullWidth>
+        <DialogTitle sx={{ backgroundColor: '#dc2626', color: 'white' }}>
+          Confirm Bulk Reject
+        </DialogTitle>
+        <DialogContent sx={{ pt: 3 }}>
+          <Typography>
+            Are you sure you want to reject {pendingIds.length} event(s)?
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ p: 2, gap: 1 }}>
+          <MuiButton onClick={() => setConfirmOpen(false)} variant="outlined">
+            Cancel
+          </MuiButton>
+          <MuiButton
+            onClick={handleReject}
+            variant="contained"
+            disabled={loading}
+            sx={{ backgroundColor: '#dc2626', '&:hover': { backgroundColor: '#b91c1c' } }}
+          >
+            {loading ? 'Rejecting...' : 'Reject'}
+          </MuiButton>
+        </DialogActions>
+      </Dialog>
+    </>
   )
 }
 

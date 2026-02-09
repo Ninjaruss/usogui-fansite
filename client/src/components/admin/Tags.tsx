@@ -51,7 +51,7 @@ export const TagList = () => (
       <FunctionField
         label="Description"
         render={(record: any) => (
-          <Box sx={{ maxWidth: '500px' }}>
+          <Box sx={{ maxWidth: '350px' }}>
             <Typography
               variant="body2"
               sx={{
@@ -391,6 +391,7 @@ export const TagCreate = () => (
                       required
                       fullWidth
                       label="Tag Name"
+                      helperText="Enter the tag name (e.g., 'Psychological', 'Strategy', etc.)"
                     />
                     <TextInput
                       source="description"

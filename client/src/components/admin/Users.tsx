@@ -455,7 +455,7 @@ export const UserList = () => (
         }}
       />
       <BooleanField source="isEmailVerified" />
-      <DateField source="createdAt" />
+      <DateField source="createdAt" sortable />
       <EditButton />
     </Datagrid>
   </List>

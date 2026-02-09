@@ -1,6 +1,7 @@
 import React from 'react'
-import { Toolbar, SaveButton, useRecordContext } from 'react-admin'
+import { Toolbar, SaveButton, useRecordContext, Button } from 'react-admin'
 import { Box, Divider } from '@mui/material'
+import { useNavigate } from 'react-router-dom'
 import { DeleteButtonWithConfirmation } from './DeleteButtonWithConfirmation'
 
 interface EditToolbarProps {
@@ -21,6 +22,7 @@ export const EditToolbar: React.FC<EditToolbarProps> = ({
   confirmMessage
 }) => {
   const record = useRecordContext()
+  const navigate = useNavigate()
 
   return (
     <Toolbar
@@ -53,6 +55,24 @@ export const EditToolbar: React.FC<EditToolbarProps> = ({
             backgroundColor: '#1976d2',
             '&:hover': {
               backgroundColor: '#1565c0'
+            },
+            fontWeight: 600,
+            textTransform: 'none',
+            px: 3,
+            py: 1
+          }}
+        />
+        <Button
+          label="Cancel"
+          onClick={() => navigate(-1)}
+          variant="outlined"
+          size="medium"
+          sx={{
+            borderColor: 'rgba(255, 255, 255, 0.3)',
+            color: 'rgba(255, 255, 255, 0.7)',
+            '&:hover': {
+              borderColor: 'rgba(255, 255, 255, 0.5)',
+              backgroundColor: 'rgba(255, 255, 255, 0.05)'
             },
             fontWeight: 600,
             textTransform: 'none',
