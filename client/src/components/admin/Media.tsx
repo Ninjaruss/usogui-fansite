@@ -2266,7 +2266,7 @@ export const MediaDraftManager = () => (
   </List>
 )
 
-export const MediaShow = () => {
+const MediaShowContent = () => {
   const record = useRecordContext()
   const [imageError, setImageError] = useState(false)
 
@@ -2402,11 +2402,12 @@ export const MediaShow = () => {
     }
   }
 
+  if (!record) return null
+
   return (
-    <Show>
-      <Box sx={{ 
-        maxWidth: '1200px', 
-        mx: 'auto', 
+      <Box sx={{
+        maxWidth: '1200px',
+        mx: 'auto',
         p: 3,
         backgroundColor: '#0a0a0a',
         minHeight: '100vh',
@@ -2755,9 +2756,14 @@ export const MediaShow = () => {
           </Grid>
         </Grid>
       </Box>
-    </Show>
   )
 }
+
+export const MediaShow = () => (
+  <Show>
+    <MediaShowContent />
+  </Show>
+)
 
 const EntitySelector = ({ entities, loadingEntities, loadEntities, getEntityChoices, getCurrentEntityKey, record }: any) => {
   const ownerType = useWatch({ name: 'ownerType' })
