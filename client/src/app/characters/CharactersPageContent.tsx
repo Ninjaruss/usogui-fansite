@@ -432,7 +432,7 @@ export default function CharactersPageContent({
       {/* Search and Filters */}
       <Box mb="xl" px="md">
         <Group justify="center" mb="md" gap="md">
-          <Box style={{ maxWidth: rem(450), width: '100%' }}>
+          <Box style={{ maxWidth: rem(500), width: '100%' }}>
             <TextInput
               placeholder="Search characters by name, alias, or tag..."
               value={searchInput}
@@ -572,7 +572,7 @@ export default function CharactersPageContent({
                 style={{
                   display: 'grid',
                   gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 220px))',
-                  gap: rem(16),
+                  gap: rem(20),
                   justifyContent: 'center'
                 }}
               >

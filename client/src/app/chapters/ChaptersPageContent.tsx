@@ -230,7 +230,7 @@ export default function ChaptersPageContent({
       {/* Search and Filters */}
       <Box mb="xl" px="md">
         <Group justify="center" mb="md">
-          <Box style={{ maxWidth: rem(600), width: '100%' }}>
+          <Box style={{ maxWidth: rem(500), width: '100%' }}>
             <TextInput
               placeholder="Search chapters by number or title..."
               value={searchQuery}
@@ -245,11 +245,12 @@ export default function ChaptersPageContent({
                     variant="subtle"
                     color="gray"
                     onClick={handleClearSearch}
-                    size="sm"
+                    size="lg"
                     title="Clear search"
                     aria-label="Clear search"
+                    style={{ minWidth: 44, minHeight: 44 }}
                   >
-                    <X size={16} />
+                    <X size={18} />
                   </ActionIcon>
                 ) : loading ? (
                   <Loader size="sm" />
@@ -270,7 +271,7 @@ export default function ChaptersPageContent({
       {/* Error State */}
       {error && (
         <Alert
-          style={{ color: getEntityThemeColor(theme, 'gamble') }}
+          style={{ color: getEntityThemeColor(theme, 'chapter') }}
           radius="md"
           mb="xl"
           icon={<AlertCircle size={16} />}
@@ -304,7 +305,7 @@ export default function ChaptersPageContent({
                   : 'Check back later for new chapters'}
               </Text>
               {hasSearchQuery && (
-                <Button variant="outline" style={{ color: getEntityThemeColor(theme, 'guide') }} onClick={handleClearSearch}>
+                <Button variant="outline" style={{ color: getEntityThemeColor(theme, 'chapter') }} onClick={handleClearSearch}>
                   Clear search
                 </Button>
               )}
@@ -450,7 +451,7 @@ export default function ChaptersPageContent({
                     total={totalPages}
                     value={currentPage}
                     onChange={handlePageChange}
-                    style={{ color: getEntityThemeColor(theme, 'guide') }}
+                    style={{ color: getEntityThemeColor(theme, 'chapter') }}
                     size="lg"
                     radius="xl"
                     withEdges

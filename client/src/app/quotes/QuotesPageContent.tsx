@@ -306,7 +306,7 @@ export default function QuotesPageContent({
       {/* Search and Filters */}
       <Box mb="xl" px="md">
         <Group justify="center" mb="md">
-          <Box style={{ maxWidth: rem(600), width: '100%' }}>
+          <Box style={{ maxWidth: rem(500), width: '100%' }}>
             <TextInput
               placeholder="Search quotes, speakers, or context..."
               value={searchInput}
@@ -317,8 +317,8 @@ export default function QuotesPageContent({
               radius="xl"
               rightSection={
                 hasSearchQuery ? (
-                  <ActionIcon variant="subtle" color="gray" onClick={clearSearch} size="sm" aria-label="Clear search">
-                    <X size={16} />
+                  <ActionIcon variant="subtle" color="gray" onClick={clearSearch} size="lg" aria-label="Clear search" style={{ minWidth: 44, minHeight: 44 }}>
+                    <X size={18} />
                   </ActionIcon>
                 ) : null
               }
@@ -340,7 +340,7 @@ export default function QuotesPageContent({
               variant={badgeVariant as any}
               radius="xl"
               rightSection={
-                <ActionIcon size="xs" style={{ color: getEntityThemeColor(theme, 'media') }} variant="transparent" onClick={clearCharacterFilter} aria-label="Clear character filter">
+                <ActionIcon size="xs" style={{ color: getEntityThemeColor(theme, 'quote') }} variant="transparent" onClick={clearCharacterFilter} aria-label="Clear character filter">
                   <X size={12} />
                 </ActionIcon>
               }
@@ -354,7 +354,7 @@ export default function QuotesPageContent({
       {/* Error Alert */}
       {error && (
         <Box px="md">
-          <Alert style={{ color: getEntityThemeColor(theme, 'gamble') }} variant="light" mb="xl">
+          <Alert style={{ color: getEntityThemeColor(theme, 'quote') }} variant="light" mb="xl">
             {error}
           </Alert>
         </Box>
@@ -537,9 +537,10 @@ export default function QuotesPageContent({
                 total={totalPages}
                 value={currentPage}
                 onChange={handlePageChange}
-                style={{ color: getEntityThemeColor(theme, 'media') }}
-                radius="md"
+                color="quote"
                 size="lg"
+                radius="xl"
+                withEdges
               />
             </Group>
           )}

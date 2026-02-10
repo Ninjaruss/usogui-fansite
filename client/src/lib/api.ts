@@ -638,7 +638,7 @@ class ApiClient {
     }>(`/search?${params.toString()}`)
   }
 
-  async getGuides(params?: { page?: number; limit?: number; search?: string; authorId?: number; status?: string; tag?: string }) {
+  async getGuides(params?: { page?: number; limit?: number; search?: string; authorId?: number; status?: string; tag?: string; sortBy?: string; sortOrder?: string }) {
     const searchParams = new URLSearchParams()
     if (params) {
       if (params.search) {
@@ -658,6 +658,12 @@ class ApiClient {
       }
       if (params.tag) {
         searchParams.append('tag', params.tag)
+      }
+      if (params.sortBy) {
+        searchParams.append('sortBy', params.sortBy)
+      }
+      if (params.sortOrder) {
+        searchParams.append('sortOrder', params.sortOrder)
       }
     }
     const query = searchParams.toString()

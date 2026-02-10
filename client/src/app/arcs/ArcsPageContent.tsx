@@ -410,7 +410,7 @@ export default function ArcsPageContent({
       {/* Search and Filters */}
       <Box mb="xl" px="md">
         <Group justify="center" mb="md" gap="md">
-          <Box style={{ maxWidth: rem(450), width: '100%' }}>
+          <Box style={{ maxWidth: rem(500), width: '100%' }}>
             <TextInput
               placeholder="Search arcs by name or description..."
               value={searchQuery}
@@ -420,8 +420,8 @@ export default function ArcsPageContent({
               radius="xl"
               rightSection={
                 hasSearchQuery ? (
-                  <ActionIcon variant="subtle" color="gray" onClick={handleClearSearch} size="sm" aria-label="Clear search">
-                    <X size={16} />
+                  <ActionIcon variant="subtle" color="gray" onClick={handleClearSearch} size="lg" aria-label="Clear search" style={{ minWidth: 44, minHeight: 44 }}>
+                    <X size={18} />
                   </ActionIcon>
                 ) : null
               }
@@ -519,7 +519,7 @@ export default function ArcsPageContent({
                 style={{
                   display: 'grid',
                   gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
-                  gap: rem(24),
+                  gap: rem(20),
                   justifyItems: 'center'
                 }}
               >

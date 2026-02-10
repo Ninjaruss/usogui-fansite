@@ -12,6 +12,7 @@ import {
   Loader,
   Pagination,
   Paper,
+  Select,
   Stack,
   Text,
   TextInput,
@@ -22,7 +23,7 @@ import {
 import { useDebouncedValue } from '@mantine/hooks'
 import { notifications } from '@mantine/notifications'
 import { getEntityThemeColor, backgroundStyles, getHeroStyles, getPlayingCardStyles } from '../../lib/mantine-theme'
-import { Search, FileText, Eye, Calendar, ThumbsUp, Heart, X, Users, BookOpen, Dice6, AlertCircle } from 'lucide-react'
+import { Search, FileText, Eye, Calendar, ThumbsUp, Heart, X, Users, BookOpen, Dice6, AlertCircle, ArrowUpDown } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'motion/react'
@@ -113,6 +114,7 @@ export default function GuidesPageContent({
   const [authorFilter, setAuthorFilter] = useState<string | null>(initialAuthorId || null)
   const [authorName, setAuthorName] = useState<string | null>(initialAuthorName || null)
   const [tagFilter, setTagFilter] = useState<string | null>(null)
+  const [sortBy, setSortBy] = useState(searchParams.get('sort') || 'newest')
 
   // Sync component state with URL params on mount and when URL changes
   useEffect(() => {
@@ -121,6 +123,7 @@ export default function GuidesPageContent({
     const urlAuthor = searchParams.get('author') || null
     const urlAuthorName = searchParams.get('authorName') || null
     const urlTag = searchParams.get('tag') || null
+    const urlSort = searchParams.get('sort') || 'newest'
 
     // Only update if values differ to avoid unnecessary re-renders
     if (urlSearch !== searchQuery) {
@@ -139,6 +142,9 @@ export default function GuidesPageContent({
     if (urlTag !== tagFilter) {
       setTagFilter(urlTag)
     }
+    if (urlSort !== sortBy) {
+      setSortBy(urlSort)
+    }
   }, [searchParams]) // Only depend on searchParams to avoid infinite loops
 
   // Hover modal
@@ -154,16 +160,28 @@ export default function GuidesPageContent({
     isTouchDevice
   } = useHoverModal<Guide>()
 
+  // Map sort UI values to API params
+  const getSortParams = useCallback((sort: string) => {
+    switch (sort) {
+      case 'mostLiked': return { sortBy: 'likeCount', sortOrder: 'DESC' }
+      case 'mostViewed': return { sortBy: 'viewCount', sortOrder: 'DESC' }
+      case 'oldest': return { sortBy: 'createdAt', sortOrder: 'ASC' }
+      case 'newest':
+      default: return { sortBy: 'createdAt', sortOrder: 'DESC' }
+    }
+  }, [])
+
   const fetcher = useCallback(async (page: number) => {
-    const params: any = { page, limit: 12, status: 'approved' }
+    const sortParams = getSortParams(sortBy)
+    const params: any = { page, limit: 12, status: 'approved', ...sortParams }
     if (searchQuery) params.search = searchQuery
     if (authorFilter) params.authorId = parseInt(authorFilter)
     if (tagFilter) params.tag = tagFilter
     const resAny = await api.getGuides(params)
     return { data: resAny.data || [], total: resAny.total || 0, page: resAny.page || page, perPage: 12, totalPages: resAny.totalPages || Math.max(1, Math.ceil((resAny.total || 0) / 12)) }
-  }, [searchQuery, authorFilter, tagFilter])
+  }, [searchQuery, authorFilter, tagFilter, sortBy, getSortParams])
 
-  const { data: pageData, loading: pageLoading, error: pageError, prefetch, refresh, invalidate } = usePaged<Guide>('guides', currentPage, fetcher, { search: searchQuery, authorId: authorFilter, tag: tagFilter }, { ttlMs: pagedCacheConfig.lists.guides.ttlMs, persist: pagedCacheConfig.defaults.persist, maxEntries: pagedCacheConfig.lists.guides.maxEntries })
+  const { data: pageData, loading: pageLoading, error: pageError, prefetch, refresh, invalidate } = usePaged<Guide>('guides', currentPage, fetcher, { search: searchQuery, authorId: authorFilter, tag: tagFilter, sort: sortBy }, { ttlMs: pagedCacheConfig.lists.guides.ttlMs, persist: pagedCacheConfig.defaults.persist, maxEntries: pagedCacheConfig.lists.guides.maxEntries })
 
   useEffect(() => {
     if (pageData) {
@@ -185,17 +203,25 @@ export default function GuidesPageContent({
     }
   }, [user?.id, guides, refresh])
 
-  const updateUrl = useCallback((page: number, search: string, authorId?: string, authorNameParam?: string, tag?: string) => {
+  const updateUrl = useCallback((page: number, search: string, authorId?: string, authorNameParam?: string, tag?: string, sort?: string) => {
     const params = new URLSearchParams()
     if (search) params.set('search', search)
     if (authorId) params.set('author', authorId)
     if (authorNameParam) params.set('authorName', authorNameParam)
     if (tag) params.set('tag', tag)
+    if (sort && sort !== 'newest') params.set('sort', sort)
     if (page > 1) params.set('page', page.toString())
 
     const newUrl = params.toString() ? `/guides?${params.toString()}` : '/guides'
     router.push(newUrl, { scroll: false })
   }, [router])
+
+  const handleSortChange = useCallback((value: string | null) => {
+    const newSort = value || 'newest'
+    setSortBy(newSort)
+    setCurrentPage(1)
+    updateUrl(1, searchQuery, authorFilter || undefined, authorName || undefined, tagFilter || undefined, newSort)
+  }, [searchQuery, authorFilter, authorName, tagFilter, updateUrl])
 
   const handleSearchChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     // Only update input - debounce effect handles search query and URL
@@ -209,9 +235,9 @@ export default function GuidesPageContent({
       setAuthorFilter(null)
       setAuthorName(null)
       setTagFilter(null)
-      updateUrl(1, '')
+      updateUrl(1, '', undefined, undefined, undefined, sortBy)
     }
-  }, [searchQuery, updateUrl])
+  }, [searchQuery, sortBy, updateUrl])
 
   // Handle Enter key - bypass debounce for immediate search
   const handleSearchKeyDown = useCallback((event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -220,10 +246,10 @@ export default function GuidesPageContent({
       if (value !== searchQuery) {
         setSearchQuery(value)
         setCurrentPage(1)
-        updateUrl(1, value, authorFilter || undefined, authorName || undefined, tagFilter || undefined)
+        updateUrl(1, value, authorFilter || undefined, authorName || undefined, tagFilter || undefined, sortBy)
       }
     }
-  }, [searchInput, searchQuery, authorFilter, authorName, tagFilter, updateUrl])
+  }, [searchInput, searchQuery, authorFilter, authorName, tagFilter, sortBy, updateUrl])
 
   // Update search query when debounced value changes
   useEffect(() => {
@@ -234,15 +260,15 @@ export default function GuidesPageContent({
     if (debouncedSearch.trim() !== searchQuery) {
       setSearchQuery(debouncedSearch.trim())
       setCurrentPage(1)
-      updateUrl(1, debouncedSearch.trim(), authorFilter || undefined, authorName || undefined, tagFilter || undefined)
+      updateUrl(1, debouncedSearch.trim(), authorFilter || undefined, authorName || undefined, tagFilter || undefined, sortBy)
     }
-  }, [debouncedSearch, searchInput, searchQuery, authorFilter, authorName, tagFilter, updateUrl])
+  }, [debouncedSearch, searchInput, searchQuery, authorFilter, authorName, tagFilter, sortBy, updateUrl])
 
   const handlePageChange = useCallback((page: number) => {
     setCurrentPage(page)
-    updateUrl(page, searchQuery, authorFilter || undefined, authorName || undefined, tagFilter || undefined)
+    updateUrl(page, searchQuery, authorFilter || undefined, authorName || undefined, tagFilter || undefined, sortBy)
     prefetch(page)
-  }, [searchQuery, authorFilter, authorName, tagFilter, updateUrl, prefetch])
+  }, [searchQuery, authorFilter, authorName, tagFilter, sortBy, updateUrl, prefetch])
 
   const handleClearSearch = useCallback(() => {
     setSearchInput('')
@@ -251,26 +277,26 @@ export default function GuidesPageContent({
     setAuthorFilter(null)
     setAuthorName(null)
     setTagFilter(null)
-    updateUrl(1, '')
-  }, [updateUrl])
+    updateUrl(1, '', undefined, undefined, undefined, sortBy)
+  }, [sortBy, updateUrl])
 
   const clearAuthorFilter = () => {
     setAuthorFilter(null)
     setAuthorName(null)
     setCurrentPage(1)
-    updateUrl(1, searchQuery, undefined, undefined, tagFilter || undefined)
+    updateUrl(1, searchQuery, undefined, undefined, tagFilter || undefined, sortBy)
   }
 
   const clearTagFilter = () => {
     setTagFilter(null)
     setCurrentPage(1)
-    updateUrl(1, searchQuery, authorFilter || undefined, authorName || undefined)
+    updateUrl(1, searchQuery, authorFilter || undefined, authorName || undefined, undefined, sortBy)
   }
 
   const handleTagClick = (tagName: string) => {
     setTagFilter(tagName)
     setCurrentPage(1)
-    updateUrl(1, searchQuery, authorFilter || undefined, authorName || undefined, tagName)
+    updateUrl(1, searchQuery, authorFilter || undefined, authorName || undefined, tagName, sortBy)
   }
 
   const getContentPreview = (content: string, maxLength = 150) => {
@@ -371,8 +397,8 @@ export default function GuidesPageContent({
 
       {/* Search and Filters */}
       <Box mb="xl" px="md">
-        <Group justify="center" mb="md">
-          <Box style={{ maxWidth: rem(600), width: '100%' }}>
+        <Group justify="center" mb="md" gap="md">
+          <Box style={{ maxWidth: rem(500), width: '100%' }}>
             <TextInput
               placeholder="Search guides by title or description..."
               value={searchInput}
@@ -383,8 +409,8 @@ export default function GuidesPageContent({
               radius="xl"
               rightSection={
                 hasSearchQuery ? (
-                  <ActionIcon variant="subtle" color="gray" onClick={handleClearSearch} size="sm" aria-label="Clear search">
-                    <X size={16} />
+                  <ActionIcon variant="subtle" color="gray" onClick={handleClearSearch} size="lg" aria-label="Clear search" style={{ minWidth: 44, minHeight: 44 }}>
+                    <X size={18} />
                   </ActionIcon>
                 ) : null
               }
@@ -397,6 +423,25 @@ export default function GuidesPageContent({
               }}
             />
           </Box>
+          <Select
+            data={[
+              { value: 'newest', label: 'Newest' },
+              { value: 'oldest', label: 'Oldest' },
+              { value: 'mostLiked', label: 'Most Liked' },
+              { value: 'mostViewed', label: 'Most Viewed' },
+            ]}
+            value={sortBy}
+            onChange={handleSortChange}
+            leftSection={<ArrowUpDown size={16} />}
+            w={180}
+            size="lg"
+            radius="xl"
+            styles={{
+              input: {
+                fontSize: rem(14)
+              }
+            }}
+          />
         </Group>
 
         {(authorFilter && authorName) || tagFilter ? (
@@ -493,7 +538,7 @@ export default function GuidesPageContent({
                 style={{
                   display: 'grid',
                   gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
-                  gap: rem(24),
+                  gap: rem(20),
                   justifyItems: 'center',
                   maxWidth: '1400px',
                   margin: '0 auto'

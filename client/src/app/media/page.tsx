@@ -25,6 +25,7 @@ interface MediaPageProps {
     ownerType?: string
     ownerId?: string
     search?: string
+    purpose?: string
   }>
 }
 
@@ -35,6 +36,7 @@ export default async function MediaPage({ searchParams }: MediaPageProps) {
   const ownerType = resolvedSearchParams.ownerType as 'character' | 'arc' | 'event' | 'gamble' | 'organization' | 'user' | undefined
   const ownerId = resolvedSearchParams.ownerId ? parseInt(resolvedSearchParams.ownerId, 10) : undefined
   const search = resolvedSearchParams.search
+  const purpose = resolvedSearchParams.purpose
 
   const structuredData = {
     '@context': 'https://schema.org',
@@ -57,6 +59,7 @@ export default async function MediaPage({ searchParams }: MediaPageProps) {
         initialOwnerType={ownerType}
         initialOwnerId={ownerId}
         initialSearch={search}
+        initialPurpose={purpose}
       />
     </>
   )

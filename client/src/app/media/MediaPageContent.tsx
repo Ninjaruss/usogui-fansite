@@ -39,6 +39,7 @@ import {
   ImageOff
 } from 'lucide-react'
 import Link from 'next/link'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { BackToTop } from '../../components/BackToTop'
 import { api, API_BASE_URL } from '../../lib/api'
 import { getEntityThemeColor, backgroundStyles, getHeroStyles } from '../../lib/mantine-theme'
@@ -76,6 +77,7 @@ interface MediaPageContentProps {
   initialOwnerType?: 'character' | 'arc' | 'event' | 'gamble' | 'organization' | 'user'
   initialOwnerId?: number
   initialSearch?: string
+  initialPurpose?: string
 }
 
 const ITEMS_PER_PAGE = 24 // Increased for infinite scroll
@@ -85,10 +87,13 @@ export default function MediaPageContent({
   initialType,
   initialOwnerType,
   initialOwnerId,
-  initialSearch
+  initialSearch,
+  initialPurpose
 }: MediaPageContentProps) {
   const { user } = useAuth()
   const theme = useMantineTheme()
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const accentMedia = getEntityThemeColor(theme, 'media')
 
   const [media, setMedia] = useState<MediaItem[]>([])
@@ -108,13 +113,25 @@ export default function MediaPageContent({
   // Intersection observer for infinite scroll
   const { ref: loadMoreRef, entry } = useIntersection({ threshold: 0.5 })
 
-  // Filters
+  // Filters - initialize from URL params via server component props
   const [currentPage, setCurrentPage] = useState(initialPage)
   const [searchValue, setSearchValue] = useState(initialSearch || '')
   const [debouncedSearch] = useDebouncedValue(searchValue, 300)
   const [selectedType, setSelectedType] = useState(initialType || 'all')
   const [selectedOwnerType, setSelectedOwnerType] = useState(initialOwnerType || 'all')
-  const [selectedPurpose, setSelectedPurpose] = useState<string>('gallery')
+  const [selectedPurpose, setSelectedPurpose] = useState<string>(initialPurpose || 'gallery')
+
+  // Sync filter state to URL for shareable links and back button support
+  const updateUrl = useCallback((type: string, ownerType: string, search: string, purpose: string) => {
+    const urlParams = new URLSearchParams()
+    if (type && type !== 'all') urlParams.set('type', type)
+    if (ownerType && ownerType !== 'all') urlParams.set('ownerType', ownerType)
+    if (search?.trim()) urlParams.set('search', search.trim())
+    if (purpose && purpose !== 'gallery') urlParams.set('purpose', purpose)
+
+    const qs = urlParams.toString()
+    router.push(qs ? `/media?${qs}` : '/media', { scroll: false })
+  }, [router])
 
   // Pagination
   const [totalPages, setTotalPages] = useState(1)
@@ -175,12 +192,17 @@ export default function MediaPageContent({
     }
   }, [selectedType, selectedOwnerType, selectedPurpose, initialOwnerId, debouncedSearch])
 
-  // Initial load
+  // Initial load when filters change
   useEffect(() => {
     setCurrentPage(1)
     setHasMore(true)
     fetchMedia(1, false)
   }, [selectedType, selectedOwnerType, selectedPurpose, debouncedSearch, fetchMedia])
+
+  // Sync filter state to URL (separate effect to avoid coupling with data fetch)
+  useEffect(() => {
+    updateUrl(selectedType, selectedOwnerType, debouncedSearch, selectedPurpose)
+  }, [selectedType, selectedOwnerType, selectedPurpose, debouncedSearch, updateUrl])
 
   // Infinite scroll - load more when sentinel is visible
   useEffect(() => {
@@ -198,7 +220,8 @@ export default function MediaPageContent({
     setSelectedPurpose('gallery')
     setCurrentPage(1)
     setHasMore(true)
-  }, [])
+    router.push('/media', { scroll: false })
+  }, [router])
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page)
@@ -544,17 +567,18 @@ export default function MediaPageContent({
                     rightSection={
                       searchValue && (
                         <ActionIcon
-                          size="sm"
+                          size="lg"
                           variant="subtle"
+                          color="gray"
                           onClick={() => {
                             setSearchValue('')
                             setCurrentPage(1)
                             setHasMore(true)
                           }}
-                          style={{ color: accentMedia }}
                           aria-label="Clear search"
+                          style={{ minWidth: 44, minHeight: 44 }}
                         >
-                          <X size={14} />
+                          <X size={18} />
                         </ActionIcon>
                       )
                     }

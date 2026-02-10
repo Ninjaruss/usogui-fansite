@@ -230,7 +230,7 @@ export default function VolumesPageContent({
       {/* Search and Filters */}
       <Box mb="xl" px="md">
         <Group justify="center" mb="md">
-          <Box style={{ maxWidth: rem(600), width: '100%' }}>
+          <Box style={{ maxWidth: rem(500), width: '100%' }}>
             <TextInput
               placeholder="Search volumes by number or title..."
               value={searchQuery}
@@ -245,11 +245,12 @@ export default function VolumesPageContent({
                     variant="subtle"
                     color="gray"
                     onClick={handleClearSearch}
-                    size="sm"
+                    size="lg"
                     title="Clear search"
                     aria-label="Clear search"
+                    style={{ minWidth: 44, minHeight: 44 }}
                   >
-                    <X size={16} />
+                    <X size={18} />
                   </ActionIcon>
                 ) : loading ? (
                   <Loader size="sm" />
@@ -270,7 +271,7 @@ export default function VolumesPageContent({
       {/* Error State */}
       {error && (
         <Alert
-          style={{ color: getEntityThemeColor(theme, 'gamble') }}
+          style={{ color: getEntityThemeColor(theme, 'volume') }}
           radius="md"
           mb="xl"
           icon={<AlertCircle size={16} />}
@@ -304,7 +305,7 @@ export default function VolumesPageContent({
                   : 'Check back later for new volumes'}
               </Text>
               {hasSearchQuery && (
-                <Button variant="outline" style={{ color: getEntityThemeColor(theme, 'gamble') }} onClick={handleClearSearch}>
+                <Button variant="outline" style={{ color: getEntityThemeColor(theme, 'volume') }} onClick={handleClearSearch}>
                   Clear search
                 </Button>
               )}
@@ -317,7 +318,7 @@ export default function VolumesPageContent({
                 style={{
                   display: 'grid',
                   gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                  gap: rem(16),
+                  gap: rem(20),
                   justifyItems: 'center'
                 }}
               >
@@ -479,7 +480,7 @@ export default function VolumesPageContent({
                     total={totalPages}
                     value={currentPage}
                     onChange={handlePageChange}
-                    style={{ color: getEntityThemeColor(theme, 'gamble') }}
+                    color="volume"
                     size="lg"
                     radius="xl"
                     withEdges

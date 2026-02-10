@@ -580,7 +580,7 @@ export default function EventsPageContent({
       {/* Search and Filters */}
       <Box mb="xl" px="md">
         <Group justify="center" mb="md">
-          <Box style={{ maxWidth: rem(600), width: '100%' }}>
+          <Box style={{ maxWidth: rem(500), width: '100%' }}>
             <TextInput
               placeholder="Search events by title..."
               value={searchTerm}
@@ -590,8 +590,8 @@ export default function EventsPageContent({
               radius="xl"
               rightSection={
                 hasSearchQuery ? (
-                  <ActionIcon variant="subtle" color="gray" onClick={handleClearSearch} size="sm" aria-label="Clear search">
-                    <X size={16} />
+                  <ActionIcon variant="subtle" color="gray" onClick={handleClearSearch} size="lg" aria-label="Clear search" style={{ minWidth: 44, minHeight: 44 }}>
+                    <X size={18} />
                   </ActionIcon>
                 ) : null
               }
@@ -699,7 +699,7 @@ export default function EventsPageContent({
                   style={{
                     display: 'grid',
                     gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-                    gap: rem(16),
+                    gap: rem(20),
                     justifyItems: 'center'
                   }}
                 >

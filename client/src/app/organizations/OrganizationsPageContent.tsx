@@ -12,6 +12,7 @@ import {
   Modal,
   Pagination,
   Paper,
+  Select,
   Stack,
   Text,
   TextInput,
@@ -22,7 +23,7 @@ import {
 } from '@mantine/core'
 import { notifications } from '@mantine/notifications'
 import { getEntityThemeColor, semanticColors, textColors, backgroundStyles, getHeroStyles, getPlayingCardStyles } from '../../lib/mantine-theme'
-import { AlertCircle, Search, Shield, Users, X } from 'lucide-react'
+import { AlertCircle, ArrowUpDown, Search, Shield, Users, X } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'motion/react'
@@ -65,6 +66,7 @@ export default function OrganizationsPageContent({
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(initialError || null)
   const [searchQuery, setSearchQuery] = useState(initialSearch || '')
+  const [sortBy, setSortBy] = useState(searchParams.get('sort') || 'name')
 
   // Client-side pagination
   const [currentPage, setCurrentPage] = useState<number>(initialPage)
@@ -104,18 +106,30 @@ export default function OrganizationsPageContent({
     }
   }, [])
 
-  // Client-side filtering and pagination
+  // Client-side filtering, sorting, and pagination
   const filteredOrganizations = useMemo(() => {
-    if (!searchQuery.trim()) return allOrganizations
+    let results = allOrganizations
 
-    const query = searchQuery.toLowerCase().trim()
-    return allOrganizations.filter(organization => {
-      const name = organization.name?.toLowerCase() || ''
-      const description = organization.description?.toLowerCase() || ''
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim()
+      results = results.filter(organization => {
+        const name = organization.name?.toLowerCase() || ''
+        const description = organization.description?.toLowerCase() || ''
+        return name.includes(query) || description.includes(query)
+      })
+    }
 
-      return name.includes(query) || description.includes(query)
+    // Apply sorting
+    return [...results].sort((a, b) => {
+      switch (sortBy) {
+        case 'members':
+          return (b.memberCount ?? 0) - (a.memberCount ?? 0)
+        case 'name':
+        default:
+          return (a.name || '').localeCompare(b.name || '')
+      }
     })
-  }, [allOrganizations, searchQuery])
+  }, [allOrganizations, searchQuery, sortBy])
 
   const paginatedOrganizations = useMemo(() => {
     const startIndex = (currentPage - 1) * PAGE_SIZE
@@ -136,9 +150,11 @@ export default function OrganizationsPageContent({
   useEffect(() => {
     const urlPage = parseInt(searchParams.get('page') || '1', 10)
     const urlSearch = searchParams.get('search') || ''
+    const urlSort = searchParams.get('sort') || 'name'
 
     setCurrentPage(urlPage)
     setSearchQuery(urlSearch)
+    setSortBy(urlSort)
   }, [searchParams])
 
   const handleSearchChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
@@ -147,15 +163,21 @@ export default function OrganizationsPageContent({
     setCurrentPage(1) // Reset to first page immediately when search changes
   }, [])
 
-  // Update URL when search or page changes (no API calls needed)
+  // Update URL when search, sort, or page changes (no API calls needed)
   useEffect(() => {
     const params = new URLSearchParams()
     if (searchQuery) params.set('search', searchQuery)
+    if (sortBy && sortBy !== 'name') params.set('sort', sortBy)
     if (currentPage > 1) params.set('page', currentPage.toString())
 
     const newUrl = params.toString() ? `/organizations?${params.toString()}` : '/organizations'
     router.push(newUrl, { scroll: false })
-  }, [searchQuery, currentPage, router])
+  }, [searchQuery, sortBy, currentPage, router])
+
+  const handleSortChange = useCallback((value: string | null) => {
+    setSortBy(value || 'name')
+    setCurrentPage(1)
+  }, [])
 
   const handleClearSearch = useCallback(() => {
     setSearchQuery('')
@@ -223,8 +245,8 @@ export default function OrganizationsPageContent({
 
       {/* Search and Filters */}
       <Box mb="xl" px="md">
-        <Group justify="center" mb="md">
-          <Box style={{ maxWidth: rem(600), width: '100%' }}>
+        <Group justify="center" mb="md" gap="md">
+          <Box style={{ maxWidth: rem(500), width: '100%' }}>
             <TextInput
               placeholder="Search organizations by name..."
               value={searchQuery}
@@ -234,8 +256,8 @@ export default function OrganizationsPageContent({
               radius="xl"
               rightSection={
                 hasSearchQuery ? (
-                  <ActionIcon variant="subtle" color="gray" onClick={handleClearSearch} size="sm" aria-label="Clear search">
-                    <X size={16} />
+                  <ActionIcon variant="subtle" color="gray" onClick={handleClearSearch} size="lg" aria-label="Clear search" style={{ minWidth: 44, minHeight: 44 }}>
+                    <X size={18} />
                   </ActionIcon>
                 ) : null
               }
@@ -248,13 +270,30 @@ export default function OrganizationsPageContent({
               }}
             />
           </Box>
+          <Select
+            data={[
+              { value: 'name', label: 'Name (A-Z)' },
+              { value: 'members', label: 'Member Count' },
+            ]}
+            value={sortBy}
+            onChange={handleSortChange}
+            leftSection={<ArrowUpDown size={16} />}
+            w={180}
+            size="lg"
+            radius="xl"
+            styles={{
+              input: {
+                fontSize: rem(14)
+              }
+            }}
+          />
         </Group>
       </Box>
 
       {/* Error State */}
       {error && (
         <Alert
-          style={{ color: getEntityThemeColor(theme, 'gamble') }}
+          style={{ color: getEntityThemeColor(theme, 'organization') }}
           radius="md"
           mb="xl"
           icon={<AlertCircle size={16} />}
@@ -295,7 +334,7 @@ export default function OrganizationsPageContent({
                 style={{
                   display: 'grid',
                   gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                  gap: rem(16),
+                  gap: rem(20),
                   justifyItems: 'center'
                 }}
               >
@@ -467,7 +506,7 @@ export default function OrganizationsPageContent({
                     total={totalPages}
                     value={currentPage}
                     onChange={handlePageChange}
-                    color="grape"
+                    style={{ color: getEntityThemeColor(theme, 'organization') }}
                     size="lg"
                     radius="xl"
                     withEdges

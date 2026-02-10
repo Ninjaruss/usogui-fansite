@@ -377,7 +377,7 @@ export default function GamblesPageContent({
       {/* Search and Filters */}
       <Box mb="xl" px="md">
         <Group justify="center" mb="md" gap="md">
-          <Box style={{ maxWidth: rem(450), width: '100%' }}>
+          <Box style={{ maxWidth: rem(500), width: '100%' }}>
             <TextInput
               placeholder="Search gambles by name or description..."
               value={searchInput}
@@ -493,7 +493,7 @@ export default function GamblesPageContent({
                 style={{
                   display: 'grid',
                   gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                  gap: rem(16),
+                  gap: rem(20),
                   justifyItems: 'center'
                 }}
               >
