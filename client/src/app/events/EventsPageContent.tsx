@@ -220,19 +220,15 @@ export default function EventsPageContent({
 
   const updateUrl = useCallback(
     (search: string, type: string, status: string, character: string) => {
-      const params = new URLSearchParams(searchParams.toString())
+      const params = new URLSearchParams()
       if (search) params.set('search', search)
-      else params.delete('search')
       if (type) params.set('type', type)
-      else params.delete('type')
       if (status) params.set('status', status)
-      else params.delete('status')
       if (character) params.set('character', character)
-      else params.delete('character')
       const qs = params.toString()
       router.push(qs ? `/events?${qs}` : '/events', { scroll: false })
     },
-    [router, searchParams]
+    [router]
   )
 
   // fetcher for usePaged: returns a paginated-like envelope where `data` is the grouped events object
@@ -257,7 +253,7 @@ export default function EventsPageContent({
     return { data: grouped, total, page: 1, perPage: total || 1, totalPages: 1 } as any
   }, [searchTerm, selectedType, selectedStatus, selectedCharacter])
 
-  const { data: pageData, loading: pageLoading, error: pageError, refresh } = usePaged('events', 1, fetcher, { search: searchTerm, type: selectedType, status: selectedStatus, character: selectedCharacter }, { ttlMs: 120_000, persist: true, maxEntries: 100 })
+  const { data: pageData, loading: pageLoading, error: pageError } = usePaged('events', 1, fetcher, { search: searchTerm, type: selectedType, status: selectedStatus, character: selectedCharacter }, { ttlMs: 120_000, persist: true, maxEntries: 100 })
 
   useEffect(() => {
     if (pageData) {
@@ -344,7 +340,6 @@ export default function EventsPageContent({
         clearTimeout(searchDebounceRef.current)
       }
       updateUrl('', selectedType, selectedStatus, selectedCharacter)
-      refresh(true)
       return
     }
 
@@ -353,29 +348,28 @@ export default function EventsPageContent({
     }
 
     searchDebounceRef.current = window.setTimeout(() => {
-  updateUrl(value, selectedType, selectedStatus, selectedCharacter)
-  refresh(true)
+      updateUrl(value, selectedType, selectedStatus, selectedCharacter)
     }, 300)
   }
 
   const handleClearSearch = () => {
+    if (searchDebounceRef.current) {
+      clearTimeout(searchDebounceRef.current)
+    }
     setSearchTerm('')
-  updateUrl('', selectedType, selectedStatus, selectedCharacter)
-  refresh(true)
+    updateUrl('', selectedType, selectedStatus, selectedCharacter)
   }
 
   const handleTypeChange = (value: string | null) => {
     const newType = value || ''
     setSelectedType(newType)
-  updateUrl(searchTerm, newType, selectedStatus, selectedCharacter)
-  refresh(true)
+    updateUrl(searchTerm, newType, selectedStatus, selectedCharacter)
   }
 
   const handleStatusChange = (value: string | null) => {
     const newStatus = value || ''
     setSelectedStatus(newStatus)
     updateUrl(searchTerm, selectedType, newStatus, selectedCharacter)
-    refresh(true)
   }
 
   // Hover modal handlers
@@ -644,7 +638,6 @@ export default function EventsPageContent({
                   onClick={() => {
                     setSelectedCharacter('')
                     updateUrl(searchTerm, selectedType, selectedStatus, '')
-                    refresh(true)
                   }}
                 >
                   <X size={12} />
@@ -677,12 +670,14 @@ export default function EventsPageContent({
                   variant="outline"
                   style={{ color: getEntityThemeColor(theme, 'event') }}
                   onClick={() => {
+                    if (searchDebounceRef.current) {
+                      clearTimeout(searchDebounceRef.current)
+                    }
                     setSearchTerm('')
                     setSelectedType('')
                     setSelectedStatus('')
                     setSelectedCharacter('')
                     updateUrl('', '', '', '')
-                    refresh(true)
                   }}
                 >
                   Clear all filters

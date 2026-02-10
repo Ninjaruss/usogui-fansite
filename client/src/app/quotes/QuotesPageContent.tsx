@@ -132,7 +132,7 @@ export default function QuotesPageContent({
     return { data: transformedQuotes, total: resAny.total || 0, page: resAny.page || page, perPage: PAGE_SIZE, totalPages: resAny.totalPages || Math.max(1, Math.ceil((resAny.total || 0) / PAGE_SIZE)) }
   }, [searchQuery, characterId])
 
-  const { data: pageData, loading: pageLoading, error: pageError, prefetch, refresh } = usePaged<QuoteData>(
+  const { data: pageData, loading: pageLoading, error: pageError, prefetch } = usePaged<QuoteData>(
     'quotes',
     currentPage,
     fetcher,
@@ -154,6 +154,35 @@ export default function QuotesPageContent({
     }
   }, [pageData, pageLoading, pageError])
 
+  // Sync component state with URL params (supports browser back/forward)
+  useEffect(() => {
+    const urlSearch = searchParams.get('search') || ''
+    const urlPage = parseInt(searchParams.get('page') || '1', 10)
+    const urlCharacterId = searchParams.get('characterId') || undefined
+
+    if (urlSearch !== searchQuery) {
+      setSearchInput(urlSearch)
+      setSearchQuery(urlSearch)
+    }
+    if (urlPage !== currentPage) {
+      setCurrentPage(urlPage)
+    }
+    if (urlCharacterId !== characterId) {
+      setCharacterId(urlCharacterId)
+      if (!urlCharacterId) setCharacterName(null)
+    }
+  }, [searchParams]) // Only depend on searchParams to avoid infinite loops
+
+  const updateUrl = useCallback((search: string, page: number, charId?: string) => {
+    const params = new URLSearchParams()
+    if (search) params.set('search', search)
+    if (charId) params.set('characterId', charId)
+    if (page > 1) params.set('page', page.toString())
+
+    const qs = params.toString()
+    router.push(qs ? `/quotes?${qs}` : '/quotes', { scroll: false })
+  }, [router])
+
   // Update search query when debounced value changes
   useEffect(() => {
     // Skip if input was cleared but debounce hasn't caught up yet
@@ -163,22 +192,12 @@ export default function QuotesPageContent({
     if (debouncedSearch.trim() !== searchQuery) {
       setSearchQuery(debouncedSearch.trim())
       setCurrentPage(1)
-      // Update URL
-      const params = new URLSearchParams(searchParams.toString())
-      if (debouncedSearch.trim()) {
-        params.set('search', debouncedSearch.trim())
-      } else {
-        params.delete('search')
-      }
-      params.set('page', '1')
-      const queryString = params.toString()
-      router.push(queryString ? `/quotes?${queryString}` : '/quotes')
+      updateUrl(debouncedSearch.trim(), 1, characterId)
     }
-  }, [debouncedSearch, searchInput, searchQuery, searchParams, router])
+  }, [debouncedSearch, searchInput, searchQuery, characterId, updateUrl])
 
   // Search and page handlers
-  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    // Only update input - debounce effect handles search query and URL
+  const handleSearchChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value
     setSearchInput(value)
 
@@ -186,72 +205,41 @@ export default function QuotesPageContent({
     if (value.trim() === '' && searchQuery !== '') {
       setSearchQuery('')
       setCurrentPage(1)
-      const params = new URLSearchParams(searchParams.toString())
-      params.delete('search')
-      params.set('page', '1')
-      router.push(params.toString() ? `/quotes?${params.toString()}` : '/quotes')
-      refresh(true)
+      updateUrl('', 1, characterId)
     }
-  }
+  }, [searchQuery, characterId, updateUrl])
 
   // Handle Enter key - bypass debounce for immediate search
-  const handleSearchKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleSearchKeyDown = useCallback((event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Enter') {
       const value = searchInput.trim()
       if (value !== searchQuery) {
         setSearchQuery(value)
         setCurrentPage(1)
-        // Update URL
-        const params = new URLSearchParams(searchParams.toString())
-        if (value) {
-          params.set('search', value)
-        } else {
-          params.delete('search')
-        }
-        params.set('page', '1')
-        const queryString = params.toString()
-        router.push(queryString ? `/quotes?${queryString}` : '/quotes')
+        updateUrl(value, 1, characterId)
       }
     }
-  }
+  }, [searchInput, searchQuery, characterId, updateUrl])
 
-  const handlePageChange = (page: number) => {
+  const handlePageChange = useCallback((page: number) => {
     setCurrentPage(page)
-    
-    // Update URL
-    const params = new URLSearchParams(searchParams.toString())
-    params.set('page', page.toString())
-    const queryString = params.toString()
-    router.push(`/quotes?${queryString}`)
-    // prefetch the page
+    updateUrl(searchQuery, page, characterId)
     prefetch(page)
-  }
+  }, [searchQuery, characterId, updateUrl, prefetch])
 
-  const clearCharacterFilter = () => {
+  const clearCharacterFilter = useCallback(() => {
     setCharacterId(undefined)
     setCharacterName(null)
     setCurrentPage(1)
-    
-    const params = new URLSearchParams(searchParams.toString())
-    params.delete('characterId')
-    params.set('page', '1')
-    const queryString = params.toString()
-    router.push(queryString ? `/quotes?${queryString}` : '/quotes')
-    refresh(true)
-  }
+    updateUrl(searchQuery, 1, undefined)
+  }, [searchQuery, updateUrl])
 
-  const clearSearch = () => {
+  const clearSearch = useCallback(() => {
     setSearchInput('')
     setSearchQuery('')
     setCurrentPage(1)
-
-    const params = new URLSearchParams(searchParams.toString())
-    params.delete('search')
-    params.set('page', '1')
-    const queryString = params.toString()
-    router.push(queryString ? `/quotes?${queryString}` : '/quotes')
-    refresh(true)
-  }
+    updateUrl('', 1, characterId)
+  }, [characterId, updateUrl])
 
   const hasSearchQuery = Boolean(searchQuery || characterId)
 

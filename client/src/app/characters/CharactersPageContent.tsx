@@ -75,6 +75,8 @@ const sortOptions = [
 
 export default function CharactersPageContent({
   initialCharacters = [],
+  initialTotalPages = 1,
+  initialTotal = 0,
   initialSearch = '',
   initialError = ''
 }: CharactersPageContentProps) {
@@ -92,8 +94,8 @@ export default function CharactersPageContent({
 
   // Server-side pagination
   const [currentPage, setCurrentPage] = useState<number>(parseInt(searchParams.get('page') || '1', 10))
-  const [totalPages, setTotalPages] = useState(Math.ceil((initialCharacters?.length || 0) / PAGE_SIZE))
-  const [total, setTotal] = useState(initialCharacters?.length || 0)
+  const [totalPages, setTotalPages] = useState(initialTotalPages)
+  const [total, setTotal] = useState(initialTotal)
 
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)

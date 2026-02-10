@@ -147,6 +147,18 @@ export class GamblesController {
     description: 'Page number for pagination',
     example: 1,
   })
+  @ApiQuery({
+    name: 'sortBy',
+    required: false,
+    description: 'Field to sort by (name or chapterId)',
+    example: 'name',
+  })
+  @ApiQuery({
+    name: 'sortOrder',
+    required: false,
+    description: 'Sort order (ASC or DESC)',
+    example: 'ASC',
+  })
   @ApiResponse({
     status: 200,
     description: 'List of gambles (filtered if parameters provided)',
@@ -198,17 +210,20 @@ export class GamblesController {
     characterId?: number,
     @Query('limit', new ParseIntPipe({ optional: true })) limit?: number,
     @Query('page') page = '1',
+    @Query('sortBy') sortBy?: string,
+    @Query('sortOrder') sortOrder?: 'ASC' | 'DESC',
   ) {
     const pageNum = parseInt(page) || 1;
 
-    // If any filters are provided, use the search functionality
+    // If any filters or sort are provided, use the search functionality
     if (
       gambleName ||
       participantName ||
       teamName ||
       chapterId ||
       characterId ||
-      limit
+      limit ||
+      sortBy
     ) {
       return this.gamblesService.search({
         gambleName,
@@ -218,6 +233,8 @@ export class GamblesController {
         characterId,
         limit: limit || 12, // Default limit for client
         page: pageNum,
+        sortBy,
+        sortOrder,
       });
     }
 

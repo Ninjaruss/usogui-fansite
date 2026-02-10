@@ -233,6 +233,8 @@ export class GamblesService {
     characterId?: number;
     limit?: number;
     page?: number;
+    sortBy?: string;
+    sortOrder?: 'ASC' | 'DESC';
   }): Promise<{
     data: Gamble[];
     total: number;
@@ -268,7 +270,13 @@ export class GamblesService {
       });
     }
 
-    query.orderBy('gamble.chapterId', 'ASC').addOrderBy('gamble.id', 'ASC');
+    // Apply sorting
+    const sortOrder = filters.sortOrder === 'DESC' ? 'DESC' : 'ASC';
+    if (filters.sortBy === 'name') {
+      query.orderBy('gamble.name', sortOrder).addOrderBy('gamble.id', 'ASC');
+    } else {
+      query.orderBy('gamble.chapterId', 'ASC').addOrderBy('gamble.id', 'ASC');
+    }
 
     // Get total count for pagination
     const total = await query.getCount();

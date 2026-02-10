@@ -148,22 +148,37 @@ export default function GamblesPageContent({
   const accentGamble = theme.other?.usogui?.gamble ?? theme.colors.red?.[5] ?? '#d32f2f'
   const hasSearchQuery = searchInput.trim().length > 0 || characterFilter !== null
 
-  const updateURL = (newSearch: string, newPage: number, newCharacter?: string, newSort?: SortOption) => {
-    const params = new URLSearchParams(searchParams.toString())
+  // Sync component state with URL params (supports browser back/forward)
+  useEffect(() => {
+    const urlSearch = searchParams.get('search') || ''
+    const urlPage = parseInt(searchParams.get('page') || '1', 10)
+    const urlCharacter = searchParams.get('character') || null
+    const urlSort = (searchParams.get('sort') as SortOption) || 'chapter'
+
+    if (urlSearch !== searchQuery) {
+      setSearchInput(urlSearch)
+      setSearchQuery(urlSearch)
+    }
+    if (urlPage !== currentPage) {
+      setCurrentPage(urlPage)
+    }
+    if (urlCharacter !== characterFilter) {
+      setCharacterFilter(urlCharacter)
+    }
+    if (urlSort !== sortBy) {
+      setSortBy(urlSort)
+    }
+  }, [searchParams]) // Only depend on searchParams to avoid infinite loops
+
+  const updateURL = useCallback((newSearch: string, newPage: number, newCharacter?: string, newSort?: SortOption) => {
+    const params = new URLSearchParams()
     if (newSearch) params.set('search', newSearch)
-    else params.delete('search')
-
     if (newPage > 1) params.set('page', newPage.toString())
-    else params.delete('page')
-
     if (newCharacter) params.set('character', newCharacter)
-    else params.delete('character')
+    if (newSort && newSort !== 'chapter') params.set('sort', newSort)
 
-    if (newSort && newSort !== 'name') params.set('sort', newSort)
-    else params.delete('sort')
-
-    router.push(`/gambles${params.toString() ? `?${params.toString()}` : ''}`)
-  }
+    router.push(`/gambles${params.toString() ? `?${params.toString()}` : ''}`, { scroll: false })
+  }, [router])
 
   const fetcher = useCallback(async (page = 1) => {
     // Helper to sort gambles client-side
@@ -207,7 +222,7 @@ export default function GamblesPageContent({
     return { data: resAny.data || [], total: resAny.total || 0, page: resAny.page || page, perPage: 12, totalPages: resAny.totalPages || Math.max(1, Math.ceil((resAny.total || 0) / 12)) }
   }, [characterFilter, searchQuery, sortBy])
 
-  const { data: pageData, loading: pageLoading, error: pageError, prefetch, refresh } = usePaged<Gamble>(
+  const { data: pageData, loading: pageLoading, error: pageError, prefetch } = usePaged<Gamble>(
     'gambles',
     currentPage,
     fetcher,
@@ -225,7 +240,6 @@ export default function GamblesPageContent({
   }, [pageData, pageLoading])
 
   const handleSearchChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    // Only update input - debounce effect handles search query and URL
     const value = event.currentTarget.value
     setSearchInput(value)
 
@@ -233,13 +247,9 @@ export default function GamblesPageContent({
     if (value.trim() === '' && searchQuery !== '') {
       setSearchQuery('')
       setCurrentPage(1)
-      const params = new URLSearchParams()
-      if (characterFilter) params.set('character', characterFilter)
-      if (sortBy !== 'chapter') params.set('sort', sortBy)
-      params.set('page', '1')
-      router.push(`/gambles?${params.toString()}`)
+      updateURL('', 1, characterFilter || undefined, sortBy)
     }
-  }, [searchQuery, characterFilter, sortBy, router])
+  }, [searchQuery, characterFilter, sortBy, updateURL])
 
   // Handle Enter key - bypass debounce for immediate search
   const handleSearchKeyDown = useCallback((event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -248,15 +258,10 @@ export default function GamblesPageContent({
       if (value !== searchQuery) {
         setSearchQuery(value)
         setCurrentPage(1)
-        const params = new URLSearchParams()
-        if (value) params.set('search', value)
-        if (characterFilter) params.set('character', characterFilter)
-        if (sortBy !== 'chapter') params.set('sort', sortBy)
-        params.set('page', '1')
-        router.push(`/gambles?${params.toString()}`)
+        updateURL(value, 1, characterFilter || undefined, sortBy)
       }
     }
-  }, [searchInput, searchQuery, characterFilter, sortBy, router])
+  }, [searchInput, searchQuery, characterFilter, sortBy, updateURL])
 
   // Update search query when debounced value changes
   useEffect(() => {
@@ -267,59 +272,36 @@ export default function GamblesPageContent({
     if (debouncedSearch.trim() !== searchQuery) {
       setSearchQuery(debouncedSearch.trim())
       setCurrentPage(1)
-      const params = new URLSearchParams()
-      if (debouncedSearch.trim()) params.set('search', debouncedSearch.trim())
-      if (characterFilter) params.set('character', characterFilter)
-      if (sortBy !== 'chapter') params.set('sort', sortBy)
-      params.set('page', '1')
-      router.push(`/gambles?${params.toString()}`)
+      updateURL(debouncedSearch.trim(), 1, characterFilter || undefined, sortBy)
     }
-  }, [debouncedSearch, searchInput, searchQuery, characterFilter, sortBy, router])
+  }, [debouncedSearch, searchInput, searchQuery, characterFilter, sortBy, updateURL])
 
   const handleClearSearch = useCallback(() => {
     setSearchInput('')
     setSearchQuery('')
     setCharacterFilter(null)
-
-    const params = new URLSearchParams()
-    if (sortBy !== 'chapter') params.set('sort', sortBy)
-    params.set('page', '1')
-
-    router.push(`/gambles?${params.toString()}`)
-  }, [router, sortBy])
+    setCurrentPage(1)
+    updateURL('', 1, undefined, sortBy)
+  }, [sortBy, updateURL])
 
   const handlePageChange = useCallback((page: number) => {
     setCurrentPage(page)
-    const params = new URLSearchParams()
-    if (searchQuery) params.set('search', searchQuery)
-    if (characterFilter) params.set('character', characterFilter)
-    if (sortBy !== 'chapter') params.set('sort', sortBy)
-    params.set('page', page.toString())
-
-    router.push(`/gambles?${params.toString()}`)
-  }, [router, searchQuery, characterFilter, sortBy])
+    updateURL(searchQuery, page, characterFilter || undefined, sortBy)
+    prefetch(page)
+  }, [searchQuery, characterFilter, sortBy, updateURL, prefetch])
 
   const handleSortChange = useCallback((value: string | null) => {
     const newSort = (value as SortOption) || 'chapter'
     setSortBy(newSort)
     setCurrentPage(1)
+    updateURL(searchQuery, 1, characterFilter || undefined, newSort)
+  }, [searchQuery, characterFilter, updateURL])
 
-    const params = new URLSearchParams()
-    if (searchQuery) params.set('search', searchQuery)
-    if (characterFilter) params.set('character', characterFilter)
-    if (newSort !== 'chapter') params.set('sort', newSort)
-    params.set('page', '1')
-
-    router.push(`/gambles?${params.toString()}`)
-  }, [router, searchQuery, characterFilter])
-
-  const clearCharacterFilter = () => {
+  const clearCharacterFilter = useCallback(() => {
     setCharacterFilter(null)
     setCurrentPage(1)
-    updateURL(searchQuery, 1)
-    // Use usePaged refresh to reload page data after clearing the character filter
-    refresh(true)
-  }
+    updateURL(searchQuery, 1, undefined, sortBy)
+  }, [searchQuery, sortBy, updateURL])
 
   return (
     <Box style={{ backgroundColor: backgroundStyles.page(theme), minHeight: '100vh' }}>

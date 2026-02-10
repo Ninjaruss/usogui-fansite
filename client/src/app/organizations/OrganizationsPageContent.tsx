@@ -12,7 +12,6 @@ import {
   Modal,
   Pagination,
   Paper,
-  Select,
   Stack,
   Text,
   TextInput,
@@ -23,7 +22,7 @@ import {
 } from '@mantine/core'
 import { notifications } from '@mantine/notifications'
 import { getEntityThemeColor, semanticColors, textColors, backgroundStyles, getHeroStyles, getPlayingCardStyles } from '../../lib/mantine-theme'
-import { AlertCircle, ArrowUpDown, Search, Shield, Users, X } from 'lucide-react'
+import { AlertCircle, Search, Shield, Users, X } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'motion/react'
@@ -66,7 +65,6 @@ export default function OrganizationsPageContent({
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(initialError || null)
   const [searchQuery, setSearchQuery] = useState(initialSearch || '')
-  const [sortBy, setSortBy] = useState(searchParams.get('sort') || 'name')
 
   // Client-side pagination
   const [currentPage, setCurrentPage] = useState<number>(initialPage)
@@ -106,7 +104,7 @@ export default function OrganizationsPageContent({
     }
   }, [])
 
-  // Client-side filtering, sorting, and pagination
+  // Client-side filtering and pagination
   const filteredOrganizations = useMemo(() => {
     let results = allOrganizations
 
@@ -119,17 +117,9 @@ export default function OrganizationsPageContent({
       })
     }
 
-    // Apply sorting
-    return [...results].sort((a, b) => {
-      switch (sortBy) {
-        case 'members':
-          return (b.memberCount ?? 0) - (a.memberCount ?? 0)
-        case 'name':
-        default:
-          return (a.name || '').localeCompare(b.name || '')
-      }
-    })
-  }, [allOrganizations, searchQuery, sortBy])
+    // Sort alphabetically by name
+    return [...results].sort((a, b) => (a.name || '').localeCompare(b.name || ''))
+  }, [allOrganizations, searchQuery])
 
   const paginatedOrganizations = useMemo(() => {
     const startIndex = (currentPage - 1) * PAGE_SIZE
@@ -150,11 +140,9 @@ export default function OrganizationsPageContent({
   useEffect(() => {
     const urlPage = parseInt(searchParams.get('page') || '1', 10)
     const urlSearch = searchParams.get('search') || ''
-    const urlSort = searchParams.get('sort') || 'name'
 
     setCurrentPage(urlPage)
     setSearchQuery(urlSearch)
-    setSortBy(urlSort)
   }, [searchParams])
 
   const handleSearchChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
@@ -163,21 +151,15 @@ export default function OrganizationsPageContent({
     setCurrentPage(1) // Reset to first page immediately when search changes
   }, [])
 
-  // Update URL when search, sort, or page changes (no API calls needed)
+  // Update URL when search or page changes (no API calls needed)
   useEffect(() => {
     const params = new URLSearchParams()
     if (searchQuery) params.set('search', searchQuery)
-    if (sortBy && sortBy !== 'name') params.set('sort', sortBy)
     if (currentPage > 1) params.set('page', currentPage.toString())
 
     const newUrl = params.toString() ? `/organizations?${params.toString()}` : '/organizations'
     router.push(newUrl, { scroll: false })
-  }, [searchQuery, sortBy, currentPage, router])
-
-  const handleSortChange = useCallback((value: string | null) => {
-    setSortBy(value || 'name')
-    setCurrentPage(1)
-  }, [])
+  }, [searchQuery, currentPage, router])
 
   const handleClearSearch = useCallback(() => {
     setSearchQuery('')
@@ -270,23 +252,6 @@ export default function OrganizationsPageContent({
               }}
             />
           </Box>
-          <Select
-            data={[
-              { value: 'name', label: 'Name (A-Z)' },
-              { value: 'members', label: 'Member Count' },
-            ]}
-            value={sortBy}
-            onChange={handleSortChange}
-            leftSection={<ArrowUpDown size={16} />}
-            w={180}
-            size="lg"
-            radius="xl"
-            styles={{
-              input: {
-                fontSize: rem(14)
-              }
-            }}
-          />
         </Group>
       </Box>
 
