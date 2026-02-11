@@ -243,40 +243,44 @@ const EntityCard: React.FC<EntityCardProps> = ({
     const finalDisplayText = displayText || getDefaultDisplayText(type, data)
     const meta = renderMeta()
 
+    const hasImage = showImage && ['character', 'arc', 'volume'].includes(type)
+
     return (
-      <Stack gap="xs">
-        <Group gap="sm" wrap="nowrap" align="center">
-          {showImage && ['character', 'arc', 'volume'].includes(type) ? (
-            <Box style={{ width: rem(56), height: rem(56), flexShrink: 0 }}>
-              <MediaThumbnail
-                entityType={type as 'character' | 'arc' | 'volume'}
-                entityId={id}
-                entityName={finalDisplayText}
-                maxWidth={56}
-                maxHeight={56}
-                inline
-              />
-            </Box>
-          ) : (
-            <Avatar size={48} radius="xl" styles={{ root: { backgroundColor: accentColor, color: '#ffffff' } }}>
-              {ICON_MAP[type]}
-            </Avatar>
-          )}
-          <Box style={{ flex: 1, minWidth: 0 }}>
-            <Text size="sm" fw={700} lineClamp={1} style={{ color: accentColor }}>
-              {finalDisplayText}
-            </Text>
-            <Group gap="xs" mt={2} align="center">
-              {renderTypeBadge(getEntityTypeLabel(type))}
-              {meta && (
-                <Text size="xs" c="dimmed" lineClamp={1}>
-                  {meta}
-                </Text>
-              )}
-            </Group>
+      <Stack gap={0}>
+        {hasImage ? (
+          <Box style={{ width: '100%', height: rem(140), overflow: 'hidden', borderRadius: `${rem(11)} ${rem(11)} 0 0` }}>
+            <MediaThumbnail
+              entityType={type as 'character' | 'arc' | 'volume'}
+              entityId={id}
+              entityName={finalDisplayText}
+              maxWidth={340}
+              maxHeight={140}
+            />
           </Box>
-        </Group>
-        {renderDescription()}
+        ) : null}
+        <Box style={{ padding: `${rem(10)} ${rem(12)} ${rem(12)}` }}>
+          <Group gap="sm" wrap="nowrap" align="center" mb={4}>
+            {!hasImage && (
+              <Avatar size={36} radius="xl" styles={{ root: { backgroundColor: accentColor, color: '#ffffff' } }}>
+                {ICON_MAP[type]}
+              </Avatar>
+            )}
+            <Box style={{ flex: 1, minWidth: 0 }}>
+              <Text size="sm" fw={700} lineClamp={1} style={{ color: accentColor }}>
+                {finalDisplayText}
+              </Text>
+              <Group gap="xs" mt={2} align="center">
+                {renderTypeBadge(getEntityTypeLabel(type))}
+                {meta && (
+                  <Text size="xs" c="dimmed" lineClamp={1}>
+                    {meta}
+                  </Text>
+                )}
+              </Group>
+            </Box>
+          </Group>
+          {renderDescription()}
+        </Box>
       </Stack>
     )
   }
@@ -339,7 +343,9 @@ const EntityCard: React.FC<EntityCardProps> = ({
           style={{
             backgroundColor: theme.colors.dark?.[7] ?? '#1a1a1a',
             border: `1px solid ${rgba(accentColor, 0.3)}`,
-            borderRadius: rem(12)
+            borderRadius: rem(12),
+            padding: 0,
+            overflow: 'hidden'
           }}
         >
           {renderPopoverContent()}
