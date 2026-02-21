@@ -67,59 +67,70 @@ export class AuthFluxerController {
     const frontendUrl =
       this.configService.get<string>('FRONTEND_URL') || 'http://localhost:3000';
 
-    // Check if this is an account-linking flow (link_token cookie present)
-    const linkToken = req.cookies?.[LINK_TOKEN_COOKIE];
-    if (linkToken) {
-      console.log('[FLUXER CALLBACK] Link token found — linking account');
-      res.clearCookie(LINK_TOKEN_COOKIE, this.getLinkTokenCookieOptions());
-
-      let userId: number;
-      try {
-        const payload = this.authService.verifyLinkToken(linkToken);
-        userId = payload.sub;
-      } catch {
-        console.error('[FLUXER CALLBACK] Invalid link token');
-        return res.redirect(
-          `${frontendUrl}/auth/callback?error=link_token_invalid`,
-        );
-      }
-
-      try {
-        await this.authService.linkFluxerToUser(userId, req.user);
-        console.log(`[FLUXER CALLBACK] Linked Fluxer to user ${userId}`);
-      } catch (err: any) {
-        console.error('[FLUXER CALLBACK] Link failed:', err.message);
-        return res.redirect(
-          `${frontendUrl}/auth/callback?error=${encodeURIComponent(err.message || 'link_failed')}`,
-        );
-      }
-
-      return res.redirect(`${frontendUrl}/auth/callback?linked=fluxer`);
+    // Guard suppresses exceptions — a null user means authentication failed
+    if (!req.user) {
+      console.error('[FLUXER CALLBACK] Authentication failed — req.user is null');
+      return res.redirect(`${frontendUrl}/login?error=callback_error`);
     }
 
-    // Normal login flow
-    const loginResult = await this.authService.login(req.user as User);
-    console.log(
-      '[FLUXER CALLBACK] Login result generated for user:',
-      (req.user as User)?.username,
-    );
+    try {
+      // Check if this is an account-linking flow (link_token cookie present)
+      const linkToken = req.cookies?.[LINK_TOKEN_COOKIE];
+      if (linkToken) {
+        console.log('[FLUXER CALLBACK] Link token found — linking account');
+        res.clearCookie(LINK_TOKEN_COOKIE, this.getLinkTokenCookieOptions());
 
-    // Set the refresh token as an httpOnly cookie (same approach as email login)
-    if (loginResult.refresh_token) {
-      const isProduction = process.env.NODE_ENV === 'production';
-      res.cookie('refreshToken', loginResult.refresh_token, {
-        httpOnly: true,
-        secure: isProduction,
-        sameSite: isProduction ? 'none' : 'lax',
-        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-        path: '/',
-      } as CookieOptions);
-      console.log('[FLUXER CALLBACK] Refresh token cookie set');
+        let userId: number;
+        try {
+          const payload = this.authService.verifyLinkToken(linkToken);
+          userId = payload.sub;
+        } catch {
+          console.error('[FLUXER CALLBACK] Invalid link token');
+          return res.redirect(
+            `${frontendUrl}/auth/callback?error=link_token_invalid`,
+          );
+        }
+
+        try {
+          await this.authService.linkFluxerToUser(userId, req.user);
+          console.log(`[FLUXER CALLBACK] Linked Fluxer to user ${userId}`);
+        } catch (err: any) {
+          console.error('[FLUXER CALLBACK] Link failed:', err.message);
+          return res.redirect(
+            `${frontendUrl}/auth/callback?error=${encodeURIComponent(err.message || 'link_failed')}`,
+          );
+        }
+
+        return res.redirect(`${frontendUrl}/auth/callback?linked=fluxer`);
+      }
+
+      // Normal login flow
+      const loginResult = await this.authService.login(req.user as User);
+      console.log(
+        '[FLUXER CALLBACK] Login result generated for user:',
+        (req.user as User)?.username,
+      );
+
+      // Set the refresh token as an httpOnly cookie (same approach as email login)
+      if (loginResult.refresh_token) {
+        const isProduction = process.env.NODE_ENV === 'production';
+        res.cookie('refreshToken', loginResult.refresh_token, {
+          httpOnly: true,
+          secure: isProduction,
+          sameSite: isProduction ? 'none' : 'lax',
+          maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+          path: '/',
+        } as CookieOptions);
+        console.log('[FLUXER CALLBACK] Refresh token cookie set');
+      }
+
+      // Redirect with only the access token — refresh token is now in the cookie
+      const redirectUrl = `${frontendUrl}/auth/callback?token=${loginResult.access_token}`;
+      console.log('[FLUXER CALLBACK] Redirecting to:', redirectUrl);
+      res.redirect(redirectUrl);
+    } catch (err: any) {
+      console.error('[FLUXER CALLBACK] Unexpected error:', err?.message || err);
+      return res.redirect(`${frontendUrl}/login?error=callback_error`);
     }
-
-    // Redirect with only the access token — refresh token is now in the cookie
-    const redirectUrl = `${frontendUrl}/auth/callback?token=${loginResult.access_token}`;
-    console.log('[FLUXER CALLBACK] Redirecting to:', redirectUrl);
-    res.redirect(redirectUrl);
   }
 }
