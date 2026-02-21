@@ -46,38 +46,6 @@ export class AuthLinkController {
 
   // --- Link Initiation (reuses existing OAuth callback URLs) ---
 
-  @ApiOperation({ summary: 'Initiate Discord account linking' })
-  @ApiResponse({ status: 302, description: 'Redirects to Discord OAuth' })
-  @Get('discord/init')
-  async discordLinkInit(
-    @Query('accessToken') accessToken: string,
-    @Req() req: Request,
-    @Res() res: Response,
-  ) {
-    if (!accessToken) {
-      throw new UnauthorizedException('Access token required');
-    }
-
-    let payload: any;
-    try {
-      payload = this.jwtService.verify(accessToken);
-    } catch {
-      throw new UnauthorizedException('Invalid or expired access token');
-    }
-
-    const userId =
-      typeof payload.sub === 'string'
-        ? parseInt(payload.sub, 10)
-        : payload.sub;
-
-    const linkToken = this.authService.generateLinkToken(userId);
-    res.cookie(LINK_TOKEN_COOKIE, linkToken, this.getLinkTokenCookieOptions());
-
-    // Redirect to the EXISTING Discord OAuth route so the registered callback URL is used
-    const apiBase = `${req.protocol}://${req.get('host')}`;
-    res.redirect(`${apiBase}/api/auth/discord`);
-  }
-
   @ApiOperation({ summary: 'Initiate Fluxer account linking' })
   @ApiResponse({ status: 302, description: 'Redirects to Fluxer OAuth' })
   @Get('fluxer/init')
@@ -111,16 +79,6 @@ export class AuthLinkController {
   }
 
   // --- Unlink ---
-
-  @ApiOperation({ summary: 'Unlink Discord from current account' })
-  @ApiResponse({ status: 200, description: 'Discord unlinked' })
-  @Delete('discord')
-  @UseGuards(JwtAuthGuard)
-  async unlinkDiscord(@Req() req: Request) {
-    const user = req.user as User;
-    await this.authService.unlinkProvider(user.id, 'discord');
-    return { message: 'Discord account unlinked' };
-  }
 
   @ApiOperation({ summary: 'Unlink Fluxer from current account' })
   @ApiResponse({ status: 200, description: 'Fluxer unlinked' })

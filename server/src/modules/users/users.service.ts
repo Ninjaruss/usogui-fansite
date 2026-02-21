@@ -266,10 +266,6 @@ export class UsersService {
     return this.repo.findOne({ where: { username } });
   }
 
-  async findByDiscordId(discordId: string): Promise<User | null> {
-    return this.repo.findOne({ where: { discordId } });
-  }
-
   async findByFluxerId(fluxerId: string): Promise<User | null> {
     return this.repo.findOne({ where: { fluxerId } });
   }
@@ -313,36 +309,6 @@ export class UsersService {
     return this.repo.save(user);
   }
 
-  async createDiscordUser(data: {
-    discordId: string;
-    discordUsername: string;
-    discordAvatar: string | null;
-    username: string;
-    email: string | null;
-    role?: UserRole;
-  }): Promise<User> {
-    // Ensure unique username by appending number if needed
-    let finalUsername = data.username;
-    let counter = 1;
-    while (await this.findByUsername(finalUsername)) {
-      finalUsername = `${data.username}_${counter}`;
-      counter++;
-    }
-
-    const user = this.repo.create({
-      discordId: data.discordId,
-      discordUsername: data.discordUsername,
-      discordAvatar: data.discordAvatar,
-      username: finalUsername,
-      email: data.email,
-      role: data.role || UserRole.USER,
-      isEmailVerified: true, // Discord users are considered verified
-      password: null, // No password for Discord users
-    });
-
-    return this.repo.save(user);
-  }
-
   async createFluxerUser(data: {
     fluxerId: string;
     fluxerUsername: string;
@@ -376,7 +342,7 @@ export class UsersService {
 
   // --- Validate password ---
   async validatePassword(user: User, plain: string): Promise<boolean> {
-    if (!user.password) return false; // Discord users don't have passwords
+    if (!user.password) return false;
     return await bcrypt.compare(plain, user.password);
   }
 
@@ -441,19 +407,6 @@ export class UsersService {
     return this.findOne(id);
   }
 
-  async updateDiscordInfo(
-    userId: number,
-    data: {
-      discordUsername: string;
-      discordAvatar: string | null;
-    },
-  ): Promise<void> {
-    await this.repo.update(userId, {
-      discordUsername: data.discordUsername,
-      discordAvatar: data.discordAvatar,
-    });
-  }
-
   async updateFluxerInfo(
     userId: number,
     data: {
@@ -464,21 +417,6 @@ export class UsersService {
     await this.repo.update(userId, {
       fluxerUsername: data.fluxerUsername,
       fluxerAvatar: data.fluxerAvatar,
-    });
-  }
-
-  async linkDiscord(
-    userId: number,
-    data: {
-      discordId: string;
-      discordUsername: string;
-      discordAvatar: string | null;
-    },
-  ): Promise<void> {
-    await this.repo.update(userId, {
-      discordId: data.discordId,
-      discordUsername: data.discordUsername,
-      discordAvatar: data.discordAvatar,
     });
   }
 
@@ -497,14 +435,6 @@ export class UsersService {
     });
   }
 
-  async unlinkDiscord(userId: number): Promise<void> {
-    await this.repo.update(userId, {
-      discordId: null as any,
-      discordUsername: null as any,
-      discordAvatar: null as any,
-    });
-  }
-
   async unlinkFluxer(userId: number): Promise<void> {
     await this.repo.update(userId, {
       fluxerId: null as any,
@@ -515,33 +445,12 @@ export class UsersService {
 
   async hasOtherAuthMethod(
     userId: number,
-    providerToRemove: 'discord' | 'fluxer',
+    providerToRemove: 'fluxer',
   ): Promise<boolean> {
     const user = await this.repo.findOne({ where: { id: userId } });
     if (!user) return false;
 
-    if (providerToRemove === 'discord') {
-      return !!user.fluxerId || !!user.password;
-    }
-    return !!user.discordId || !!user.password;
-  }
-
-  async refreshDiscordAvatar(userId: number): Promise<User> {
-    const user = await this.findOne(userId);
-
-    if (!user.discordId) {
-      throw new BadRequestException(
-        'User does not have a Discord account linked',
-      );
-    }
-
-    // Since we don't have a Discord Bot Token configured, and we don't store
-    // user access tokens, we need to redirect the user to re-authenticate
-    // via Discord OAuth to get fresh avatar data.
-    throw new BadRequestException(
-      'To refresh your Discord avatar, please log out and log back in with Discord. ' +
-        'This will fetch your latest avatar from Discord.',
-    );
+    return !!user.password;
   }
 
   async updateRole(userId: number, role: UserRole): Promise<void> {
@@ -643,8 +552,8 @@ export class UsersService {
     if (updateProfileDto.profilePictureType !== undefined) {
       user.profilePictureType = updateProfileDto.profilePictureType;
 
-      // If switching to discord, clear character media selection
-      if (updateProfileDto.profilePictureType === ProfilePictureType.DISCORD) {
+      // If switching to fluxer, clear character media selection
+      if (updateProfileDto.profilePictureType === ProfilePictureType.FLUXER) {
         user.selectedCharacterMediaId = null;
       }
     }
@@ -653,9 +562,9 @@ export class UsersService {
     if (updateProfileDto.selectedCharacterMediaId !== undefined) {
       if (updateProfileDto.selectedCharacterMediaId === null) {
         user.selectedCharacterMediaId = null;
-        // If clearing character media, default back to discord
+        // If clearing character media, default back to fluxer
         if (user.profilePictureType === ProfilePictureType.CHARACTER_MEDIA) {
-          user.profilePictureType = ProfilePictureType.DISCORD;
+          user.profilePictureType = ProfilePictureType.FLUXER;
         }
       } else {
         const mediaRepo = this.repo.manager.getRepository(Media);

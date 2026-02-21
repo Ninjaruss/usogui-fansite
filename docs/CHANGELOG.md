@@ -4,8 +4,8 @@
 # Refine entity embed for guide markdown
 
 ## 2026-02-20
-- Fluxer login option added with updates to the frontend to reflect this change
-- Profile page now allows user to link or unlink their Discord/Fluxer
+- Fluxer login option added with updates to the frontend to reflect this change (replacing Discord)
+- Profile page now allows user to link or unlink their Fluxer
 
 ## 2026-02-10
 - Entity display media management for admin dashboard

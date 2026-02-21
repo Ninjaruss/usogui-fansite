@@ -1,11 +1,24 @@
 'use client'
 
 import React, { useEffect, Suspense, useState } from 'react'
-import { Alert, Button, Card, Container, Stack, Text, Title } from '@mantine/core'
+import {
+  Alert,
+  Button,
+  Card,
+  Container,
+  Divider,
+  PasswordInput,
+  Stack,
+  Text,
+  TextInput,
+  Title,
+  Anchor,
+} from '@mantine/core'
 import { AlertCircle } from 'lucide-react'
 import Link from 'next/link'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
 import { API_BASE_URL } from '../../../src/lib/api'
+import { useAuth } from '../../providers/AuthProvider'
 
 const errorMessages: Record<string, string> = {
   missing_token: 'Authentication token was not received. Please try again.',
@@ -17,33 +30,46 @@ const errorMessages: Record<string, string> = {
 
 function LoginContent() {
   const searchParams = useSearchParams()
+  const router = useRouter()
+  const { login } = useAuth()
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [isRedirecting, setIsRedirecting] = useState(false)
+  const [identifier, setIdentifier] = useState('')
+  const [password, setPassword] = useState('')
+  const [emailLoading, setEmailLoading] = useState(false)
 
   useEffect(() => {
-    // Store return URL if provided
     const returnUrl = searchParams.get('returnUrl')
     if (returnUrl) {
       localStorage.setItem('authReturnUrl', returnUrl)
     }
 
-    // Check for error parameter and display appropriate message
     const error = searchParams.get('error')
     if (error) {
       setErrorMessage(errorMessages[error] || errorMessages.default)
     }
   }, [searchParams])
 
-  const handleDiscordLogin = () => {
-    setErrorMessage(null)
-    setIsRedirecting(true)
-    window.location.href = `${API_BASE_URL}/auth/discord`
-  }
-
   const handleFluxerLogin = () => {
     setErrorMessage(null)
     setIsRedirecting(true)
     window.location.href = `${API_BASE_URL}/auth/fluxer`
+  }
+
+  const handleEmailLogin = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setErrorMessage(null)
+    setEmailLoading(true)
+    try {
+      await login(identifier, password)
+      const returnUrl = localStorage.getItem('authReturnUrl')
+      localStorage.removeItem('authReturnUrl')
+      router.push(returnUrl || '/')
+    } catch (err: any) {
+      setErrorMessage(err?.message || 'Login failed. Check your credentials and try again.')
+    } finally {
+      setEmailLoading(false)
+    }
   }
 
   return (
@@ -68,48 +94,76 @@ function LoginContent() {
             </Alert>
           )}
 
-          <Button
-            onClick={handleDiscordLogin}
-            color="indigo"
-            fullWidth
-            size="md"
-            loading={isRedirecting}
-            disabled={isRedirecting}
-            aria-busy={isRedirecting}
-            aria-label={isRedirecting ? 'Redirecting to Discord...' : 'Continue with Discord'}
-            leftSection={
-              !isRedirecting && (
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.211.375-.445.865-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.010c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.196.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z"/>
-                </svg>
-              )
-            }
-          >
-            {isRedirecting ? 'Redirecting to Discord...' : 'Continue with Discord'}
-          </Button>
+          <Stack gap="xs">
+            <Button
+              onClick={handleFluxerLogin}
+              color="violet"
+              fullWidth
+              size="md"
+              loading={isRedirecting}
+              disabled={isRedirecting || emailLoading}
+              aria-busy={isRedirecting}
+              aria-label={isRedirecting ? 'Redirecting to Fluxer...' : 'Continue with Fluxer'}
+              leftSection={
+                !isRedirecting && (
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                  </svg>
+                )
+              }
+            >
+              {isRedirecting ? 'Redirecting to Fluxer...' : 'Continue with Fluxer'}
+            </Button>
+            <Text size="xs" c="dimmed" ta="center">
+              New to Fluxer?{' '}
+              <Anchor href="https://fluxer.app/" target="_blank" rel="noopener noreferrer" size="xs">
+                Learn more
+              </Anchor>
+            </Text>
+          </Stack>
 
-          <Button
-            onClick={handleFluxerLogin}
-            color="violet"
-            fullWidth
-            size="md"
-            loading={isRedirecting}
-            disabled={isRedirecting}
-            aria-busy={isRedirecting}
-            aria-label={isRedirecting ? 'Redirecting to Fluxer...' : 'Continue with Fluxer'}
-            leftSection={
-              !isRedirecting && (
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
-                </svg>
-              )
-            }
-          >
-            {isRedirecting ? 'Redirecting to Fluxer...' : 'Continue with Fluxer'}
-          </Button>
+          <Divider label="or" labelPosition="center" />
 
-          <Text size="xs" c="dimmed" ta="center" style={{ lineHeight: 1.5 }}>
-            We use Discord or Fluxer for secure authentication. We only access your username and avatar.
+          <form onSubmit={handleEmailLogin}>
+            <Stack gap="sm">
+              <TextInput
+                label="Username or Email"
+                placeholder="your_username or you@example.com"
+                value={identifier}
+                onChange={(e) => setIdentifier(e.currentTarget.value)}
+                required
+                disabled={isRedirecting}
+              />
+              <PasswordInput
+                label="Password"
+                placeholder="Your password"
+                value={password}
+                onChange={(e) => setPassword(e.currentTarget.value)}
+                required
+                disabled={isRedirecting}
+              />
+              <Text size="xs" ta="right">
+                <Anchor component={Link} href="/password-reset" size="xs">
+                  Forgot password?
+                </Anchor>
+              </Text>
+              <Button
+                type="submit"
+                fullWidth
+                size="md"
+                loading={emailLoading}
+                disabled={isRedirecting || emailLoading || !identifier || !password}
+              >
+                Sign In
+              </Button>
+            </Stack>
+          </form>
+
+          <Text size="xs" c="dimmed" ta="center">
+            Don&apos;t have an account?{' '}
+            <Anchor component={Link} href="/register" size="xs">
+              Create one
+            </Anchor>
           </Text>
         </Stack>
       </Card>
@@ -125,9 +179,7 @@ export default function LoginPage() {
           <Stack gap="lg">
             <Stack align="center" gap="xs">
               <Title order={2}>Welcome Back</Title>
-              <Text size="sm" c="dimmed">
-                Loading...
-              </Text>
+              <Text size="sm" c="dimmed">Loading...</Text>
             </Stack>
           </Stack>
         </Card>

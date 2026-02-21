@@ -70,15 +70,9 @@ export const AdminAuthProvider: AuthProvider = {
     try {
       const user = await api.getCurrentUser()
       let avatar = undefined
-      
-      if (user.discordAvatar && user.discordId) {
-        // If discordAvatar is already a full URL, use it directly
-        if (user.discordAvatar.startsWith('http')) {
-          avatar = user.discordAvatar
-        } else {
-          // Otherwise, construct the Discord CDN URL
-          avatar = `https://cdn.discordapp.com/avatars/${user.discordId}/${user.discordAvatar}.png`
-        }
+
+      if (user.fluxerAvatar && user.fluxerId) {
+        avatar = `https://fluxerusercontent.com/avatars/${user.fluxerId}/${user.fluxerAvatar}.png`
       }
       
       return Promise.resolve({

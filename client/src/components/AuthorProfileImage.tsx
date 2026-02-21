@@ -10,7 +10,7 @@ interface AuthorProfileImageProps {
     id: number
     username: string
     role?: string
-    profilePictureType?: 'discord' | 'fluxer' | 'character_media' | null
+    profilePictureType?: 'fluxer' | 'character_media' | null
     selectedCharacterMediaId?: number | null
     selectedCharacterMedia?: {
       id: number
@@ -18,8 +18,6 @@ interface AuthorProfileImageProps {
       fileName?: string
       description?: string
     } | null
-    discordId?: string | null
-    discordAvatar?: string | null
     fluxerId?: string | null
     fluxerAvatar?: string | null
   }
@@ -32,7 +30,7 @@ interface FullUserProfile {
   id: number
   username: string
   role: string
-  profilePictureType?: 'discord' | 'fluxer' | 'character_media' | null
+  profilePictureType?: 'fluxer' | 'character_media' | null
   selectedCharacterMediaId?: number | null
   selectedCharacterMedia?: {
     id: number
@@ -40,8 +38,6 @@ interface FullUserProfile {
     fileName?: string
     description?: string
   } | null
-  discordId?: string | null
-  discordAvatar?: string | null
   fluxerId?: string | null
   fluxerAvatar?: string | null
 }
@@ -57,7 +53,7 @@ export default function AuthorProfileImage({
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(false)
 
-  const hasProfileData = author.profilePictureType || author.discordAvatar || author.fluxerAvatar || author.selectedCharacterMedia
+  const hasProfileData = author.profilePictureType || author.fluxerAvatar || author.selectedCharacterMedia
 
   useEffect(() => {
     if (!hasProfileData && !loading && !fullProfile) {
@@ -90,18 +86,11 @@ export default function AuthorProfileImage({
     }
   } as const
 
-  const getDiscordUrl = () => {
-    if (!userToRender.discordAvatar || !userToRender.discordId) return null
-    return userToRender.discordAvatar.startsWith('http')
-      ? userToRender.discordAvatar
-      : `https://cdn.discordapp.com/avatars/${userToRender.discordId}/${userToRender.discordAvatar}.png?size=256`
-  }
-
   const getFluxerUrl = () => {
     if (!userToRender.fluxerAvatar) return null
     return userToRender.fluxerAvatar.startsWith('http')
       ? userToRender.fluxerAvatar
-      : `https://cdn.fluxer.app/avatars/${userToRender.fluxerId}/${userToRender.fluxerAvatar}.png?size=256`
+      : `https://fluxerusercontent.com/avatars/${userToRender.fluxerId}/${userToRender.fluxerAvatar}.png?size=256`
   }
 
   if (userToRender.profilePictureType === 'fluxer' && !error) {
@@ -118,25 +107,6 @@ export default function AuthorProfileImage({
           styles={commonStyles}
         >
           {(error || !userToRender.fluxerAvatar) && showFallback && fallbackLetter}
-        </Avatar>
-      )
-    }
-  }
-
-  if (userToRender.profilePictureType === 'discord' && !error) {
-    const discordAvatarUrl = getDiscordUrl()
-    if (discordAvatarUrl) {
-      return (
-        <Avatar
-          src={discordAvatarUrl}
-          alt={`${userToRender.username}'s Discord avatar`}
-          className={className}
-          size={size}
-          radius="xl"
-          onError={() => setError(true)}
-          styles={commonStyles}
-        >
-          {(error || !userToRender.discordAvatar) && showFallback && fallbackLetter}
         </Avatar>
       )
     }
@@ -160,22 +130,6 @@ export default function AuthorProfileImage({
   }
 
   if (!userToRender.profilePictureType && !error) {
-    const discordAvatarUrl = getDiscordUrl()
-    if (discordAvatarUrl) {
-      return (
-        <Avatar
-          src={discordAvatarUrl}
-          alt={`${userToRender.username}'s Discord avatar`}
-          className={className}
-          size={size}
-          radius="xl"
-          onError={() => setError(true)}
-          styles={commonStyles}
-        >
-          {(error || !userToRender.discordAvatar) && showFallback && fallbackLetter}
-        </Avatar>
-      )
-    }
     const fluxerAvatarUrl = getFluxerUrl()
     if (fluxerAvatarUrl) {
       return (

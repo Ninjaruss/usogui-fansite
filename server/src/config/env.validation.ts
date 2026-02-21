@@ -63,13 +63,13 @@ class EnvironmentVariables {
   })
   FRONTEND_URL: string;
 
-  // --- Discord OAuth2 Configuration ---
-  // SECURITY: Required for Discord authentication to work
+  // --- Fluxer OAuth2 Configuration ---
+  // SECURITY: Required for Fluxer authentication to work
   @IsString()
-  DISCORD_CLIENT_ID: string;
+  FLUXER_CLIENT_ID: string;
 
   @IsString()
-  DISCORD_CLIENT_SECRET: string;
+  FLUXER_CLIENT_SECRET: string;
 
   @IsString()
   @IsUrl({
@@ -78,12 +78,12 @@ class EnvironmentVariables {
     require_host: true,
     protocols: ['http', 'https'],
   })
-  DISCORD_CALLBACK_URL: string;
+  FLUXER_CALLBACK_URL: string;
 
-  // Discord user ID for initial admin access
+  // Fluxer user ID for initial admin access
   @IsString()
   @IsOptional()
-  ADMIN_DISCORD_ID?: string;
+  ADMIN_FLUXER_ID?: string;
 
   // --- Backblaze B2 Storage ---
   // SECURITY: Required for media uploads to work

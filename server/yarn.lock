@@ -1391,16 +1391,7 @@
   dependencies:
     "@types/node" "*"
 
-"@types/passport-discord@^0.1.14":
-  version "0.1.15"
-  resolved "https://registry.yarnpkg.com/@types/passport-discord/-/passport-discord-0.1.15.tgz#402fdabd34a9eea9a6a973f6dd06bd7414a92c0a"
-  integrity sha512-F5ryPS2vaSNoIz9IajuQjWx3gf0W2YhCJjX7eMQapzAZyl64WGPZEAmBlnpYDtJWMHXMPpJ8ixT4xl0Uk3/k1w==
-  dependencies:
-    "@types/express" "*"
-    "@types/passport" "*"
-    "@types/passport-oauth2" "*"
-
-"@types/passport-oauth2@*", "@types/passport-oauth2@^1.8.0":
+"@types/passport-oauth2@^1.8.0":
   version "1.8.0"
   resolved "https://registry.yarnpkg.com/@types/passport-oauth2/-/passport-oauth2-1.8.0.tgz#68830666b9dad0fbf68c704721f56346d2c72ba0"
   integrity sha512-6//z+4orIOy/g3zx17HyQ71GSRK4bs7Sb+zFasRoc2xzlv7ZCJ+vkDBYFci8U6HY+or6Zy7ajf4mz4rK7nsWJQ==
@@ -4819,13 +4810,6 @@ passport-custom@^1.1.1:
   dependencies:
     passport-strategy "1.x.x"
 
-passport-discord@^0.1.4:
-  version "0.1.4"
-  resolved "https://registry.yarnpkg.com/passport-discord/-/passport-discord-0.1.4.tgz#9265be11952cdd54d77c47eaae352834444cf0f6"
-  integrity sha512-VJWPYqSOmh7SaCLw/C+k1ZqCzJnn2frrmQRx1YrcPJ3MQ+Oa31XclbbmqFICSvl8xv3Fqd6YWQ4H4p1MpIN9rA==
-  dependencies:
-    passport-oauth2 "^1.5.0"
-
 passport-jwt@^4.0.1:
   version "4.0.1"
   resolved "https://registry.yarnpkg.com/passport-jwt/-/passport-jwt-4.0.1.tgz#c443795eff322c38d173faa0a3c481479646ec3d"
@@ -4841,7 +4825,7 @@ passport-local@^1.0.0:
   dependencies:
     passport-strategy "1.x.x"
 
-passport-oauth2@^1.5.0, passport-oauth2@^1.8.0:
+passport-oauth2@^1.8.0:
   version "1.8.0"
   resolved "https://registry.yarnpkg.com/passport-oauth2/-/passport-oauth2-1.8.0.tgz#55725771d160f09bbb191828d5e3d559eee079c8"
   integrity sha512-cjsQbOrXIDE4P8nNb3FQRCCmJJ/utnFKEz2NX209f7KOHPoX18gF7gBzBbLLsj2/je4KrgiwLLGjf0lm9rtTBA==

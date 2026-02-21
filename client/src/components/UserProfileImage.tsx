@@ -10,7 +10,6 @@ interface UserProfileImageProps {
     id: number
     username: string
     profilePictureType?:
-      | 'discord'
       | 'fluxer'
       | 'character_media'
       | 'premium_character_media'
@@ -33,8 +32,6 @@ interface UserProfileImageProps {
         firstAppearanceChapter?: number
       }
     } | null
-    discordId?: string | null
-    discordAvatar?: string | null
     fluxerId?: string | null
     fluxerAvatar?: string | null
   }
@@ -68,13 +65,6 @@ export default function UserProfileImage({
   const chapterNumber = user.selectedCharacterMedia?.chapterNumber || user.selectedCharacterMedia?.character?.firstAppearanceChapter
   const characterName = user.selectedCharacterMedia?.character?.name
 
-  const getDiscordUrl = () => {
-    if (!user.discordAvatar || !user.discordId) return null
-    return user.discordAvatar.startsWith('http')
-      ? user.discordAvatar
-      : `https://cdn.discordapp.com/avatars/${user.discordId}/${user.discordAvatar}.png?size=256`
-  }
-
   const getFluxerUrl = () => {
     if (!user.fluxerAvatar) return null
     return user.fluxerAvatar.startsWith('http')
@@ -96,25 +86,6 @@ export default function UserProfileImage({
           styles={commonStyles}
         >
           {(error || !user.fluxerAvatar) && showFallback && fallbackLetter}
-        </Avatar>
-      )
-    }
-  }
-
-  if (user.profilePictureType === 'discord' && !error) {
-    const discordAvatarUrl = getDiscordUrl()
-    if (discordAvatarUrl) {
-      return (
-        <Avatar
-          src={discordAvatarUrl}
-          alt={`${user.username}'s Discord avatar`}
-          className={className}
-          size={size}
-          radius="xl"
-          onError={() => setError(true)}
-          styles={commonStyles}
-        >
-          {(error || !user.discordAvatar) && showFallback && fallbackLetter}
         </Avatar>
       )
     }
@@ -170,22 +141,6 @@ export default function UserProfileImage({
   }
 
   if (!user.profilePictureType && !error) {
-    const discordAvatarUrl = getDiscordUrl()
-    if (discordAvatarUrl) {
-      return (
-        <Avatar
-          src={discordAvatarUrl}
-          alt={`${user.username}'s Discord avatar`}
-          className={className}
-          size={size}
-          radius="xl"
-          onError={() => setError(true)}
-          styles={commonStyles}
-        >
-          {(error || !user.discordAvatar) && showFallback && fallbackLetter}
-        </Avatar>
-      )
-    }
     const fluxerAvatarUrl = getFluxerUrl()
     if (fluxerAvatarUrl) {
       return (

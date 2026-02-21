@@ -45,7 +45,7 @@ interface PublicUser {
   username: string
   role: string
   customRole?: string | null
-  profilePictureType?: 'discord' | 'fluxer' | 'character_media' | null
+  profilePictureType?: 'fluxer' | 'character_media' | null
   selectedCharacterMediaId?: number | null
   selectedCharacterMedia?: {
     id: number

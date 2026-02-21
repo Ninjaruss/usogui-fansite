@@ -22,16 +22,12 @@ interface User {
   favoriteQuoteId?: number
   favoriteGambleId?: number
   createdAt?: string
-  // Discord fields
-  discordId?: string | null
-  discordUsername?: string | null
-  discordAvatar?: string | null
   // Fluxer fields
   fluxerId?: string | null
   fluxerUsername?: string | null
   fluxerAvatar?: string | null
   // Profile picture fields
-  profilePictureType?: 'discord' | 'fluxer' | 'character_media' | 'premium_character_media' | 'animated_avatar' | 'custom_frame' | 'exclusive_artwork' | null
+  profilePictureType?: 'fluxer' | 'character_media' | 'premium_character_media' | 'animated_avatar' | 'custom_frame' | 'exclusive_artwork' | null
   selectedCharacterMediaId?: number | null
   customRole?: string | null
   // Full relation objects
@@ -46,9 +42,7 @@ interface User {
 interface AuthContextType {
   user: User | null
   loading: boolean
-  loginWithDiscord: () => void
   loginWithFluxer: () => void
-  linkDiscord: () => void
   linkFluxer: () => void
   devLogin: (asAdmin?: boolean) => Promise<void>
   logout: () => Promise<void>
@@ -57,7 +51,7 @@ interface AuthContextType {
   isModeratorOrAdmin: boolean // For moderation tasks (comments, bans)
   isEditor: boolean // Editor role specifically
   canEditContent: boolean // Can edit official content (Admin, Moderator, Editor)
-  // Legacy methods (keep for compatibility)
+  // Email auth methods
   login: (username: string, password: string) => Promise<void>
   register: (username: string, email: string, password: string) => Promise<void>
 }
@@ -247,7 +241,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return
       }
 
-      if (event.data.type === 'DISCORD_AUTH_SUCCESS') {
+      if (event.data.type === 'OAUTH_AUTH_SUCCESS') {
         console.log('[AUTH PROVIDER] Discord auth success message received')
 
         // Close the popup window if it exists
@@ -319,7 +313,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const handleBroadcastMessage = async (event: MessageEvent) => {
       console.log('[AUTH PROVIDER] Received broadcast message:', event.data)
       
-      if (event.data.type === 'DISCORD_AUTH_SUCCESS') {
+      if (event.data.type === 'OAUTH_AUTH_SUCCESS') {
         console.log('[AUTH PROVIDER] Discord auth success broadcast received')
 
         // Close the popup window if it exists
@@ -443,7 +437,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     window.addEventListener('storage', handleStorageChange)
     window.addEventListener('message', handleMessage)
-    window.addEventListener('discord-auth-success', handleCustomEvent)
+
     return () => {
       if (authChannel) {
         authChannel.removeEventListener('message', handleBroadcastMessage)
@@ -451,26 +445,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       window.removeEventListener('storage', handleStorageChange)
       window.removeEventListener('message', handleMessage)
-      window.removeEventListener('discord-auth-success', handleCustomEvent)
+
     }
   }, [mounted, user]) // Remove initializeAuth dependency
-
-  const loginWithDiscord = () => {
-    // Open in popup window instead of new tab for better communication
-    const popup = window.open(
-      `${API_BASE_URL}/auth/discord`,
-      'discord-login',
-      'width=500,height=600,scrollbars=yes,resizable=yes'
-    )
-
-    // Focus the popup window
-    if (popup) {
-      popup.focus()
-
-      // Store popup reference for later closing
-      window.authPopup = popup
-    }
-  }
 
   const loginWithFluxer = () => {
     const popup = window.open(
@@ -479,20 +456,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       'width=500,height=600,scrollbars=yes,resizable=yes'
     )
 
-    if (popup) {
-      popup.focus()
-      window.authPopup = popup
-    }
-  }
-
-  const linkDiscord = () => {
-    const token = api.getToken()
-    if (!token) return
-    const popup = window.open(
-      `${API_BASE_URL}/auth/link/discord/init?accessToken=${encodeURIComponent(token)}`,
-      'discord-link',
-      'width=500,height=600,scrollbars=yes,resizable=yes'
-    )
     if (popup) {
       popup.focus()
       window.authPopup = popup
@@ -626,9 +589,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const value = {
     user,
     loading,
-    loginWithDiscord,
     loginWithFluxer,
-    linkDiscord,
     linkFluxer,
     devLogin,
     logout,
@@ -637,7 +598,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     isModeratorOrAdmin: user?.role === 'admin' || user?.role === 'moderator',
     isEditor: user?.role === 'editor',
     canEditContent: user?.role === 'admin' || user?.role === 'moderator' || user?.role === 'editor',
-    // Legacy methods
+    // Email auth methods
     login,
     register,
   }

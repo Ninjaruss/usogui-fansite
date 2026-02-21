@@ -472,29 +472,6 @@ export class UsersController {
     return this.service.updateProfile(user.id, updateProfileDto);
   }
 
-  @Post('profile/refresh-discord-avatar')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.USER, UserRole.MODERATOR, UserRole.ADMIN)
-  @ApiBearerAuth()
-  @ApiOperation({
-    summary: 'Refresh Discord avatar',
-    description:
-      'Fetch the latest Discord avatar for the current user from Discord API',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Discord avatar refreshed successfully',
-    type: User,
-  })
-  @ApiResponse({
-    status: 400,
-    description: 'User does not have Discord linked or Discord API error',
-  })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async refreshDiscordAvatar(@CurrentUser() user: User): Promise<User> {
-    return this.service.refreshDiscordAvatar(user.id);
-  }
-
   @Get('profile/progress')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.USER, UserRole.MODERATOR, UserRole.ADMIN)

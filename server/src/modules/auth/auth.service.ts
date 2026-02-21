@@ -27,53 +27,6 @@ export class AuthService {
     private readonly configService: ConfigService,
   ) {}
 
-  // --- Discord Authentication ---
-  async validateDiscordUser(profile: any): Promise<User> {
-    const {
-      id: discordId,
-      username: discordUsername,
-      avatar,
-      email,
-      global_name: displayName,
-    } = profile;
-
-    // Check if user already exists
-    let user = await this.usersService.findByDiscordId(discordId);
-
-    if (!user) {
-      // Auto-register new Discord user
-      const avatarUrl = avatar
-        ? `https://cdn.discordapp.com/avatars/${discordId}/${avatar}.png`
-        : null;
-
-      // Check if admin Discord ID
-      const adminDiscordId = this.configService.get<string>('ADMIN_DISCORD_ID');
-      const isAdmin = adminDiscordId && discordId === adminDiscordId;
-
-      // Use Discord display name if available, fall back to username
-      const siteUsername = (displayName || discordUsername).replace('#', '_');
-
-      user = await this.usersService.createDiscordUser({
-        discordId,
-        discordUsername,
-        discordAvatar: avatarUrl,
-        username: siteUsername,
-        email: email || null,
-        role: isAdmin ? UserRole.ADMIN : UserRole.USER,
-      });
-    } else {
-      // Update existing user's Discord info
-      await this.usersService.updateDiscordInfo(user.id, {
-        discordUsername,
-        discordAvatar: profile.avatar
-          ? `https://cdn.discordapp.com/avatars/${discordId}/${profile.avatar}.png`
-          : null,
-      });
-    }
-
-    return user;
-  }
-
   async validateFluxerUser(profile: any): Promise<User> {
     const {
       id: fluxerId,
@@ -133,17 +86,17 @@ export class AuthService {
     }
 
     // Use different dev users for admin vs regular user
-    const devUserId = asAdmin ? 'dev-admin-12345' : 'dev-user-12345';
+    const devFluxerId = asAdmin ? 'dev-admin-12345' : 'dev-user-12345';
     const username = asAdmin ? 'dev_admin' : 'dev_user';
-    const discordUsername = asAdmin ? 'DevAdmin#0000' : 'DevUser#0000';
+    const fluxerUsername = asAdmin ? 'DevAdmin' : 'DevUser';
 
-    let user = await this.usersService.findByDiscordId(devUserId);
+    let user = await this.usersService.findByFluxerId(devFluxerId);
 
     if (!user) {
-      user = await this.usersService.createDiscordUser({
-        discordId: devUserId,
-        discordUsername: discordUsername,
-        discordAvatar: null,
+      user = await this.usersService.createFluxerUser({
+        fluxerId: devFluxerId,
+        fluxerUsername: fluxerUsername,
+        fluxerAvatar: null,
         username: username,
         email: asAdmin ? 'dev-admin@localhost' : 'dev-user@localhost',
         role: asAdmin ? UserRole.ADMIN : UserRole.USER,
@@ -166,11 +119,11 @@ export class AuthService {
         await this.usersService.update(user.id, {
           username: username,
           email: asAdmin ? 'dev-admin@localhost' : 'dev-user@localhost',
-          discordUsername: discordUsername,
+          fluxerUsername: fluxerUsername,
         });
         user.username = username;
         user.email = asAdmin ? 'dev-admin@localhost' : 'dev-user@localhost';
-        user.discordUsername = discordUsername;
+        user.fluxerUsername = fluxerUsername;
       }
     }
 
@@ -215,9 +168,6 @@ export class AuthService {
         username: user.username,
         email: user.email,
         role: user.role,
-        discordId: user.discordId,
-        discordUsername: user.discordUsername,
-        discordAvatar: user.discordAvatar,
         fluxerId: user.fluxerId,
         fluxerUsername: user.fluxerUsername,
         fluxerAvatar: user.fluxerAvatar,
@@ -243,9 +193,6 @@ export class AuthService {
         username: user.username,
         email: user.email,
         role: user.role,
-        discordId: user.discordId,
-        discordUsername: user.discordUsername,
-        discordAvatar: user.discordAvatar,
         fluxerId: user.fluxerId,
         fluxerUsername: user.fluxerUsername,
         fluxerAvatar: user.fluxerAvatar,
@@ -324,38 +271,6 @@ export class AuthService {
     }
   }
 
-  async linkDiscordToUser(userId: number, discordUser: any): Promise<void> {
-    // The Discord strategy returns a User entity (from validateDiscordUser),
-    // not a raw Discord profile. Extract the provider-specific fields.
-    const discordId = discordUser.discordId;
-    const discordUsername = discordUser.discordUsername;
-    const discordAvatar = discordUser.discordAvatar;
-
-    if (!discordId) {
-      throw new ForbiddenException('Discord profile data is missing');
-    }
-
-    // Check if this Discord account is already linked to another user
-    const existingUser = await this.usersService.findByDiscordId(discordId);
-    if (existingUser && existingUser.id !== userId) {
-      // validateDiscordUser may have created a duplicate user — clean it up
-      // if it's a freshly-created shell account (not the target user)
-      if (existingUser.id === discordUser.id) {
-        await this.usersService.remove(existingUser.id);
-      } else {
-        throw new ForbiddenException(
-          'This Discord account is already linked to another user',
-        );
-      }
-    }
-
-    await this.usersService.linkDiscord(userId, {
-      discordId,
-      discordUsername,
-      discordAvatar,
-    });
-  }
-
   async linkFluxerToUser(userId: number, fluxerUser: any): Promise<void> {
     // The Fluxer strategy returns a User entity (from validateFluxerUser),
     // not a raw Fluxer profile. Extract the provider-specific fields.
@@ -390,7 +305,7 @@ export class AuthService {
 
   async unlinkProvider(
     userId: number,
-    provider: 'discord' | 'fluxer',
+    provider: 'fluxer',
   ): Promise<void> {
     const hasOther = await this.usersService.hasOtherAuthMethod(
       userId,
@@ -402,10 +317,6 @@ export class AuthService {
       );
     }
 
-    if (provider === 'discord') {
-      await this.usersService.unlinkDiscord(userId);
-    } else {
-      await this.usersService.unlinkFluxer(userId);
-    }
+    await this.usersService.unlinkFluxer(userId);
   }
 }

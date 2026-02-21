@@ -123,7 +123,7 @@ function ProfileSkeleton() {
 }
 
 export default function ProfilePageClient() {
-  const { user, loading: authLoading, refreshUser, linkDiscord, linkFluxer } = useAuth()
+  const { user, loading: authLoading, refreshUser, linkFluxer } = useAuth()
   const theme = useMantineTheme()
 
   const [profileData, setProfileData] = useState({
@@ -159,7 +159,7 @@ export default function ProfilePageClient() {
   const [editingUsername, setEditingUsername] = useState(false)
   const [usernameInput, setUsernameInput] = useState('')
   const [savingUsername, setSavingUsername] = useState(false)
-  const [unlinkingProvider, setUnlinkingProvider] = useState<'discord' | 'fluxer' | null>(null)
+  const [unlinkingProvider, setUnlinkingProvider] = useState<'fluxer' | null>(null)
 
   const isAuthenticated = !!user
 
@@ -504,24 +504,20 @@ export default function ProfilePageClient() {
     }
   }
 
-  const handleUnlink = async (provider: 'discord' | 'fluxer') => {
+  const handleUnlink = async (provider: 'fluxer') => {
     setUnlinkingProvider(provider)
     try {
-      if (provider === 'discord') {
-        await api.unlinkDiscord()
-      } else {
-        await api.unlinkFluxer()
-      }
+      await api.unlinkFluxer()
       await refreshUser()
       notifications.show({
         title: 'Account Unlinked',
-        message: `${provider.charAt(0).toUpperCase() + provider.slice(1)} account has been unlinked`,
+        message: 'Fluxer account has been unlinked',
         color: 'green'
       })
     } catch (error: any) {
       notifications.show({
         title: 'Unlink Failed',
-        message: error?.message || `Failed to unlink ${provider} account`,
+        message: error?.message || 'Failed to unlink Fluxer account',
         color: 'red'
       })
     } finally {
@@ -751,45 +747,6 @@ export default function ProfilePageClient() {
                 <Text size="sm" c="dimmed">Manage which accounts are connected to your profile.</Text>
 
                 <Stack gap="sm">
-                  {/* Discord Row */}
-                  <Group justify="space-between" align="center" style={{ padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                    <Group gap="sm">
-                      <Box style={{ width: 32, height: 32, borderRadius: '50%', background: '#5865F2', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                        <svg width="18" height="14" viewBox="0 0 71 55" fill="white" xmlns="http://www.w3.org/2000/svg"><path d="M60.1 4.9A58.6 58.6 0 0 0 45.4.5a41.3 41.3 0 0 0-1.8 3.7 54.2 54.2 0 0 0-16.2 0A39.3 39.3 0 0 0 25.5.5 58.5 58.5 0 0 0 10.8 5C1.6 18.7-1 32 .3 45.1a59 59 0 0 0 18 9.1 44.6 44.6 0 0 0 3.9-6.3 38.4 38.4 0 0 1-6.1-2.9l1.5-1.1a42.2 42.2 0 0 0 36.1 0l1.5 1.1a38.4 38.4 0 0 1-6.1 2.9 44.6 44.6 0 0 0 3.9 6.3 58.8 58.8 0 0 0 18-9.1C72.3 30 68.6 16.8 60.1 4.9ZM23.8 37.1c-3.5 0-6.4-3.2-6.4-7.1s2.8-7.1 6.4-7.1c3.5 0 6.4 3.2 6.3 7.1 0 3.9-2.8 7.1-6.3 7.1Zm23.3 0c-3.5 0-6.4-3.2-6.4-7.1s2.8-7.1 6.4-7.1c3.5 0 6.4 3.2 6.3 7.1 0 3.9-2.8 7.1-6.3 7.1Z"/></svg>
-                      </Box>
-                      <Stack gap={2}>
-                        <Text size="sm" fw={500}>Discord</Text>
-                        {user?.discordId ? (
-                          <Text size="xs" c="dimmed">@{user.discordUsername || user.discordId}</Text>
-                        ) : (
-                          <Text size="xs" c="dimmed">Not linked</Text>
-                        )}
-                      </Stack>
-                    </Group>
-                    {user?.discordId ? (
-                      <Button
-                        size="xs"
-                        variant="light"
-                        color="red"
-                        onClick={() => handleUnlink('discord')}
-                        loading={unlinkingProvider === 'discord'}
-                        disabled={!user.fluxerId && !unlinkingProvider}
-                        title={!user.fluxerId ? 'Cannot unlink — this is your only linked account' : 'Unlink Discord'}
-                      >
-                        Unlink
-                      </Button>
-                    ) : (
-                      <Button
-                        size="xs"
-                        variant="light"
-                        color="indigo"
-                        onClick={linkDiscord}
-                      >
-                        Link Discord
-                      </Button>
-                    )}
-                  </Group>
-
                   {/* Fluxer Row */}
                   <Group justify="space-between" align="center" style={{ padding: '8px 0' }}>
                     <Group gap="sm">
@@ -812,8 +769,8 @@ export default function ProfilePageClient() {
                         color="red"
                         onClick={() => handleUnlink('fluxer')}
                         loading={unlinkingProvider === 'fluxer'}
-                        disabled={!user.discordId && !unlinkingProvider}
-                        title={!user.discordId ? 'Cannot unlink — this is your only linked account' : 'Unlink Fluxer'}
+                        disabled={!!unlinkingProvider}
+                        title="Unlink Fluxer account"
                       >
                         Unlink
                       </Button>

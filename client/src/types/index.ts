@@ -206,7 +206,6 @@ export interface Annotation {
   author: {
     id: number;
     username: string;
-    discordAvatar?: string | null;
     fluxerId?: string | null;
     fluxerAvatar?: string | null;
     profilePictureType?: string | null;

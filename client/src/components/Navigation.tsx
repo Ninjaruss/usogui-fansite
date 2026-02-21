@@ -176,14 +176,6 @@ const Navigation: React.FC = () => {
       return user.selectedCharacterMedia.url
     }
 
-    // If user has Discord avatar and either no profile picture type set or discord type
-    if (user.discordId && user.discordAvatar &&
-        (user.profilePictureType === 'discord' || !user.profilePictureType)) {
-      return user.discordAvatar.startsWith('http')
-        ? user.discordAvatar
-        : `https://cdn.discordapp.com/avatars/${user.discordId}/${user.discordAvatar}.png`
-    }
-
     // If user has Fluxer avatar
     if (user.fluxerAvatar &&
         (user.profilePictureType === 'fluxer' || !user.profilePictureType)) {

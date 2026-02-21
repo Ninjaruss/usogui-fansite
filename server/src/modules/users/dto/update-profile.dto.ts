@@ -57,7 +57,7 @@ export class UpdateProfileDto {
   @ApiPropertyOptional({
     description: 'Type of profile picture to use',
     enum: ProfilePictureType,
-    example: ProfilePictureType.DISCORD,
+    example: ProfilePictureType.FLUXER,
   })
   @IsOptional()
   @IsEnum(ProfilePictureType)

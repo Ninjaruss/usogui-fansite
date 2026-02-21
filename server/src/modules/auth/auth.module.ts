@@ -3,13 +3,11 @@ import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
-import { AuthDiscordController } from './auth-discord.controller';
 import { AuthFluxerController } from './auth-fluxer.controller';
 import { AuthLinkController } from './auth-link.controller';
 import { UsersModule } from '../users/users.module';
 import { LocalStrategy } from './strategies/local.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
-import { DiscordStrategy } from './strategies/discord.strategy';
 import { FluxerStrategy } from './strategies/fluxer.strategy';
 import { DevBypassStrategy } from './strategies/dev-bypass.strategy';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -33,12 +31,11 @@ import { EmailModule } from '../email/email.module';
     ConfigModule,
     EmailModule,
   ],
-  controllers: [AuthController, AuthDiscordController, AuthFluxerController, AuthLinkController],
+  controllers: [AuthController, AuthFluxerController, AuthLinkController],
   providers: [
     AuthService,
     LocalStrategy,
     JwtStrategy,
-    DiscordStrategy,
     FluxerStrategy,
     DevBypassStrategy,
   ],

@@ -274,16 +274,12 @@ class ApiClient {
       favoriteQuoteId?: number
       favoriteGambleId?: number
       createdAt?: string
-      // Discord fields
-      discordId?: string | null
-      discordUsername?: string | null
-      discordAvatar?: string | null
       // Fluxer fields
       fluxerId?: string | null
       fluxerUsername?: string | null
       fluxerAvatar?: string | null
       // Profile picture fields
-      profilePictureType?: 'discord' | 'fluxer' | 'character_media' | null
+      profilePictureType?: 'fluxer' | 'character_media' | null
       selectedCharacterMediaId?: number | null
       // Full relation objects
       selectedCharacterMedia?: {
@@ -777,18 +773,10 @@ class ApiClient {
   async updateProfile(data: {
     favoriteQuoteId?: number | null
     favoriteGambleId?: number | null
-    profilePictureType?: 'discord' | 'character_media' | null
+    profilePictureType?: 'fluxer' | 'character_media' | null
     selectedCharacterMediaId?: number | null
   }) {
     return this.patch<any>('/users/profile', data)
-  }
-
-  async refreshDiscordAvatar() {
-    return this.post<any>('/users/profile/refresh-discord-avatar', {})
-  }
-
-  async unlinkDiscord() {
-    return this.delete<{ message: string }>('/auth/link/discord')
   }
 
   async unlinkFluxer() {

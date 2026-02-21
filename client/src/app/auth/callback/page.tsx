@@ -136,7 +136,7 @@ export default function AuthCallback() {
         try {
           const authChannel = new BroadcastChannel('auth_channel')
           authChannel.postMessage({
-            type: 'DISCORD_AUTH_SUCCESS',
+            type: 'OAUTH_AUTH_SUCCESS',
             token: token,
             refreshUser: true
           })
@@ -146,7 +146,7 @@ export default function AuthCallback() {
           console.log('[AUTH CALLBACK] BroadcastChannel failed, trying opener.postMessage')
           if (window.opener) {
             window.opener.postMessage({
-              type: 'DISCORD_AUTH_SUCCESS',
+              type: 'OAUTH_AUTH_SUCCESS',
               token: token,
               refreshUser: true
             }, window.location.origin)

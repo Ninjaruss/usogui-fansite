@@ -38,9 +38,6 @@ export class FandomDataSeeder implements Seeder {
         const newUser = userRepo.create({
           username: 'seed-system',
           email: 'test@example.com',
-          discordId: null,
-          discordUsername: null,
-          discordAvatar: null,
           isEmailVerified: true,
           password: null,
           role: UserRole.USER,
