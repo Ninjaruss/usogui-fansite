@@ -12,7 +12,7 @@ export class FluxerStrategy extends PassportStrategy(Strategy, 'fluxer') {
     private readonly authService: AuthService,
   ) {
     super({
-      authorizationURL: 'https://fluxer.app/oauth2/authorize',
+      authorizationURL: 'https://web.fluxer.app/oauth2/authorize',
       tokenURL: 'https://api.fluxer.app/v1/oauth2/token',
       clientID: configService.get<string>('FLUXER_CLIENT_ID')!,
       clientSecret: configService.get<string>('FLUXER_CLIENT_SECRET')!,
