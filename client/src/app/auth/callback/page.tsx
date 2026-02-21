@@ -49,16 +49,15 @@ export default function AuthCallback() {
               window.opener.postMessage({ type: 'ACCOUNT_LINKED', provider: linked }, window.location.origin)
             }
           }
-          if (window.opener) {
-            setTimeout(() => window.close(), 500)
-          }
+          // Always close the popup — window.opener may be null due to browser policy
+          setTimeout(() => window.close(), 500)
           return
         }
 
         if (error) {
           setStatus('Authentication failed. Redirecting to login...')
           setIsError(true)
-          // If in a popup, signal the opener about the error
+          // If in a popup, signal the opener about the error and close
           if (window.opener) {
             try {
               const authChannel = new BroadcastChannel('auth_channel')
@@ -67,12 +66,15 @@ export default function AuthCallback() {
             } catch {
               window.opener.postMessage({ type: 'ACCOUNT_LINK_ERROR', error }, window.location.origin)
             }
-            setTimeout(() => window.close(), 1500)
-            return
           }
-          setTimeout(() => {
-            window.location.href = '/login?error=' + encodeURIComponent(error)
-          }, 2000)
+          // Close if in a popup; otherwise redirect to login
+          if (window.opener) {
+            setTimeout(() => window.close(), 1500)
+          } else {
+            setTimeout(() => {
+              window.location.href = '/login?error=' + encodeURIComponent(error)
+            }, 2000)
+          }
           return
         }
 
