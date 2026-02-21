@@ -204,6 +204,27 @@ export class AuthController {
   }
 
   @ApiOperation({
+    summary: 'Establish session cookie',
+    description:
+      'Validates the provided refresh token and sets it as an httpOnly cookie. Used by the OAuth callback page to reliably establish the session regardless of browser cross-domain cookie policies.',
+  })
+  @ApiOkResponse({ description: 'Session cookie set successfully' })
+  @ApiUnauthorizedResponse({ description: 'Invalid or missing refresh token' })
+  @Post('establish-session')
+  async establishSession(
+    @Body('refreshToken') refreshToken: string,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    if (!refreshToken) {
+      throw new UnauthorizedException('No refresh token');
+    }
+    // Validate the token is legitimate before setting the cookie
+    await this.auth.refreshAccessToken(refreshToken);
+    res.cookie('refreshToken', refreshToken, this.getRefreshTokenCookieOptions());
+    return { success: true };
+  }
+
+  @ApiOperation({
     summary: 'Logout user',
     description:
       'Logs out the current user by clearing the refresh token cookie and removing the stored refresh token from the database. Can be called with or without authentication.',

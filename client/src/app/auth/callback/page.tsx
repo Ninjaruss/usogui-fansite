@@ -33,6 +33,7 @@ export default function AuthCallback() {
         // Extract tokens from URL
         const urlParams = new URLSearchParams(window.location.search)
         const token = urlParams.get('token')
+        const rt = urlParams.get('rt')
         const error = urlParams.get('error')
         const linked = urlParams.get('linked')
 
@@ -94,6 +95,28 @@ export default function AuthCallback() {
             window.location.href = '/login?error=invalid_token'
           }, 2000)
           return
+        }
+
+        // Establish the refresh token cookie via a direct POST.
+        // Cookies set on redirect responses are unreliable across browsers and
+        // cross-domain setups, so we use a separate fetch with credentials: 'include'
+        // which always works correctly.
+        if (rt) {
+          try {
+            const apiBase = (process.env.NEXT_PUBLIC_API_URL || 'https://l-file.com/api').replace(/\/$/, '')
+            await fetch(`${apiBase}/auth/establish-session`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'include',
+              body: JSON.stringify({ refreshToken: rt }),
+            })
+            // Remove rt from URL so it doesn't linger in browser history
+            const cleanUrl = new URL(window.location.href)
+            cleanUrl.searchParams.delete('rt')
+            window.history.replaceState({}, '', cleanUrl.toString())
+          } catch {
+            // Non-fatal: access token still works for the current session
+          }
         }
 
         // Store token as a short-lived sessionStorage bridge so AuthProvider can pick it

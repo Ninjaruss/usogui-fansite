@@ -111,22 +111,14 @@ export class AuthFluxerController {
         (req.user as User)?.username,
       );
 
-      // Set the refresh token as an httpOnly cookie (same approach as email login)
-      if (loginResult.refresh_token) {
-        const isProduction = process.env.NODE_ENV === 'production';
-        res.cookie('refreshToken', loginResult.refresh_token, {
-          httpOnly: true,
-          secure: isProduction,
-          sameSite: isProduction ? 'none' : 'lax',
-          maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-          path: '/',
-        } as CookieOptions);
-        console.log('[FLUXER CALLBACK] Refresh token cookie set');
-      }
-
-      // Redirect with only the access token — refresh token is now in the cookie
-      const redirectUrl = `${frontendUrl}/auth/callback?token=${loginResult.access_token}`;
-      console.log('[FLUXER CALLBACK] Redirecting to:', redirectUrl);
+      // Pass both tokens in the redirect URL so the frontend can establish the
+      // session via a direct POST (cookies set on redirect responses are
+      // unreliable across browsers and cross-domain setups).
+      const rtParam = loginResult.refresh_token
+        ? `&rt=${encodeURIComponent(loginResult.refresh_token)}`
+        : '';
+      const redirectUrl = `${frontendUrl}/auth/callback?token=${loginResult.access_token}${rtParam}`;
+      console.log('[FLUXER CALLBACK] Redirecting to frontend callback');
       res.redirect(redirectUrl);
     } catch (err: any) {
       console.error('[FLUXER CALLBACK] Unexpected error:', err?.message || err);
