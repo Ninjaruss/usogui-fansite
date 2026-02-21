@@ -165,16 +165,15 @@ export default function AuthCallback() {
 
         setStatus('Authentication successful! Redirecting...')
 
-        // If this is a popup, try to close it and let the opener handle redirect
+        // Notify opener to close the popup (if accessible)
         if (window.opener) {
           window.opener.postMessage({ type: 'CLOSE_AUTH_POPUP' }, window.location.origin)
-          setTimeout(() => {
-            window.close()
-          }, 500)
-          return
         }
 
-        // Redirect to the intended destination after a brief delay
+        // Always attempt to close the popup — window.opener may be null due to browser policy.
+        // The redirect below acts as a fallback: if window.close() succeeds (popup), the page
+        // is gone before the redirect fires; if it fails (regular tab), the redirect runs.
+        setTimeout(() => window.close(), 500)
         setTimeout(() => {
           window.location.href = redirectUrl
         }, 1000)
