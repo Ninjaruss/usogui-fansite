@@ -31,10 +31,12 @@ export enum ProfilePictureType {
   EXCLUSIVE_ARTWORK = 'exclusive_artwork',
   ANIMATED_AVATAR = 'animated_avatar',
   CUSTOM_FRAME = 'custom_frame',
+  FLUXER = 'fluxer',
 }
 
 @Entity()
 @Index(['discordId'])
+@Index(['fluxerId'])
 @Index(['emailVerificationToken']) // Keep for legacy data
 @Index(['passwordResetToken']) // Keep for legacy data
 export class User {
@@ -77,6 +79,28 @@ export class User {
   })
   @Column({ type: 'varchar', nullable: true })
   discordAvatar: string | null;
+
+  // Fluxer-specific fields
+  @ApiProperty({
+    description: "User's Fluxer ID (primary identifier)",
+    example: '123456789012345678',
+  })
+  @Column({ type: 'varchar', unique: true, nullable: true })
+  fluxerId: string | null;
+
+  @ApiProperty({
+    description: "User's Fluxer username",
+    example: 'usogui_fan',
+  })
+  @Column({ type: 'varchar', nullable: true })
+  fluxerUsername: string | null;
+
+  @ApiProperty({
+    description: "User's Fluxer avatar URL",
+    example: 'https://cdn.fluxer.app/avatars/123456789012345678/avatar.png',
+  })
+  @Column({ type: 'varchar', nullable: true })
+  fluxerAvatar: string | null;
 
   // Legacy auth fields (nullable for Discord-only users)
   @Column({ type: 'boolean', default: false })

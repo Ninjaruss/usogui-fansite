@@ -74,6 +74,52 @@ export class AuthService {
     return user;
   }
 
+  async validateFluxerUser(profile: any): Promise<User> {
+    const {
+      id: fluxerId,
+      username: fluxerUsername,
+      avatar,
+      email,
+      global_name: displayName,
+    } = profile;
+
+    // Check if user already exists
+    let user = await this.usersService.findByFluxerId(fluxerId);
+
+    if (!user) {
+      // Auto-register new Fluxer user
+      const avatarUrl = avatar
+        ? `https://cdn.fluxer.app/avatars/${fluxerId}/${avatar}.png`
+        : null;
+
+      // Check if admin Fluxer ID
+      const adminFluxerId = this.configService.get<string>('ADMIN_FLUXER_ID');
+      const isAdmin = adminFluxerId && fluxerId === adminFluxerId;
+
+      // Use Fluxer display name if available, fall back to username
+      const siteUsername = (displayName || fluxerUsername).replace('#', '_');
+
+      user = await this.usersService.createFluxerUser({
+        fluxerId,
+        fluxerUsername,
+        fluxerAvatar: avatarUrl,
+        username: siteUsername,
+        email: email || null,
+        role: isAdmin ? UserRole.ADMIN : UserRole.USER,
+      });
+    } else {
+      // Update existing user's Fluxer info
+      await this.usersService.updateFluxerInfo(user.id, {
+        fluxerUsername,
+        fluxerAvatar: avatar
+          ? `https://cdn.fluxer.app/avatars/${fluxerId}/${avatar}.png`
+          : null,
+      });
+    }
+
+    return user;
+  }
+
   // --- Development Bypass ---
   async validateDevBypass(asAdmin: boolean = false): Promise<User> {
     const nodeEnv = this.configService.get<string>('NODE_ENV');
@@ -179,6 +225,9 @@ export class AuthService {
         discordId: user.discordId,
         discordUsername: user.discordUsername,
         discordAvatar: user.discordAvatar,
+        fluxerId: user.fluxerId,
+        fluxerUsername: user.fluxerUsername,
+        fluxerAvatar: user.fluxerAvatar,
       },
     };
   }
@@ -204,6 +253,9 @@ export class AuthService {
         discordId: user.discordId,
         discordUsername: user.discordUsername,
         discordAvatar: user.discordAvatar,
+        fluxerId: user.fluxerId,
+        fluxerUsername: user.fluxerUsername,
+        fluxerAvatar: user.fluxerAvatar,
       },
     };
   }

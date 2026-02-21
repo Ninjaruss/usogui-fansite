@@ -162,7 +162,7 @@ export default function AuthCallback() {
   return (
     <div className="min-h-screen flex items-center justify-center">
       <div className="text-center max-w-md">
-        <h1 className="text-2xl font-bold mb-4">Discord Authentication</h1>
+        <h1 className="text-2xl font-bold mb-4">Authentication</h1>
         <p className={`mb-4 ${isError ? 'text-red-400' : 'text-gray-300'}`}>{status}</p>
         <div className="mt-4 animate-spin inline-block w-6 h-6 border-[3px] border-current border-t-transparent text-blue-400 rounded-full mb-4"></div>
         <p className="text-sm text-gray-400">

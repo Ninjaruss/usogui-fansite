@@ -270,6 +270,10 @@ export class UsersService {
     return this.repo.findOne({ where: { discordId } });
   }
 
+  async findByFluxerId(fluxerId: string): Promise<User | null> {
+    return this.repo.findOne({ where: { fluxerId } });
+  }
+
   async findByEmail(email: string): Promise<User | null> {
     return this.repo.findOne({ where: { email } });
   }
@@ -334,6 +338,36 @@ export class UsersService {
       role: data.role || UserRole.USER,
       isEmailVerified: true, // Discord users are considered verified
       password: null, // No password for Discord users
+    });
+
+    return this.repo.save(user);
+  }
+
+  async createFluxerUser(data: {
+    fluxerId: string;
+    fluxerUsername: string;
+    fluxerAvatar: string | null;
+    username: string;
+    email: string | null;
+    role?: UserRole;
+  }): Promise<User> {
+    // Ensure unique username by appending number if needed
+    let finalUsername = data.username;
+    let counter = 1;
+    while (await this.findByUsername(finalUsername)) {
+      finalUsername = `${data.username}_${counter}`;
+      counter++;
+    }
+
+    const user = this.repo.create({
+      fluxerId: data.fluxerId,
+      fluxerUsername: data.fluxerUsername,
+      fluxerAvatar: data.fluxerAvatar,
+      username: finalUsername,
+      email: data.email,
+      role: data.role || UserRole.USER,
+      isEmailVerified: true, // Fluxer users are considered verified
+      password: null, // No password for Fluxer users
     });
 
     return this.repo.save(user);
@@ -416,6 +450,19 @@ export class UsersService {
     await this.repo.update(userId, {
       discordUsername: data.discordUsername,
       discordAvatar: data.discordAvatar,
+    });
+  }
+
+  async updateFluxerInfo(
+    userId: number,
+    data: {
+      fluxerUsername: string;
+      fluxerAvatar: string | null;
+    },
+  ): Promise<void> {
+    await this.repo.update(userId, {
+      fluxerUsername: data.fluxerUsername,
+      fluxerAvatar: data.fluxerAvatar,
     });
   }
 

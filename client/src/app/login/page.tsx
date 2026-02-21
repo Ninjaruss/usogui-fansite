@@ -35,10 +35,15 @@ function LoginContent() {
   }, [searchParams])
 
   const handleDiscordLogin = () => {
-    // Clear any previous error when attempting login
     setErrorMessage(null)
     setIsRedirecting(true)
     window.location.href = `${API_BASE_URL}/auth/discord`
+  }
+
+  const handleFluxerLogin = () => {
+    setErrorMessage(null)
+    setIsRedirecting(true)
+    window.location.href = `${API_BASE_URL}/auth/fluxer`
   }
 
   return (
@@ -48,7 +53,7 @@ function LoginContent() {
           <Stack align="center" gap="xs">
             <Title order={2}>Welcome Back</Title>
             <Text size="sm" c="dimmed">
-              Log in with Discord to manage your Usogui experience
+              Log in to manage your Usogui experience
             </Text>
           </Stack>
 
@@ -83,20 +88,28 @@ function LoginContent() {
             {isRedirecting ? 'Redirecting to Discord...' : 'Continue with Discord'}
           </Button>
 
+          <Button
+            onClick={handleFluxerLogin}
+            color="violet"
+            fullWidth
+            size="md"
+            loading={isRedirecting}
+            disabled={isRedirecting}
+            aria-busy={isRedirecting}
+            aria-label={isRedirecting ? 'Redirecting to Fluxer...' : 'Continue with Fluxer'}
+            leftSection={
+              !isRedirecting && (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                </svg>
+              )
+            }
+          >
+            {isRedirecting ? 'Redirecting to Fluxer...' : 'Continue with Fluxer'}
+          </Button>
+
           <Text size="xs" c="dimmed" ta="center" style={{ lineHeight: 1.5 }}>
-            We use Discord for secure authentication. We only access your username and avatar.
-            Don&apos;t have Discord?{' '}
-            <Text
-              component="a"
-              href="https://discord.com/register"
-              target="_blank"
-              rel="noopener noreferrer"
-              size="xs"
-              c="indigo"
-              style={{ textDecoration: 'underline' }}
-            >
-              Create a free account
-            </Text>
+            We use Discord or Fluxer for secure authentication. We only access your username and avatar.
           </Text>
         </Stack>
       </Card>

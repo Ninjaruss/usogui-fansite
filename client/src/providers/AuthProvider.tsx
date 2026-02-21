@@ -43,6 +43,7 @@ interface AuthContextType {
   user: User | null
   loading: boolean
   loginWithDiscord: () => void
+  loginWithFluxer: () => void
   devLogin: (asAdmin?: boolean) => Promise<void>
   logout: () => Promise<void>
   refreshUser: () => Promise<void>
@@ -403,16 +404,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const loginWithDiscord = () => {
     // Open in popup window instead of new tab for better communication
     const popup = window.open(
-      `${API_BASE_URL}/auth/discord`, 
+      `${API_BASE_URL}/auth/discord`,
       'discord-login',
       'width=500,height=600,scrollbars=yes,resizable=yes'
     )
-    
+
     // Focus the popup window
     if (popup) {
       popup.focus()
-      
+
       // Store popup reference for later closing
+      window.authPopup = popup
+    }
+  }
+
+  const loginWithFluxer = () => {
+    const popup = window.open(
+      `${API_BASE_URL}/auth/fluxer`,
+      'fluxer-login',
+      'width=500,height=600,scrollbars=yes,resizable=yes'
+    )
+
+    if (popup) {
+      popup.focus()
       window.authPopup = popup
     }
   }
@@ -531,6 +545,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     user,
     loading,
     loginWithDiscord,
+    loginWithFluxer,
     devLogin,
     logout,
     refreshUser,
