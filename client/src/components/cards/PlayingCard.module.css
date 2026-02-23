@@ -1,0 +1,12 @@
+.name {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  transition: all 200ms ease;
+}
+
+.card:hover .name {
+  -webkit-line-clamp: unset;
+  overflow: visible;
+}

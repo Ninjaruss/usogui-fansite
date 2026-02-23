@@ -232,6 +232,7 @@ export default function MediaThumbnail({
   const [error, setError] = useState<string | null>(null)
   const [retryCount, setRetryCount] = useState(0)
   const [resolvedMediaInfo, setResolvedMediaInfo] = useState<Record<string, any>>({})
+  const resolvedUrlsRef = useRef<Set<string>>(new Set())
   const abortControllerRef = useRef<AbortController | null>(null)
 
   const { userProgress } = useProgress()
@@ -433,26 +434,28 @@ export default function MediaThumbnail({
   useEffect(() => {
     if (!currentThumbnail) return
 
-    const resolveMediaUrl = async () => {
-      // Skip if already resolved
-      if (resolvedMediaInfo[currentThumbnail.url]) return
+    const url = currentThumbnail.url
+    // Use a ref for the "already resolved" guard to avoid adding resolvedMediaInfo to deps
+    if (resolvedUrlsRef.current.has(url)) return
+    resolvedUrlsRef.current.add(url)
 
+    const resolveMediaUrl = async () => {
       try {
-        const mediaInfo = await analyzeMediaUrlAsync(currentThumbnail.url)
+        const mediaInfo = await analyzeMediaUrlAsync(url)
 
         if (mediaInfo.directImageUrl || mediaInfo.thumbnailUrl) {
           setResolvedMediaInfo(prev => ({
             ...prev,
-            [currentThumbnail.url]: mediaInfo
+            [url]: mediaInfo
           }))
         }
       } catch (error) {
-        console.warn('Failed to resolve media URL:', currentThumbnail.url, error)
+        console.warn('Failed to resolve media URL:', url, error)
       }
     }
 
     resolveMediaUrl()
-  }, [currentThumbnail, resolvedMediaInfo])
+  }, [currentThumbnail])
 
   const handlePrevious = () => {
     if (allEntityMedia.length > 1) {
