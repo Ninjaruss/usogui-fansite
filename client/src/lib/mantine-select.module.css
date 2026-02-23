@@ -1,0 +1,37 @@
+.input:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(225, 29, 72, 0.4);
+}
+
+.input:focus {
+  border-color: #e11d48;
+  box-shadow: 0 0 0 0.125rem rgba(225, 29, 72, 0.2);
+}
+
+/* Hover and keyboard navigation (active state) */
+.option:hover,
+.option[data-combobox-active="true"] {
+  background-color: rgba(225, 29, 72, 0.15);
+  color: #ffffff;
+}
+
+/* Selected option (currently chosen value) */
+.option[data-combobox-selected="true"],
+.option[data-selected="true"] {
+  background-color: rgba(225, 29, 72, 0.25);
+  color: #ffffff;
+  font-weight: 600;
+}
+
+/* Keyboard focus for accessibility */
+.option[aria-selected="true"] {
+  background-color: rgba(225, 29, 72, 0.2);
+  color: #ffffff;
+}
+
+/* Disabled state */
+.option[data-disabled="true"] {
+  color: rgba(255, 255, 255, 0.3);
+  cursor: not-allowed;
+  background-color: transparent;
+}

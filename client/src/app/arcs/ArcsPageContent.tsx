@@ -29,9 +29,6 @@ import { api } from '../../lib/api'
 import { useAuth } from '../../providers/AuthProvider'
 import { useHoverModal } from '../../hooks/useHoverModal'
 import { HoverModal } from '../../components/HoverModal'
-import { useProgress } from '../../providers/ProgressProvider'
-import { useSpoilerSettings } from '../../hooks/useSpoilerSettings'
-import { shouldHideSpoiler } from '../../lib/spoiler-utils'
 import { ListPageLayout } from '../../components/layouts/ListPageLayout'
 import { PlayingCard } from '../../components/cards/PlayingCard'
 
@@ -79,8 +76,6 @@ export default function ArcsPageContent({
   const theme = useMantineTheme()
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { userProgress } = useProgress()
-  const { settings: spoilerSettings } = useSpoilerSettings()
 
   const accentArc = theme.other?.usogui?.arc ?? theme.colors.pink?.[5] ?? '#dc004e'
 
@@ -102,7 +97,6 @@ export default function ArcsPageContent({
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
 
   // Track revealed spoilers
-  const [revealedArcs, setRevealedArcs] = useState<Set<number>>(new Set())
   const currentlyHoveredRef = useRef<{ arc: Arc; element: HTMLElement } | null>(null)
 
   // Hover modal
@@ -315,13 +309,9 @@ export default function ArcsPageContent({
 
     const handleCardClick = (e: React.MouseEvent) => {
       if (isTouchDevice) {
-        const isSpoilered = shouldHideSpoiler(arc.startChapter, userProgress, spoilerSettings)
-        const hasBeenRevealed = revealedArcs.has(arc.id)
-        if (!isSpoilered || hasBeenRevealed) {
-          if (hoveredArc?.id !== arc.id) {
-            e.preventDefault()
-            handleArcTap(arc, e)
-          }
+        if (hoveredArc?.id !== arc.id) {
+          e.preventDefault()
+          handleArcTap(arc, e)
         }
       }
     }
@@ -337,23 +327,12 @@ export default function ArcsPageContent({
           canEdit={canEditContent}
           onEditClick={() => handleEditImage(arc)}
           spoilerChapter={arc.startChapter}
-          onSpoilerRevealed={() => {
-            setRevealedArcs(prev => new Set(prev).add(arc.id))
-            if (currentlyHoveredRef.current?.arc.id === arc.id) {
-              const element = currentlyHoveredRef.current.element
-              const syntheticEvent = { currentTarget: element, target: element } as unknown as React.MouseEvent
-              handleArcMouseEnter(currentlyHoveredRef.current.arc, syntheticEvent)
-            }
-          }}
+          onSpoilerRevealed={() => {}}
           onClick={handleCardClick}
           onMouseEnter={(e) => {
             if (!isTouchDevice) {
               currentlyHoveredRef.current = { arc, element: e.currentTarget as HTMLElement }
-              const isSpoilered = shouldHideSpoiler(arc.startChapter, userProgress, spoilerSettings)
-              const hasBeenRevealed = revealedArcs.has(arc.id)
-              if (!isSpoilered || hasBeenRevealed) {
-                handleArcMouseEnter(arc, e)
-              }
+              handleArcMouseEnter(arc, e)
             }
           }}
           onMouseLeave={() => {
@@ -402,11 +381,7 @@ export default function ArcsPageContent({
                   className="hoverable-card"
                   onMouseEnter={(e) => {
                     currentlyHoveredRef.current = { arc: child, element: e.currentTarget as HTMLElement }
-                    const isSpoilered = shouldHideSpoiler(child.startChapter, userProgress, spoilerSettings)
-                    const hasBeenRevealed = revealedArcs.has(child.id)
-                    if (!isSpoilered || hasBeenRevealed) {
-                      handleArcMouseEnter(child, e)
-                    }
+                    handleArcMouseEnter(child, e)
                   }}
                   onMouseLeave={() => {
                     currentlyHoveredRef.current = null
@@ -432,7 +407,7 @@ export default function ArcsPageContent({
         )}
       </Stack>
     )
-  }, [isTouchDevice, hoveredArc, canEditContent, accentArc, userProgress, spoilerSettings, revealedArcs, handleArcMouseEnter, handleArcMouseLeave, handleArcTap])
+  }, [isTouchDevice, hoveredArc, canEditContent, accentArc, handleArcMouseEnter, handleArcMouseLeave, handleArcTap])
 
   // Character filter badge
   const activeFilterBadges = characterFilter ? (

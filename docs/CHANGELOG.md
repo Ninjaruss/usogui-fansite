@@ -1,6 +1,7 @@
 # Changelog and notes
 
 ## TODO
+- Public page component overhaul
 
 ## 2026-02-21
 - Discord removal; option to create an account via email

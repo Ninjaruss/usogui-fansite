@@ -4,6 +4,7 @@ import React from 'react'
 import { Box, Group, Pagination, Text, rem, useMantineTheme } from '@mantine/core'
 import type { EntityAccentKey } from '../../lib/mantine-theme'
 import { getEntityThemeColor } from '../../lib/mantine-theme'
+import classes from './PaginationBar.module.css'
 
 interface PaginationBarProps {
   /** Current page (1-indexed) */
@@ -68,23 +69,20 @@ export function PaginationBar({
           onChange={handlePageChange}
           radius="xl"
           size="md"
+          classNames={{ control: classes.control }}
           styles={{
+            root: {
+              '--pagination-accent': accentColor,
+              '--pagination-accent-hover-bg': `${accentColor}20`,
+              '--pagination-accent-hover-border': `${accentColor}40`
+            } as React.CSSProperties,
             control: {
               border: '1px solid rgba(255, 255, 255, 0.1)',
               backgroundColor: 'rgba(255, 255, 255, 0.04)',
               color: '#ffffff',
               transition: 'all 200ms ease',
               minWidth: rem(36),
-              height: rem(36),
-              '&:hover': {
-                backgroundColor: `${accentColor}20`,
-                borderColor: `${accentColor}40`
-              },
-              '&[data-active]': {
-                backgroundColor: accentColor,
-                borderColor: accentColor,
-                color: '#ffffff'
-              }
+              height: rem(36)
             },
             dots: {
               color: 'rgba(255, 255, 255, 0.3)'

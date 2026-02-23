@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { Card, Box, Badge, Text, ActionIcon, rem, useMantineTheme } from '@mantine/core'
+import { Card, Box, Badge, Text, ActionIcon, Tooltip, rem, useMantineTheme } from '@mantine/core'
 import Link from 'next/link'
 import { Camera } from 'lucide-react'
 import { getPlayingCardStyles, getEntityThemeColor, type EntityAccentKey } from '../../lib/mantine-theme'
@@ -203,26 +203,28 @@ export function PlayingCard({
           }}
         />
 
-        <Text
-          size="sm"
-          fw={700}
-          lineClamp={2}
-          ta="center"
-          style={{
-            position: 'relative',
-            lineHeight: 1.3,
-            fontSize: rem(15),
-            color: '#ffffff',
-            textShadow: '0 1px 3px rgba(0,0,0,0.8)',
-            background: `linear-gradient(135deg, ${accentColor}dd, ${accentColor}aa)`,
-            backdropFilter: 'blur(4px)',
-            borderRadius: rem(6),
-            padding: `${rem(6)} ${rem(10)}`,
-            border: `1px solid ${accentColor}40`
-          }}
-        >
-          {name}
-        </Text>
+        <Tooltip label={name} position="bottom" withArrow multiline maw={300} disabled={name.length < 25}>
+          <Text
+            size="sm"
+            fw={700}
+            lineClamp={2}
+            ta="center"
+            style={{
+              position: 'relative',
+              lineHeight: 1.3,
+              fontSize: rem(15),
+              color: '#ffffff',
+              textShadow: '0 1px 3px rgba(0,0,0,0.8)',
+              background: `linear-gradient(135deg, ${accentColor}dd, ${accentColor}aa)`,
+              backdropFilter: 'blur(4px)',
+              borderRadius: rem(6),
+              padding: `${rem(6)} ${rem(10)}`,
+              border: `1px solid ${accentColor}40`
+            }}
+          >
+            {name}
+          </Text>
+        </Tooltip>
 
         {/* Subtitle or touch hint */}
         {subtitle || (isTouchDevice && !isHovered && (

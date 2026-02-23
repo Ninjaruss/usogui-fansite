@@ -1,4 +1,5 @@
 import { MantineThemeOverride, createTheme, rem, MantineTheme } from '@mantine/core'
+import selectClasses from './mantine-select.module.css'
 
 // Entity-specific colors - Vibrant yet WCAG AA compliant for dark backgrounds
 export const colors = {
@@ -328,20 +329,16 @@ export const mantineTheme: MantineThemeOverride = {
     },
 
     Select: {
+      classNames: {
+        input: selectClasses.input,
+        option: selectClasses.option
+      },
       styles: () => ({
         input: {
           backgroundColor: 'rgba(255, 255, 255, 0.06)',
           border: `1px solid rgba(255, 255, 255, 0.15)`,
           color: '#ffffff',
-          transition: 'border-color 150ms ease, background-color 150ms ease, box-shadow 150ms ease',
-          '&:hover': {
-            backgroundColor: 'rgba(255, 255, 255, 0.1)',
-            borderColor: 'rgba(225, 29, 72, 0.4)'
-          },
-          '&:focus': {
-            borderColor: '#e11d48',
-            boxShadow: `0 0 0 ${rem(2)} rgba(225, 29, 72, 0.2)`
-          }
+          transition: 'border-color 150ms ease, background-color 150ms ease, box-shadow 150ms ease'
         },
         label: {
           color: 'rgba(255, 255, 255, 0.75)', // 4.6:1 contrast - WCAG AA compliant
@@ -355,33 +352,7 @@ export const mantineTheme: MantineThemeOverride = {
         option: {
           color: '#ffffff',
           backgroundColor: 'transparent',
-          padding: `${rem(8)} ${rem(12)}`,
-
-          // Hover and keyboard navigation (active state)
-          '&:hover, &[data-combobox-active="true"]': {
-            backgroundColor: 'rgba(225, 29, 72, 0.15)',
-            color: '#ffffff'
-          },
-
-          // Selected option (currently chosen value)
-          '&[data-combobox-selected="true"], &[data-selected="true"]': {
-            backgroundColor: 'rgba(225, 29, 72, 0.25)',
-            color: '#ffffff',
-            fontWeight: 600
-          },
-
-          // Keyboard focus for accessibility
-          '&[aria-selected="true"]': {
-            backgroundColor: 'rgba(225, 29, 72, 0.2)',
-            color: '#ffffff'
-          },
-
-          // Disabled state
-          '&[data-disabled="true"]': {
-            color: 'rgba(255, 255, 255, 0.3)',
-            cursor: 'not-allowed',
-            backgroundColor: 'transparent'
-          }
+          padding: `${rem(8)} ${rem(12)}`
         }
       }),
     },

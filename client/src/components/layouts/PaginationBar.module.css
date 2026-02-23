@@ -1,0 +1,10 @@
+.control:hover {
+  background-color: var(--pagination-accent-hover-bg);
+  border-color: var(--pagination-accent-hover-border);
+}
+
+.control[data-active] {
+  background-color: var(--pagination-accent);
+  border-color: var(--pagination-accent);
+  color: #ffffff;
+}
