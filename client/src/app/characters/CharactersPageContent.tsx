@@ -4,23 +4,17 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   ActionIcon,
   Badge,
-  Button,
-  FileInput,
   Group,
-  Modal,
   Select,
   Text,
-  TextInput,
   Title,
   rem,
   useMantineTheme
 } from '@mantine/core'
-import { notifications } from '@mantine/notifications'
 import { useDebouncedValue } from '@mantine/hooks'
 import { getEntityThemeColor } from '../../lib/mantine-theme'
 import { Building2, User, X } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useAuth } from '../../providers/AuthProvider'
 import { api } from '../../lib/api'
 import { useHoverModal } from '../../hooks/useHoverModal'
 import { HoverModal } from '../../components/HoverModal'
@@ -89,12 +83,6 @@ export default function CharactersPageContent({
   const [totalPages, setTotalPages] = useState(initialTotalPages)
   const [total, setTotal] = useState(initialTotal)
 
-  const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null)
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const [uploading, setUploading] = useState(false)
-  const [imageDialogOpen, setImageDialogOpen] = useState(false)
-  const [imageDisplayName, setImageDisplayName] = useState('')
-  const { canEditContent } = useAuth()
   const { userProgress } = useProgress()
   const { settings: spoilerSettings } = useSpoilerSettings()
 
@@ -280,61 +268,6 @@ export default function CharactersPageContent({
     updateURL(1, searchQuery, newSort)
   }
 
-  // Image upload handlers
-  const handleEditImage = (character: Character) => {
-    setSelectedCharacter(character)
-    setImageDisplayName(character.imageDisplayName || '')
-    setImageDialogOpen(true)
-  }
-
-  const handleUploadImage = async () => {
-    if (!selectedFile || !selectedCharacter) return
-    setUploading(true)
-    try {
-      const formData = new FormData()
-      formData.append('file', selectedFile)
-      formData.append('entityType', 'character')
-      formData.append('entityId', selectedCharacter.id.toString())
-      if (imageDisplayName) {
-        formData.append('displayName', imageDisplayName)
-      }
-      const response = await api.post('/media', formData) as Response
-      if (!response.ok) throw new Error('Upload failed')
-      notifications.show({ title: 'Success', message: 'Image uploaded successfully', color: 'green' })
-      handleCloseImageDialog()
-      loadCharacters(currentPage, searchQuery, sortBy)
-    } catch (error) {
-      console.error('Upload error:', error)
-      notifications.show({ title: 'Error', message: 'Failed to upload image', color: 'red' })
-    } finally {
-      setUploading(false)
-    }
-  }
-
-  const handleRemoveImage = async () => {
-    if (!selectedCharacter?.imageFileName) return
-    setUploading(true)
-    try {
-      const response = await api.delete(`/media/character/${selectedCharacter.imageFileName}`) as Response
-      if (!response.ok) throw new Error('Failed to remove image')
-      notifications.show({ title: 'Success', message: 'Image removed successfully', color: 'green' })
-      handleCloseImageDialog()
-      loadCharacters(currentPage, searchQuery, sortBy)
-    } catch (error) {
-      console.error('Error removing image:', error)
-      notifications.show({ title: 'Error', message: 'Failed to remove image', color: 'red' })
-    } finally {
-      setUploading(false)
-    }
-  }
-
-  const handleCloseImageDialog = () => {
-    setSelectedCharacter(null)
-    setSelectedFile(null)
-    setImageDisplayName('')
-    setImageDialogOpen(false)
-  }
-
   // Card render function (entity-specific)
   const renderCharacterCard = useCallback((character: Character) => {
     const handleCardClick = (e: React.MouseEvent) => {
@@ -373,8 +306,6 @@ export default function CharactersPageContent({
         entityId={character.id}
         name={character.name}
         chapterBadge={character.firstAppearanceChapter ? `Ch. ${character.firstAppearanceChapter}` : undefined}
-        canEdit={canEditContent}
-        onEditClick={() => handleEditImage(character)}
         onClick={handleCardClick}
         onMouseEnter={handleCardMouseEnter}
         onMouseLeave={handleCardMouseLeave}
@@ -396,7 +327,7 @@ export default function CharactersPageContent({
     )
   }, [
     isTouchDevice, hoveredCharacter, userProgress, spoilerSettings,
-    revealedCharacters, canEditContent, handleCharacterMouseEnter,
+    revealedCharacters, handleCharacterMouseEnter,
     handleCharacterMouseLeave, handleCharacterTap
   ])
 
@@ -601,58 +532,6 @@ export default function CharactersPageContent({
         afterContent={<ScrollToTop accentColor={accentCharacter} />}
       />
 
-      {/* Image Upload Modal */}
-      <Modal
-        opened={imageDialogOpen}
-        onClose={handleCloseImageDialog}
-        title="Edit Character Image"
-        size="md"
-      >
-        <div className="space-y-4">
-          {selectedCharacter && (
-            <>
-              <Text size="lg" fw={500}>{selectedCharacter.name}</Text>
-              <TextInput
-                label="Display Name (optional)"
-                value={imageDisplayName}
-                onChange={(e) => setImageDisplayName(e.currentTarget.value)}
-                placeholder="Enter display name for the image"
-              />
-              <div>
-                <Text size="sm" mb={8}>Select Image File:</Text>
-                <FileInput
-                  placeholder="Choose image file"
-                  accept="image/*"
-                  onChange={(file) => setSelectedFile(file)}
-                />
-              </div>
-              <div className="flex gap-2 pt-4">
-                <Button
-                  onClick={handleUploadImage}
-                  disabled={!selectedFile || uploading}
-                  loading={uploading}
-                  c={accentCharacter}
-                  flex={1}
-                >
-                  Upload
-                </Button>
-                {selectedCharacter.imageFileName && (
-                  <Button
-                    onClick={handleRemoveImage}
-                    disabled={uploading}
-                    loading={uploading}
-                    color="red"
-                    variant="outline"
-                    flex={1}
-                  >
-                    Remove Current
-                  </Button>
-                )}
-              </div>
-            </>
-          )}
-        </div>
-      </Modal>
     </>
   )
 }
