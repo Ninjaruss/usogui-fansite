@@ -174,15 +174,13 @@ export const AdminMenu = () => {
       <Divider sx={{ my: 1 }} />
 
       {/* User Management Section - Admin Only */}
+      {permissions === 'admin' && <SectionHeader>User Management</SectionHeader>}
       {permissions === 'admin' && (
-        <>
-          <SectionHeader>User Management</SectionHeader>
-          <MenuItemLink
-            to="/users"
-            primaryText="Users"
-            leftIcon={<Users size={20} />}
-          />
-        </>
+        <MenuItemLink
+          to="/users"
+          primaryText="Users"
+          leftIcon={<Users size={20} />}
+        />
       )}
     </Menu>
   )

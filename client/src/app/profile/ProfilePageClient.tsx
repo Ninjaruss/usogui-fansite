@@ -1039,18 +1039,7 @@ export default function ProfilePageClient() {
                   onChange={(value) => value && setActiveContentTab(value as ContentTab)}
                   variant="outline"
                   keepMounted={false}
-                  styles={{
-                    tab: {
-                      transition: 'all 0.2s ease',
-                      '&:hover': {
-                        backgroundColor: 'var(--mantine-color-dark-6)',
-                      },
-                      '&[data-active]': {
-                        borderColor: getEntityThemeColor(theme, 'guide'),
-                        color: getEntityThemeColor(theme, 'guide'),
-                      },
-                    },
-                  }}
+                  color={getEntityThemeColor(theme, 'guide')}
                 >
                   <Tabs.List style={{ overflowX: 'auto', flexWrap: 'nowrap', gap: '4px' }}>
                     <Tabs.Tab

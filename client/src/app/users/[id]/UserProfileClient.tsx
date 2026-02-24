@@ -556,6 +556,7 @@ export default function UserProfileClient({ initialUser }: UserProfileClientProp
                   { label: 'Events', value: 'event' },
                   { label: 'Annotations', value: 'annotation' },
                 ]}
+                color={guideColor}
                 styles={{
                   root: {
                     backgroundColor: getAlphaColor(accentColor, 0.15),
@@ -566,9 +567,6 @@ export default function UserProfileClient({ initialUser }: UserProfileClientProp
                   },
                   label: {
                     color: textColors.secondary,
-                    '&[data-active]': {
-                      color: '#ffffff',
-                    },
                   },
                 }}
               />

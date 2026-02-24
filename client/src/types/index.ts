@@ -268,6 +268,9 @@ export interface Media {
   width?: number;
   height?: number;
   usageType?: 'character_image' | 'guide_image' | 'gallery_upload';
+  status?: 'pending' | 'approved' | 'rejected';
+  purpose?: 'entity_display' | 'gallery';
+  rejectionReason?: string | null;
   character?: {
     id: number;
     name: string;
