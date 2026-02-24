@@ -13,7 +13,7 @@ A comprehensive fansite dedicated to the Usogui manga series. The platform enabl
 ### Tech Stack
 - **Frontend**: Next.js 15, React 19, TypeScript, Tailwind CSS 4, Mantine, React Admin
 - **Backend**: NestJS, TypeORM, PostgreSQL, JWT authentication, Swagger
-- **Authentication**: Discord OAuth integration with JWT tokens
+- **Authentication**: Fluxer OAuth2 integration with JWT tokens
 - **Storage**: Backblaze B2 for media uploads
 - **Database**: PostgreSQL with comprehensive manga content schema
 

@@ -270,19 +270,19 @@ export default function ProfilePictureSelector({
       },
     ];
 
-    // Premium character media (for supporters)
+    // Exclusive artwork (for supporters)
     if (hasActiveBadge(BadgeType.SUPPORTER) || hasActiveBadge(BadgeType.ACTIVE_SUPPORTER) || hasActiveBadge(BadgeType.SPONSOR)) {
       options.push({
-        type: 'premium_character_media',
-        label: 'Premium Character Media',
-        description: 'Exclusive high-quality character images',
+        type: 'exclusive_artwork',
+        label: 'Exclusive Artwork',
+        description: 'Exclusive supporter artwork',
         requiredBadge: BadgeType.SUPPORTER,
       });
     } else {
       options.push({
-        type: 'premium_character_media',
-        label: 'Premium Character Media',
-        description: 'Exclusive high-quality character images (Supporters only)',
+        type: 'exclusive_artwork',
+        label: 'Exclusive Artwork',
+        description: 'Exclusive supporter artwork (Supporters only)',
         requiredBadge: BadgeType.SUPPORTER,
         disabled: true,
         disabledReason: 'Requires Supporter badge',

@@ -9,14 +9,7 @@ interface UserProfileImageProps {
   user: {
     id: number
     username: string
-    profilePictureType?:
-      | 'fluxer'
-      | 'character_media'
-      | 'premium_character_media'
-      | 'animated_avatar'
-      | 'custom_frame'
-      | 'exclusive_artwork'
-      | null
+    profilePictureType?: 'fluxer' | 'character_media' | 'exclusive_artwork' | null
     selectedCharacterMediaId?: number | null
     selectedCharacterMedia?: {
       id: number

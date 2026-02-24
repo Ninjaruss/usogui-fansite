@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsString, IsEnum, IsNumber, Min } from 'class-validator';
+import { IsOptional, IsString, IsEnum, IsNumber, Min, Max } from 'class-validator';
 import { Type } from 'class-transformer';
 import { GuideStatus } from '../../../entities/guide.entity';
 
@@ -97,11 +97,13 @@ export class GuideQueryDto {
     description: 'Number of items per page',
     example: 20,
     minimum: 1,
+    maximum: 100,
     default: 20,
   })
   @IsOptional()
   @Type(() => Number)
   @IsNumber()
   @Min(1)
+  @Max(100)
   limit?: number;
 }

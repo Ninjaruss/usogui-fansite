@@ -2,6 +2,18 @@
 
 ## TODO
 
+## 2026-02-24
+- Final quality pass: bug fixes, security hardening, and documentation updates
+- Fixed arc filter query in characters service (broken TypeORM join on non-existent `characterArcs` relationship — replaced with correlated EXISTS subquery through events)
+- Trimmed `ProfilePictureType` to 3 values: `fluxer`, `character_media`, `exclusive_artwork` (removed unused `premium_character_media`, `animated_avatar`, `custom_frame`)
+- DB migration added to reset any users with stale profile picture types to `fluxer`
+- Updated ProfilePictureSelector: "Premium Character Media" option renamed to "Exclusive Artwork" (`exclusive_artwork`)
+- Tightened Ko-fi webhook verification: now rejects requests when `KOFI_WEBHOOK_TOKEN` env var is not configured
+- Added `@Max(100)` pagination limit to `GuideQueryDto` (other DTOs already enforced via `PaginationDto`)
+- Deleted orphaned `build-fix-script.js` (not referenced in any build scripts)
+- Updated all documentation (CLAUDE.md files, README.md) to reflect Fluxer OAuth2 instead of Discord
+- Added `NODE_ENV` documentation to `client/.env.example`
+
 ## 2026-02-23
 - Public page component overhaul
 - Additional error pages for each detail page; SEO meta data to update when on specific pages

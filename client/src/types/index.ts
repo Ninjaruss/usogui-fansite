@@ -1,3 +1,9 @@
+export type ProfilePictureType =
+  | 'fluxer'
+  | 'character_media'
+  | 'exclusive_artwork'
+  | null;
+
 export interface User {
   id: number;
   username: string;

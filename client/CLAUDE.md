@@ -102,7 +102,7 @@ client/
 
 Communicates with NestJS backend at `http://localhost:3001/api`:
 
-- **Authentication**: Login, logout, registration, Discord OAuth
+- **Authentication**: Login, logout, registration, Fluxer OAuth2
 - **Content APIs**: Characters, arcs, guides, media, gambles, etc.
 - **User Management**: Profiles, preferences, submissions
 - **Admin APIs**: Full CRUD operations for all entities

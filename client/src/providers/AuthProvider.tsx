@@ -27,7 +27,7 @@ interface User {
   fluxerUsername?: string | null
   fluxerAvatar?: string | null
   // Profile picture fields
-  profilePictureType?: 'fluxer' | 'character_media' | 'premium_character_media' | 'animated_avatar' | 'custom_frame' | 'exclusive_artwork' | null
+  profilePictureType?: 'fluxer' | 'character_media' | 'exclusive_artwork' | null
   selectedCharacterMediaId?: number | null
   customRole?: string | null
   // Full relation objects

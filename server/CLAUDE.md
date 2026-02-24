@@ -9,7 +9,7 @@ NestJS backend API server for the Usogui fansite with comprehensive content mana
 - **TypeORM** - Database ORM with PostgreSQL
 - **PostgreSQL** - Primary database
 - **JWT** - Authentication tokens
-- **Passport** - Authentication strategies (Local, Discord, JWT)
+- **Passport** - Authentication strategies (Fluxer OAuth2, JWT)
 - **Swagger** - API documentation
 - **Bcrypt** - Password hashing
 - **Class Validator** - Input validation
@@ -89,7 +89,7 @@ server/
 
 ### Authentication & Authorization
 - JWT-based authentication
-- Discord OAuth integration
+- Fluxer OAuth2 integration
 - Role-based access control (Public, Moderator, Admin)
 - Password reset functionality
 - Email verification
@@ -134,7 +134,8 @@ Base URL: `http://localhost:3001/api`
 - `POST /auth/login` - User login
 - `POST /auth/register` - User registration
 - `POST /auth/logout` - User logout
-- `GET /auth/discord` - Discord OAuth
+- `GET /auth/fluxer` - Fluxer OAuth2 login
+- `GET /auth/link/fluxer` - Link Fluxer account to existing user
 - `POST /auth/refresh` - Token refresh
 
 ### Content Management
@@ -167,9 +168,10 @@ DATABASE_NAME=usogui_fansite
 JWT_SECRET=your-super-secret-jwt-key
 JWT_EXPIRES_IN=7d
 
-# Discord OAuth
-DISCORD_CLIENT_ID=your_discord_client_id
-DISCORD_CLIENT_SECRET=your_discord_client_secret
+# Fluxer OAuth2
+FLUXER_CLIENT_ID=your_fluxer_client_id
+FLUXER_CLIENT_SECRET=your_fluxer_client_secret
+FLUXER_CALLBACK_URL=http://localhost:3001/api/auth/fluxer/callback
 
 # Backblaze B2
 B2_KEY_ID=your_b2_key_id

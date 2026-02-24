@@ -27,10 +27,7 @@ export enum UserRole {
 export enum ProfilePictureType {
   FLUXER = 'fluxer',
   CHARACTER_MEDIA = 'character_media',
-  PREMIUM_CHARACTER_MEDIA = 'premium_character_media',
   EXCLUSIVE_ARTWORK = 'exclusive_artwork',
-  ANIMATED_AVATAR = 'animated_avatar',
-  CUSTOM_FRAME = 'custom_frame',
 }
 
 @Entity()

@@ -40,7 +40,7 @@ interface PublicUser {
   role: string
   customRole?: string | null
   userProgress: number
-  profilePictureType?: 'fluxer' | 'character_media' | null
+  profilePictureType?: 'fluxer' | 'character_media' | 'exclusive_artwork' | null
   selectedCharacterMediaId?: number | null
   selectedCharacterMedia?: {
     id: number

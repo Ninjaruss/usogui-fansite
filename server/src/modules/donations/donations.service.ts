@@ -172,7 +172,13 @@ export class DonationsService {
 
     // Verify webhook token matches environment configuration
     const expectedToken = this.configService.get<string>('KOFI_WEBHOOK_TOKEN');
-    if (expectedToken && webhookData.verification_token !== expectedToken) {
+    if (!expectedToken) {
+      this.logger.warn(
+        'KOFI_WEBHOOK_TOKEN is not set — rejecting webhook for safety',
+      );
+      return false;
+    }
+    if (webhookData.verification_token !== expectedToken) {
       this.logger.warn('Ko-fi webhook verification token mismatch');
       return false;
     }
@@ -196,9 +202,6 @@ export class DonationsService {
       );
       return false;
     }
-
-    // TODO: In production, verify Ko-fi signature using their webhook secret
-    // This would involve checking a signature header against the request body
 
     return true;
   }

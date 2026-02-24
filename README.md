@@ -25,7 +25,7 @@ A comprehensive fansite dedicated to the **Usogui** manga series by Toshio Sako.
 ### Technical Highlights
 - Server-side rendering for SEO and fast initial loads
 - Dark theme with responsive design
-- Discord OAuth authentication
+- Fluxer OAuth2 authentication
 - Admin dashboard for content management
 - Role-based access (public, moderator, admin)
 
@@ -35,7 +35,7 @@ A comprehensive fansite dedicated to the **Usogui** manga series by Toshio Sako.
 |-------|-------------|
 | Frontend | Next.js 15, React 19, TypeScript, Tailwind CSS 4, Mantine UI |
 | Backend | NestJS, TypeORM, PostgreSQL, JWT Authentication |
-| Auth | Discord OAuth2 |
+| Auth | Fluxer OAuth2 |
 | Storage | Backblaze B2 |
 | Admin | React Admin |
 

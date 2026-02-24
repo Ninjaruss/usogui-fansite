@@ -63,13 +63,24 @@ export class CharactersService {
     }
 
     if (arcId) {
-      qb.innerJoin('character.characterArcs', 'ca')
-        .innerJoin('ca.arc', 'arc')
-        .andWhere('arc.id = :arcId', { arcId });
+      qb.andWhere(
+        `EXISTS (
+          SELECT 1 FROM event e
+          INNER JOIN event_characters_character ecc ON ecc."eventId" = e.id
+          WHERE ecc."characterId" = character.id AND e."arcId" = :arcId
+        )`,
+        { arcId },
+      );
     } else if (arc) {
-      qb.innerJoin('character.characterArcs', 'ca')
-        .innerJoin('ca.arc', 'arc')
-        .andWhere('LOWER(arc.name) LIKE LOWER(:arc)', { arc: `%${arc}%` });
+      qb.andWhere(
+        `EXISTS (
+          SELECT 1 FROM event e
+          INNER JOIN event_characters_character ecc ON ecc."eventId" = e.id
+          INNER JOIN arc a ON a.id = e."arcId"
+          WHERE ecc."characterId" = character.id AND LOWER(a.name) LIKE LOWER(:arc)
+        )`,
+        { arc: `%${arc}%` },
+      );
     }
 
     if (organization) {
