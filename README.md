@@ -69,8 +69,8 @@ l-file/
 
 ```bash
 # Clone the repository
-git clone https://github.com/ninjaruss/usogui-fansite.git
-cd usogui-fansite
+git clone https://github.com/ninjaruss/l-file.git
+cd l-file
 
 # Install dependencies
 cd client && yarn install

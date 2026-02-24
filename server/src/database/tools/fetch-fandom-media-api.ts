@@ -21,7 +21,7 @@ async function apiGet(params: Record<string, string>) {
   params.format = 'json';
   for (const [k, v] of Object.entries(params)) url.searchParams.append(k, v);
   const res = await fetch(url.toString(), {
-    headers: { 'User-Agent': 'usogui-fansite-seeder/1.0' },
+    headers: { 'User-Agent': 'l-file-seeder/1.0' },
   });
   if (!res.ok)
     throw new Error(`API request failed: ${res.status} ${res.statusText}`);

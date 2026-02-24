@@ -11,14 +11,14 @@ export class UserSeeder implements Seeder {
 
     // Check if admin already exists
     const existingAdmin = await userRepository.findOne({
-      where: { email: 'admin@usogui-fansite.com' },
+      where: { email: 'admin@l-file.com' },
     });
 
     if (!existingAdmin) {
       const hashedPassword = await bcrypt.hash('admin123', 10);
 
       await userRepository.save({
-        email: 'admin@usogui-fansite.com',
+        email: 'admin@l-file.com',
         username: 'admin',
         password: hashedPassword,
         role: UserRole.ADMIN,
@@ -31,14 +31,14 @@ export class UserSeeder implements Seeder {
 
     // Create a moderator user
     const existingModerator = await userRepository.findOne({
-      where: { email: 'moderator@usogui-fansite.com' },
+      where: { email: 'moderator@l-file.com' },
     });
 
     if (!existingModerator) {
       const hashedPassword = await bcrypt.hash('mod123', 10);
 
       await userRepository.save({
-        email: 'moderator@usogui-fansite.com',
+        email: 'moderator@l-file.com',
         username: 'moderator',
         password: hashedPassword,
         role: UserRole.MODERATOR,

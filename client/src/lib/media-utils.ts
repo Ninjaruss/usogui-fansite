@@ -139,7 +139,7 @@ export async function resolveDeviantArtUrl(url: string): Promise<MediaInfo> {
 
     const response = await fetch(oembedUrl, {
       headers: {
-        'User-Agent': 'Usogui-Fansite/1.0'
+        'User-Agent': 'L-file/1.0'
       }
     })
 

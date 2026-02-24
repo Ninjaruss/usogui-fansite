@@ -68,7 +68,7 @@ export class MediaUrlResolverService {
         this.httpService.get(oembedUrl, {
           timeout: 10000,
           headers: {
-            'User-Agent': 'Usogui-Fansite/1.0',
+            'User-Agent': 'L-file/1.0',
           },
         }),
       );
