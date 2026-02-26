@@ -1,0 +1,62 @@
+# =============================================================================
+# L-File Usogui Fansite - Frontend Production Docker Compose
+# =============================================================================
+# Uses the pre-built image from GHCR (built by GitHub Actions) so Dokploy
+# never runs a builder on the Hetzner server.
+#
+# In Dokploy: set application source to "Docker Compose" and point to this file.
+# Set all environment variables via Dokploy's "Environment Variables" UI.
+#
+# Required env vars:
+#   AUTH_SECRET            - Must match server JWT_SECRET
+#   AUTH_URL               - Canonical frontend URL (e.g. https://l-file.com)
+#   AUTH_INTERNAL_SECRET   - Shared secret for internal auth communication
+#   AUTH_RESEND_KEY        - Resend API key for magic link emails
+#   EMAIL_FROM             - From address for auth emails
+#   API_URL                - Backend API URL for server-side requests
+#   NEXT_PUBLIC_API_URL    - Backend API URL for client-side requests (baked in at build time)
+# =============================================================================
+
+services:
+  frontend:
+    image: ghcr.io/ninjaruss/l-file/client:latest
+    container_name: l-file-frontend
+    restart: always
+
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+      HOSTNAME: "0.0.0.0"
+
+      AUTH_SECRET: ${AUTH_SECRET}
+      AUTH_URL: ${AUTH_URL}
+      AUTH_INTERNAL_SECRET: ${AUTH_INTERNAL_SECRET}
+      AUTH_RESEND_KEY: ${AUTH_RESEND_KEY}
+      EMAIL_FROM: ${EMAIL_FROM}
+      API_URL: ${API_URL}
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+
+    ports:
+      - "3000:3000"
+
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.1'
+          memory: 128M
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
