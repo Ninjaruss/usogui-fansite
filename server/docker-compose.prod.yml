@@ -1,9 +1,12 @@
 # =============================================================================
-# L-File Usogui Fansite - Production Docker Compose
+# L-File Usogui Fansite - Production Docker Compose (Server Only)
 # =============================================================================
-# Usage:
-#   docker-compose -f docker-compose.prod.yml up -d     - Start in production
-#   docker-compose -f docker-compose.prod.yml down      - Stop all services
+# Used for standalone server deployment (e.g. Dokploy single-service mode).
+# Set all environment variables via Dokploy's "Environment Variables" UI.
+#
+# Usage (local):
+#   docker-compose -f docker-compose.prod.yml up -d     - Start
+#   docker-compose -f docker-compose.prod.yml down      - Stop
 #   docker-compose -f docker-compose.prod.yml logs -f   - Follow logs
 # =============================================================================
 
@@ -13,18 +16,52 @@ services:
       context: .
       dockerfile: Dockerfile
       target: runner
-    container_name: usogui-server-prod
+    container_name: l-file-server
     restart: always
 
-    ports:
-      - "3001:3001"
-
     environment:
-      - NODE_ENV=production
-      - PORT=3001
+      # Runtime
+      NODE_ENV: production
+      PORT: "3001"
+      NODE_OPTIONS: "--max-old-space-size=768"
 
-    env_file:
-      - .env
+      # Database (Supabase pooler)
+      DATABASE_HOST: ${DATABASE_HOST}
+      DATABASE_PORT: ${DATABASE_PORT:-5432}
+      DATABASE_USERNAME: ${DATABASE_USERNAME}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+      DATABASE_NAME: ${DATABASE_NAME:-postgres}
+      DATABASE_SSL: ${DATABASE_SSL:-true}
+
+      # Migrations (set RUN_MIGRATIONS=true to auto-migrate on startup)
+      ENABLE_SCHEMA_SYNC: "false"
+      RUN_MIGRATIONS: ${RUN_MIGRATIONS:-true}
+
+      # JWT
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES: ${JWT_EXPIRES:-1d}
+
+      # Fluxer OAuth2
+      FLUXER_CLIENT_ID: ${FLUXER_CLIENT_ID}
+      FLUXER_CLIENT_SECRET: ${FLUXER_CLIENT_SECRET}
+      FLUXER_CALLBACK_URL: ${FLUXER_CALLBACK_URL}
+      ADMIN_FLUXER_ID: ${ADMIN_FLUXER_ID}
+
+      # URLs & CORS
+      FRONTEND_URL: ${FRONTEND_URL}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
+
+      # Email (Resend)
+      RESEND_API_KEY: ${RESEND_API_KEY}
+
+      # Backblaze B2 Storage
+      B2_APPLICATION_KEY_ID: ${B2_APPLICATION_KEY_ID}
+      B2_APPLICATION_KEY: ${B2_APPLICATION_KEY}
+      B2_BUCKET_NAME: ${B2_BUCKET_NAME}
+      B2_BUCKET_ID: ${B2_BUCKET_ID}
+
+      # Ko-fi (optional)
+      KOFI_WEBHOOK_TOKEN: ${KOFI_WEBHOOK_TOKEN:-}
 
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3001/api/health"]
@@ -37,10 +74,10 @@ services:
       resources:
         limits:
           cpus: '1'
-          memory: 512M
+          memory: 1G
         reservations:
           cpus: '0.25'
-          memory: 256M
+          memory: 512M
 
     logging:
       driver: "json-file"
