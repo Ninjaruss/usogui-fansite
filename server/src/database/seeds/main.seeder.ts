@@ -11,7 +11,6 @@ import { TagSeeder } from './tag.seeder';
 import { GambleSeeder } from './gamble.seeder';
 import { FandomDataSeeder } from './fandom-data.seeder';
 import { BadgeSeeder } from './badge.seeder';
-import { AnnotationSeeder } from './annotation.seeder';
 import { Logger } from '@nestjs/common';
 import chalk from 'chalk';
 
@@ -26,9 +25,6 @@ export class MainSeeder {
     );
 
     const isProduction = process.env.NODE_ENV === 'production';
-
-    // Granular skip controls via environment variables
-    const skipAnnotations = process.env.SKIP_ANNOTATION_SEEDER === 'true';
 
     // Base seeders that are safe for production
     const coreSeeders: Seeder[] = [
@@ -45,34 +41,7 @@ export class MainSeeder {
       new FandomDataSeeder(this.dataSource), // Fandom-sourced volumes/chapters and covers
     ];
 
-    // Build test data seeders array conditionally
-    const testDataSeeders: Seeder[] = [];
-
-    if (!isProduction) {
-      if (!skipAnnotations)
-        testDataSeeders.push(new AnnotationSeeder(this.dataSource));
-    }
-
-    const seeders = [...coreSeeders, ...testDataSeeders];
-
-    // Log which seeders are being skipped
-    if (isProduction) {
-      this.logger.log(
-        chalk.yellow(
-          '⚠️  Production mode detected - skipping all test data seeders',
-        ),
-      );
-      this.logger.log(
-        chalk.yellow('   Skipped: AnnotationSeeder'),
-      );
-    } else if (skipAnnotations) {
-      this.logger.log(
-        chalk.yellow('⚠️  Skipping seeders based on environment variables:'),
-      );
-      this.logger.log(
-        chalk.yellow('   - AnnotationSeeder (SKIP_ANNOTATION_SEEDER=true)'),
-      );
-    }
+    const seeders = [...coreSeeders];
 
     let success = true;
 
@@ -101,12 +70,6 @@ export class MainSeeder {
       this.logger.log(chalk.blue('   - Character quotes and memorable lines'));
       this.logger.log(chalk.blue('   - Badge system with supporter rewards'));
       this.logger.log(chalk.blue('   - Content tags and categorization'));
-
-      if (!isProduction) {
-        this.logger.log(
-          chalk.blue('   - User-contributed annotations and explanations'),
-        );
-      }
 
       return true;
     } else {
