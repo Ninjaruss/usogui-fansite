@@ -148,8 +148,6 @@ export class UsersController {
             character: (user.selectedCharacterMedia as any).character || null,
           }
         : null,
-      discordId: user.discordId,
-      discordAvatar: user.discordAvatar,
       fluxerId: user.fluxerId,
       fluxerAvatar: user.fluxerAvatar,
       createdAt: user.createdAt,
@@ -238,8 +236,6 @@ export class UsersController {
       favoriteQuote: user.favoriteQuote,
       favoriteGambleId: user.favoriteGambleId,
       favoriteGamble: user.favoriteGamble,
-      discordId: user.discordId,
-      discordAvatar: user.discordAvatar,
       fluxerId: user.fluxerId,
       fluxerAvatar: user.fluxerAvatar,
       userStats,

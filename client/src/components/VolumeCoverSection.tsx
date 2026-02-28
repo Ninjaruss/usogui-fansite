@@ -99,6 +99,7 @@ export function VolumeCoverSection() {
               src="/assets/Usogui_Volume_37_background.png"
               alt="Usogui Volume 37"
               fill
+              priority
               style={{
                 objectFit: 'contain',
                 filter: 'drop-shadow(12px 12px 24px rgba(0, 0, 0, 0.4))',
@@ -174,6 +175,7 @@ export function VolumeCoverSection() {
               src="/assets/Usogui_Volume_38_background.png"
               alt="Usogui Volume 38"
               fill
+              priority
               style={{
                 objectFit: 'contain',
                 filter: 'drop-shadow(12px 12px 24px rgba(0, 0, 0, 0.4))',

@@ -15,6 +15,8 @@ import {
   Text,
   Badge,
   Loader,
+  Tooltip,
+  Kbd,
   rem,
   useMantineTheme
 } from '@mantine/core'
@@ -678,7 +680,7 @@ const Navigation: React.FC = () => {
             >
               <TextInput
                 ref={searchInputRef}
-                placeholder="Search (press /)"
+                placeholder="Search"
                 aria-label="Search characters, arcs, gambles, and more"
                 value={searchValue}
                 onChange={(e) => handleSearchChange(e)}
@@ -701,6 +703,13 @@ const Navigation: React.FC = () => {
                   ) : (
                     <Search size={18} color="rgba(255, 255, 255, 0.7)" />
                   )
+                }
+                rightSection={
+                  !searchFocused ? (
+                    <Tooltip label="Press / to search" position="left" withArrow>
+                      <Kbd size="xs" style={{ opacity: 0.55, cursor: 'default', pointerEvents: 'none' }}>/</Kbd>
+                    </Tooltip>
+                  ) : null
                 }
                 styles={{
                   input: {

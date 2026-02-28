@@ -31,7 +31,6 @@ export enum ProfilePictureType {
 }
 
 @Entity()
-@Index(['discordId'])
 @Index(['fluxerId'])
 @Index(['emailVerificationToken']) // Keep for legacy data
 @Index(['passwordResetToken']) // Keep for legacy data
@@ -41,40 +40,18 @@ export class User {
   id: number;
 
   @ApiProperty({
-    description: 'Username (from Discord or custom)',
+    description: 'Username (from Fluxer or custom)',
     example: 'usogui_fan',
   })
   @Column({ type: 'varchar', unique: true })
   username: string;
 
   @ApiProperty({
-    description: "User's email address (optional for Discord users)",
+    description: "User's email address",
     example: 'user@example.com',
   })
   @Column({ type: 'varchar', nullable: true })
   email: string | null;
-
-  // Discord-specific fields
-  @ApiProperty({
-    description: "User's Discord ID (primary identifier)",
-    example: '123456789012345678',
-  })
-  @Column({ type: 'varchar', unique: true, nullable: true })
-  discordId: string | null;
-
-  @ApiProperty({
-    description: "User's Discord username",
-    example: 'usogui_fan#1234',
-  })
-  @Column({ type: 'varchar', nullable: true })
-  discordUsername: string | null;
-
-  @ApiProperty({
-    description: "User's Discord avatar URL",
-    example: 'https://cdn.discordapp.com/avatars/123456789012345678/avatar.png',
-  })
-  @Column({ type: 'varchar', nullable: true })
-  discordAvatar: string | null;
 
   // Fluxer-specific fields
   @ApiProperty({
@@ -98,7 +75,7 @@ export class User {
   @Column({ type: 'varchar', nullable: true })
   fluxerAvatar: string | null;
 
-  // Legacy auth fields (nullable for Discord-only users)
+  // Email/password auth fields (nullable for OAuth-only users)
   @Column({ type: 'boolean', default: false })
   isEmailVerified: boolean;
 

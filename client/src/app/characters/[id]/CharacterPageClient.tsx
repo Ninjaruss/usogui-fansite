@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import {
   Badge,
   Box,
@@ -85,6 +86,8 @@ export default function CharacterPageClient({
 }: CharacterPageClientProps) {
   const theme = useMantineTheme()
   const { user } = useAuth()
+  const searchParams = useSearchParams()
+  const mediaId = searchParams.get('mediaId') ?? undefined
 
   const [activeTab, setActiveTab] = useState<string>('overview')
 
@@ -92,6 +95,13 @@ export default function CharacterPageClient({
     const hash = window.location.hash.slice(1)
     if (['overview', 'timeline', 'media', 'annotations'].includes(hash)) {
       setActiveTab(hash)
+    } else if (hash.startsWith('annotation-')) {
+      setActiveTab('annotations')
+      // Scroll to the specific annotation after tab renders
+      setTimeout(() => {
+        const el = document.getElementById(hash)
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      }, 600)
     }
   }, [])
 
@@ -114,6 +124,12 @@ export default function CharacterPageClient({
       const hash = window.location.hash.slice(1)
       if (['overview', 'timeline', 'media', 'annotations'].includes(hash)) {
         setActiveTab(hash)
+      } else if (hash.startsWith('annotation-')) {
+        setActiveTab('annotations')
+        setTimeout(() => {
+          const el = document.getElementById(hash)
+          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        }, 600)
       } else if (!hash) {
         setActiveTab('overview')
       }
@@ -481,6 +497,7 @@ export default function CharacterPageClient({
                     showTitle={false}
                     compactMode
                     showFilters={false}
+                    initialMediaId={mediaId}
                   />
                 </Stack>
               </Card>

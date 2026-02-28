@@ -2,6 +2,27 @@
 
 ## TODO
 
+## 2026-02-28
+- Added the tooltip label icon with tooltip for "press / to search" to the top right search bar
+- Fixed performance issue with public folder images loading not being cached and loaded quickly
+- Removed all Discord stuff and replace with Fluxer
+- When clicking on a contribution on a user's profile or profile page, it should navigate to the page the contribution is made and if relevant, open the lightbox/detail view of the contribution
+- For arcs list page, fully shows the arc title rather than needing to hover to show the full title
+- Removed the use of users, events, guides, and media seeders for default seeder run
+
+
+
+## 2026-02-26
+See [docs/DEPLOYMENT.md](DEPLOYMENT.md) for the full deployment guide.
+
+- Needed to setup firewall ports in Hetzner (HTTP/80, HTTPS/443, Dokploy UI/3000)
+- GitHub Actions builds the frontend Docker image and pushes to GHCR; Dokploy pulls the pre-built image via webhook
+- Backend is built directly by Dokploy from source using `server/docker-compose.prod.yml`
+- Required GitHub Secrets: `NEXT_PUBLIC_API_URL` (baked into bundle at build time), `DOKPLOY_WEBHOOK_URL`
+- Dokploy needs GHCR registry credentials (GitHub PAT with `read:packages`) to pull the frontend image
+- Both services join the external `dokploy-network` bridge for Traefik reverse proxy routing
+
+
 ## 2026-02-24
 - Final quality pass: bug fixes, security hardening, and documentation updates
 - Fixed arc filter query in characters service (broken TypeORM join on non-existent `characterArcs` relationship — replaced with correlated EXISTS subquery through events)

@@ -224,24 +224,13 @@ export class DonationsService {
       }
     }
 
-    // Try to find by username (Ko-fi from_name might match Discord username)
+    // Try to find by username (Ko-fi from_name might match Fluxer username)
     const userByName = await this.userRepository.findOne({
       where: { username: webhookData.from_name },
     });
     if (userByName) {
       this.logger.debug(`Found user by username: ${userByName.username}`);
       return userByName;
-    }
-
-    // Try to find by Discord username
-    const userByDiscordName = await this.userRepository.findOne({
-      where: { discordUsername: webhookData.from_name },
-    });
-    if (userByDiscordName) {
-      this.logger.debug(
-        `Found user by Discord username: ${userByDiscordName.username}`,
-      );
-      return userByDiscordName;
     }
 
     this.logger.debug('No user found for Ko-fi donation');
@@ -347,8 +336,6 @@ export class DonationsService {
       .select([
         'donation.userId',
         'user.username',
-        'user.discordAvatar',
-        'user.discordId',
         'user.fluxerId',
         'user.fluxerAvatar',
         'user.profilePictureType',
@@ -358,7 +345,7 @@ export class DonationsService {
       .leftJoin('donation.user', 'user')
       .where('donation.status = :status', { status: DonationStatus.COMPLETED })
       .andWhere('donation.isAnonymous = :isAnonymous', { isAnonymous: false })
-      .groupBy('donation.userId, user.username, user.discordAvatar, user.discordId, user.fluxerId, user.fluxerAvatar, user.profilePictureType')
+      .groupBy('donation.userId, user.username, user.fluxerId, user.fluxerAvatar, user.profilePictureType')
       .orderBy('totalAmount', 'DESC')
       .limit(limit)
       .getRawMany();

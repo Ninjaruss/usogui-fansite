@@ -88,19 +88,19 @@ const faqData: FAQItem[] = [
       <>
         Yes! Registered users can submit guides, media, and other contributions.{' '}
         <Anchor component={Link} href="/login" color="red.5">
-          Login via Discord
+          Login via Fluxer
         </Anchor>{' '}
         to get started. All submissions are moderated for quality and accuracy.
 
         {' '}If you’d like to help with database entries or get more involved, join the{' '}
         <Anchor
           component="a"
-          href="https://discord.gg/JXeRhV2qpY"
+          href="#" /* TODO: Replace with Fluxer server invite URL */
           color="red.5"
           target="_blank"
           rel="noopener noreferrer"
         >
-          Discord community
+          Fluxer community
         </Anchor>.
       </>
     )
@@ -116,7 +116,7 @@ const faqData: FAQItem[] = [
       <>
         After{' '}
         <Anchor component={Link} href="/login" color="red.5">
-          logging in with Discord
+          logging in with Fluxer
         </Anchor>
         , you can mark chapters as read using the chapter button on the bottom right of the screen.
 

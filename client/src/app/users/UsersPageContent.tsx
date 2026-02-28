@@ -55,8 +55,6 @@ interface PublicUser {
     ownerType?: string
     ownerId?: number
   } | null
-  discordId?: string | null
-  discordAvatar?: string | null
   fluxerId?: string | null
   fluxerAvatar?: string | null
   createdAt: string

@@ -40,6 +40,8 @@ interface PlayingCardProps {
 
   // Visual
   variant?: CardVariant
+  /** When true, the entity name is never truncated (always fully visible) */
+  noTruncate?: boolean
   /** Additional content rendered below the name */
   subtitle?: React.ReactNode
 }
@@ -66,6 +68,7 @@ export function PlayingCard({
   spoilerChapter,
   onSpoilerRevealed,
   variant = 'portrait',
+  noTruncate = false,
   subtitle
 }: PlayingCardProps) {
   const theme = useMantineTheme()
@@ -208,7 +211,7 @@ export function PlayingCard({
           size="sm"
           fw={700}
           ta="center"
-          className={classes.name}
+          className={noTruncate ? undefined : classes.name}
           style={{
             position: 'relative',
             lineHeight: 1.3,

@@ -264,7 +264,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       if (event.data.type === 'OAUTH_AUTH_SUCCESS') {
-        console.log('[AUTH PROVIDER] Discord auth success message received')
+        console.log('[AUTH PROVIDER] OAuth auth success message received')
 
         // Close the popup window if it exists
         if (window.authPopup && !window.authPopup.closed) {
@@ -336,7 +336,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.log('[AUTH PROVIDER] Received broadcast message:', event.data)
       
       if (event.data.type === 'OAUTH_AUTH_SUCCESS') {
-        console.log('[AUTH PROVIDER] Discord auth success broadcast received')
+        console.log('[AUTH PROVIDER] OAuth auth success broadcast received')
 
         // Close the popup window if it exists
         if (window.authPopup && !window.authPopup.closed) {

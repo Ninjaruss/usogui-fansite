@@ -157,7 +157,6 @@ export class AnnotationsService {
         author: {
           id: true,
           username: true,
-          discordAvatar: true,
           fluxerId: true,
           fluxerAvatar: true,
           profilePictureType: true,
@@ -194,7 +193,6 @@ export class AnnotationsService {
         author: {
           id: true,
           username: true,
-          discordAvatar: true,
           fluxerId: true,
           fluxerAvatar: true,
           profilePictureType: true,

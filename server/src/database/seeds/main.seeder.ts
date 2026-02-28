@@ -1,19 +1,15 @@
 import { DataSource } from 'typeorm';
 import { Seeder } from './seeder.interface';
-import { UserSeeder } from './user.seeder';
 import { ChapterSeeder } from './chapter.seeder';
 import { CharacterSeeder } from './character.seeder';
 import { ArcSeeder } from './arc.seeder';
 import { VolumeSeeder } from './volume.seeder';
 import { QuoteSeeder } from './quote.seeder';
-import { EventSeeder } from './event.seeder';
 import { OrganizationSeeder } from './organization.seeder';
 import { CharacterOrganizationSeeder } from './character-organization.seeder';
 import { TagSeeder } from './tag.seeder';
-import { MediaSeeder } from './media.seeder';
 import { GambleSeeder } from './gamble.seeder';
 import { FandomDataSeeder } from './fandom-data.seeder';
-import { GuideSeeder } from './guide.seeder';
 import { BadgeSeeder } from './badge.seeder';
 import { AnnotationSeeder } from './annotation.seeder';
 import { Logger } from '@nestjs/common';
@@ -32,10 +28,6 @@ export class MainSeeder {
     const isProduction = process.env.NODE_ENV === 'production';
 
     // Granular skip controls via environment variables
-    const skipUsers = process.env.SKIP_USER_SEEDER === 'true';
-    const skipEvents = process.env.SKIP_EVENT_SEEDER === 'true';
-    const skipMedia = process.env.SKIP_MEDIA_SEEDER === 'true';
-    const skipGuides = process.env.SKIP_GUIDE_SEEDER === 'true';
     const skipAnnotations = process.env.SKIP_ANNOTATION_SEEDER === 'true';
 
     // Base seeders that are safe for production
@@ -57,10 +49,6 @@ export class MainSeeder {
     const testDataSeeders: Seeder[] = [];
 
     if (!isProduction) {
-      if (!skipUsers) testDataSeeders.push(new UserSeeder(this.dataSource));
-      if (!skipEvents) testDataSeeders.push(new EventSeeder(this.dataSource));
-      if (!skipMedia) testDataSeeders.push(new MediaSeeder(this.dataSource));
-      if (!skipGuides) testDataSeeders.push(new GuideSeeder(this.dataSource));
       if (!skipAnnotations)
         testDataSeeders.push(new AnnotationSeeder(this.dataSource));
     }
@@ -75,40 +63,15 @@ export class MainSeeder {
         ),
       );
       this.logger.log(
-        chalk.yellow(
-          '   Skipped: UserSeeder, EventSeeder, MediaSeeder, GuideSeeder, AnnotationSeeder',
-        ),
+        chalk.yellow('   Skipped: AnnotationSeeder'),
       );
-    } else if (
-      skipUsers ||
-      skipEvents ||
-      skipMedia ||
-      skipGuides ||
-      skipAnnotations
-    ) {
+    } else if (skipAnnotations) {
       this.logger.log(
         chalk.yellow('⚠️  Skipping seeders based on environment variables:'),
       );
-      if (skipUsers)
-        this.logger.log(
-          chalk.yellow('   - UserSeeder (SKIP_USER_SEEDER=true)'),
-        );
-      if (skipEvents)
-        this.logger.log(
-          chalk.yellow('   - EventSeeder (SKIP_EVENT_SEEDER=true)'),
-        );
-      if (skipMedia)
-        this.logger.log(
-          chalk.yellow('   - MediaSeeder (SKIP_MEDIA_SEEDER=true)'),
-        );
-      if (skipGuides)
-        this.logger.log(
-          chalk.yellow('   - GuideSeeder (SKIP_GUIDE_SEEDER=true)'),
-        );
-      if (skipAnnotations)
-        this.logger.log(
-          chalk.yellow('   - AnnotationSeeder (SKIP_ANNOTATION_SEEDER=true)'),
-        );
+      this.logger.log(
+        chalk.yellow('   - AnnotationSeeder (SKIP_ANNOTATION_SEEDER=true)'),
+      );
     }
 
     let success = true;
@@ -140,12 +103,6 @@ export class MainSeeder {
       this.logger.log(chalk.blue('   - Content tags and categorization'));
 
       if (!isProduction) {
-        this.logger.log(
-          chalk.blue('   - User accounts (admin, moderator, regular users)'),
-        );
-        this.logger.log(chalk.blue('   - Story events and plot points'));
-        this.logger.log(chalk.blue('   - Community media submissions'));
-        this.logger.log(chalk.blue('   - User-generated guides and tutorials'));
         this.logger.log(
           chalk.blue('   - User-contributed annotations and explanations'),
         );

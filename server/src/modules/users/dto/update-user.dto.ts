@@ -13,7 +13,7 @@ import { UserRole } from '../../../entities/user.entity';
 
 /**
  * DTO for admin user updates. Only whitelisted safe fields are allowed.
- * Sensitive fields like password, tokens, and discordId are excluded.
+ * Sensitive fields like password, tokens, and OAuth provider IDs are excluded.
  */
 export class UpdateUserDto {
   @ApiPropertyOptional({

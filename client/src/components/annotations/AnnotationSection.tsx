@@ -241,22 +241,23 @@ export default function AnnotationSection({
             {!expanded && (
               <Stack gap="sm">
                 {annotations.slice(0, 2).map((annotation) => (
-                  <AnnotationCard
-                    key={annotation.id}
-                    annotation={annotation}
-                    userProgress={userProgress}
-                    isOwner={currentUserId === annotation.authorId}
-                    onEdit={
-                      currentUserId === annotation.authorId
-                        ? handleEdit
-                        : undefined
-                    }
-                    onDelete={
-                      currentUserId === annotation.authorId
-                        ? handleDelete
-                        : undefined
-                    }
-                  />
+                  <div key={annotation.id} id={`annotation-${annotation.id}`}>
+                    <AnnotationCard
+                      annotation={annotation}
+                      userProgress={userProgress}
+                      isOwner={currentUserId === annotation.authorId}
+                      onEdit={
+                        currentUserId === annotation.authorId
+                          ? handleEdit
+                          : undefined
+                      }
+                      onDelete={
+                        currentUserId === annotation.authorId
+                          ? handleDelete
+                          : undefined
+                      }
+                    />
+                  </div>
                 ))}
                 {annotations.length > 2 && (
                   <Text size="xs" c={textColors.tertiary} ta="center">
@@ -271,22 +272,23 @@ export default function AnnotationSection({
             <Collapse in={expanded}>
               <Stack gap="sm">
                 {annotations.map((annotation) => (
-                  <AnnotationCard
-                    key={annotation.id}
-                    annotation={annotation}
-                    userProgress={userProgress}
-                    isOwner={currentUserId === annotation.authorId}
-                    onEdit={
-                      currentUserId === annotation.authorId
-                        ? handleEdit
-                        : undefined
-                    }
-                    onDelete={
-                      currentUserId === annotation.authorId
-                        ? handleDelete
-                        : undefined
-                    }
-                  />
+                  <div key={annotation.id} id={`annotation-${annotation.id}`}>
+                    <AnnotationCard
+                      annotation={annotation}
+                      userProgress={userProgress}
+                      isOwner={currentUserId === annotation.authorId}
+                      onEdit={
+                        currentUserId === annotation.authorId
+                          ? handleEdit
+                          : undefined
+                      }
+                      onDelete={
+                        currentUserId === annotation.authorId
+                          ? handleDelete
+                          : undefined
+                      }
+                    />
+                  </div>
                 ))}
               </Stack>
             </Collapse>

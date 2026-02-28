@@ -326,6 +326,7 @@ export default function ArcsPageContent({
           href={`/arcs/${arc.id}`}
           entityId={arc.id}
           name={arc.name}
+          noTruncate
           chapterBadge={chapterBadge}
           canEdit={canEditContent}
           onEditClick={() => handleEditImage(arc)}

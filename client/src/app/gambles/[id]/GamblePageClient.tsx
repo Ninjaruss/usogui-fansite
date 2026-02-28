@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import {
   Badge,
   Box,
@@ -124,6 +125,8 @@ interface TimelineArc {
 export default function GamblePageClient({ initialGamble }: GamblePageClientProps) {
   const theme = useMantineTheme()
   const { user } = useAuth()
+  const searchParams = useSearchParams()
+  const mediaId = searchParams.get('mediaId') ?? undefined
   const gambleColor = getEntityThemeColor(theme, 'gamble')
   const characterColor = getEntityThemeColor(theme, 'character')
   const [timelineEvents, setTimelineEvents] = useState<GambleTimelineEvent[]>([])
@@ -137,6 +140,12 @@ export default function GamblePageClient({ initialGamble }: GamblePageClientProp
       const hash = window.location.hash.slice(1)
       if (['overview', 'timeline', 'media', 'annotations'].includes(hash)) {
         setActiveTab(hash)
+      } else if (hash.startsWith('annotation-')) {
+        setActiveTab('annotations')
+        setTimeout(() => {
+          const el = document.getElementById(hash)
+          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        }, 600)
       }
     }
   }, [])
@@ -160,6 +169,12 @@ export default function GamblePageClient({ initialGamble }: GamblePageClientProp
       const hash = window.location.hash.slice(1)
       if (['overview', 'timeline', 'media', 'annotations'].includes(hash)) {
         setActiveTab(hash)
+      } else if (hash.startsWith('annotation-')) {
+        setActiveTab('annotations')
+        setTimeout(() => {
+          const el = document.getElementById(hash)
+          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        }, 600)
       } else if (!hash) {
         setActiveTab('overview')
       }
@@ -584,7 +599,7 @@ export default function GamblePageClient({ initialGamble }: GamblePageClientProp
                     </Button>
                   </Group>
                   <ErrorBoundary>
-                    <MediaGallery ownerType="gamble" ownerId={initialGamble.id} purpose="gallery" limit={8} showTitle={false} compactMode showFilters={false} />
+                    <MediaGallery ownerType="gamble" ownerId={initialGamble.id} purpose="gallery" limit={8} showTitle={false} compactMode showFilters={false} initialMediaId={mediaId} />
                   </ErrorBoundary>
                 </Stack>
               </Card>

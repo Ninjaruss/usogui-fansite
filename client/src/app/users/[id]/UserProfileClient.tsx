@@ -55,8 +55,6 @@ interface PublicUser {
       name: string
     }
   } | null
-  discordId?: string | null
-  discordAvatar?: string | null
   fluxerId?: string | null
   fluxerAvatar?: string | null
   favoriteQuoteId?: number

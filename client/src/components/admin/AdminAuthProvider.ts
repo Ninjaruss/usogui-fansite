@@ -3,7 +3,7 @@ import { api } from '../../lib/api'
 
 export const AdminAuthProvider: AuthProvider = {
   login: async () => {
-    // Redirect to main login page which now handles Discord auth
+    // Redirect to main login page which handles OAuth auth
     window.location.href = '/login'
     return Promise.resolve()
   },

@@ -285,7 +285,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
     )
   }
 
-  // --- Inline chip mode (Discord-mention style) ---
+  // --- Inline chip mode (mention style) ---
   if (inline) {
     const chipDisplayText = loading
       ? '...'

@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import {
   Badge,
   Box,
@@ -91,6 +92,8 @@ interface ArcPageClientProps {
 export default function ArcPageClient({ initialArc, initialEvents, initialGambles }: ArcPageClientProps) {
   const theme = useMantineTheme()
   const { user } = useAuth()
+  const searchParams = useSearchParams()
+  const mediaId = searchParams.get('mediaId') ?? undefined
   const [activeTab, setActiveTab] = useState<string>('overview')
   const arcColor = getEntityThemeColor(theme, 'arc')
   const gambleColor = getEntityThemeColor(theme, 'gamble')
@@ -100,6 +103,21 @@ export default function ArcPageClient({ initialArc, initialEvents, initialGamble
   // Set tab accent colors for arc entity
   useEffect(() => {
     setTabAccentColors('arc')
+  }, [])
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const hash = window.location.hash.slice(1)
+      if (['overview', 'gambles', 'media', 'annotations'].includes(hash)) {
+        setActiveTab(hash)
+      } else if (hash.startsWith('annotation-')) {
+        setActiveTab('annotations')
+        setTimeout(() => {
+          const el = document.getElementById(hash)
+          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        }, 600)
+      }
+    }
   }, [])
 
   const chapterCount = initialArc.endChapter - initialArc.startChapter + 1
@@ -482,6 +500,7 @@ export default function ArcPageClient({ initialArc, initialEvents, initialGamble
                     showTitle={false}
                     compactMode
                     showFilters={false}
+                    initialMediaId={mediaId}
                   />
                 </Stack>
               </Card>

@@ -94,16 +94,16 @@ export const Footer: React.FC = () => {
             </Group>
           </Group>
 
-          {/* Right: Emphasized Discord and Support */}
+          {/* Right: Emphasized Fluxer and Support */}
           <Group gap="md" align="center">
             <Anchor
-              href="https://discord.gg/JXeRhV2qpY"
+              href="#" /* TODO: Replace with Fluxer server invite URL */
               target="_blank"
               rel="noopener noreferrer"
-              aria-label="Join Discord community (opens in new tab)"
+              aria-label="Join Fluxer community (opens in new tab)"
               style={{
                 textDecoration: 'none',
-                color: '#5865f2',
+                color: '#e11d48',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '0.5rem',
@@ -117,15 +117,15 @@ export const Footer: React.FC = () => {
               styles={{
                 root: {
                   '&:hover': {
-                    color: '#7289da',
-                    backgroundColor: 'rgba(88, 101, 242, 0.1)',
+                    color: '#f43f5e',
+                    backgroundColor: 'rgba(225, 29, 72, 0.1)',
                     transform: 'translateY(-1px)'
                   }
                 }
               }}
             >
               <MessageCircle size={18} aria-hidden="true" />
-              Join Discord
+              Join Fluxer
             </Anchor>
             <Anchor
               href="https://ko-fi.com/ninjaruss"

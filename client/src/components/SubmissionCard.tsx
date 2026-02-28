@@ -57,7 +57,15 @@ const STATUS_COLORS: Record<string, string> = {
 function getSubmissionLink(submission: SubmissionItem): string {
   if (submission.type === 'guide') return `/guides/${submission.id}`
   if (submission.type === 'event') return `/events/${submission.id}`
-  if (submission.type === 'annotation') return `/annotations/${submission.id}`
+  if (submission.type === 'annotation' && submission.ownerType && submission.ownerId) {
+    const entityPathMap: Record<string, string> = {
+      character: 'characters',
+      gamble: 'gambles',
+      arc: 'arcs',
+    }
+    const basePath = entityPathMap[submission.ownerType]
+    if (basePath) return `/${basePath}/${submission.ownerId}#annotation-${submission.id}`
+  }
   if (submission.type === 'media' && submission.ownerType && submission.ownerId) {
     const entityPathMap: Record<string, string> = {
       character: 'characters',
@@ -70,7 +78,7 @@ function getSubmissionLink(submission: SubmissionItem): string {
       volume: 'volumes',
     }
     const basePath = entityPathMap[submission.ownerType] || 'media'
-    return `/${basePath}/${submission.ownerId}#media`
+    return `/${basePath}/${submission.ownerId}?mediaId=${submission.id}`
   }
   return '#'
 }
@@ -126,7 +134,7 @@ export default function SubmissionCard({
   const canDelete = isOwnerView && (submission.status === 'rejected' || submission.status === 'pending') && onDelete
 
   // Determine if the entire card should be clickable
-  const isCardClickable = submission.status === 'approved' && submission.type !== 'annotation' && link !== '#'
+  const isCardClickable = submission.status === 'approved' && link !== '#'
 
   const cardContent = (
     <Card

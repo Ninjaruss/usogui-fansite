@@ -65,8 +65,6 @@ interface Guide {
       fileName?: string
       description?: string
     } | null
-    discordId?: string | null
-    discordAvatar?: string | null
     fluxerId?: string | null
     fluxerAvatar?: string | null
   }

@@ -83,6 +83,8 @@ interface MediaGalleryProps {
   arcId?: number
   hideWhenEmpty?: boolean
   onMediaLoaded?: (items: MediaItem[]) => void
+  /** When set, auto-opens the lightbox for the media item with this ID after loading */
+  initialMediaId?: number | string
 }
 
 const MAX_DIALOG_WIDTH = 1280
@@ -127,7 +129,8 @@ export default function MediaGallery({
   showFilters = false,
   allowMultipleTypes = true,
   hideWhenEmpty = false,
-  onMediaLoaded
+  onMediaLoaded,
+  initialMediaId
 }: MediaGalleryProps) {
   const theme = useMantineTheme()
   const isMobile = useMediaQuery(`(max-width: ${theme.breakpoints.sm})`)
@@ -263,6 +266,20 @@ export default function MediaGallery({
 
     setFilteredMedia(filtered)
   }, [media, selectedMediaType])
+
+  // Auto-open lightbox for a specific media item when initialMediaId is provided
+  useEffect(() => {
+    if (!initialMediaId || filteredMedia.length === 0) return
+    const targetId = typeof initialMediaId === 'string' ? parseInt(initialMediaId, 10) : initialMediaId
+    const index = filteredMedia.findIndex((m) => m.id === targetId)
+    if (index !== -1) {
+      setCurrentImageIndex(index)
+      setSelectedMedia(filteredMedia[index])
+      setDialogOpen(true)
+      setImageZoomed(false)
+      setShouldLoadVideo(false)
+    }
+  }, [initialMediaId, filteredMedia])
 
   const handleMediaClick = (mediaItem: MediaItem) => {
     const mediaIndex = filteredMedia.findIndex((m) => m.id === mediaItem.id)

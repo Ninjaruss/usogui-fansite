@@ -223,7 +223,7 @@ export default function HomePage() {
           </Box>
         )}
 
-        {/* Discord CTA Section */}
+        {/* Discor CTA Section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -244,7 +244,7 @@ export default function HomePage() {
             <Group justify="center" gap="md" style={{ marginBottom: '1rem' }}>
               <MessageCircle className="w-8 h-8" />
               <Title order={2} style={{ fontWeight: 'bold', color: '#ffffff' }}>
-                Join Our Discord Community
+                Join Our Fluxer Community
               </Title>
             </Group>
             <Text size="xl" style={{ opacity: 0.9, marginBottom: '1.5rem', fontWeight: 'normal' }} c="#ffffff">
@@ -253,7 +253,7 @@ export default function HomePage() {
 
             <Button
               component="a"
-              href="https://discord.gg/JXeRhV2qpY"
+              href="#" /* TODO: Replace with Fluxer server invite URL */
               target="_blank"
               rel="noopener noreferrer"
               variant="filled"
@@ -262,7 +262,7 @@ export default function HomePage() {
               rightSection={<ExternalLink className="w-4 h-4" />}
               style={{
                 backgroundColor: 'white',
-                color: '#5865F2',
+                color: '#e11d48',
                 fontWeight: 'bold',
                 fontSize: '1.1rem',
                 padding: '0.75rem 2rem',
@@ -271,7 +271,7 @@ export default function HomePage() {
                 transition: 'all 0.3s ease'
               }}
             >
-              Join Discord Server
+              Join Fluxer Server
             </Button>
           </Box>
         </motion.div>
