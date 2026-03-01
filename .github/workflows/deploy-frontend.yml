@@ -92,9 +92,12 @@ jobs:
             echo "Current value starts with: ${DOKPLOY_WEBHOOK_URL:0:20}..."
             exit 1
           fi
-          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -L -k \
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
             --max-time 30 \
-            -X POST "$DOKPLOY_WEBHOOK_URL")
+            -H "Content-Type: application/json" \
+            -H "X-GitHub-Event: push" \
+            -d "{\"ref\":\"${GITHUB_REF}\",\"repository\":{\"full_name\":\"${GITHUB_REPOSITORY}\"},\"head_commit\":{\"id\":\"${GITHUB_SHA}\"}}" \
+            "$DOKPLOY_WEBHOOK_URL")
           echo "Dokploy responded with HTTP $HTTP_STATUS"
           if [[ ! "$HTTP_STATUS" =~ ^2 ]]; then
             echo "Webhook call failed (HTTP $HTTP_STATUS)"

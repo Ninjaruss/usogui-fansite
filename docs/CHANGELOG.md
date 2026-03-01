@@ -9,6 +9,7 @@
 - When clicking on a contribution on a user's profile or profile page, it should navigate to the page the contribution is made and if relevant, open the lightbox/detail view of the contribution
 - For arcs list page, fully shows the arc title rather than needing to hover to show the full title
 - Removed the use of users, events, guides, and media seeders for default seeder run
+- Pushed updated deploy-frontend.yml that was not being added due to it being a local config
 
 
 
