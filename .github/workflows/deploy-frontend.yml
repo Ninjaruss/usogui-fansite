@@ -80,11 +80,26 @@ jobs:
     steps:
       - name: Trigger Dokploy webhook
         run: |
-          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
-            -X POST "${{ secrets.DOKPLOY_WEBHOOK_URL }}")
+          if [[ -z "$DOKPLOY_WEBHOOK_URL" ]]; then
+            echo "Error: DOKPLOY_WEBHOOK_URL secret is not set"
+            exit 1
+          fi
+          # Trim surrounding whitespace/newlines (common copy-paste issue)
+          DOKPLOY_WEBHOOK_URL="$(echo "$DOKPLOY_WEBHOOK_URL" | tr -d '[:space:]')"
+          # Validate URL scheme — curl exit code 3 = URL malformed (missing scheme)
+          if [[ ! "$DOKPLOY_WEBHOOK_URL" =~ ^https?:// ]]; then
+            echo "Error: DOKPLOY_WEBHOOK_URL must start with http:// or https://"
+            echo "Current value starts with: ${DOKPLOY_WEBHOOK_URL:0:20}..."
+            exit 1
+          fi
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -L -k \
+            --max-time 30 \
+            -X POST "$DOKPLOY_WEBHOOK_URL")
           echo "Dokploy responded with HTTP $HTTP_STATUS"
-          if [[ "$HTTP_STATUS" != 2* ]]; then
+          if [[ ! "$HTTP_STATUS" =~ ^2 ]]; then
             echo "Webhook call failed (HTTP $HTTP_STATUS)"
             exit 1
           fi
           echo "Deploy triggered successfully"
+        env:
+          DOKPLOY_WEBHOOK_URL: ${{ secrets.DOKPLOY_WEBHOOK_URL }}
