@@ -255,7 +255,7 @@ export default function HomePage() {
               component="a"
               href="#" /* TODO: Replace with Fluxer server invite URL */
               target="_blank"
-              rel="noopener noreferrer"
+              rel="https://fluxer.gg/TWukaMSX"
               variant="filled"
               size="lg"
               leftSection={<MessageCircle className="w-5 h-5" />}

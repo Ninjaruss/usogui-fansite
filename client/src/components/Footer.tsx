@@ -99,7 +99,7 @@ export const Footer: React.FC = () => {
             <Anchor
               href="#" /* TODO: Replace with Fluxer server invite URL */
               target="_blank"
-              rel="noopener noreferrer"
+              rel="https://fluxer.gg/TWukaMSX"
               aria-label="Join Fluxer community (opens in new tab)"
               style={{
                 textDecoration: 'none',

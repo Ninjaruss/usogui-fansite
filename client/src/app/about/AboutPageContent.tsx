@@ -98,8 +98,8 @@ export function AboutPageContent() {
 
   const mutedTextColor = hexToRgba(mutedHex, 0.9)
 
-  const user = 'ninjarussyt'
-  const domain = 'gmail.com'
+  const user = 'contact'
+  const domain = 'ninjaruss.net'
 
   return (
     <Box style={{ backgroundColor: backgroundStyles.page(theme), minHeight: '100vh' }}>

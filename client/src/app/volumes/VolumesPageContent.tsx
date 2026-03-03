@@ -152,7 +152,7 @@ export default function VolumesPageContent({
   }, [])
 
   // Card render
-  const renderVolumeCard = useCallback((volume: Volume) => {
+  const renderVolumeCard = useCallback((volume: Volume, index: number) => {
     const handleCardClick = (e: React.MouseEvent) => {
       if (isTouchDevice && hoveredVolume?.id !== volume.id) {
         e.preventDefault()
@@ -167,6 +167,7 @@ export default function VolumesPageContent({
         entityId={volume.id}
         name={volume.title || `Volume ${volume.number}`}
         chapterBadge={`Ch. ${volume.startChapter}-${volume.endChapter}`}
+        imagePriority={index < 6}
         onClick={handleCardClick}
         onMouseEnter={(e) => {
           if (!isTouchDevice) handleVolumeMouseEnter(volume, e)

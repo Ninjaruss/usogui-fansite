@@ -44,6 +44,8 @@ interface PlayingCardProps {
   noTruncate?: boolean
   /** Additional content rendered below the name */
   subtitle?: React.ReactNode
+  /** When true, the image is loaded eagerly (above-the-fold optimization) */
+  imagePriority?: boolean
 }
 
 const variantDimensions: Record<CardVariant, { maxWidth: number; maxHeight: number }> = {
@@ -69,7 +71,8 @@ export function PlayingCard({
   onSpoilerRevealed,
   variant = 'portrait',
   noTruncate = false,
-  subtitle
+  subtitle,
+  imagePriority = false
 }: PlayingCardProps) {
   const theme = useMantineTheme()
   const accentColor = getEntityThemeColor(theme, entityType)
@@ -177,6 +180,7 @@ export function PlayingCard({
           maxHeight={dims.maxHeight}
           spoilerChapter={spoilerChapter ?? undefined}
           onSpoilerRevealed={onSpoilerRevealed}
+          priority={imagePriority}
         />
       </Box>
 

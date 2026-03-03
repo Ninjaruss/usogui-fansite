@@ -497,6 +497,7 @@ export default function MediaPageContent({
   return (
     <Box style={{ backgroundColor: backgroundStyles.page(theme), minHeight: '100vh' }}>
       <motion.div {...pageEnter}>
+      <Box style={{ maxWidth: rem(1400), margin: '0 auto' }}>
       <Stack gap="md">
         <ListPageHero
           icon={<ImageIcon size={26} color="#ffffff" />}
@@ -884,6 +885,7 @@ export default function MediaPageContent({
           </Container>
         )}
       </Stack>
+      </Box>
       </motion.div>
 
       <Modal

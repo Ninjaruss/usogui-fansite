@@ -151,6 +151,8 @@ export default function ProfilePageClient() {
   const initialCustomRoleRef = useRef<string>('')
 
   // Unified content tab and filters
+  type ProfileTab = 'general' | 'settings'
+  const [profileTab, setProfileTab] = useState<ProfileTab>('general')
   type ContentTab = 'guides' | 'media' | 'events' | 'annotations'
   const [activeContentTab, setActiveContentTab] = useState<ContentTab>('guides')
   const [contentFilters, setContentFilters] = useState<Record<ContentTab, { status: string; search: string; visible: number }>>({
@@ -823,57 +825,16 @@ export default function ProfilePageClient() {
             </Card>
           )}
 
-          {/* Main Content - Single Page Layout */}
-          <Stack gap="xl">
-            {/* Linked Accounts Section */}
-            <Card shadow="sm" padding="md" radius="md" withBorder>
-              <Stack gap="md">
-                <Title order={2} size="h3" c={headerColors.h2}>Linked Accounts</Title>
-                <Text size="sm" c="dimmed">Manage which accounts are connected to your profile.</Text>
+          {/* Main Content - Tabbed Layout */}
+          <Tabs value={profileTab} onChange={(v) => v && setProfileTab(v as ProfileTab)} variant="outline" keepMounted={false}>
+            <Tabs.List mb="xl">
+              <Tabs.Tab value="general">General</Tabs.Tab>
+              <Tabs.Tab value="settings">Settings</Tabs.Tab>
+            </Tabs.List>
 
-                <Stack gap="sm">
-                  {/* Fluxer Row */}
-                  <Group justify="space-between" align="center" style={{ padding: '8px 0' }}>
-                    <Group gap="sm">
-                      <Box style={{ width: 32, height: 32, borderRadius: '50%', background: '#7c3aed', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                        <Text size="xs" fw={700} c="white">Fx</Text>
-                      </Box>
-                      <Stack gap={2}>
-                        <Text size="sm" fw={500}>Fluxer</Text>
-                        {user?.fluxerId ? (
-                          <Text size="xs" c="dimmed">@{user.fluxerUsername || user.fluxerId}</Text>
-                        ) : (
-                          <Text size="xs" c="dimmed">Not linked</Text>
-                        )}
-                      </Stack>
-                    </Group>
-                    {user?.fluxerId ? (
-                      <Button
-                        size="xs"
-                        variant="light"
-                        color="red"
-                        onClick={() => handleUnlink('fluxer')}
-                        loading={unlinkingProvider === 'fluxer'}
-                        disabled={!!unlinkingProvider}
-                        title="Unlink Fluxer account"
-                      >
-                        Unlink
-                      </Button>
-                    ) : (
-                      <Button
-                        size="xs"
-                        variant="light"
-                        color="violet"
-                        onClick={linkFluxer}
-                      >
-                        Link Fluxer
-                      </Button>
-                    )}
-                  </Group>
-                </Stack>
-              </Stack>
-            </Card>
-
+            {/* General Tab */}
+            <Tabs.Panel value="general">
+              <Stack gap="xl">
             {/* Reading Progress */}
             <Card
               withBorder
@@ -1514,6 +1475,60 @@ export default function ProfilePageClient() {
                 </Tabs>
               </Stack>
             </Card>
+              </Stack>
+            </Tabs.Panel>
+
+            {/* Settings Tab */}
+            <Tabs.Panel value="settings">
+              <Stack gap="xl">
+            {/* Linked Accounts Section */}
+            <Card shadow="sm" padding="md" radius="md" withBorder>
+              <Stack gap="md">
+                <Title order={2} size="h3" c={headerColors.h2}>Linked Accounts</Title>
+                <Text size="sm" c="dimmed">Manage which accounts are connected to your profile.</Text>
+
+                <Stack gap="sm">
+                  {/* Fluxer Row */}
+                  <Group justify="space-between" align="center" style={{ padding: '8px 0' }}>
+                    <Group gap="sm">
+                      <Box style={{ width: 32, height: 32, borderRadius: '50%', background: '#7c3aed', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <Text size="xs" fw={700} c="white">Fx</Text>
+                      </Box>
+                      <Stack gap={2}>
+                        <Text size="sm" fw={500}>Fluxer</Text>
+                        {user?.fluxerId ? (
+                          <Text size="xs" c="dimmed">@{user.fluxerUsername || user.fluxerId}</Text>
+                        ) : (
+                          <Text size="xs" c="dimmed">Not linked</Text>
+                        )}
+                      </Stack>
+                    </Group>
+                    {user?.fluxerId ? (
+                      <Button
+                        size="xs"
+                        variant="light"
+                        color="red"
+                        onClick={() => handleUnlink('fluxer')}
+                        loading={unlinkingProvider === 'fluxer'}
+                        disabled={!!unlinkingProvider}
+                        title="Unlink Fluxer account"
+                      >
+                        Unlink
+                      </Button>
+                    ) : (
+                      <Button
+                        size="xs"
+                        variant="light"
+                        color="violet"
+                        onClick={linkFluxer}
+                      >
+                        Link Fluxer
+                      </Button>
+                    )}
+                  </Group>
+                </Stack>
+              </Stack>
+            </Card>
 
             {/* Settings Section */}
             <Card shadow="sm" padding="md" radius="md" withBorder>
@@ -1701,7 +1716,9 @@ export default function ProfilePageClient() {
                 </Stack>
               </Stack>
             </Card>
-          </Stack>
+              </Stack>
+            </Tabs.Panel>
+          </Tabs>
         </Stack>
       </Container>
 

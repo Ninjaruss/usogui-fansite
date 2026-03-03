@@ -226,7 +226,7 @@ export default function UserProfileClient({ initialUser }: UserProfileClientProp
           p="xl"
           mb="xl"
           style={{
-            background: `linear-gradient(135deg, ${getAlphaColor(accentColor, 0.18)}, ${getAlphaColor(accentColor, 0.05)}), ${cardBaseBackground}`,
+            background: `linear-gradient(135deg, ${getAlphaColor('#7f1d1d', 0.45)}, ${getAlphaColor('#7f1d1d', 0.15)}), ${cardBaseBackground}`,
             border: `1px solid ${accentBorderColor}`,
             boxShadow: `0 20px 45px ${getAlphaColor(accentColor, 0.12)}`,
             color: theme.colors.gray?.[0] ?? '#ffffff'

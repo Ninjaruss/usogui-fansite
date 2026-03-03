@@ -45,6 +45,7 @@ interface MediaThumbnailProps {
   spoilerChapter?: number // Entity's chapter (e.g., firstAppearanceChapter) for spoiler protection
   hideIfEmpty?: boolean // If true, returns null when no media is available
   onSpoilerRevealed?: () => void // Callback when spoiler is revealed
+  priority?: boolean // If true, loads image eagerly (above-the-fold optimization)
 }
 
 // Cache for media data to avoid redundant API calls
@@ -183,7 +184,7 @@ function ImageWithRetry({
           alt={alt}
           onLoad={handleLoad}
           onError={handleError}
-          loading="lazy"
+          loading={priority ? 'eager' : 'lazy'}
           style={{
             position: fill ? 'absolute' : undefined,
             top: fill ? 0 : undefined,
@@ -202,8 +203,8 @@ function ImageWithRetry({
           alt={alt}
           onLoad={handleLoad}
           onError={handleError}
-          priority={false}
-          loading="lazy"
+          priority={priority ?? false}
+          loading={priority ? 'eager' : 'lazy'}
         />
       )}
     </>

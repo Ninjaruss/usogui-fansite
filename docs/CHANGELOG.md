@@ -2,6 +2,13 @@
 
 ## TODO
 
+## 2026-03-02
+- Resizing users and media list to be consistent with other list pages
+- Member count filter added for organizations
+- General and settings tabs added to profile page
+- Lazy loading for any images not shown on the initial load; priority load for anything on the default pages
+
+
 ## 2026-03-01
 - Styling updates to filter buttons
 - Meta data text updated to use L-file - Usogui Database

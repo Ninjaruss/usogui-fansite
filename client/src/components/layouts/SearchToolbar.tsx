@@ -8,8 +8,7 @@ import {
   ActionIcon,
   Group,
   Tooltip,
-  rem,
-  useMantineTheme
+  rem
 } from '@mantine/core'
 import { Search, X, ArrowUpDown, LayoutGrid, List } from 'lucide-react'
 import { zIndex } from '../../lib/design-tokens'
@@ -60,7 +59,6 @@ export function SearchToolbar({
   onViewModeChange,
   children
 }: SearchToolbarProps) {
-  const theme = useMantineTheme()
   const searchRef = useRef<HTMLInputElement>(null)
   const sentinelRef = useRef<HTMLDivElement>(null)
   const [isStuck, setIsStuck] = useState(false)
@@ -79,24 +77,6 @@ export function SearchToolbar({
 
     observer.observe(sentinel)
     return () => observer.disconnect()
-  }, [])
-
-  // Keyboard shortcut: "/" focuses search
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (
-        e.key === '/' &&
-        !e.ctrlKey &&
-        !e.metaKey &&
-        document.activeElement?.tagName !== 'INPUT' &&
-        document.activeElement?.tagName !== 'TEXTAREA'
-      ) {
-        e.preventDefault()
-        searchRef.current?.focus()
-      }
-    }
-    document.addEventListener('keydown', handleKeyDown)
-    return () => document.removeEventListener('keydown', handleKeyDown)
   }, [])
 
   return (
@@ -149,24 +129,7 @@ export function SearchToolbar({
                   >
                     <X size={18} />
                   </ActionIcon>
-                ) : (
-                  <Tooltip label="Press / to search" position="left" withArrow>
-                    <Box
-                      component="kbd"
-                      style={{
-                        fontSize: rem(11),
-                        fontFamily: theme.fontFamilyMonospace,
-                        padding: `${rem(2)} ${rem(6)}`,
-                        borderRadius: rem(4),
-                        border: '1px solid rgba(255,255,255,0.15)',
-                        color: 'rgba(255,255,255,0.4)',
-                        lineHeight: 1.4
-                      }}
-                    >
-                      /
-                    </Box>
-                  </Tooltip>
-                )
+                ) : null
               }
               styles={{
                 input: {

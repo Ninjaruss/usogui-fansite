@@ -21,8 +21,8 @@ export const metadata: Metadata = {
 }
 
 export default function DisclaimerPage() {
-  const user = 'ninjarussyt'
-  const domain = 'gmail.com'
+  const user = 'contact'
+  const domain = 'ninjaruss.net'
   
   return (
     <Container size="md" py="xl">
