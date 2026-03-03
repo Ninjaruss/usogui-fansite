@@ -63,6 +63,23 @@ export default async function OrganizationsPage({ searchParams }: OrganizationsP
     error = err instanceof Error ? err.message : 'Failed to fetch organizations'
   }
 
+  // Pre-fetch display media for the first page of organizations (parallel server-side requests)
+  const initialMediaMap: Record<number, any[]> = {}
+  if (organizations.length > 0) {
+    const mediaResults = await Promise.allSettled(
+      organizations.map(org =>
+        api.get<any>(`/media/entity-display/organization/${org.id}/cycling`)
+      )
+    )
+    organizations.forEach((org, i) => {
+      const result = mediaResults[i]
+      if (result.status === 'fulfilled') {
+        const d = result.value
+        initialMediaMap[org.id] = Array.isArray(d) ? d : (d?.data || [])
+      }
+    })
+  }
+
   return (
     <Container size="lg" py="xl">
       <OrganizationsPageContent
@@ -72,6 +89,7 @@ export default async function OrganizationsPage({ searchParams }: OrganizationsP
         initialPage={page}
         initialSearch={search}
         initialError={error}
+        initialMediaMap={initialMediaMap}
       />
     </Container>
   )

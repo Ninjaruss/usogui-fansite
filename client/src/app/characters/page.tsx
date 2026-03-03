@@ -75,6 +75,23 @@ export default async function CharactersPage({ searchParams }: CharactersPagePro
     error = err instanceof Error ? err.message : 'Failed to fetch characters'
   }
 
+  // Pre-fetch display media for the first page of characters (parallel server-side requests)
+  const initialMediaMap: Record<number, any[]> = {}
+  if (characters.length > 0) {
+    const mediaResults = await Promise.allSettled(
+      characters.map(char =>
+        api.get<any>(`/media/entity-display/character/${char.id}/cycling`)
+      )
+    )
+    characters.forEach((char, i) => {
+      const result = mediaResults[i]
+      if (result.status === 'fulfilled') {
+        const d = result.value
+        initialMediaMap[char.id] = Array.isArray(d) ? d : (d?.data || [])
+      }
+    })
+  }
+
   return (
     <Container size="lg" py="xl">
       <CharactersPageContent
@@ -83,6 +100,7 @@ export default async function CharactersPage({ searchParams }: CharactersPagePro
         initialTotal={total}
         initialSearch={search}
         initialError={error}
+        initialMediaMap={initialMediaMap}
       />
     </Container>
   )

@@ -107,6 +107,23 @@ export default async function GamblesPage({ searchParams }: GamblesPageProps) {
     error = err instanceof Error ? err.message : 'Failed to fetch gambles'
   }
 
+  // Pre-fetch display media for the first page of gambles (parallel server-side requests)
+  const initialMediaMap: Record<number, any[]> = {}
+  if (gambles.length > 0) {
+    const mediaResults = await Promise.allSettled(
+      gambles.map(gamble =>
+        api.get<any>(`/media/entity-display/gamble/${gamble.id}/cycling`)
+      )
+    )
+    gambles.forEach((gamble, i) => {
+      const result = mediaResults[i]
+      if (result.status === 'fulfilled') {
+        const d = result.value
+        initialMediaMap[gamble.id] = Array.isArray(d) ? d : (d?.data || [])
+      }
+    })
+  }
+
   return (
     <Container size="lg" style={{ paddingBlock: '2rem' }}>
       <GamblesPageContent
@@ -117,6 +134,7 @@ export default async function GamblesPage({ searchParams }: GamblesPageProps) {
         initialSearch={search}
         initialCharacterFilter={character}
         initialError={error}
+        initialMediaMap={initialMediaMap}
       />
     </Container>
   )

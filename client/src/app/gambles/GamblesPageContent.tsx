@@ -27,6 +27,7 @@ import { useSpoilerSettings } from '../../hooks/useSpoilerSettings'
 import { shouldHideSpoiler } from '../../lib/spoiler-utils'
 import { ListPageLayout } from '../../components/layouts/ListPageLayout'
 import { PlayingCard } from '../../components/cards/PlayingCard'
+import type { MediaItem } from '../../components/MediaThumbnail'
 
 type Participant = {
   id: number
@@ -73,6 +74,7 @@ interface GamblesPageContentProps {
   initialSearch: string
   initialCharacterFilter: string
   initialError: string
+  initialMediaMap?: Record<number, MediaItem[]>
 }
 
 type SortOption = 'name' | 'chapter'
@@ -89,7 +91,8 @@ export default function GamblesPageContent({
   initialPage,
   initialSearch,
   initialCharacterFilter,
-  initialError
+  initialError,
+  initialMediaMap
 }: GamblesPageContentProps) {
   const theme = useMantineTheme()
   const router = useRouter()
@@ -241,7 +244,7 @@ export default function GamblesPageContent({
   }, [searchQuery, sortBy, updateURL])
 
   // Card render
-  const renderGambleCard = useCallback((gamble: Gamble) => {
+  const renderGambleCard = useCallback((gamble: Gamble, index: number) => {
     const handleCardClick = (e: React.MouseEvent) => {
       if (isTouchDevice) {
         const isSpoilered = shouldHideSpoiler(gamble.chapterId, userProgress, spoilerSettings)
@@ -270,6 +273,8 @@ export default function GamblesPageContent({
         entityId={gamble.id}
         name={gamble.name}
         chapterBadge={gamble.chapterId ? `Ch. ${gamble.chapterId}` : undefined}
+        imagePriority={index < 6}
+        initialMedia={initialMediaMap?.[gamble.id]}
         onClick={handleCardClick}
         onMouseEnter={handleCardMouseEnter}
         onMouseLeave={() => { if (!isTouchDevice) { currentlyHoveredRef.current = null; handleGambleMouseLeave() } }}

@@ -18,6 +18,7 @@ import { HoverModal } from '../../components/HoverModal'
 import { ListPageLayout } from '../../components/layouts/ListPageLayout'
 import { PlayingCard } from '../../components/cards/PlayingCard'
 import { EXPECTED_VOLUME_COUNT } from '../../lib/constants'
+import type { MediaItem } from '../../components/MediaThumbnail'
 
 interface Volume {
   id: number
@@ -36,6 +37,7 @@ interface VolumesPageContentProps {
   initialPage: number
   initialSearch: string
   initialError: string
+  initialMediaMap?: Record<number, MediaItem[]>
 }
 
 const PAGE_SIZE = 12
@@ -49,7 +51,8 @@ export default function VolumesPageContent({
   initialVolumes,
   initialPage,
   initialSearch,
-  initialError
+  initialError,
+  initialMediaMap
 }: VolumesPageContentProps) {
   const theme = useMantineTheme()
   const accentVolume = theme.other?.usogui?.volume ?? theme.colors.red?.[5] ?? '#ef4444'
@@ -168,6 +171,7 @@ export default function VolumesPageContent({
         name={volume.title || `Volume ${volume.number}`}
         chapterBadge={`Ch. ${volume.startChapter}-${volume.endChapter}`}
         imagePriority={index < 6}
+        initialMedia={initialMediaMap?.[volume.id]}
         onClick={handleCardClick}
         onMouseEnter={(e) => {
           if (!isTouchDevice) handleVolumeMouseEnter(volume, e)

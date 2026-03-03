@@ -24,6 +24,7 @@ import { useHoverModal } from '../../hooks/useHoverModal'
 import { HoverModal } from '../../components/HoverModal'
 import { ListPageLayout } from '../../components/layouts/ListPageLayout'
 import { PlayingCard } from '../../components/cards/PlayingCard'
+import type { MediaItem } from '../../components/MediaThumbnail'
 
 interface Arc {
   id: number
@@ -47,6 +48,7 @@ interface ArcsPageContentProps {
   initialSearch: string
   initialCharacter?: string
   initialError: string
+  initialMediaMap?: Record<number, MediaItem[]>
 }
 
 const PAGE_SIZE = 12
@@ -63,7 +65,8 @@ export default function ArcsPageContent({
   initialPage,
   initialSearch,
   initialCharacter,
-  initialError
+  initialError,
+  initialMediaMap
 }: ArcsPageContentProps) {
   const theme = useMantineTheme()
   const router = useRouter()
@@ -205,7 +208,7 @@ export default function ArcsPageContent({
   }
 
   // Card render - includes sub-arcs hierarchy
-  const renderArcCard = useCallback((arc: Arc) => {
+  const renderArcCard = useCallback((arc: Arc, index: number) => {
     const chapterBadge = formatChapterRange(arc) || undefined
 
     const handleCardClick = (e: React.MouseEvent) => {
@@ -226,6 +229,8 @@ export default function ArcsPageContent({
           name={arc.name}
           noTruncate
           chapterBadge={chapterBadge}
+          imagePriority={index < 6}
+          initialMedia={initialMediaMap?.[arc.id]}
           spoilerChapter={arc.startChapter}
           onSpoilerRevealed={() => {}}
           onClick={handleCardClick}

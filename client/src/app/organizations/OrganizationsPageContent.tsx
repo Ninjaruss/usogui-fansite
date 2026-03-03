@@ -18,6 +18,7 @@ import { useHoverModal } from '../../hooks/useHoverModal'
 import { HoverModal } from '../../components/HoverModal'
 import { ListPageLayout } from '../../components/layouts/ListPageLayout'
 import { PlayingCard } from '../../components/cards/PlayingCard'
+import type { MediaItem } from '../../components/MediaThumbnail'
 
 interface Organization {
   id: number
@@ -33,6 +34,7 @@ interface OrganizationsPageContentProps {
   initialPage: number
   initialSearch: string
   initialError: string
+  initialMediaMap?: Record<number, MediaItem[]>
 }
 
 const PAGE_SIZE = 12
@@ -46,7 +48,8 @@ export default function OrganizationsPageContent({
   initialOrganizations,
   initialPage,
   initialSearch,
-  initialError
+  initialError,
+  initialMediaMap
 }: OrganizationsPageContentProps) {
   const theme = useMantineTheme()
   const accentOrganization = theme.other?.usogui?.organization ?? theme.colors.grape?.[5] ?? '#9c36b5'
@@ -160,7 +163,7 @@ export default function OrganizationsPageContent({
   }, [])
 
   // Card render
-  const renderOrganizationCard = useCallback((org: Organization) => {
+  const renderOrganizationCard = useCallback((org: Organization, index: number) => {
     const handleCardClick = (e: React.MouseEvent) => {
       if (isTouchDevice && hoveredOrganization?.id !== org.id) {
         e.preventDefault()
@@ -175,6 +178,8 @@ export default function OrganizationsPageContent({
         entityId={org.id}
         name={org.name}
         chapterBadge={org.memberCount !== undefined ? `${org.memberCount} members` : undefined}
+        imagePriority={index < 6}
+        initialMedia={initialMediaMap?.[org.id]}
         onClick={handleCardClick}
         onMouseEnter={(e) => {
           if (!isTouchDevice) handleOrganizationMouseEnter(org, e)

@@ -24,6 +24,7 @@ import { shouldHideSpoiler } from '../../lib/spoiler-utils'
 import { ListPageLayout } from '../../components/layouts/ListPageLayout'
 import { PlayingCard } from '../../components/cards/PlayingCard'
 import { ActiveFilterBadge, ActiveFilterBadgeRow } from '../../components/layouts/ActiveFilterBadge'
+import type { MediaItem } from '../../components/MediaThumbnail'
 
 interface Character {
   id: number
@@ -48,6 +49,7 @@ interface CharactersPageContentProps {
   initialTotal?: number
   initialSearch?: string
   initialError?: string
+  initialMediaMap?: Record<number, MediaItem[]>
 }
 
 const PAGE_SIZE = 12
@@ -64,7 +66,8 @@ export default function CharactersPageContent({
   initialTotalPages = 1,
   initialTotal = 0,
   initialSearch = '',
-  initialError = ''
+  initialError = '',
+  initialMediaMap
 }: CharactersPageContentProps) {
   const theme = useMantineTheme()
   const accentCharacter = theme.other?.usogui?.character ?? theme.colors.blue?.[5] ?? '#1976d2'
@@ -269,7 +272,7 @@ export default function CharactersPageContent({
   }
 
   // Card render function (entity-specific)
-  const renderCharacterCard = useCallback((character: Character) => {
+  const renderCharacterCard = useCallback((character: Character, index: number) => {
     const handleCardClick = (e: React.MouseEvent) => {
       if (isTouchDevice) {
         const isSpoilered = shouldHideSpoiler(character.firstAppearanceChapter, userProgress, spoilerSettings)
@@ -306,6 +309,8 @@ export default function CharactersPageContent({
         entityId={character.id}
         name={character.name}
         chapterBadge={character.firstAppearanceChapter ? `Ch. ${character.firstAppearanceChapter}` : undefined}
+        imagePriority={index < 6}
+        initialMedia={initialMediaMap?.[character.id]}
         onClick={handleCardClick}
         onMouseEnter={handleCardMouseEnter}
         onMouseLeave={handleCardMouseLeave}

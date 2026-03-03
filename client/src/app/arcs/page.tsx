@@ -102,6 +102,24 @@ export default async function ArcsPage({ searchParams }: ArcsPageProps) {
     error = err instanceof Error ? err.message : 'Failed to fetch arcs'
   }
 
+  // Pre-fetch display media for the first page of arcs (parallel server-side requests)
+  const initialMediaMap: Record<number, any[]> = {}
+  if (arcs.length > 0) {
+    const firstPage = arcs.slice(0, 12)
+    const mediaResults = await Promise.allSettled(
+      firstPage.map(arc =>
+        api.get<any>(`/media/entity-display/arc/${arc.id}/cycling`)
+      )
+    )
+    firstPage.forEach((arc, i) => {
+      const result = mediaResults[i]
+      if (result.status === 'fulfilled') {
+        const d = result.value
+        initialMediaMap[arc.id] = Array.isArray(d) ? d : (d?.data || [])
+      }
+    })
+  }
+
   return (
     <Container size="lg" py="xl">
       <ArcsPageContent
@@ -112,6 +130,7 @@ export default async function ArcsPage({ searchParams }: ArcsPageProps) {
         initialSearch={search}
         initialCharacter={character}
         initialError={error}
+        initialMediaMap={initialMediaMap}
       />
     </Container>
   )

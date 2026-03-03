@@ -22,7 +22,7 @@ import { useSpoilerSettings } from '../hooks/useSpoilerSettings'
 import { api } from '../lib/api'
 import { analyzeMediaUrl, analyzeMediaUrlAsync, getPlaceholderInfo } from '../lib/media-utils'
 
-interface MediaItem {
+export interface MediaItem {
   id: number
   url: string
   type: 'image' | 'video' | 'audio'
@@ -46,6 +46,7 @@ interface MediaThumbnailProps {
   hideIfEmpty?: boolean // If true, returns null when no media is available
   onSpoilerRevealed?: () => void // Callback when spoiler is revealed
   priority?: boolean // If true, loads image eagerly (above-the-fold optimization)
+  initialMedia?: MediaItem[] // Pre-loaded media to skip the API call on first render
 }
 
 // Cache for media data to avoid redundant API calls
@@ -224,7 +225,9 @@ export default function MediaThumbnail({
   disableExternalLinks = false,
   spoilerChapter,
   hideIfEmpty = false,
-  onSpoilerRevealed
+  onSpoilerRevealed,
+  priority = false,
+  initialMedia
 }: MediaThumbnailProps) {
   const [currentThumbnail, setCurrentThumbnail] = useState<MediaItem | null>(null)
   const [allEntityMedia, setAllEntityMedia] = useState<MediaItem[]>([])
@@ -325,10 +328,34 @@ export default function MediaThumbnail({
       finalEntityType = 'organization'
     }
 
-    // Check cache first
     const cacheKey = `${finalEntityType}-${entityId}-${userProgress}`
-    const cachedData = mediaCache.get(cacheKey)
     const now = Date.now()
+
+    // Use pre-loaded media if provided (skips API call, pre-warms cache)
+    if (initialMedia && initialMedia.length > 0) {
+      mediaCache.set(cacheKey, { data: initialMedia, timestamp: now })
+      setAllEntityMedia(initialMedia)
+      const availableMedia = initialMedia.filter(media =>
+        !media.chapterNumber || media.chapterNumber <= userProgress
+      )
+      let selectedMedia
+      if (availableMedia.length > 0) {
+        selectedMedia = availableMedia.reduce((best, current) => {
+          const bestChapter = best.chapterNumber || 0
+          const currentChapter = current.chapterNumber || 0
+          return currentChapter > bestChapter ? current : best
+        })
+      } else {
+        selectedMedia = initialMedia[0]
+      }
+      setCurrentIndex(initialMedia.indexOf(selectedMedia))
+      setCurrentThumbnail(selectedMedia)
+      setLoading(false)
+      return
+    }
+
+    // Check cache first
+    const cachedData = mediaCache.get(cacheKey)
 
     if (cachedData && (now - cachedData.timestamp) < CACHE_TTL) {
       const mediaArray = cachedData.data
@@ -418,7 +445,7 @@ export default function MediaThumbnail({
     }
 
     setLoading(false)
-  }, [entityId, entityType, userProgress, fetchCurrentThumbnail])
+  }, [entityId, entityType, userProgress, fetchCurrentThumbnail, initialMedia])
 
   useEffect(() => {
     loadMedia()
@@ -498,6 +525,7 @@ export default function MediaThumbnail({
               src={imageUrl}
               alt={media.description || mediaInfo.title || `${entityName} image`}
               fill
+              priority={priority}
               style={{
                 objectFit: 'cover',
                 objectPosition: 'center center',
@@ -528,6 +556,7 @@ export default function MediaThumbnail({
               src={mediaInfo.thumbnailUrl}
               alt={media.description || `${entityName} video thumbnail`}
               fill
+              priority={priority}
               style={{
                 objectFit: 'cover',
                 objectPosition: 'center center',

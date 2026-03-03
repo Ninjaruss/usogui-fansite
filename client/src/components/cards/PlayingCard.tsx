@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { Camera } from 'lucide-react'
 import { getPlayingCardStyles, getEntityThemeColor, type EntityAccentKey } from '../../lib/mantine-theme'
 import { entitySuit, suitPaths, mangaPatterns } from '../../lib/manga-decorations'
-import MediaThumbnail from '../MediaThumbnail'
+import MediaThumbnail, { type MediaItem } from '../MediaThumbnail'
 import classes from './PlayingCard.module.css'
 
 export type CardVariant = 'portrait' | 'landscape' | 'square'
@@ -46,6 +46,8 @@ interface PlayingCardProps {
   subtitle?: React.ReactNode
   /** When true, the image is loaded eagerly (above-the-fold optimization) */
   imagePriority?: boolean
+  /** Pre-loaded media to skip the API call in MediaThumbnail */
+  initialMedia?: MediaItem[]
 }
 
 const variantDimensions: Record<CardVariant, { maxWidth: number; maxHeight: number }> = {
@@ -72,7 +74,8 @@ export function PlayingCard({
   variant = 'portrait',
   noTruncate = false,
   subtitle,
-  imagePriority = false
+  imagePriority = false,
+  initialMedia
 }: PlayingCardProps) {
   const theme = useMantineTheme()
   const accentColor = getEntityThemeColor(theme, entityType)
@@ -181,6 +184,7 @@ export function PlayingCard({
           spoilerChapter={spoilerChapter ?? undefined}
           onSpoilerRevealed={onSpoilerRevealed}
           priority={imagePriority}
+          initialMedia={initialMedia}
         />
       </Box>
 

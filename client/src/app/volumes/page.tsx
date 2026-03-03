@@ -60,6 +60,24 @@ export default async function VolumesPage({ searchParams }: VolumesPageProps) {
     error = err instanceof Error ? err.message : 'Failed to fetch volumes'
   }
 
+  // Pre-fetch display media for the first page of volumes (parallel server-side requests)
+  const initialMediaMap: Record<number, any[]> = {}
+  if (volumes.length > 0) {
+    const firstPage = volumes.slice(0, 12)
+    const mediaResults = await Promise.allSettled(
+      firstPage.map(vol =>
+        api.get<any>(`/media/entity-display/volume/${vol.id}/cycling`)
+      )
+    )
+    firstPage.forEach((vol, i) => {
+      const result = mediaResults[i]
+      if (result.status === 'fulfilled') {
+        const d = result.value
+        initialMediaMap[vol.id] = Array.isArray(d) ? d : (d?.data || [])
+      }
+    })
+  }
+
   return (
     <Container size="lg" py="xl">
       <VolumesPageContent
@@ -69,6 +87,7 @@ export default async function VolumesPage({ searchParams }: VolumesPageProps) {
         initialPage={page}
         initialSearch={search}
         initialError={error}
+        initialMediaMap={initialMediaMap}
       />
     </Container>
   )
