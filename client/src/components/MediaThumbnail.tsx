@@ -79,12 +79,12 @@ function isExternalUrl(url: string): boolean {
 }
 
 // Image component with loading states and retry logic
-function ImageWithRetry({ 
-  src, 
-  alt, 
-  onLoad, 
+function ImageWithRetry({
+  src,
+  alt,
+  onLoad,
   onError,
-  ...props 
+  ...props
 }: {
   src: string
   alt: string
@@ -96,6 +96,34 @@ function ImageWithRetry({
   const [error, setError] = useState(false)
   const [retryCount, setRetryCount] = useState(0)
   const theme = useMantineTheme()
+
+  // Custom intersection-based lazy loading with a generous rootMargin so images
+  // start fetching well before they scroll into view (avoids native lazy loading
+  // inconsistencies in JS-heavy React apps).
+  const { priority } = props
+  const sentinelRef = useRef<HTMLSpanElement>(null)
+  const [shouldLoad, setShouldLoad] = useState<boolean>(!!priority)
+
+  useEffect(() => {
+    if (priority) setShouldLoad(true)
+  }, [priority])
+
+  useEffect(() => {
+    if (shouldLoad) return
+    const el = sentinelRef.current
+    if (!el) return
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setShouldLoad(true)
+          observer.disconnect()
+        }
+      },
+      { rootMargin: '400px 0px' }
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [shouldLoad])
 
   const handleLoad = () => {
     setLoading(false)
@@ -155,11 +183,13 @@ function ImageWithRetry({
   const isExternal = isExternalUrl(src)
 
   // Filter out Next.js Image-specific props for regular img tag
-  const { fill, sizes, quality, priority, placeholder, blurDataURL, unoptimized, loader, ...imgProps } = props
+  const { fill, sizes, quality, priority: _priority, placeholder, blurDataURL, unoptimized, loader, ...imgProps } = props
 
   return (
     <>
-      {loading && (
+      {/* Invisible sentinel used by IntersectionObserver to detect proximity */}
+      <span ref={sentinelRef} style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }} />
+      {shouldLoad && loading && (
         <Box
           style={{
             position: 'absolute',
@@ -177,7 +207,7 @@ function ImageWithRetry({
           <Loader size="sm" color={theme.colors.red?.[5]} />
         </Box>
       )}
-      {isExternal ? (
+      {shouldLoad && (isExternal ? (
         // Use regular img tag for external URLs to bypass Next.js image domain restrictions
         <img
           {...imgProps}
@@ -185,7 +215,7 @@ function ImageWithRetry({
           alt={alt}
           onLoad={handleLoad}
           onError={handleError}
-          loading={priority ? 'eager' : 'lazy'}
+          loading="eager"
           style={{
             position: fill ? 'absolute' : undefined,
             top: fill ? 0 : undefined,
@@ -205,9 +235,9 @@ function ImageWithRetry({
           onLoad={handleLoad}
           onError={handleError}
           priority={priority ?? false}
-          loading={priority ? 'eager' : 'lazy'}
+          loading="eager"
         />
-      )}
+      ))}
     </>
   )
 }
