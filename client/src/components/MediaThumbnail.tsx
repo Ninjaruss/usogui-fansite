@@ -112,6 +112,18 @@ function ImageWithRetry({
     if (shouldLoad) return
     const el = sentinelRef.current
     if (!el) return
+
+    // Synchronously check if the element is already near/in the viewport on mount.
+    // This handles both initial page loads and pagination page changes where new
+    // cards appear already visible — no need to wait for the async observer callback.
+    const rect = el.getBoundingClientRect()
+    if (rect.top < window.innerHeight + 400 && rect.bottom > -400) {
+      setShouldLoad(true)
+      return
+    }
+
+    // For cards further down the page, use IntersectionObserver so they start
+    // fetching 400px before they scroll into view.
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -123,7 +135,8 @@ function ImageWithRetry({
     )
     observer.observe(el)
     return () => observer.disconnect()
-  }, [shouldLoad])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // Run once on mount; priority changes handled by the effect above
 
   const handleLoad = () => {
     setLoading(false)
