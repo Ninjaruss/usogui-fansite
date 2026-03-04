@@ -98,7 +98,6 @@ export function DetailPageHeader({
                     entityType={entityType}
                     entityId={entityId}
                     entityName={entityName}
-                    allowCycling={false}
                     maxWidth={imageWidth}
                     maxHeight={imageHeight}
                   />

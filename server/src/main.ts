@@ -24,6 +24,9 @@ async function bootstrap() {
   // Set global prefix
   app.setGlobalPrefix('api');
 
+  // Trust reverse proxy (Traefik/Nginx) — required for express-rate-limit to read X-Forwarded-For correctly
+  app.getHttpAdapter().getInstance().set('trust proxy', 1);
+
   // Security
   app.use(helmet());
   // Cookie parsing for refresh token cookie
