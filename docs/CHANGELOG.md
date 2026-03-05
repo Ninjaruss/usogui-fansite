@@ -2,6 +2,9 @@
 
 ## TODO
 
+## 2026-03-05
+- Unified search dropdown instead of separate column selection layout for media and guides admin pages
+
 ## 2026-03-04
 - Replacing B2 backblaze with R2 cloudflare
 - Reformatting of public images to webp

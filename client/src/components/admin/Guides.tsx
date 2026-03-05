@@ -517,7 +517,9 @@ const GuideFilterToolbar = () => {
       borderBottom: 'none',
       mb: 0,
       p: 2,
-      backdropFilter: 'blur(8px)'
+      backdropFilter: 'blur(8px)',
+      position: 'relative',
+      zIndex: 2
     }}>
       {/* General Text Search */}
       <Box sx={{ mb: 3 }}>
