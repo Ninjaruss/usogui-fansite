@@ -23,9 +23,10 @@ import { OrganizationList, OrganizationEdit, OrganizationCreate } from '../../co
 import { CharacterRelationshipList, CharacterRelationshipEdit, CharacterRelationshipCreate, CharacterRelationshipShow } from '../../components/admin/CharacterRelationships'
 import { CharacterOrganizationList, CharacterOrganizationEdit, CharacterOrganizationCreate, CharacterOrganizationShow } from '../../components/admin/CharacterOrganizations'
 import { AnnotationList, AnnotationEdit, AnnotationCreate, AnnotationShow } from '../../components/admin/Annotations'
+import { VolumeList, VolumeEdit, VolumeCreate, VolumeShow } from '../../components/admin/Volumes'
 
 // Icons
-import { Users, User, BookOpen, Crown, Zap, FileText, Image, Quote, Tag, Shield, Link2, Building2, MessageSquare } from 'lucide-react'
+import { Users, User, BookOpen, Crown, Zap, FileText, Image, Quote, Tag, Shield, Link2, Building2, MessageSquare, Library } from 'lucide-react'
 
 // Convert icons to components
 const UsersIcon = () => <Users />
@@ -41,6 +42,7 @@ const ShieldIcon = () => <Shield />
 const Link2Icon = () => <Link2 />
 const Building2Icon = () => <Building2 />
 const MessageSquareIcon = () => <MessageSquare />
+const LibraryIcon = () => <Library />
 
 export default function AdminApp() {
   return (
@@ -74,6 +76,14 @@ export default function AdminApp() {
         create={ArcCreate}
         show={ArcShow}
         icon={BookOpenIcon}
+      />
+      <Resource
+        name="volumes"
+        list={VolumeList}
+        edit={VolumeEdit}
+        create={VolumeCreate}
+        show={VolumeShow}
+        icon={LibraryIcon}
       />
       <Resource
         name="gambles"

@@ -29,6 +29,7 @@ export enum MediaPurpose {
 
 export enum MediaUsageType {
   CHARACTER_IMAGE = 'character_image',
+  VOLUME_IMAGE = 'volume_image',
   GUIDE_IMAGE = 'guide_image',
   GALLERY_UPLOAD = 'gallery_upload',
 }

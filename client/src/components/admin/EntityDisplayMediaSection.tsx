@@ -28,9 +28,10 @@ import { Image as ImageIcon, Upload, Trash2, Edit, Plus, X, Link as LinkIcon } f
 import { api } from '../../lib/api'
 
 interface EntityDisplayMediaSectionProps {
-  ownerType: 'character' | 'arc' | 'event' | 'gamble' | 'organization'
+  ownerType: 'character' | 'arc' | 'event' | 'gamble' | 'organization' | 'volume'
   ownerId: number | string
   accentColor?: string
+  usageType?: string
 }
 
 interface MediaItem {
@@ -47,7 +48,8 @@ interface MediaItem {
 export const EntityDisplayMediaSection: React.FC<EntityDisplayMediaSectionProps> = ({
   ownerType,
   ownerId,
-  accentColor = '#e11d48'
+  accentColor = '#e11d48',
+  usageType = 'character_image'
 }) => {
   const notify = useNotify()
   const [mediaItems, setMediaItems] = useState<MediaItem[]>([])
@@ -154,7 +156,7 @@ export const EntityDisplayMediaSection: React.FC<EntityDisplayMediaSectionProps>
         purpose: 'entity_display',
         description: description.trim() || undefined,
         chapterNumber: chapterNumber ? parseInt(chapterNumber) : undefined,
-        usageType: 'character_image'
+        usageType
       })
 
       notify('Media uploaded successfully', { type: 'success' })

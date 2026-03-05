@@ -113,3 +113,14 @@ export class UploadArcImageDto {
   @MaxLength(255)
   fileName: string;
 }
+
+export class UploadVolumeImageDto {
+  @ApiProperty({
+    description: 'Volume image filename',
+    example: 'volume-01-cover.jpg',
+  })
+  @IsNotEmpty()
+  @IsString()
+  @MaxLength(255)
+  fileName: string;
+}

@@ -376,7 +376,7 @@ export class MediaController {
   @ApiOperation({
     summary: 'Upload media file',
     description:
-      'Upload a media file directly to the server (requires authentication). Max file size: 5MB. CHARACTER_IMAGE requires moderator/admin role.',
+      'Upload a media file directly to the server (requires authentication). Max file size: 5MB. CHARACTER_IMAGE and VOLUME_IMAGE require moderator/admin role.',
   })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
@@ -392,7 +392,7 @@ export class MediaController {
           type: 'string',
           enum: Object.values(MediaUsageType),
           description:
-            'Usage type: CHARACTER_IMAGE (mod/admin only), GUIDE_IMAGE or GALLERY_UPLOAD (all users)',
+            'Usage type: CHARACTER_IMAGE or VOLUME_IMAGE (mod/admin only), GUIDE_IMAGE or GALLERY_UPLOAD (all users)',
         },
         type: {
           type: 'string',
@@ -446,10 +446,13 @@ export class MediaController {
     }
 
     // Role-based permission check for usageType
-    if (uploadData.usageType === MediaUsageType.CHARACTER_IMAGE) {
+    if (
+      uploadData.usageType === MediaUsageType.CHARACTER_IMAGE ||
+      uploadData.usageType === MediaUsageType.VOLUME_IMAGE
+    ) {
       if (user.role !== UserRole.MODERATOR && user.role !== UserRole.ADMIN) {
         throw new BadRequestException(
-          'CHARACTER_IMAGE uploads require moderator or admin role',
+          `${uploadData.usageType.toUpperCase()} uploads require moderator or admin role`,
         );
       }
     }
