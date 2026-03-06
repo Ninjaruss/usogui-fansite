@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   List,
   Datagrid,
@@ -23,15 +23,266 @@ import {
   SearchInput,
   ReferenceInput,
   AutocompleteInput,
-  BulkDeleteButton
+  BulkDeleteButton,
+  useRecordContext,
+  useNotify,
+  useRefresh
 } from 'react-admin'
-import { Box, Card, CardContent, Typography, Grid, Chip, Button as MuiButton, Divider, Tooltip, IconButton } from '@mui/material'
+import {
+  Box, Card, CardContent, Typography, Grid, Chip, Button as MuiButton,
+  Divider, Tooltip, IconButton, Dialog, DialogTitle, DialogContent,
+  DialogActions, Select, MenuItem, FormControl, InputLabel,
+  Autocomplete, TextField as MuiTextField, CircularProgress
+} from '@mui/material'
 import { Edit3, Plus, Users, ArrowRight, Building2, Image as ImageIcon } from 'lucide-react'
 import { EntityDisplayMediaSection } from './EntityDisplayMediaSection'
 import { Link } from 'react-router-dom'
 import EnhancedSpoilerMarkdown from '../EnhancedSpoilerMarkdown'
 import { EditToolbar } from './EditToolbar'
 import { RelationshipType } from '../../types'
+import { api } from '../../lib/api'
+
+const RELATIONSHIP_TYPES = [
+  'ally', 'rival', 'mentor', 'subordinate', 'family', 'partner', 'enemy', 'acquaintance'
+]
+
+const RelationshipModalTrigger = () => {
+  const record = useRecordContext()
+  const notify = useNotify()
+  const refresh = useRefresh()
+  const [open, setOpen] = useState(false)
+  const [characters, setCharacters] = useState<any[]>([])
+  const [loadingChars, setLoadingChars] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [form, setForm] = useState({
+    targetCharacter: null as any,
+    relationshipType: 'ally',
+    description: '',
+    reverseRelationshipType: '',
+    reverseDescription: '',
+    startChapter: '',
+    endChapter: '',
+    spoilerChapter: ''
+  })
+
+  const handleOpen = () => {
+    setOpen(true)
+    if (characters.length === 0) {
+      setLoadingChars(true)
+      api.getCharacters({ limit: 500 })
+        .then(res => setCharacters(res.data || []))
+        .catch(() => notify('Failed to load characters', { type: 'error' }))
+        .finally(() => setLoadingChars(false))
+    }
+  }
+
+  const handleClose = () => {
+    setOpen(false)
+    setForm({ targetCharacter: null, relationshipType: 'ally', description: '', reverseRelationshipType: '', reverseDescription: '', startChapter: '', endChapter: '', spoilerChapter: '' })
+  }
+
+  const handleSubmit = async () => {
+    if (!form.targetCharacter) return notify('Please select a target character', { type: 'warning' })
+    setSaving(true)
+    try {
+      await api.post('/character-relationships', {
+        sourceCharacterId: record?.id,
+        targetCharacterId: form.targetCharacter.id,
+        relationshipType: form.relationshipType,
+        description: form.description || undefined,
+        reverseRelationshipType: form.reverseRelationshipType || undefined,
+        reverseDescription: form.reverseDescription || undefined,
+        startChapter: form.startChapter ? Number(form.startChapter) : undefined,
+        endChapter: form.endChapter ? Number(form.endChapter) : undefined,
+        spoilerChapter: form.spoilerChapter ? Number(form.spoilerChapter) : undefined
+      })
+      notify('Relationship added', { type: 'success' })
+      refresh()
+      handleClose()
+    } catch {
+      notify('Failed to add relationship', { type: 'error' })
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <>
+      <MuiButton
+        onClick={handleOpen}
+        size="small"
+        variant="contained"
+        startIcon={<Plus size={16} />}
+        sx={{ backgroundColor: '#8b5cf6', '&:hover': { backgroundColor: '#7c3aed' } }}
+      >
+        Add Relationship
+      </MuiButton>
+      <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ backgroundColor: 'rgba(139,92,246,0.15)', color: '#8b5cf6' }}>
+          Add Relationship — {record?.name}
+        </DialogTitle>
+        <DialogContent sx={{ pt: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <Autocomplete
+            options={characters}
+            getOptionLabel={(o: any) => o.name || ''}
+            value={form.targetCharacter}
+            onChange={(_, v) => setForm(f => ({ ...f, targetCharacter: v }))}
+            loading={loadingChars}
+            renderInput={(params) => (
+              <MuiTextField {...params} label="Target Character *" size="small"
+                InputProps={{ ...params.InputProps, endAdornment: (<>{loadingChars && <CircularProgress size={16} />}{params.InputProps.endAdornment}</>) }} />
+            )}
+          />
+          <FormControl size="small" fullWidth>
+            <InputLabel>Relationship Type</InputLabel>
+            <Select value={form.relationshipType} label="Relationship Type"
+              onChange={(e) => setForm(f => ({ ...f, relationshipType: e.target.value }))}>
+              {RELATIONSHIP_TYPES.map(t => <MenuItem key={t} value={t} sx={{ textTransform: 'capitalize' }}>{t}</MenuItem>)}
+            </Select>
+          </FormControl>
+          <MuiTextField label="Description (optional)" size="small" multiline rows={2} fullWidth
+            value={form.description} onChange={(e) => setForm(f => ({ ...f, description: e.target.value }))} />
+          <FormControl size="small" fullWidth>
+            <InputLabel>Reverse Relationship Type (optional)</InputLabel>
+            <Select value={form.reverseRelationshipType} label="Reverse Relationship Type (optional)"
+              onChange={(e) => setForm(f => ({ ...f, reverseRelationshipType: e.target.value }))}>
+              <MenuItem value="">No reverse relationship</MenuItem>
+              {RELATIONSHIP_TYPES.map(t => <MenuItem key={t} value={t} sx={{ textTransform: 'capitalize' }}>{t}</MenuItem>)}
+            </Select>
+          </FormControl>
+          {form.reverseRelationshipType && (
+            <MuiTextField label="Reverse Description (optional)" size="small" multiline rows={2} fullWidth
+              value={form.reverseDescription} onChange={(e) => setForm(f => ({ ...f, reverseDescription: e.target.value }))} />
+          )}
+          <Box sx={{ display: 'flex', gap: 2 }}>
+            <MuiTextField label="Start Chapter" size="small" type="number" inputProps={{ min: 1, max: 539 }}
+              value={form.startChapter} onChange={(e) => setForm(f => ({ ...f, startChapter: e.target.value }))} />
+            <MuiTextField label="End Chapter" size="small" type="number" inputProps={{ min: 1, max: 539 }}
+              value={form.endChapter} onChange={(e) => setForm(f => ({ ...f, endChapter: e.target.value }))} />
+            <MuiTextField label="Spoiler Chapter" size="small" type="number" inputProps={{ min: 1, max: 539 }}
+              value={form.spoilerChapter} onChange={(e) => setForm(f => ({ ...f, spoilerChapter: e.target.value }))} />
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <MuiButton onClick={handleClose} disabled={saving}>Cancel</MuiButton>
+          <MuiButton onClick={handleSubmit} variant="contained" disabled={saving || !form.targetCharacter}
+            sx={{ backgroundColor: '#8b5cf6', '&:hover': { backgroundColor: '#7c3aed' } }}>
+            {saving ? 'Saving...' : 'Save Relationship'}
+          </MuiButton>
+        </DialogActions>
+      </Dialog>
+    </>
+  )
+}
+
+const OrgMembershipModalTrigger = () => {
+  const record = useRecordContext()
+  const notify = useNotify()
+  const refresh = useRefresh()
+  const [open, setOpen] = useState(false)
+  const [organizations, setOrganizations] = useState<any[]>([])
+  const [loadingOrgs, setLoadingOrgs] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [form, setForm] = useState({
+    organization: null as any,
+    role: '',
+    notes: '',
+    startChapter: '',
+    endChapter: '',
+    spoilerChapter: ''
+  })
+
+  const handleOpen = () => {
+    setOpen(true)
+    if (organizations.length === 0) {
+      setLoadingOrgs(true)
+      api.getOrganizations({ limit: 500 })
+        .then(res => setOrganizations(res.data || []))
+        .catch(() => notify('Failed to load organizations', { type: 'error' }))
+        .finally(() => setLoadingOrgs(false))
+    }
+  }
+
+  const handleClose = () => {
+    setOpen(false)
+    setForm({ organization: null, role: '', notes: '', startChapter: '', endChapter: '', spoilerChapter: '' })
+  }
+
+  const handleSubmit = async () => {
+    if (!form.organization) return notify('Please select an organization', { type: 'warning' })
+    if (!form.role) return notify('Please enter a role', { type: 'warning' })
+    setSaving(true)
+    try {
+      await api.post('/character-organizations', {
+        characterId: record?.id,
+        organizationId: form.organization.id,
+        role: form.role,
+        notes: form.notes || undefined,
+        startChapter: form.startChapter ? Number(form.startChapter) : undefined,
+        endChapter: form.endChapter ? Number(form.endChapter) : undefined,
+        spoilerChapter: form.spoilerChapter ? Number(form.spoilerChapter) : undefined
+      })
+      notify('Membership added', { type: 'success' })
+      refresh()
+      handleClose()
+    } catch {
+      notify('Failed to add membership', { type: 'error' })
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <>
+      <MuiButton
+        onClick={handleOpen}
+        size="small"
+        variant="contained"
+        startIcon={<Plus size={16} />}
+        sx={{ backgroundColor: '#10b981', '&:hover': { backgroundColor: '#059669' } }}
+      >
+        Add Membership
+      </MuiButton>
+      <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ backgroundColor: 'rgba(16,185,129,0.15)', color: '#10b981' }}>
+          Add Organization Membership — {record?.name}
+        </DialogTitle>
+        <DialogContent sx={{ pt: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <Autocomplete
+            options={organizations}
+            getOptionLabel={(o: any) => o.name || ''}
+            value={form.organization}
+            onChange={(_, v) => setForm(f => ({ ...f, organization: v }))}
+            loading={loadingOrgs}
+            renderInput={(params) => (
+              <MuiTextField {...params} label="Organization *" size="small"
+                InputProps={{ ...params.InputProps, endAdornment: (<>{loadingOrgs && <CircularProgress size={16} />}{params.InputProps.endAdornment}</>) }} />
+            )}
+          />
+          <MuiTextField label="Role *" size="small" fullWidth placeholder="e.g. Leader, Member, Referee"
+            value={form.role} onChange={(e) => setForm(f => ({ ...f, role: e.target.value }))} />
+          <MuiTextField label="Notes (optional)" size="small" multiline rows={2} fullWidth
+            value={form.notes} onChange={(e) => setForm(f => ({ ...f, notes: e.target.value }))} />
+          <Box sx={{ display: 'flex', gap: 2 }}>
+            <MuiTextField label="Start Chapter" size="small" type="number" inputProps={{ min: 1, max: 539 }}
+              value={form.startChapter} onChange={(e) => setForm(f => ({ ...f, startChapter: e.target.value }))} />
+            <MuiTextField label="End Chapter" size="small" type="number" inputProps={{ min: 1, max: 539 }}
+              value={form.endChapter} onChange={(e) => setForm(f => ({ ...f, endChapter: e.target.value }))} />
+            <MuiTextField label="Spoiler Chapter" size="small" type="number" inputProps={{ min: 1, max: 539 }}
+              value={form.spoilerChapter} onChange={(e) => setForm(f => ({ ...f, spoilerChapter: e.target.value }))} />
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <MuiButton onClick={handleClose} disabled={saving}>Cancel</MuiButton>
+          <MuiButton onClick={handleSubmit} variant="contained" disabled={saving || !form.organization || !form.role}
+            sx={{ backgroundColor: '#10b981', '&:hover': { backgroundColor: '#059669' } }}>
+            {saving ? 'Saving...' : 'Save Membership'}
+          </MuiButton>
+        </DialogActions>
+      </Dialog>
+    </>
+  )
+}
 
 // Color mapping for relationship types
 const getRelationshipColor = (type: string) => {
@@ -469,21 +720,7 @@ export const CharacterEdit = () => (
                       <Users size={20} />
                       Character Relationships
                     </Typography>
-                    <WithRecord render={(record) => (
-                      <MuiButton
-                        component={Link}
-                        to={`/character-relationships/create?source=${encodeURIComponent(JSON.stringify({ sourceCharacterId: record.id }))}`}
-                        size="small"
-                        variant="contained"
-                        startIcon={<Plus size={16} />}
-                        sx={{
-                          backgroundColor: '#8b5cf6',
-                          '&:hover': { backgroundColor: '#7c3aed' }
-                        }}
-                      >
-                        Add Relationship
-                      </MuiButton>
-                    )} />
+                    <RelationshipModalTrigger />
                   </Box>
 
                   {/* Outgoing Relationships */}
@@ -654,21 +891,7 @@ export const CharacterEdit = () => (
                       <Building2 size={20} />
                       Organization Memberships
                     </Typography>
-                    <WithRecord render={(record) => (
-                      <MuiButton
-                        component={Link}
-                        to={`/character-organizations/create?source=${encodeURIComponent(JSON.stringify({ characterId: record.id }))}`}
-                        size="small"
-                        variant="contained"
-                        startIcon={<Plus size={16} />}
-                        sx={{
-                          backgroundColor: '#10b981',
-                          '&:hover': { backgroundColor: '#059669' }
-                        }}
-                      >
-                        Add Membership
-                      </MuiButton>
-                    )} />
+                    <OrgMembershipModalTrigger />
                   </Box>
 
                   <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.6)', mb: 2 }}>

@@ -55,7 +55,8 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogActions
+  DialogActions,
+  IconButton
 } from '@mui/material'
 import {
   Check,
@@ -63,6 +64,7 @@ import {
   FileText,
   User,
   Eye,
+  EyeOff,
   Heart,
   Calendar,
   Clock,
@@ -2220,17 +2222,12 @@ export const GuideShow = () => {
   )
 }
 
-// Custom content input component with tabs
-const ContentInputWithPreview = () => {
-  const [activeTab, setActiveTab] = useState(0)
-  const record = useRecordContext()
-  const { setValue, getValues, watch } = useFormContext()
+// Shared logic for the content editor (both Edit and Create)
+const useContentEditor = () => {
+  const { setValue, getValues } = useFormContext()
   const [textAreaRef, setTextAreaRef] = useState<HTMLTextAreaElement | null>(null)
-  const contentValue = watch('content')
-
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
-    setActiveTab(newValue)
-  }
+  const [previewVisible, setPreviewVisible] = useState(true)
+  const contentValue = useWatch({ name: 'content' })
 
   const handleInsertEmbed = (embedCode: string) => {
     if (textAreaRef) {
@@ -2240,23 +2237,23 @@ const ContentInputWithPreview = () => {
         currentValue.slice(0, cursorPosition) +
         embedCode +
         currentValue.slice(cursorPosition)
-
       setValue('content', newValue, { shouldDirty: true, shouldValidate: true })
-
-      // Focus back to textarea and position cursor after the inserted embed
       setTimeout(() => {
         textAreaRef.focus()
-        textAreaRef.setSelectionRange(
-          cursorPosition + embedCode.length,
-          cursorPosition + embedCode.length
-        )
+        textAreaRef.setSelectionRange(cursorPosition + embedCode.length, cursorPosition + embedCode.length)
       }, 100)
     } else {
-      // Fallback: just append to the end
       const currentValue = getValues().content || ''
       setValue('content', currentValue + embedCode, { shouldDirty: true, shouldValidate: true })
     }
   }
+
+  return { textAreaRef, setTextAreaRef, previewVisible, setPreviewVisible, contentValue, handleInsertEmbed }
+}
+
+// Custom content input component with side-by-side preview (Edit)
+const ContentInputWithPreview = () => {
+  const { textAreaRef, setTextAreaRef, previewVisible, setPreviewVisible, contentValue, handleInsertEmbed } = useContentEditor()
 
   return (
     <Box sx={{
@@ -2266,111 +2263,83 @@ const ContentInputWithPreview = () => {
       border: '1px solid rgba(124, 58, 237, 0.2)',
       mb: 3
     }}>
-      <Typography variant="h6" sx={{ color: '#7c3aed', mb: 2, fontWeight: 'bold' }}>
-        Guide Content
-      </Typography>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+        <Typography variant="h6" sx={{ color: '#7c3aed', fontWeight: 'bold' }}>
+          Guide Content
+        </Typography>
+        <IconButton
+          size="small"
+          onClick={() => setPreviewVisible(v => !v)}
+          title={previewVisible ? 'Hide preview' : 'Show preview'}
+          sx={{ color: previewVisible ? '#7c3aed' : 'rgba(255,255,255,0.4)', '&:hover': { color: '#7c3aed' } }}
+        >
+          {previewVisible ? <EyeOff size={18} /> : <Eye size={18} />}
+        </IconButton>
+      </Box>
 
-      <EntityEmbedHelperWithSearch
-        onInsertEmbed={handleInsertEmbed}
-      />
+      <EntityEmbedHelperWithSearch onInsertEmbed={handleInsertEmbed} />
 
-      <Card sx={{ mt: 2, border: '1px solid rgba(124, 58, 237, 0.3)' }}>
-        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-          <Tabs value={activeTab} onChange={handleTabChange}>
-            <Tab label="Write" icon={<FileText size={16} />} iconPosition="start" />
-            <Tab label="Preview" icon={<Eye size={16} />} iconPosition="start" />
-          </Tabs>
+      <Box sx={{ mt: 2, display: 'flex', gap: 2, alignItems: 'flex-start', flexDirection: { xs: 'column', md: 'row' } }}>
+        {/* Write panel */}
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          <TextInput
+            source="content"
+            multiline
+            rows={18}
+            required
+            fullWidth
+            label="Content (Markdown Supported)"
+            helperText="Write your guide content using Markdown formatting and entity embeds"
+            sx={{
+              '& .MuiInputBase-input': {
+                fontFamily: 'monospace',
+                fontSize: '0.9rem',
+                lineHeight: 1.6
+              }
+            }}
+            inputProps={{
+              ref: (ref: HTMLTextAreaElement) => setTextAreaRef(ref)
+            }}
+          />
         </Box>
 
-        <CardContent>
-          {activeTab === 0 ? (
-            <TextInput
-              source="content"
-              multiline
-              rows={15}
-              required
-              fullWidth
-              label="Content (Markdown Supported)"
-              helperText="Write your guide content using Markdown formatting and entity embeds"
-              sx={{
-                '& .MuiInputBase-input': {
-                  fontFamily: 'monospace',
-                  fontSize: '0.9rem',
-                  lineHeight: 1.6
-                }
-              }}
-              inputProps={{
-                ref: (ref: HTMLTextAreaElement) => setTextAreaRef(ref)
-              }}
-            />
-          ) : (
-            <Box>
-              <Typography variant="h6" gutterBottom>
-                Preview
-              </Typography>
-              <Box sx={{
-                border: '1px solid rgba(124, 58, 237, 0.2)',
-                borderRadius: 1,
-                p: 2,
-                minHeight: '400px',
-                backgroundColor: 'rgba(124, 58, 237, 0.02)'
-              }}>
-                {contentValue ? (
-                  <EnhancedSpoilerMarkdown
-                    content={contentValue}
-                    compactEntityCards={false}
-                    enableEntityEmbeds={true}
-                  />
-                ) : (
-                  <Typography color="text.secondary" fontStyle="italic">
-                    Start writing your guide to see the preview with entity embeds...
-                  </Typography>
-                )}
-              </Box>
+        {/* Preview panel */}
+        {previewVisible && (
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.5)', display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.5 }}>
+              <Eye size={12} /> Live Preview
+            </Typography>
+            <Box sx={{
+              border: '1px solid rgba(124, 58, 237, 0.2)',
+              borderRadius: 1,
+              p: 2,
+              minHeight: '460px',
+              maxHeight: '600px',
+              overflowY: 'auto',
+              backgroundColor: 'rgba(124, 58, 237, 0.02)'
+            }}>
+              {contentValue ? (
+                <EnhancedSpoilerMarkdown
+                  content={contentValue}
+                  compactEntityCards={false}
+                  enableEntityEmbeds={true}
+                />
+              ) : (
+                <Typography color="text.secondary" fontStyle="italic" fontSize="0.85rem">
+                  Start writing to see the live preview…
+                </Typography>
+              )}
             </Box>
-          )}
-        </CardContent>
-      </Card>
+          </Box>
+        )}
+      </Box>
     </Box>
   )
 }
 
-// Content input component for create page (no existing content)
+// Content input component for create page with side-by-side preview
 const ContentInputWithPreviewCreate = () => {
-  const [activeTab, setActiveTab] = useState(0)
-  const { setValue, getValues, watch } = useFormContext()
-  const [textAreaRef, setTextAreaRef] = useState<HTMLTextAreaElement | null>(null)
-  const contentValue = watch('content')
-
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
-    setActiveTab(newValue)
-  }
-
-  const handleInsertEmbed = (embedCode: string) => {
-    if (textAreaRef) {
-      const currentValue = getValues().content || ''
-      const cursorPosition = textAreaRef.selectionStart || currentValue.length
-      const newValue =
-        currentValue.slice(0, cursorPosition) +
-        embedCode +
-        currentValue.slice(cursorPosition)
-
-      setValue('content', newValue, { shouldDirty: true, shouldValidate: true })
-
-      // Focus back to textarea and position cursor after the inserted embed
-      setTimeout(() => {
-        textAreaRef.focus()
-        textAreaRef.setSelectionRange(
-          cursorPosition + embedCode.length,
-          cursorPosition + embedCode.length
-        )
-      }, 100)
-    } else {
-      // Fallback: just append to the end
-      const currentValue = getValues().content || ''
-      setValue('content', currentValue + embedCode, { shouldDirty: true, shouldValidate: true })
-    }
-  }
+  const { textAreaRef, setTextAreaRef, previewVisible, setPreviewVisible, contentValue, handleInsertEmbed } = useContentEditor()
 
   return (
     <Box sx={{
@@ -2380,71 +2349,76 @@ const ContentInputWithPreviewCreate = () => {
       border: '1px solid rgba(124, 58, 237, 0.2)',
       mb: 3
     }}>
-      <Typography variant="h6" sx={{ color: '#7c3aed', mb: 2, fontWeight: 'bold' }}>
-        Guide Content
-      </Typography>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+        <Typography variant="h6" sx={{ color: '#7c3aed', fontWeight: 'bold' }}>
+          Guide Content
+        </Typography>
+        <IconButton
+          size="small"
+          onClick={() => setPreviewVisible(v => !v)}
+          title={previewVisible ? 'Hide preview' : 'Show preview'}
+          sx={{ color: previewVisible ? '#7c3aed' : 'rgba(255,255,255,0.4)', '&:hover': { color: '#7c3aed' } }}
+        >
+          {previewVisible ? <EyeOff size={18} /> : <Eye size={18} />}
+        </IconButton>
+      </Box>
 
-      <EntityEmbedHelperWithSearch
-        onInsertEmbed={handleInsertEmbed}
-      />
+      <EntityEmbedHelperWithSearch onInsertEmbed={handleInsertEmbed} />
 
-      <Card sx={{ mt: 2, border: '1px solid rgba(124, 58, 237, 0.3)' }}>
-        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-          <Tabs value={activeTab} onChange={handleTabChange}>
-            <Tab label="Write" icon={<FileText size={16} />} iconPosition="start" />
-            <Tab label="Preview" icon={<Eye size={16} />} iconPosition="start" />
-          </Tabs>
+      <Box sx={{ mt: 2, display: 'flex', gap: 2, alignItems: 'flex-start', flexDirection: { xs: 'column', md: 'row' } }}>
+        {/* Write panel */}
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          <TextInput
+            source="content"
+            multiline
+            rows={15}
+            required
+            fullWidth
+            label="Content (Markdown Supported)"
+            helperText="Write your guide content using Markdown formatting and entity embeds"
+            sx={{
+              '& .MuiInputBase-input': {
+                fontFamily: 'monospace',
+                fontSize: '0.9rem',
+                lineHeight: 1.6
+              }
+            }}
+            inputProps={{
+              ref: (ref: HTMLTextAreaElement) => setTextAreaRef(ref)
+            }}
+          />
         </Box>
 
-        <CardContent>
-          {activeTab === 0 ? (
-            <TextInput
-              source="content"
-              multiline
-              rows={12}
-              required
-              fullWidth
-              label="Content (Markdown Supported)"
-              helperText="Write your guide content using Markdown formatting and entity embeds"
-              sx={{
-                '& .MuiInputBase-input': {
-                  fontFamily: 'monospace',
-                  fontSize: '0.9rem',
-                  lineHeight: 1.6
-                }
-              }}
-              inputProps={{
-                ref: (ref: HTMLTextAreaElement) => setTextAreaRef(ref)
-              }}
-            />
-          ) : (
-            <Box>
-              <Typography variant="h6" gutterBottom>
-                Preview
-              </Typography>
-              <Box sx={{
-                border: '1px solid rgba(124, 58, 237, 0.2)',
-                borderRadius: 1,
-                p: 2,
-                minHeight: '300px',
-                backgroundColor: 'rgba(124, 58, 237, 0.02)'
-              }}>
-                {contentValue ? (
-                  <EnhancedSpoilerMarkdown
-                    content={contentValue}
-                    compactEntityCards={false}
-                    enableEntityEmbeds={true}
-                  />
-                ) : (
-                  <Typography color="text.secondary" fontStyle="italic">
-                    Start writing your guide to see the preview with entity embeds...
-                  </Typography>
-                )}
-              </Box>
+        {/* Preview panel */}
+        {previewVisible && (
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.5)', display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.5 }}>
+              <Eye size={12} /> Live Preview
+            </Typography>
+            <Box sx={{
+              border: '1px solid rgba(124, 58, 237, 0.2)',
+              borderRadius: 1,
+              p: 2,
+              minHeight: '400px',
+              maxHeight: '550px',
+              overflowY: 'auto',
+              backgroundColor: 'rgba(124, 58, 237, 0.02)'
+            }}>
+              {contentValue ? (
+                <EnhancedSpoilerMarkdown
+                  content={contentValue}
+                  compactEntityCards={false}
+                  enableEntityEmbeds={true}
+                />
+              ) : (
+                <Typography color="text.secondary" fontStyle="italic" fontSize="0.85rem">
+                  Start writing to see the live preview…
+                </Typography>
+              )}
             </Box>
-          )}
-        </CardContent>
-      </Card>
+          </Box>
+        )}
+      </Box>
     </Box>
   )
 }

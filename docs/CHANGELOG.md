@@ -4,6 +4,8 @@
 
 ## 2026-03-05
 - Unified search dropdown instead of separate column selection layout for media and guides admin pages
+- Modal for relationships and memberships in character admin page
+- Guides show preview of content in guides admin dashboard
 
 ## 2026-03-04
 - Replacing B2 backblaze with R2 cloudflare

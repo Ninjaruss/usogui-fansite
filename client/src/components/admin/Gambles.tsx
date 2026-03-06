@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import {
   List,
   Datagrid,
@@ -27,11 +27,263 @@ import {
   SearchInput,
   NumberField,
   FunctionField,
-  WithRecord
+  WithRecord,
+  useNotify,
+  useRefresh
 } from 'react-admin'
-import { Box, Typography, Tooltip, IconButton, Chip } from '@mui/material'
+import {
+  Box, Typography, Tooltip, IconButton, Chip,
+  Dialog, DialogTitle, DialogContent, DialogActions,
+  Autocomplete, TextField as MuiTextField, CircularProgress,
+  Button as MuiButton, Select, MenuItem, FormControl, InputLabel
+} from '@mui/material'
 import { Link } from 'react-router-dom'
-import { Image as ImageIcon } from 'lucide-react'
+import { Image as ImageIcon, Edit3, Plus, X } from 'lucide-react'
+import { api } from '../../lib/api'
+
+const FACTION_MEMBER_ROLES = ['leader', 'member', 'supporter', 'observer']
+
+interface FactionMember {
+  character: any
+  role: string
+}
+
+interface FactionData {
+  id?: number
+  name: string
+  supportedGambler: any | null
+  members: FactionMember[]
+}
+
+const FactionEditor = ({ gambleId, initialFactions }: { gambleId: number, initialFactions: any[] }) => {
+  const notify = useNotify()
+  const refresh = useRefresh()
+  const [factions, setFactions] = useState<FactionData[]>(
+    initialFactions.map(f => ({
+      id: f.id,
+      name: f.name || '',
+      supportedGambler: f.supportedGambler || null,
+      members: (f.members || []).map((m: any) => ({ character: m.character, role: m.role || 'member' }))
+    }))
+  )
+  const [characters, setCharacters] = useState<any[]>([])
+  const [loadingChars, setLoadingChars] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [modalOpen, setModalOpen] = useState(false)
+  const [editingIndex, setEditingIndex] = useState<number | null>(null)
+  const [factionForm, setFactionForm] = useState<FactionData>({ name: '', supportedGambler: null, members: [] })
+  const [pendingMember, setPendingMember] = useState<{ character: any, role: string }>({ character: null, role: 'member' })
+
+  const loadCharacters = () => {
+    if (characters.length === 0 && !loadingChars) {
+      setLoadingChars(true)
+      api.getCharacters({ limit: 500 })
+        .then(res => setCharacters(res.data || []))
+        .catch(() => notify('Failed to load characters', { type: 'error' }))
+        .finally(() => setLoadingChars(false))
+    }
+  }
+
+  const handleOpenAdd = () => {
+    setEditingIndex(null)
+    setFactionForm({ name: '', supportedGambler: null, members: [] })
+    setPendingMember({ character: null, role: 'member' })
+    setModalOpen(true)
+    loadCharacters()
+  }
+
+  const handleOpenEdit = (index: number) => {
+    setEditingIndex(index)
+    setFactionForm({ ...factions[index], members: factions[index].members.map(m => ({ ...m })) })
+    setPendingMember({ character: null, role: 'member' })
+    setModalOpen(true)
+    loadCharacters()
+  }
+
+  const handleDeleteFaction = (index: number) => {
+    setFactions(f => f.filter((_, i) => i !== index))
+  }
+
+  const handleAddMember = () => {
+    if (!pendingMember.character) return
+    if (factionForm.members.find(m => m.character?.id === pendingMember.character.id)) return
+    setFactionForm(f => ({ ...f, members: [...f.members, { ...pendingMember }] }))
+    setPendingMember({ character: null, role: 'member' })
+  }
+
+  const handleRemoveMember = (idx: number) => {
+    setFactionForm(f => ({ ...f, members: f.members.filter((_, i) => i !== idx) }))
+  }
+
+  const handleSaveFactionModal = () => {
+    if (factionForm.members.length === 0) {
+      notify('A faction must have at least one member', { type: 'warning' })
+      return
+    }
+    if (editingIndex !== null) {
+      setFactions(f => f.map((faction, i) => i === editingIndex ? { ...factionForm } : faction))
+    } else {
+      setFactions(f => [...f, { ...factionForm }])
+    }
+    setModalOpen(false)
+  }
+
+  const handleSaveFactions = async () => {
+    setSaving(true)
+    try {
+      await api.put(`/gambles/${gambleId}`, {
+        factions: factions.map(f => ({
+          name: f.name || undefined,
+          supportedGamblerId: f.supportedGambler?.id || undefined,
+          memberIds: f.members.map(m => m.character.id),
+          memberRoles: f.members.map(m => m.role)
+        }))
+      })
+      notify('Factions saved successfully', { type: 'success' })
+      refresh()
+    } catch {
+      notify('Failed to save factions', { type: 'error' })
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <Box sx={{ mt: 3 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
+        <Typography variant="subtitle1" sx={{ color: '#d32f2f', fontWeight: 'bold' }}>
+          Factions / Teams
+        </Typography>
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <MuiButton size="small" variant="outlined" startIcon={<Plus size={14} />}
+            onClick={handleOpenAdd}
+            sx={{ borderColor: 'rgba(211,47,47,0.5)', color: '#d32f2f', '&:hover': { borderColor: '#d32f2f', backgroundColor: 'rgba(211,47,47,0.05)' } }}>
+            Add Faction
+          </MuiButton>
+          <MuiButton size="small" variant="contained" onClick={handleSaveFactions} disabled={saving}
+            sx={{ backgroundColor: '#d32f2f', '&:hover': { backgroundColor: '#b71c1c' } }}>
+            {saving ? 'Saving...' : 'Save Factions'}
+          </MuiButton>
+        </Box>
+      </Box>
+
+      {factions.length === 0 ? (
+        <Box sx={{ p: 2, border: '1px dashed rgba(211,47,47,0.3)', borderRadius: 1, textAlign: 'center' }}>
+          <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.4)' }}>
+            No factions defined. Click "Add Faction" to create one.
+          </Typography>
+        </Box>
+      ) : (
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          {factions.map((faction, i) => (
+            <Box key={i} sx={{ p: 1.5, border: '1px solid rgba(211,47,47,0.25)', borderRadius: 1, backgroundColor: '#0f0f0f', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <Box>
+                <Typography variant="caption" sx={{ color: '#d32f2f', display: 'block', mb: 0.5, fontWeight: 600 }}>
+                  {faction.name || `Faction ${i + 1}`}
+                  {faction.supportedGambler && (
+                    <span style={{ color: 'rgba(255,255,255,0.6)', fontWeight: 'normal', marginLeft: 6 }}>
+                      — Supports {faction.supportedGambler.name}
+                    </span>
+                  )}
+                </Typography>
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                  {faction.members.map((m, mi) => (
+                    <Chip key={mi} size="small"
+                      label={`${m.character?.name || '?'} (${m.role || 'member'})`}
+                      sx={{ fontSize: '0.65rem', height: 20, backgroundColor: 'rgba(211,47,47,0.1)', color: 'rgba(255,255,255,0.8)' }} />
+                  ))}
+                </Box>
+              </Box>
+              <Box sx={{ display: 'flex', gap: 0.5, ml: 1, flexShrink: 0 }}>
+                <IconButton size="small" onClick={() => handleOpenEdit(i)}
+                  sx={{ color: 'rgba(255,255,255,0.4)', '&:hover': { color: '#d32f2f' } }}>
+                  <Edit3 size={14} />
+                </IconButton>
+                <IconButton size="small" onClick={() => handleDeleteFaction(i)}
+                  sx={{ color: 'rgba(255,255,255,0.3)', '&:hover': { color: '#ef4444' } }}>
+                  <X size={14} />
+                </IconButton>
+              </Box>
+            </Box>
+          ))}
+        </Box>
+      )}
+
+      <Dialog open={modalOpen} onClose={() => setModalOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ backgroundColor: 'rgba(211,47,47,0.12)', color: '#d32f2f' }}>
+          {editingIndex !== null ? 'Edit Faction' : 'Add Faction'}
+        </DialogTitle>
+        <DialogContent sx={{ pt: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <MuiTextField label="Faction Name (optional)" size="small" fullWidth
+            placeholder="e.g. Kakerou, L'air…" value={factionForm.name}
+            onChange={(e) => setFactionForm(f => ({ ...f, name: e.target.value }))} />
+          <Autocomplete
+            options={characters}
+            getOptionLabel={(o: any) => o.name || ''}
+            value={factionForm.supportedGambler}
+            onChange={(_, v) => setFactionForm(f => ({ ...f, supportedGambler: v }))}
+            loading={loadingChars}
+            renderInput={(params) => (
+              <MuiTextField {...params} label="Supported Gambler (optional)" size="small"
+                InputProps={{ ...params.InputProps, endAdornment: (<>{loadingChars && <CircularProgress size={16} />}{params.InputProps.endAdornment}</>) }} />
+            )}
+          />
+          <Box sx={{ border: '1px solid rgba(211,47,47,0.2)', borderRadius: 1, p: 1.5 }}>
+            <Typography variant="caption" sx={{ color: '#d32f2f', fontWeight: 600, display: 'block', mb: 1 }}>
+              Members *
+            </Typography>
+            {factionForm.members.map((m, mi) => (
+              <Box key={mi} sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                <Typography variant="body2" sx={{ flex: 1 }}>{m.character?.name}</Typography>
+                <FormControl size="small" sx={{ minWidth: 110 }}>
+                  <Select value={m.role}
+                    onChange={(e) => setFactionForm(f => ({
+                      ...f, members: f.members.map((mem, i) => i === mi ? { ...mem, role: e.target.value } : mem)
+                    }))}>
+                    {FACTION_MEMBER_ROLES.map(r => <MenuItem key={r} value={r} sx={{ textTransform: 'capitalize' }}>{r}</MenuItem>)}
+                  </Select>
+                </FormControl>
+                <IconButton size="small" onClick={() => handleRemoveMember(mi)}
+                  sx={{ color: 'rgba(255,255,255,0.4)', '&:hover': { color: '#ef4444' } }}>
+                  <X size={14} />
+                </IconButton>
+              </Box>
+            ))}
+            <Box sx={{ display: 'flex', gap: 1, mt: 1.5 }}>
+              <Autocomplete sx={{ flex: 1 }}
+                options={characters.filter(c => !factionForm.members.find(m => m.character?.id === c.id))}
+                getOptionLabel={(o: any) => o.name || ''}
+                value={pendingMember.character}
+                onChange={(_, v) => setPendingMember(p => ({ ...p, character: v }))}
+                loading={loadingChars}
+                renderInput={(params) => <MuiTextField {...params} label="Add character" size="small" />}
+              />
+              <FormControl size="small" sx={{ minWidth: 110 }}>
+                <InputLabel>Role</InputLabel>
+                <Select value={pendingMember.role} label="Role"
+                  onChange={(e) => setPendingMember(p => ({ ...p, role: e.target.value }))}>
+                  {FACTION_MEMBER_ROLES.map(r => <MenuItem key={r} value={r} sx={{ textTransform: 'capitalize' }}>{r}</MenuItem>)}
+                </Select>
+              </FormControl>
+              <MuiButton size="small" variant="outlined" onClick={handleAddMember}
+                disabled={!pendingMember.character}
+                sx={{ borderColor: 'rgba(211,47,47,0.5)', color: '#d32f2f', minWidth: 'auto', px: 1.5, '&:hover': { borderColor: '#d32f2f' } }}>
+                <Plus size={16} />
+              </MuiButton>
+            </Box>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <MuiButton onClick={() => setModalOpen(false)}>Cancel</MuiButton>
+          <MuiButton onClick={handleSaveFactionModal} variant="contained"
+            sx={{ backgroundColor: '#d32f2f', '&:hover': { backgroundColor: '#b71c1c' } }}>
+            {editingIndex !== null ? 'Update Faction' : 'Add Faction'}
+          </MuiButton>
+        </DialogActions>
+      </Dialog>
+    </Box>
+  )
+}
 import EnhancedSpoilerMarkdown from '../EnhancedSpoilerMarkdown'
 import { EntityDisplayMediaSection } from './EntityDisplayMediaSection'
 import { EditToolbar } from './EditToolbar'
@@ -618,52 +870,7 @@ const GambleEditForm = () => {
             />
           </ReferenceArrayInput>
 
-          <Box sx={{ mt: 4 }}>
-            <Typography variant="subtitle1" sx={{ color: '#d32f2f', fontWeight: 'bold', mb: 1.5 }}>
-              Current Factions
-            </Typography>
-            {(record.factions || []).length === 0 ? (
-              <Box sx={{ p: 2, border: '1px dashed rgba(211,47,47,0.3)', borderRadius: 1 }}>
-                <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.4)' }}>
-                  No factions defined yet. Use the Show view to add faction structure.
-                </Typography>
-              </Box>
-            ) : (
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                {record.factions.map((faction: any, i: number) => (
-                  <Box key={faction.id || i} sx={{ p: 1.5, border: '1px solid rgba(211,47,47,0.25)', borderRadius: 1, backgroundColor: '#0f0f0f' }}>
-                    <Typography variant="caption" sx={{ color: '#d32f2f', display: 'block', mb: 0.5, fontWeight: 600 }}>
-                      {faction.name || `Faction ${i + 1}`}
-                      {faction.supportedGambler && ` — Supports ${faction.supportedGambler.name}`}
-                    </Typography>
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                      {(faction.members || []).map((m: any) => (
-                        <Chip
-                          key={m.id}
-                          size="small"
-                          label={`${m.character?.name || '?'} (${m.role || 'member'})`}
-                          sx={{ fontSize: '0.65rem', height: 20, backgroundColor: 'rgba(211,47,47,0.1)', color: 'rgba(255,255,255,0.8)' }}
-                        />
-                      ))}
-                    </Box>
-                  </Box>
-                ))}
-              </Box>
-            )}
-            <Box sx={{ mt: 2, p: 1.5, backgroundColor: 'rgba(211,47,47,0.05)', borderRadius: 1, border: '1px solid rgba(211,47,47,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.5)' }}>
-                To add or restructure factions, use the Show view.
-              </Typography>
-              <Link
-                to={`/gambles/${record.id}/show`}
-                style={{ textDecoration: 'none' }}
-              >
-                <Typography variant="caption" sx={{ color: '#d32f2f', fontWeight: 600, '&:hover': { textDecoration: 'underline' } }}>
-                  Open Show view →
-                </Typography>
-              </Link>
-            </Box>
-          </Box>
+          <FactionEditor gambleId={record.id} initialFactions={record.factions || []} />
         </Box>
       </FormTab>
 
