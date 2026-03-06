@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import {
   List,
   Datagrid,
@@ -378,6 +379,14 @@ const GuideFilterToolbar = () => {
 
   const searchRef = useRef<HTMLDivElement>(null)
   const userChangedRef = useRef(false)
+  const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0, width: 0 })
+
+  const updateDropdownPos = () => {
+    if (searchRef.current) {
+      const rect = searchRef.current.getBoundingClientRect()
+      setDropdownPos({ top: rect.bottom, left: rect.left, width: rect.width })
+    }
+  }
 
   // Load entities on mount and initialize from URL params
   useEffect(() => {
@@ -627,9 +636,10 @@ const GuideFilterToolbar = () => {
             value={entitySearch}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
               setEntitySearch(e.target.value)
+              updateDropdownPos()
               setShowResults(true)
             }}
-            onFocus={() => setShowResults(true)}
+            onFocus={() => { updateDropdownPos(); setShowResults(true) }}
             fullWidth
             size="small"
             sx={{
@@ -641,13 +651,13 @@ const GuideFilterToolbar = () => {
               }
             }}
           />
-          {showResults && flatResults.length > 0 && (
+          {showResults && flatResults.length > 0 && createPortal(
             <Box sx={{
-              position: 'absolute',
-              top: '100%',
-              left: 0,
-              right: 0,
-              zIndex: 1000,
+              position: 'fixed',
+              top: dropdownPos.top,
+              left: dropdownPos.left,
+              width: dropdownPos.width,
+              zIndex: 9999,
               backgroundColor: 'rgba(15, 15, 15, 0.98)',
               border: '1px solid rgba(124, 58, 237, 0.3)',
               borderTop: 'none',
@@ -679,7 +689,7 @@ const GuideFilterToolbar = () => {
                 </Box>
               ))}
             </Box>
-          )}
+          , document.body)}
         </Box>
       </Box>
     </Box>
