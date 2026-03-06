@@ -117,11 +117,11 @@ const RelationshipModalTrigger = () => {
       >
         Add Relationship
       </MuiButton>
-      <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ backgroundColor: 'rgba(139,92,246,0.15)', color: '#8b5cf6' }}>
+      <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
+        <DialogTitle sx={{ backgroundColor: 'rgba(139,92,246,0.15)', color: '#8b5cf6', fontSize: '1.1rem' }}>
           Add Relationship — {record?.name}
         </DialogTitle>
-        <DialogContent sx={{ pt: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <DialogContent sx={{ pt: 3, display: 'flex', flexDirection: 'column', gap: 2.5 }}>
           <Autocomplete
             options={characters}
             getOptionLabel={(o: any) => o.name || ''}
@@ -129,20 +129,22 @@ const RelationshipModalTrigger = () => {
             onChange={(_, v) => setForm(f => ({ ...f, targetCharacter: v }))}
             loading={loadingChars}
             renderInput={(params) => (
-              <MuiTextField {...params} label="Target Character *" size="small"
+              <MuiTextField {...params} label="Target Character *"
+                helperText="The character this relationship points to"
                 InputProps={{ ...params.InputProps, endAdornment: (<>{loadingChars && <CircularProgress size={16} />}{params.InputProps.endAdornment}</>) }} />
             )}
           />
-          <FormControl size="small" fullWidth>
+          <FormControl fullWidth>
             <InputLabel>Relationship Type</InputLabel>
             <Select value={form.relationshipType} label="Relationship Type"
               onChange={(e) => setForm(f => ({ ...f, relationshipType: e.target.value }))}>
               {RELATIONSHIP_TYPES.map(t => <MenuItem key={t} value={t} sx={{ textTransform: 'capitalize' }}>{t}</MenuItem>)}
             </Select>
           </FormControl>
-          <MuiTextField label="Description (optional)" size="small" multiline rows={2} fullWidth
+          <MuiTextField label="Description (optional)" multiline rows={2} fullWidth
+            helperText="Brief note about this relationship from the source character's perspective"
             value={form.description} onChange={(e) => setForm(f => ({ ...f, description: e.target.value }))} />
-          <FormControl size="small" fullWidth>
+          <FormControl fullWidth>
             <InputLabel>Reverse Relationship Type (optional)</InputLabel>
             <Select value={form.reverseRelationshipType} label="Reverse Relationship Type (optional)"
               onChange={(e) => setForm(f => ({ ...f, reverseRelationshipType: e.target.value }))}>
@@ -151,21 +153,34 @@ const RelationshipModalTrigger = () => {
             </Select>
           </FormControl>
           {form.reverseRelationshipType && (
-            <MuiTextField label="Reverse Description (optional)" size="small" multiline rows={2} fullWidth
+            <MuiTextField label="Reverse Description (optional)" multiline rows={2} fullWidth
+              helperText="How the target character views this relationship"
               value={form.reverseDescription} onChange={(e) => setForm(f => ({ ...f, reverseDescription: e.target.value }))} />
           )}
-          <Box sx={{ display: 'flex', gap: 2 }}>
-            <MuiTextField label="Start Chapter" size="small" type="number" inputProps={{ min: 1, max: 539 }}
-              value={form.startChapter} onChange={(e) => setForm(f => ({ ...f, startChapter: e.target.value }))} />
-            <MuiTextField label="End Chapter" size="small" type="number" inputProps={{ min: 1, max: 539 }}
-              value={form.endChapter} onChange={(e) => setForm(f => ({ ...f, endChapter: e.target.value }))} />
-            <MuiTextField label="Spoiler Chapter" size="small" type="number" inputProps={{ min: 1, max: 539 }}
-              value={form.spoilerChapter} onChange={(e) => setForm(f => ({ ...f, spoilerChapter: e.target.value }))} />
-          </Box>
+          <Grid container spacing={2}>
+            <Grid item xs={4}>
+              <MuiTextField label="Start Chapter" fullWidth type="number"
+                helperText="Chapter this began (1–539)"
+                inputProps={{ min: 1, max: 539 }}
+                value={form.startChapter} onChange={(e) => setForm(f => ({ ...f, startChapter: e.target.value }))} />
+            </Grid>
+            <Grid item xs={4}>
+              <MuiTextField label="End Chapter" fullWidth type="number"
+                helperText="Chapter this ended (optional)"
+                inputProps={{ min: 1, max: 539 }}
+                value={form.endChapter} onChange={(e) => setForm(f => ({ ...f, endChapter: e.target.value }))} />
+            </Grid>
+            <Grid item xs={4}>
+              <MuiTextField label="Spoiler Chapter" fullWidth type="number"
+                helperText="Hides before this chapter"
+                inputProps={{ min: 1, max: 539 }}
+                value={form.spoilerChapter} onChange={(e) => setForm(f => ({ ...f, spoilerChapter: e.target.value }))} />
+            </Grid>
+          </Grid>
         </DialogContent>
-        <DialogActions>
-          <MuiButton onClick={handleClose} disabled={saving}>Cancel</MuiButton>
-          <MuiButton onClick={handleSubmit} variant="contained" disabled={saving || !form.targetCharacter}
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <MuiButton onClick={handleClose} disabled={saving} size="large">Cancel</MuiButton>
+          <MuiButton onClick={handleSubmit} variant="contained" size="large" disabled={saving || !form.targetCharacter}
             sx={{ backgroundColor: '#8b5cf6', '&:hover': { backgroundColor: '#7c3aed' } }}>
             {saving ? 'Saving...' : 'Save Relationship'}
           </MuiButton>
@@ -243,11 +258,11 @@ const OrgMembershipModalTrigger = () => {
       >
         Add Membership
       </MuiButton>
-      <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ backgroundColor: 'rgba(16,185,129,0.15)', color: '#10b981' }}>
+      <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
+        <DialogTitle sx={{ backgroundColor: 'rgba(16,185,129,0.15)', color: '#10b981', fontSize: '1.1rem' }}>
           Add Organization Membership — {record?.name}
         </DialogTitle>
-        <DialogContent sx={{ pt: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <DialogContent sx={{ pt: 3, display: 'flex', flexDirection: 'column', gap: 2.5 }}>
           <Autocomplete
             options={organizations}
             getOptionLabel={(o: any) => o.name || ''}
@@ -255,26 +270,41 @@ const OrgMembershipModalTrigger = () => {
             onChange={(_, v) => setForm(f => ({ ...f, organization: v }))}
             loading={loadingOrgs}
             renderInput={(params) => (
-              <MuiTextField {...params} label="Organization *" size="small"
+              <MuiTextField {...params} label="Organization *"
+                helperText="The organization this character belongs to"
                 InputProps={{ ...params.InputProps, endAdornment: (<>{loadingOrgs && <CircularProgress size={16} />}{params.InputProps.endAdornment}</>) }} />
             )}
           />
-          <MuiTextField label="Role *" size="small" fullWidth placeholder="e.g. Leader, Member, Referee"
+          <MuiTextField label="Role *" fullWidth placeholder="e.g. Leader, Member, Referee"
+            helperText="This character's position or title within the organization"
             value={form.role} onChange={(e) => setForm(f => ({ ...f, role: e.target.value }))} />
-          <MuiTextField label="Notes (optional)" size="small" multiline rows={2} fullWidth
+          <MuiTextField label="Notes (optional)" multiline rows={2} fullWidth
+            helperText="Any additional context about this membership"
             value={form.notes} onChange={(e) => setForm(f => ({ ...f, notes: e.target.value }))} />
-          <Box sx={{ display: 'flex', gap: 2 }}>
-            <MuiTextField label="Start Chapter" size="small" type="number" inputProps={{ min: 1, max: 539 }}
-              value={form.startChapter} onChange={(e) => setForm(f => ({ ...f, startChapter: e.target.value }))} />
-            <MuiTextField label="End Chapter" size="small" type="number" inputProps={{ min: 1, max: 539 }}
-              value={form.endChapter} onChange={(e) => setForm(f => ({ ...f, endChapter: e.target.value }))} />
-            <MuiTextField label="Spoiler Chapter" size="small" type="number" inputProps={{ min: 1, max: 539 }}
-              value={form.spoilerChapter} onChange={(e) => setForm(f => ({ ...f, spoilerChapter: e.target.value }))} />
-          </Box>
+          <Grid container spacing={2}>
+            <Grid item xs={4}>
+              <MuiTextField label="Start Chapter" fullWidth type="number"
+                helperText="Chapter joined (1–539)"
+                inputProps={{ min: 1, max: 539 }}
+                value={form.startChapter} onChange={(e) => setForm(f => ({ ...f, startChapter: e.target.value }))} />
+            </Grid>
+            <Grid item xs={4}>
+              <MuiTextField label="End Chapter" fullWidth type="number"
+                helperText="Chapter left (optional)"
+                inputProps={{ min: 1, max: 539 }}
+                value={form.endChapter} onChange={(e) => setForm(f => ({ ...f, endChapter: e.target.value }))} />
+            </Grid>
+            <Grid item xs={4}>
+              <MuiTextField label="Spoiler Chapter" fullWidth type="number"
+                helperText="Hides before this chapter"
+                inputProps={{ min: 1, max: 539 }}
+                value={form.spoilerChapter} onChange={(e) => setForm(f => ({ ...f, spoilerChapter: e.target.value }))} />
+            </Grid>
+          </Grid>
         </DialogContent>
-        <DialogActions>
-          <MuiButton onClick={handleClose} disabled={saving}>Cancel</MuiButton>
-          <MuiButton onClick={handleSubmit} variant="contained" disabled={saving || !form.organization || !form.role}
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <MuiButton onClick={handleClose} disabled={saving} size="large">Cancel</MuiButton>
+          <MuiButton onClick={handleSubmit} variant="contained" size="large" disabled={saving || !form.organization || !form.role}
             sx={{ backgroundColor: '#10b981', '&:hover': { backgroundColor: '#059669' } }}>
             {saving ? 'Saving...' : 'Save Membership'}
           </MuiButton>

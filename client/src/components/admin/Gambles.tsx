@@ -32,7 +32,7 @@ import {
   useRefresh
 } from 'react-admin'
 import {
-  Box, Typography, Tooltip, IconButton, Chip,
+  Box, Typography, Tooltip, IconButton, Chip, Grid,
   Dialog, DialogTitle, DialogContent, DialogActions,
   Autocomplete, TextField as MuiTextField, CircularProgress,
   Button as MuiButton, Select, MenuItem, FormControl, InputLabel
@@ -209,34 +209,44 @@ const FactionEditor = ({ gambleId, initialFactions }: { gambleId: number, initia
         </Box>
       )}
 
-      <Dialog open={modalOpen} onClose={() => setModalOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ backgroundColor: 'rgba(211,47,47,0.12)', color: '#d32f2f' }}>
+      <Dialog open={modalOpen} onClose={() => setModalOpen(false)} maxWidth="md" fullWidth>
+        <DialogTitle sx={{ backgroundColor: 'rgba(211,47,47,0.12)', color: '#d32f2f', fontSize: '1.1rem' }}>
           {editingIndex !== null ? 'Edit Faction' : 'Add Faction'}
         </DialogTitle>
-        <DialogContent sx={{ pt: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <MuiTextField label="Faction Name (optional)" size="small" fullWidth
-            placeholder="e.g. Kakerou, L'air…" value={factionForm.name}
-            onChange={(e) => setFactionForm(f => ({ ...f, name: e.target.value }))} />
-          <Autocomplete
-            options={characters}
-            getOptionLabel={(o: any) => o.name || ''}
-            value={factionForm.supportedGambler}
-            onChange={(_, v) => setFactionForm(f => ({ ...f, supportedGambler: v }))}
-            loading={loadingChars}
-            renderInput={(params) => (
-              <MuiTextField {...params} label="Supported Gambler (optional)" size="small"
-                InputProps={{ ...params.InputProps, endAdornment: (<>{loadingChars && <CircularProgress size={16} />}{params.InputProps.endAdornment}</>) }} />
-            )}
-          />
-          <Box sx={{ border: '1px solid rgba(211,47,47,0.2)', borderRadius: 1, p: 1.5 }}>
-            <Typography variant="caption" sx={{ color: '#d32f2f', fontWeight: 600, display: 'block', mb: 1 }}>
+        <DialogContent sx={{ pt: 3, display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+          <Grid container spacing={2}>
+            <Grid item xs={6}>
+              <MuiTextField label="Faction Name (optional)" fullWidth
+                placeholder="e.g. Kakerou, L'air…"
+                helperText="Leave blank if this faction has no name"
+                value={factionForm.name}
+                onChange={(e) => setFactionForm(f => ({ ...f, name: e.target.value }))} />
+            </Grid>
+            <Grid item xs={6}>
+              <Autocomplete
+                options={characters}
+                getOptionLabel={(o: any) => o.name || ''}
+                value={factionForm.supportedGambler}
+                onChange={(_, v) => setFactionForm(f => ({ ...f, supportedGambler: v }))}
+                loading={loadingChars}
+                renderInput={(params) => (
+                  <MuiTextField {...params} label="Supported Gambler (optional)"
+                    helperText="Main gambler this faction backs"
+                    InputProps={{ ...params.InputProps, endAdornment: (<>{loadingChars && <CircularProgress size={16} />}{params.InputProps.endAdornment}</>) }} />
+                )}
+              />
+            </Grid>
+          </Grid>
+          <Box sx={{ border: '1px solid rgba(211,47,47,0.3)', borderRadius: 1, p: 2 }}>
+            <Typography variant="subtitle2" sx={{ color: '#d32f2f', fontWeight: 600, mb: 1.5 }}>
               Members *
             </Typography>
             {factionForm.members.map((m, mi) => (
-              <Box key={mi} sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-                <Typography variant="body2" sx={{ flex: 1 }}>{m.character?.name}</Typography>
-                <FormControl size="small" sx={{ minWidth: 110 }}>
-                  <Select value={m.role}
+              <Box key={mi} sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1, p: 1, borderRadius: 1, backgroundColor: 'rgba(211,47,47,0.04)', border: '1px solid rgba(211,47,47,0.1)' }}>
+                <Typography variant="body2" sx={{ flex: 1, fontWeight: 500 }}>{m.character?.name}</Typography>
+                <FormControl size="small" sx={{ minWidth: 130 }}>
+                  <InputLabel>Role</InputLabel>
+                  <Select value={m.role} label="Role"
                     onChange={(e) => setFactionForm(f => ({
                       ...f, members: f.members.map((mem, i) => i === mi ? { ...mem, role: e.target.value } : mem)
                     }))}>
@@ -245,37 +255,42 @@ const FactionEditor = ({ gambleId, initialFactions }: { gambleId: number, initia
                 </FormControl>
                 <IconButton size="small" onClick={() => handleRemoveMember(mi)}
                   sx={{ color: 'rgba(255,255,255,0.4)', '&:hover': { color: '#ef4444' } }}>
-                  <X size={14} />
+                  <X size={16} />
                 </IconButton>
               </Box>
             ))}
-            <Box sx={{ display: 'flex', gap: 1, mt: 1.5 }}>
+            {factionForm.members.length === 0 && (
+              <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.35)', display: 'block', mb: 1.5, fontStyle: 'italic' }}>
+                No members added yet. Use the fields below to add characters.
+              </Typography>
+            )}
+            <Box sx={{ display: 'flex', gap: 1.5, mt: 1, pt: 1.5, borderTop: '1px solid rgba(211,47,47,0.15)' }}>
               <Autocomplete sx={{ flex: 1 }}
                 options={characters.filter(c => !factionForm.members.find(m => m.character?.id === c.id))}
                 getOptionLabel={(o: any) => o.name || ''}
                 value={pendingMember.character}
                 onChange={(_, v) => setPendingMember(p => ({ ...p, character: v }))}
                 loading={loadingChars}
-                renderInput={(params) => <MuiTextField {...params} label="Add character" size="small" />}
+                renderInput={(params) => <MuiTextField {...params} label="Add character…" size="small" />}
               />
-              <FormControl size="small" sx={{ minWidth: 110 }}>
+              <FormControl size="small" sx={{ minWidth: 130 }}>
                 <InputLabel>Role</InputLabel>
                 <Select value={pendingMember.role} label="Role"
                   onChange={(e) => setPendingMember(p => ({ ...p, role: e.target.value }))}>
                   {FACTION_MEMBER_ROLES.map(r => <MenuItem key={r} value={r} sx={{ textTransform: 'capitalize' }}>{r}</MenuItem>)}
                 </Select>
               </FormControl>
-              <MuiButton size="small" variant="outlined" onClick={handleAddMember}
+              <MuiButton variant="outlined" onClick={handleAddMember}
                 disabled={!pendingMember.character}
-                sx={{ borderColor: 'rgba(211,47,47,0.5)', color: '#d32f2f', minWidth: 'auto', px: 1.5, '&:hover': { borderColor: '#d32f2f' } }}>
-                <Plus size={16} />
+                sx={{ borderColor: 'rgba(211,47,47,0.5)', color: '#d32f2f', px: 2, whiteSpace: 'nowrap', '&:hover': { borderColor: '#d32f2f', backgroundColor: 'rgba(211,47,47,0.05)' } }}>
+                Add
               </MuiButton>
             </Box>
           </Box>
         </DialogContent>
-        <DialogActions>
-          <MuiButton onClick={() => setModalOpen(false)}>Cancel</MuiButton>
-          <MuiButton onClick={handleSaveFactionModal} variant="contained"
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <MuiButton onClick={() => setModalOpen(false)} size="large">Cancel</MuiButton>
+          <MuiButton onClick={handleSaveFactionModal} variant="contained" size="large"
             sx={{ backgroundColor: '#d32f2f', '&:hover': { backgroundColor: '#b71c1c' } }}>
             {editingIndex !== null ? 'Update Faction' : 'Add Faction'}
           </MuiButton>
