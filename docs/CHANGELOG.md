@@ -1,8 +1,12 @@
 # Changelog and notes
 
 ## TODO
-- Add any additional/missing integrations between features, data points, or detail pages within the application.
-- Migrations take way too long. Possibly find ways to make them run faster as it will be very difficult to implement once the database gets populated. What tends to happen is I run the migration script, then my computer runs out of application of memory to finish the migration.
+
+## 2026-03-07
+- tsc build changed to swc build
+
+### Notes
+- tsc builds use significantly less resources supposedly and make the builds quicker. There was a small bug with deployment as swc flattens the output to dist which ignores the src subdirectory, so the path needed to be updated to the proper file.
 
 ## 2026-03-06
 - Migration of volume image showcase to also be in Cloudflare R2
