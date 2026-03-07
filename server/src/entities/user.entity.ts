@@ -9,12 +9,13 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Event } from './event.entity';
-import { Quote } from './quote.entity';
-import { Gamble } from './gamble.entity';
-import { Media } from './media.entity';
-import { UserBadge } from './user-badge.entity';
-import { Donation } from './donation.entity';
+// import type removes runtime require() calls, breaking circular dep cycles with SWC
+import type { Event } from './event.entity';
+import type { Quote } from './quote.entity';
+import type { Gamble } from './gamble.entity';
+import type { Media } from './media.entity';
+import type { UserBadge } from './user-badge.entity';
+import type { Donation } from './donation.entity';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export enum UserRole {
@@ -147,32 +148,32 @@ export class User {
 
   @ApiPropertyOptional({
     description: "User's favorite quote object",
-    type: () => Quote,
+    type: () => require('./quote.entity').Quote,
   })
-  @ManyToOne(() => Quote, { nullable: true })
+  @ManyToOne(() => require('./quote.entity').Quote, { nullable: true })
   @JoinColumn({ name: 'favoriteQuoteId' })
   favoriteQuote: Quote | null;
 
   @ApiPropertyOptional({
     description: "User's favorite gamble object",
-    type: () => Gamble,
+    type: () => require('./gamble.entity').Gamble,
   })
-  @ManyToOne(() => Gamble, { nullable: true })
+  @ManyToOne(() => require('./gamble.entity').Gamble, { nullable: true })
   @JoinColumn({ name: 'favoriteGambleId' })
   favoriteGamble: Gamble | null;
 
   @ApiPropertyOptional({
     description: "User's selected character media for profile picture",
-    type: () => Media,
+    type: () => require('./media.entity').Media,
   })
-  @ManyToOne(() => Media, { nullable: true })
+  @ManyToOne(() => require('./media.entity').Media, { nullable: true })
   @JoinColumn({ name: 'selectedCharacterMediaId' })
   selectedCharacterMedia: Media | null;
 
-  @OneToMany(() => Event, (event) => event.createdBy)
+  @OneToMany(() => require('./event.entity').Event, (event) => event.createdBy)
   submittedEvents: Event[];
 
-  @OneToMany(() => UserBadge, (userBadge) => userBadge.user)
+  @OneToMany(() => require('./user-badge.entity').UserBadge, (userBadge) => userBadge.user)
   badges: UserBadge[];
 
   // Computed property for frontend compatibility
@@ -180,7 +181,7 @@ export class User {
     return this.badges || [];
   }
 
-  @OneToMany(() => Donation, (donation) => donation.user)
+  @OneToMany(() => require('./donation.entity').Donation, (donation) => donation.user)
   donations: Donation[];
 
   @CreateDateColumn()

@@ -8,7 +8,8 @@ import {
   Index,
 } from 'typeorm';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Gamble } from './gamble.entity';
+// import type removes runtime require() to break gamble <-> gamble-faction circular dep
+import type { Gamble } from './gamble.entity';
 import { Character } from './character.entity';
 import { GambleFactionMember } from './gamble-faction-member.entity';
 
@@ -23,7 +24,7 @@ export class GambleFaction {
   @Column()
   gambleId: number;
 
-  @ManyToOne(() => Gamble, (gamble) => gamble.factions, { onDelete: 'CASCADE' })
+  @ManyToOne(() => require('./gamble.entity').Gamble, (gamble) => gamble.factions, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'gambleId' })
   gamble: Gamble;
 

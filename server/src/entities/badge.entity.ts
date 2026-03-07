@@ -7,7 +7,8 @@ import {
   OneToMany,
 } from 'typeorm';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { UserBadge } from './user-badge.entity';
+// import type breaks badge <-> user-badge circular dep
+import type { UserBadge } from './user-badge.entity';
 
 export enum BadgeType {
   SUPPORTER = 'supporter',
@@ -86,7 +87,7 @@ export class Badge {
   @Column({ type: 'boolean', default: false })
   isManuallyAwardable: boolean;
 
-  @OneToMany(() => UserBadge, (userBadge) => userBadge.badge)
+  @OneToMany(() => require('./user-badge.entity').UserBadge, (userBadge) => userBadge.badge)
   userBadges: UserBadge[];
 
   @CreateDateColumn()

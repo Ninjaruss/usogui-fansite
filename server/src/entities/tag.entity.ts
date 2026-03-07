@@ -6,7 +6,8 @@ import {
   JoinTable,
   Index,
 } from 'typeorm';
-import { Event } from './event.entity';
+// import type removes runtime require() to break tag <-> event circular dep
+import type { Event } from './event.entity';
 import { ApiProperty } from '@nestjs/swagger';
 
 @Entity()
@@ -31,9 +32,9 @@ export class Tag {
   description: string;
 
   @ApiProperty({
-    type: () => [Event],
+    type: () => [require('./event.entity').Event],
   })
-  @ManyToMany(() => Event, (event) => event.tags)
+  @ManyToMany(() => require('./event.entity').Event, (event) => event.tags)
   @JoinTable()
   events: Event[];
 }

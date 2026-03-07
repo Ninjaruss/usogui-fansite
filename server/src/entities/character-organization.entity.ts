@@ -10,8 +10,9 @@ import {
   Check,
 } from 'typeorm';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Character } from './character.entity';
-import { Organization } from './organization.entity';
+// import type breaks character-organization <-> character/organization circular deps
+import type { Character } from './character.entity';
+import type { Organization } from './organization.entity';
 
 /**
  * Represents a character's membership in an organization.
@@ -30,9 +31,9 @@ export class CharacterOrganization {
 
   @ApiProperty({
     description: 'The character who belongs to this organization',
-    type: () => Character,
+    type: () => require('./character.entity').Character,
   })
-  @ManyToOne(() => Character, { onDelete: 'CASCADE' })
+  @ManyToOne(() => require('./character.entity').Character, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'characterId' })
   character: Character;
 
@@ -42,9 +43,9 @@ export class CharacterOrganization {
 
   @ApiProperty({
     description: 'The organization the character belongs to',
-    type: () => Organization,
+    type: () => require('./organization.entity').Organization,
   })
-  @ManyToOne(() => Organization, { onDelete: 'CASCADE' })
+  @ManyToOne(() => require('./organization.entity').Organization, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'organizationId' })
   organization: Organization;
 

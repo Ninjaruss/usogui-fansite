@@ -8,7 +8,8 @@ import {
   Index,
   JoinColumn,
 } from 'typeorm';
-import { Character } from './character.entity';
+// import type breaks quote <-> character circular dep
+import type { Character } from './character.entity';
 import { User } from './user.entity';
 import {
   ApiProperty,
@@ -55,7 +56,7 @@ export class Quote {
   pageNumber: number;
 
   @ApiHideProperty()
-  @ManyToOne(() => Character, { onDelete: 'CASCADE' })
+  @ManyToOne(() => require('./character.entity').Character, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'characterId' })
   character: Character;
 
