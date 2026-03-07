@@ -9,7 +9,7 @@ import {
   Index,
   Check,
 } from 'typeorm';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional, ApiHideProperty } from '@nestjs/swagger';
 // import type breaks character-organization <-> character/organization circular deps
 import type { Character } from './character.entity';
 import type { Organization } from './organization.entity';
@@ -29,10 +29,7 @@ export class CharacterOrganization {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ApiProperty({
-    description: 'The character who belongs to this organization',
-    type: () => require('./character.entity').Character,
-  })
+  @ApiHideProperty()
   @ManyToOne(() => require('./character.entity').Character, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'characterId' })
   character: Character;
@@ -41,10 +38,7 @@ export class CharacterOrganization {
   @Column()
   characterId: number;
 
-  @ApiProperty({
-    description: 'The organization the character belongs to',
-    type: () => require('./organization.entity').Organization,
-  })
+  @ApiHideProperty()
   @ManyToOne(() => require('./organization.entity').Organization, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'organizationId' })
   organization: Organization;
