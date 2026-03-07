@@ -24,12 +24,28 @@ env:
   IMAGE_NAME: ninjaruss/l-file/client
 
 jobs:
+  check-changes:
+    name: Check Changed Paths
+    runs-on: ubuntu-latest
+    outputs:
+      client-changed: ${{ steps.filter.outputs.client }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - id: filter
+        run: |
+          if git diff --name-only HEAD~1 HEAD | grep -q '^client/'; then
+            echo "client=true" >> $GITHUB_OUTPUT
+          else
+            echo "client=false" >> $GITHUB_OUTPUT
+          fi
+
   build-and-push:
     name: Build & Push Docker Image
     runs-on: ubuntu-latest
-    if: >
-      github.event_name == 'workflow_dispatch' ||
-      contains(toJSON(github.event.commits.*.modified + github.event.commits.*.added + github.event.commits.*.removed), 'client/')
+    needs: check-changes
+    if: needs.check-changes.outputs.client-changed == 'true' || github.event_name == 'workflow_dispatch'
     permissions:
       contents: read
       packages: write
@@ -79,7 +95,7 @@ jobs:
   deploy:
     name: Trigger Dokploy Redeploy
     runs-on: ubuntu-latest
-    needs: build-and-push
+    needs: [check-changes, build-and-push]
     if: always() && !failure() && !cancelled()
 
     steps:
