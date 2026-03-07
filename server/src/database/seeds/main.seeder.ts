@@ -19,45 +19,65 @@ export class MainSeeder {
 
   constructor(private readonly dataSource: DataSource) {}
 
+  private async runTier(seeders: Seeder[], tierName: string): Promise<boolean> {
+    this.logger.log(chalk.blue(`🌱 Running ${tierName} in parallel: ${seeders.map(s => s.constructor.name).join(', ')}`));
+    const results = await Promise.allSettled(seeders.map(s => s.run()));
+    let success = true;
+    for (let i = 0; i < results.length; i++) {
+      const result = results[i];
+      const name = seeders[i].constructor.name;
+      if (result.status === 'fulfilled') {
+        this.logger.log(chalk.green(`✅ ${name} completed successfully`));
+      } else {
+        this.logger.error(chalk.red(`❌ Error in ${name}:`));
+        this.logger.error(result.reason);
+        success = false;
+      }
+    }
+    return success;
+  }
+
   public async run(): Promise<boolean> {
     this.logger.log(
       chalk.blue('🌱 Starting comprehensive seeders execution...'),
     );
 
-    const isProduction = process.env.NODE_ENV === 'production';
-
-    // Base seeders that are safe for production
-    const coreSeeders: Seeder[] = [
-      new BadgeSeeder(this.dataSource), // Badge system
-      new ArcSeeder(this.dataSource), // Story arcs with chapter ranges
-      new VolumeSeeder(this.dataSource), // Volume organization
-      new ChapterSeeder(this.dataSource), // Individual chapters
-      new CharacterSeeder(this.dataSource), // Character profiles
-      new OrganizationSeeder(this.dataSource), // Organizations and groups
-      new CharacterOrganizationSeeder(this.dataSource), // Character-organization relationships with roles
-      new TagSeeder(this.dataSource), // Content categorization tags
-      new QuoteSeeder(this.dataSource), // Character quotes
-      new GambleSeeder(this.dataSource), // Gambling events and games
-      new FandomDataSeeder(this.dataSource), // Fandom-sourced volumes/chapters and covers
+    // Tier 1: No dependencies — safe to run in parallel
+    const tier1: Seeder[] = [
+      new BadgeSeeder(this.dataSource),
+      new ArcSeeder(this.dataSource),
+      new VolumeSeeder(this.dataSource),
+      new CharacterSeeder(this.dataSource),
+      new OrganizationSeeder(this.dataSource),
+      new TagSeeder(this.dataSource),
     ];
 
-    const seeders = [...coreSeeders];
+    // Tier 2: Depend on Tier 1 — run in parallel after Tier 1 completes
+    const tier2: Seeder[] = [
+      new ChapterSeeder(this.dataSource),               // after VolumeSeeder
+      new CharacterOrganizationSeeder(this.dataSource), // after CharacterSeeder + OrganizationSeeder
+      new QuoteSeeder(this.dataSource),                 // after CharacterSeeder
+    ];
 
-    let success = true;
+    // Tier 3: Depend on Tier 2 — run in parallel after Tier 2 completes
+    const tier3: Seeder[] = [
+      new GambleSeeder(this.dataSource),      // after ChapterSeeder + CharacterSeeder
+      new FandomDataSeeder(this.dataSource),  // after VolumeSeeder + ChapterSeeder
+    ];
 
-    for (const seeder of seeders) {
-      const seederName = seeder.constructor.name;
-      try {
-        this.logger.log(chalk.blue(`🌱 Running ${seederName}...`));
-        await seeder.run();
-        this.logger.log(chalk.green(`✅ ${seederName} completed successfully`));
-      } catch (error) {
-        this.logger.error(chalk.red(`❌ Error in ${seederName}:`));
-        this.logger.error(error);
-        success = false;
-        break;
-      }
+    let success = await this.runTier(tier1, 'Tier 1');
+    if (!success) {
+      this.logger.error(chalk.red('❌ Tier 1 failed, aborting remaining tiers'));
+      return false;
     }
+
+    success = await this.runTier(tier2, 'Tier 2');
+    if (!success) {
+      this.logger.error(chalk.red('❌ Tier 2 failed, aborting remaining tiers'));
+      return false;
+    }
+
+    success = await this.runTier(tier3, 'Tier 3');
 
     if (success) {
       this.logger.log(chalk.green('✅ All seeders completed successfully!'));

@@ -37,15 +37,24 @@ import MediaGallery from '../../../components/MediaGallery'
 import { BreadcrumbNav, createEntityBreadcrumbs } from '../../../components/Breadcrumb'
 import { DetailPageHeader } from '../../../components/layouts/DetailPageHeader'
 import type { Event } from '../../../types'
+import { api } from '../../../lib/api'
 
 interface EventPageClientProps {
   initialEvent: Event
+}
+
+interface ArcGamble {
+  id: number
+  name: string
+  chapterId?: number
+  chapter?: { number: number }
 }
 
 export default function EventPageClient({ initialEvent }: EventPageClientProps) {
   const theme = useMantineTheme()
   const { user } = useAuth()
   const [activeTab, setActiveTab] = useState<string>('overview')
+  const [arcGambles, setArcGambles] = useState<ArcGamble[]>([])
 
   usePageView('event', initialEvent.id.toString(), true)
 
@@ -59,6 +68,16 @@ export default function EventPageClient({ initialEvent }: EventPageClientProps) 
   useEffect(() => {
     setTabAccentColors('event')
   }, [])
+
+  // Fetch gambles from the same arc
+  useEffect(() => {
+    if (!initialEvent.arcId) return
+    api.getArcGambles(initialEvent.arcId).then(result => {
+      const gambles: ArcGamble[] = result.data || []
+      // Exclude the already-shown primary gamble
+      setArcGambles(gambles.filter(g => g.id !== initialEvent.gambleId))
+    }).catch(() => {})
+  }, [initialEvent.arcId, initialEvent.gambleId])
 
   // Use consistent theme colors
   const entityColors = {
@@ -397,6 +416,48 @@ export default function EventPageClient({ initialEvent }: EventPageClientProps) 
                             </Button>
                           </Group>
                           <Text c={textColors.arc} fw={500}>{initialEvent.arc.name}</Text>
+                        </Stack>
+                      </Card>
+                    )}
+
+                    {/* Other Gambles in this Arc */}
+                    {arcGambles.length > 0 && (
+                      <Card withBorder radius="lg" shadow="lg" style={getCardStyles(theme, entityColors.gamble)}>
+                        <Stack gap={theme.spacing.md} p={theme.spacing.md}>
+                          <Group gap={theme.spacing.sm}>
+                            <Dice6 size={20} color={entityColors.gamble} />
+                            <Title order={4} c={textColors.gamble}>Gambles in this Arc</Title>
+                            <Badge size="sm" variant="light" c={entityColors.gamble}>
+                              {arcGambles.length}
+                            </Badge>
+                          </Group>
+                          <Group gap={theme.spacing.sm} wrap="wrap">
+                            {arcGambles.map(gamble => (
+                              <Badge
+                                key={gamble.id}
+                                component={Link}
+                                href={`/gambles/${gamble.id}`}
+                                size="lg"
+                                variant="light"
+                                c={textColors.gamble}
+                                style={{
+                                  fontSize: fontSize.xs,
+                                  fontWeight: 600,
+                                  background: getAlphaColor(entityColors.gamble, 0.2),
+                                  border: `1px solid ${getAlphaColor(entityColors.gamble, 0.4)}`,
+                                  textDecoration: 'none',
+                                  cursor: 'pointer'
+                                }}
+                              >
+                                {gamble.name}
+                                {gamble.chapter && (
+                                  <Text span size="xs" c={textColors.tertiary} ml={4}>
+                                    Ch.{gamble.chapter.number}
+                                  </Text>
+                                )}
+                              </Badge>
+                            ))}
+                          </Group>
                         </Stack>
                       </Card>
                     )}

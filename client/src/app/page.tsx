@@ -6,7 +6,10 @@ import { CalendarSearch, Shield, FileText, MessageCircle, ExternalLink, Image } 
 import Link from 'next/link'
 import { EnhancedSearchBar } from '../components/EnhancedSearchBar'
 import { DynamicVolumeShowcase } from '../components/DynamicVolumeShowcase'
-import { getActiveConfiguration, SHOWCASE_CONFIGURATIONS } from '../lib/showcase-config'
+import { buildShowcaseItemFromApiData } from '../lib/showcase-config'
+import type { VolumeShowcaseItem } from '../lib/showcase-config'
+import { api } from '../lib/api'
+import { RecentActivityFeed } from '../components/RecentActivityFeed'
 import { FavoritesSection } from '../components/FavoritesSection'
 import { LazySection } from '../components/LazySection'
 import { useLandingData } from '../hooks/useLandingData'
@@ -20,11 +23,27 @@ export default function HomePage() {
   const theme = useMantineTheme()
   const { data: landingData, loading: landingLoading, error: landingError } = useLandingData()
 
-  // Fix hydration mismatch by selecting showcase client-side only
-  const [showcaseConfig, setShowcaseConfig] = useState(SHOWCASE_CONFIGURATIONS[0])
+  // Fetch showcase images from R2 via API
+  const [showcaseVolumes, setShowcaseVolumes] = useState<VolumeShowcaseItem[] | null>(null)
 
   useEffect(() => {
-    setShowcaseConfig(getActiveConfiguration())
+    async function loadShowcase() {
+      try {
+        const [bg37, pop37, bg38, pop38] = await Promise.all([
+          api.getVolumeShowcaseMedia(37, 'background'),
+          api.getVolumeShowcaseMedia(37, 'popout'),
+          api.getVolumeShowcaseMedia(38, 'background'),
+          api.getVolumeShowcaseMedia(38, 'popout'),
+        ])
+        const item37 = buildShowcaseItemFromApiData(37, bg37?.url ?? null, pop37?.url ?? null, 'Usogui Volume 37', 'The climactic battles intensify')
+        const item38 = buildShowcaseItemFromApiData(38, bg38?.url ?? null, pop38?.url ?? null, 'Usogui Volume 38', 'The final confrontation')
+        const volumes = [item37, item38].filter(Boolean) as VolumeShowcaseItem[]
+        if (volumes.length > 0) setShowcaseVolumes(volumes)
+      } catch {
+        // showcase stays null; component renders nothing
+      }
+    }
+    loadShowcase()
   }, [])
 
 
@@ -110,13 +129,14 @@ export default function HomePage() {
         </Box>
 
         {/* Featured Volume Covers Section */}
-        <LazySection minHeight={360} delay={100}>
-          <DynamicVolumeShowcase
-            volumes={showcaseConfig.volumes}
-            layout={showcaseConfig.layout}
-            animations={showcaseConfig.animations}
-          />
-        </LazySection>
+        {showcaseVolumes && showcaseVolumes.length > 0 && (
+          <LazySection minHeight={360} delay={100}>
+            <DynamicVolumeShowcase
+              volumes={showcaseVolumes}
+              layout={showcaseVolumes.length === 1 ? 'single' : 'dual'}
+            />
+          </LazySection>
+        )}
 
 
         {/* Community Favorites Section */}
@@ -223,6 +243,21 @@ export default function HomePage() {
           </Box>
         )}
 
+        {/* Recent Wiki Activity */}
+        <LazySection minHeight={200} delay={1050}>
+          <Box
+            style={{
+              padding: 'clamp(1.5rem, 3vw, 2rem)',
+              background: theme.colors.dark?.[8] ?? '#1a1a1a',
+              borderRadius: '1rem',
+              border: `1px solid ${theme.colors.dark?.[6] ?? '#333'}`,
+              marginBottom: '2rem',
+            }}
+          >
+            <RecentActivityFeed limit={5} showHeader showViewAll />
+          </Box>
+        </LazySection>
+
         {/* Discor CTA Section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -253,7 +288,7 @@ export default function HomePage() {
 
             <Button
               component="a"
-              href="https://fluxer.gg/TWukaMSX"
+              href="https://fluxer.gg/7ce7lrCc"
               rel="noopener noreferrer"
               variant="filled"
               size="lg"

@@ -97,7 +97,7 @@ export const Footer: React.FC = () => {
           {/* Right: Emphasized Fluxer and Support */}
           <Group gap="md" align="center">
             <Anchor
-              href="https://fluxer.gg/TWukaMSX"
+              href="https://fluxer.gg/7ce7lrCc"
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Join Fluxer community (opens in new tab)"

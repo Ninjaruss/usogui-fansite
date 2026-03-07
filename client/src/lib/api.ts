@@ -743,7 +743,7 @@ class ApiClient {
     chapterNumber?: number
     purpose?: 'gallery' | 'entity_display'
     description?: string
-    usageType: 'character_image' | 'guide_image' | 'gallery_upload'
+    usageType: 'character_image' | 'volume_image' | 'volume_showcase_background' | 'volume_showcase_popout' | 'guide_image' | 'gallery_upload'
   }) {
     const formData = new FormData()
     formData.append('file', file)
@@ -1080,6 +1080,58 @@ class ApiClient {
       startChapter: number
       endChapter: number
     }>(`/volumes/${id}/chapters`)
+  }
+
+  async getVolumeShowcaseMedia(id: number, type: 'background' | 'popout') {
+    return this.get<{
+      id: number
+      url: string
+      usageType: string
+    } | null>(`/volumes/${id}/showcase/${type}`)
+  }
+
+  async getRecentEdits(params?: { page?: number; limit?: number; entityType?: string }) {
+    const query = new URLSearchParams()
+    if (params?.page) query.set('page', String(params.page))
+    if (params?.limit) query.set('limit', String(params.limit))
+    if (params?.entityType) query.set('entityType', params.entityType)
+    const qs = query.toString()
+    return this.get<{
+      data: Array<{
+        id: number
+        action: string
+        entityType: string
+        entityId: number
+        entityName?: string
+        createdAt: string
+        user?: { id: number; username: string; fluxerAvatar?: string; fluxerId?: string }
+      }>
+      total: number
+      page: number
+      totalPages: number
+    }>(`/edit-log/recent${qs ? `?${qs}` : ''}`)
+  }
+
+  async getRecentSubmissions(params?: { page?: number; limit?: number }) {
+    const query = new URLSearchParams()
+    if (params?.page) query.set('page', String(params.page))
+    if (params?.limit) query.set('limit', String(params.limit))
+    const qs = query.toString()
+    return this.get<{
+      data: Array<{
+        id: number
+        type: 'guide' | 'media' | 'annotation'
+        title?: string
+        entityType?: string
+        entityId?: number
+        entityName?: string
+        createdAt: string
+        submittedBy?: { id: number; username: string; fluxerAvatar?: string; fluxerId?: string }
+      }>
+      total: number
+      page: number
+      totalPages: number
+    }>(`/edit-log/submissions${qs ? `?${qs}` : ''}`)
   }
 
   async getOrganization(id: number) {

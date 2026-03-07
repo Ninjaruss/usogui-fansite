@@ -39,9 +39,17 @@ async function getVolumeData(id: string) {
       )
     )
 
+    // Fetch arcs that overlap with this volume's chapter range
+    const arcsResult = await api.getArcs({ limit: 100 })
+    const overlappingArcs = (arcsResult.data || []).filter(
+      (a: { startChapter: number; endChapter: number }) =>
+        a.startChapter <= volumeData.endChapter && a.endChapter >= volumeData.startChapter
+    )
+
     return {
       volume: volumeData,
-      chapters: chapterDetails
+      chapters: chapterDetails,
+      arcs: overlappingArcs
     }
   } catch (error: unknown) {
     console.error('Error fetching volume data:', error)
@@ -89,7 +97,7 @@ export default async function VolumeDetailPage({ params }: PageProps) {
     notFound()
   }
 
-  const { volume, chapters } = data
+  const { volume, chapters, arcs } = data
 
   return (
     <>
@@ -97,6 +105,7 @@ export default async function VolumeDetailPage({ params }: PageProps) {
       <VolumePageClient
         initialVolume={volume}
         initialChapters={chapters}
+        initialArcs={arcs}
       />
     </>
   )

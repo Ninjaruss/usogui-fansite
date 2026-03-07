@@ -1,6 +1,15 @@
 # Changelog and notes
 
 ## TODO
+- Add any additional/missing integrations between features, data points, or detail pages within the application.
+- Migrations take way too long. Possibly find ways to make them run faster as it will be very difficult to implement once the database gets populated. What tends to happen is I run the migration script, then my computer runs out of application of memory to finish the migration.
+
+## 2026-03-06
+- Migration of volume image showcase to also be in Cloudflare R2
+- Fixes to the appearance of gamble factions
+- Changelog page for any approved contributions to the website
+- Arc badge linking in gamble, chapter, and volume detail pages
+- Data seeder improvement to use bulk fetch and parallel seeding
 
 ## 2026-03-05
 - Unified search dropdown instead of separate column selection layout for media and guides admin pages
@@ -13,7 +22,10 @@
 - Preloading of connections to cloudflare images and google fonts 
 - Added single entity api calls
 - Media linking in admin dashboard
-- Collapsible character relationships and memberships 
+- Collapsible character relationships and memberships
+
+### Notes
+- Migration to Cloudflare R2 as it is more generous with data limits on the free tier. Less worry for any loading speeds for media. Likely will reconsider if the data gets a little too large.
 
 ## 2026-03-02
 - Resizing users and media list to be consistent with other list pages
@@ -46,6 +58,9 @@ See [docs/DEPLOYMENT.md](DEPLOYMENT.md) for the full deployment guide.
 - Required GitHub Secrets: `NEXT_PUBLIC_API_URL` (baked into bundle at build time), `DOKPLOY_WEBHOOK_URL`
 - Dokploy needs GHCR registry credentials (GitHub PAT with `read:packages`) to pull the frontend image
 - Both services join the external `dokploy-network` bridge for Traefik reverse proxy routing
+
+### Notes
+- Self hosting the server through Hetzner using Dokploy. Avoids any issues with Vercel's TOS and probably better cost to performance against backend services like Flyio. Seems to have performance issues when constantly updating the server, but the docker compose deployment for the frontend helps not overloading the server by building the frontend through Github Actions.
 
 ## 2026-02-24
 - Final quality pass: bug fixes, security hardening, and documentation updates

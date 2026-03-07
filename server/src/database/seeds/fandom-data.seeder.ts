@@ -119,89 +119,75 @@ export class FandomDataSeeder implements Seeder {
 
     // Process covers for all volumes
     console.log('Processing volume covers...');
+
+    // Bulk-fetch all existing volume display media in a single query
+    const existingDisplayMedia = await mediaRepo.find({
+      where: {
+        ownerType: MediaOwnerType.VOLUME,
+        purpose: MediaPurpose.ENTITY_DISPLAY,
+      },
+    });
+    const mediaByVolumeId = new Map(existingDisplayMedia.map(m => [m.ownerId, m]));
+
+    // Resolve local cover directory once
+    const localDir = path.resolve(
+      __dirname, '..', '..', '..', '..', 'client', 'public', 'assets', 'volume-covers',
+    );
+    const localFiles = fs.existsSync(localDir) ? fs.readdirSync(localDir) : [];
+
+    const mediaToUpdate: any[] = [];
+    const mediaToCreate: any[] = [];
+
     for (const v of volumes) {
       const vol = volumeMap.get(v.number);
       if (!vol) continue;
 
-      // Attach a cover image. Prefer a local cached file under client/public/assets/volume-covers named like 'volume-01.jpg'.
       try {
-        const localDir = path.resolve(
-          __dirname,
-          '..',
-          '..',
-          '..',
-          '..',
-          'client',
-          'public',
-          'assets',
-          'volume-covers',
-        );
-        let localFile: string | null = null;
-        if (fs.existsSync(localDir)) {
-          const files = fs.readdirSync(localDir);
-          const prefix = `volume-${String(v.number).padStart(2, '0')}`;
-          const match = files.find((fn) => fn.toLowerCase().startsWith(prefix));
-          if (match) localFile = match;
-        }
-
-        const mediaUrl = localFile
-          ? `/assets/volume-covers/${localFile}`
+        const prefix = `volume-${String(v.number).padStart(2, '0')}`;
+        const matchedFile = localFiles.find(fn => fn.toLowerCase().startsWith(prefix)) || null;
+        const mediaUrl = matchedFile
+          ? `/assets/volume-covers/${matchedFile}`
           : v.coverUrl || null;
 
-        if (mediaUrl && vol) {
-          // Look for an existing entity_display media for this volume
-          const existing = await mediaRepo.findOne({
-            where: {
+        if (!mediaUrl) continue;
+
+        const existing = mediaByVolumeId.get(vol.id);
+        if (existing) {
+          let changed = false;
+          if (existing.url !== mediaUrl) { existing.url = mediaUrl; changed = true; }
+          if (matchedFile && existing.fileName !== matchedFile) { existing.fileName = matchedFile; changed = true; }
+          if (matchedFile && !existing.isUploaded) { existing.isUploaded = true; changed = true; }
+          if (changed) mediaToUpdate.push(existing);
+        } else {
+          if (!systemUser) {
+            console.warn('Skipping media creation for volume cover because system user is missing.');
+          } else {
+            mediaToCreate.push(mediaRepo.create({
+              url: mediaUrl,
+              fileName: matchedFile || null,
+              type: MediaType.IMAGE,
               ownerType: MediaOwnerType.VOLUME,
               ownerId: vol.id,
+              status: MediaStatus.APPROVED,
               purpose: MediaPurpose.ENTITY_DISPLAY,
-            },
-          });
-          if (existing) {
-            let changed = false;
-            if (existing.url !== mediaUrl) {
-              existing.url = mediaUrl;
-              changed = true;
-            }
-            if (localFile && existing.fileName !== localFile) {
-              existing.fileName = localFile;
-              changed = true;
-            }
-            if (localFile && !existing.isUploaded) {
-              existing.isUploaded = true;
-              changed = true;
-            }
-            if (changed) await mediaRepo.save(existing as any);
-          } else {
-            if (!systemUser) {
-              console.warn(
-                'Skipping media creation for volume cover because system user is missing.',
-              );
-            } else {
-              await mediaRepo.save(
-                mediaRepo.create({
-                  url: mediaUrl,
-                  fileName: localFile || null,
-                  type: MediaType.IMAGE,
-                  ownerType: MediaOwnerType.VOLUME,
-                  ownerId: vol.id,
-                  status: MediaStatus.APPROVED,
-                  purpose: MediaPurpose.ENTITY_DISPLAY,
-                  isUploaded: Boolean(localFile),
-                  submittedBy: systemUser,
-                } as any) as any,
-              );
-              console.log(`Attached cover for volume ${v.number}`);
-            }
+              isUploaded: Boolean(matchedFile),
+              submittedBy: systemUser,
+            } as any));
           }
         }
       } catch (err: unknown) {
         const errorMessage = err instanceof Error ? err.message : String(err);
-        console.warn(
-          `Error attaching cover for volume ${v.number}:`,
-          errorMessage,
-        );
+        console.warn(`Error attaching cover for volume ${v.number}:`, errorMessage);
       }
+    }
+
+    if (mediaToUpdate.length > 0) {
+      await mediaRepo.save(mediaToUpdate);
+      console.log(`Updated ${mediaToUpdate.length} volume cover records.`);
+    }
+    if (mediaToCreate.length > 0) {
+      await mediaRepo.save(mediaToCreate);
+      console.log(`Created ${mediaToCreate.length} new volume cover records.`);
     }
 
     // Batch insert chapters

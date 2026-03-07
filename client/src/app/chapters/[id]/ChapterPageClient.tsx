@@ -62,18 +62,27 @@ type Chapter = ChapterResource & {
   chapterNumber?: number | null
 }
 
+interface ArcBase {
+  id: number
+  name: string
+  startChapter: number
+  endChapter: number
+}
+
 interface ChapterPageClientProps {
   initialChapter: Chapter
   initialEvents?: Event[]
   initialQuotes?: Quote[]
   initialCharacters?: Character[]
+  initialArc?: ArcBase | null
 }
 
 export default function ChapterPageClient({
   initialChapter,
   initialEvents = [],
   initialQuotes = [],
-  initialCharacters = []
+  initialCharacters = [],
+  initialArc
 }: ChapterPageClientProps) {
   const theme = useMantineTheme()
   const { user } = useAuth()
@@ -92,7 +101,8 @@ export default function ChapterPageClient({
     character: getEntityThemeColor(theme, 'character'),
     event: getEntityThemeColor(theme, 'event'),
     quote: getEntityThemeColor(theme, 'quote'),
-    volume: getEntityThemeColor(theme, 'volume')
+    volume: getEntityThemeColor(theme, 'volume'),
+    arc: getEntityThemeColor(theme, 'arc')
   }
 
   return (
@@ -162,6 +172,29 @@ export default function ChapterPageClient({
                 >
                   Volume {initialChapter.volume.number}
                   {initialChapter.volume.title ? `: ${initialChapter.volume.title}` : ''}
+                </Badge>
+              )}
+
+              {/* Arc Badge */}
+              {initialArc && (
+                <Badge
+                  component={Link}
+                  href={`/arcs/${initialArc.id}`}
+                  variant="light"
+                  size="lg"
+                  radius="md"
+                  c={textColors.arc}
+                  style={{
+                    background: getAlphaColor(entityColors.arc, 0.2),
+                    border: `1px solid ${getAlphaColor(entityColors.arc, 0.4)}`,
+                    fontSize: fontSize.sm,
+                    fontWeight: 600,
+                    alignSelf: 'flex-start',
+                    textDecoration: 'none',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {initialArc.name}
                 </Badge>
               )}
             </Stack>

@@ -8,12 +8,30 @@ interface PageProps {
   params: Promise<{ id: string }>
 }
 
+interface GambleFactionMember {
+  id: number
+  characterId: number
+  character: { id: number; name: string; description?: string; alternateNames?: string[] }
+  role?: 'leader' | 'member' | 'supporter' | 'observer' | null
+  displayOrder: number
+}
+
+interface GambleFaction {
+  id: number
+  name?: string | null
+  supportedGamblerId?: number | null
+  supportedGambler?: { id: number; name: string } | null
+  members: GambleFactionMember[]
+  displayOrder: number
+}
+
 interface Gamble {
   id: number
   name: string
   description?: string
   rules: string
   winCondition?: string
+  explanation?: string
   chapterId: number
   participants?: Array<{
     id: number
@@ -21,6 +39,7 @@ interface Gamble {
     description?: string
     alternateNames?: string[]
   }>
+  factions?: GambleFaction[]
   chapter?: {
     id: number
     number: number

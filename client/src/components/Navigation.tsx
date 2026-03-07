@@ -40,7 +40,8 @@ import {
   Zap,
   ChevronDown,
   Calendar,
-  MessageSquare
+  MessageSquare,
+  Activity
 } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -283,6 +284,7 @@ const Navigation: React.FC = () => {
       { label: 'Guides', href: '/guides', icon: <BookOpen size={16} /> },
       { label: 'Media', href: '/media', icon: <Image size={16} /> },
       { label: 'Users', href: '/users', icon: <Users size={16} /> },
+      { label: 'Changelog', href: '/changelog', icon: <Activity size={16} /> },
       { label: 'About', href: '/about', icon: <Info size={16} /> }
     ],
     submit: [
@@ -918,6 +920,22 @@ const Navigation: React.FC = () => {
                 </Menu.Item>
                 <Menu.Item
                   component={Link}
+                  href="/changelog"
+                  leftSection={<Activity size={16} />}
+                  style={{
+                    backgroundColor: 'transparent',
+                    borderRadius: 6,
+                    transition: 'box-shadow 0.2s ease',
+                    boxShadow: isActivePath('/changelog') ? `inset 0 0 0 1px ${accentColor}` : undefined,
+                    paddingTop: rem(6),
+                    paddingBottom: rem(6)
+                  }}
+                  styles={{ item: menuHoverStyles }}
+                >
+                  Changelog
+                </Menu.Item>
+                <Menu.Item
+                  component={Link}
                   href="/about"
                   leftSection={<Info size={16} />}
                   style={{
@@ -1055,6 +1073,28 @@ const Navigation: React.FC = () => {
                   styles={{ item: menuHoverStyles }}
                 >
                   Profile
+                </Menu.Item>
+                <Menu.Item
+                  component={Link}
+                  href="/changelog"
+                  leftSection={<Activity size={16} />}
+                  onClick={handleMobileMenuClose}
+                  onMouseEnter={() => setMobileAccountHighlight('changelog')}
+                  onMouseLeave={() => {
+                    setMobileAccountHighlight((current) => (current === 'changelog' ? null : current))
+                  }}
+                  onFocus={() => setMobileAccountHighlight('changelog')}
+                  onBlur={() => {
+                    setMobileAccountHighlight((current) => (current === 'changelog' ? null : current))
+                  }}
+                  style={{
+                    backgroundColor: 'transparent',
+                    borderRadius: 6,
+                    transition: 'box-shadow 0.2s ease'
+                  }}
+                  styles={{ item: menuHoverStyles }}
+                >
+                  Changelog
                 </Menu.Item>
                 <Menu.Item
                   component={Link}

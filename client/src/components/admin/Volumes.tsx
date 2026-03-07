@@ -226,6 +226,43 @@ export const VolumeShow = () => (
             )}
           />
         </Tab>
+
+        <Tab label="Showcase Images">
+          <WithRecord
+            render={(record) => (
+              <Box sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <Box>
+                  <Typography variant="h6" sx={{ color: '#6366f1', fontWeight: 'bold', mb: 1 }}>
+                    Background Image
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.6)', mb: 2 }}>
+                    Full-width background used in the homepage volume showcase.
+                  </Typography>
+                  <EntityDisplayMediaSection
+                    ownerType="volume"
+                    ownerId={record.id}
+                    accentColor="#6366f1"
+                    usageType="volume_showcase_background"
+                  />
+                </Box>
+                <Box>
+                  <Typography variant="h6" sx={{ color: '#6366f1', fontWeight: 'bold', mb: 1 }}>
+                    Popout Image
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.6)', mb: 2 }}>
+                    Foreground popout image used in the homepage volume showcase.
+                  </Typography>
+                  <EntityDisplayMediaSection
+                    ownerType="volume"
+                    ownerId={record.id}
+                    accentColor="#6366f1"
+                    usageType="volume_showcase_popout"
+                  />
+                </Box>
+              </Box>
+            )}
+          />
+        </Tab>
       </TabbedShowLayout>
     </Box>
   </Show>

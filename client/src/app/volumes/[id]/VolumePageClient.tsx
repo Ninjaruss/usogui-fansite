@@ -55,12 +55,20 @@ interface Chapter {
   summary: string | null
 }
 
+interface ArcBase {
+  id: number
+  name: string
+  startChapter: number
+  endChapter: number
+}
+
 interface VolumePageClientProps {
   initialVolume: Volume
   initialChapters: Chapter[]
+  initialArcs?: ArcBase[]
 }
 
-export default function VolumePageClient({ initialVolume, initialChapters }: VolumePageClientProps) {
+export default function VolumePageClient({ initialVolume, initialChapters, initialArcs = [] }: VolumePageClientProps) {
   const theme = useMantineTheme()
   const [activeTab, setActiveTab] = useState<string>('overview')
 
@@ -76,7 +84,8 @@ export default function VolumePageClient({ initialVolume, initialChapters }: Vol
   const entityColors = {
     volume: getEntityThemeColor(theme, 'volume'),
     chapter: getEntityThemeColor(theme, 'chapter'),
-    guide: getEntityThemeColor(theme, 'guide')
+    guide: getEntityThemeColor(theme, 'guide'),
+    arc: getEntityThemeColor(theme, 'arc')
   }
 
   const chapterCount = initialVolume.endChapter - initialVolume.startChapter + 1
@@ -175,6 +184,26 @@ export default function VolumePageClient({ initialVolume, initialChapters }: Vol
                 >
                   Volume #{initialVolume.number}
                 </Badge>
+                {initialArcs.map(arc => (
+                  <Badge
+                    key={arc.id}
+                    component={Link}
+                    href={`/arcs/${arc.id}`}
+                    size="lg"
+                    variant="light"
+                    c={textColors.arc}
+                    style={{
+                      fontSize: fontSize.xs,
+                      fontWeight: 600,
+                      background: getAlphaColor(entityColors.arc, 0.2),
+                      border: `1px solid ${getAlphaColor(entityColors.arc, 0.4)}`,
+                      textDecoration: 'none',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {arc.name}
+                  </Badge>
+                ))}
               </Group>
             </Stack>
           </DetailPageHeader>

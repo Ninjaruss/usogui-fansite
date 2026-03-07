@@ -21,14 +21,16 @@ export class QuoteSeeder implements Seeder {
       return;
     }
 
-    // Get main characters
-    const bakuCharacter = await characterRepository.findOne({
-      where: { name: 'Baku Madarame' },
-    });
+    // Fetch both characters in a single query
+    const characterNames = ['Baku Madarame', 'Marco Reiji'];
+    const characters = await characterRepository
+      .createQueryBuilder('c')
+      .where('c.name IN (:...names)', { names: characterNames })
+      .getMany();
+    const characterByName = new Map(characters.map(c => [c.name, c]));
 
-    const marcoCharacter = await characterRepository.findOne({
-      where: { name: 'Marco Reiji' },
-    });
+    const bakuCharacter = characterByName.get('Baku Madarame');
+    const marcoCharacter = characterByName.get('Marco Reiji');
 
     if (!bakuCharacter || !marcoCharacter) {
       console.log('Characters not found. Please run CharacterSeeder first.');

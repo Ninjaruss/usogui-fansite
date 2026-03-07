@@ -129,9 +129,16 @@ export default function GamblePageClient({ initialGamble }: GamblePageClientProp
   const mediaId = searchParams.get('mediaId') ?? undefined
   const gambleColor = getEntityThemeColor(theme, 'gamble')
   const characterColor = getEntityThemeColor(theme, 'character')
+  const arcColor = getEntityThemeColor(theme, 'arc')
   const [timelineEvents, setTimelineEvents] = useState<GambleTimelineEvent[]>([])
   const [arcs, setArcs] = useState<TimelineArc[]>([])
   const [timelineLoading, setTimelineLoading] = useState(false)
+
+  const gambleArc = arcs.find(a =>
+    initialGamble.chapter &&
+    a.startChapter <= initialGamble.chapter.number &&
+    (a.endChapter === null || a.endChapter >= initialGamble.chapter.number)
+  )
 
   const [activeTab, setActiveTab] = useState<string>('overview')
 
@@ -304,6 +311,24 @@ export default function GamblePageClient({ initialGamble }: GamblePageClientProp
                 border: `1px solid ${getAlphaColor(gambleColor, 0.4)}`
               }}>
                 {timelineEvents.length} Events
+              </Badge>
+            )}
+            {gambleArc && (
+              <Badge
+                component={Link}
+                href={`/arcs/${gambleArc.id}`}
+                size="lg"
+                variant="light"
+                c={textColors.arc}
+                style={{
+                  fontSize: fontSize.xs, fontWeight: 600,
+                  background: getAlphaColor(arcColor, 0.2),
+                  border: `1px solid ${getAlphaColor(arcColor, 0.4)}`,
+                  textDecoration: 'none',
+                  cursor: 'pointer'
+                }}
+              >
+                {gambleArc.name}
               </Badge>
             )}
           </Group>

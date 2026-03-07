@@ -48,6 +48,17 @@ async function getChapterQuotes(chapterNumber: number) {
   }
 }
 
+async function getChapterArc(chapterNumber: number) {
+  try {
+    const result = await api.getArcs({ limit: 100 })
+    const arcs: Array<{ id: number; name: string; startChapter: number; endChapter: number }> = result.data || []
+    return arcs.find(a => a.startChapter <= chapterNumber && a.endChapter >= chapterNumber) || null
+  } catch (error: unknown) {
+    console.error('Error fetching chapter arc:', error)
+    return null
+  }
+}
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { id } = await params
   const chapter = await getChapterData(id)
@@ -75,10 +86,11 @@ export default async function ChapterDetailPage({ params }: PageProps) {
     notFound()
   }
 
-  // Fetch events and quotes for this chapter
-  const [events, quotes] = await Promise.all([
+  // Fetch events, quotes, and arc for this chapter
+  const [events, quotes, arc] = await Promise.all([
     getChapterEvents(chapter.number),
-    getChapterQuotes(chapter.number)
+    getChapterQuotes(chapter.number),
+    getChapterArc(chapter.number)
   ])
 
   return (
@@ -88,6 +100,7 @@ export default async function ChapterDetailPage({ params }: PageProps) {
         initialChapter={chapter}
         initialEvents={events}
         initialQuotes={quotes}
+        initialArc={arc}
       />
     </>
   )

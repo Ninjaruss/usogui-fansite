@@ -134,6 +134,27 @@ export function createShowcaseConfiguration({
   }
 }
 
+/**
+ * Build a VolumeShowcaseItem from API media records.
+ * Returns null for either URL if the media record was not found.
+ */
+export function buildShowcaseItemFromApiData(
+  volumeId: number,
+  backgroundUrl: string | null,
+  popoutUrl: string | null,
+  title?: string,
+  description?: string
+): VolumeShowcaseItem | null {
+  if (!backgroundUrl) return null
+  return {
+    id: volumeId,
+    backgroundImage: backgroundUrl,
+    popoutImage: popoutUrl ?? undefined,
+    title,
+    description,
+  }
+}
+
 // Validation function for showcase configurations
 export function validateShowcaseConfiguration(config: ShowcaseConfiguration): {
   isValid: boolean
