@@ -154,7 +154,7 @@ export class EditLogService {
     page?: number;
   }): Promise<{
     data: Array<{
-      id: number;
+      id: number | string;
       type: 'guide' | 'media' | 'annotation';
       title?: string;
       entityType?: string;
@@ -187,7 +187,7 @@ export class EditLogService {
     ]);
 
     const combined: Array<{
-      id: number;
+      id: number | string;
       type: 'guide' | 'media' | 'annotation';
       title?: string;
       entityType?: string;
