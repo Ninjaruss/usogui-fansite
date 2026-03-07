@@ -6,7 +6,7 @@
 - tsc build changed to swc build
 
 ### Notes
-- tsc builds use significantly less resources supposedly and make the builds quicker. There was a small bug with deployment as swc flattens the output to dist which ignores the src subdirectory, so the path needed to be updated to the proper file.
+- tsc builds use significantly less resources supposedly and make the builds quicker. There was a small bug with deployment as swc flattens the output to dist which ignores the src subdirectory, so the path needed to be updated to the proper file. Still, I'm still having issues with the server hanging...
 
 ## 2026-03-06
 - Migration of volume image showcase to also be in Cloudflare R2
