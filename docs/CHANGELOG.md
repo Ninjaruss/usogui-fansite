@@ -5,6 +5,7 @@
 ## 2026-03-08
 - Fixed a issue with SWC build (it was crashing the build due to missing decorators for swagger api)
 - Improved changelog and recent activity feed 
+- Cohesion passthrough for public detail pages (removal of redundant buttons and discrepancies)
 
 ## 2026-03-07
 - tsc build changed to swc build

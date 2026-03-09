@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation'
 import {
   Badge,
   Box,
+  Button,
   Card,
   Container,
   Group,
@@ -339,15 +340,17 @@ export default function CharacterPageClient({
               <CharacterRelationships characterId={character.id} characterName={character.name} />
 
               {/* Organization Memberships */}
-              <Card withBorder radius="lg" shadow="lg" style={getCardStyles(theme, entityColors.organization)}>
-                <Stack gap={theme.spacing.md} p={theme.spacing.md}>
-                  <Group gap={theme.spacing.sm}>
-                    <Building2 size={20} color={entityColors.organization} />
-                    <Title order={4} c={textColors.primary}>Organizations</Title>
-                  </Group>
-                  <CharacterOrganizationMemberships characterId={character.id} characterName={character.name} />
-                </Stack>
-              </Card>
+              {character.organizations && character.organizations.length > 0 && (
+                <Card withBorder radius="lg" shadow="lg" style={getCardStyles(theme, entityColors.organization)}>
+                  <Stack gap={theme.spacing.md} p={theme.spacing.md}>
+                    <Group gap={theme.spacing.sm}>
+                      <Building2 size={20} color={entityColors.organization} />
+                      <Title order={4} c={textColors.primary}>Organizations</Title>
+                    </Group>
+                    <CharacterOrganizationMemberships characterId={character.id} characterName={character.name} />
+                  </Stack>
+                </Card>
+              )}
 
               {/* Related Story Arcs */}
               <RelatedContentSection
@@ -488,6 +491,16 @@ export default function CharacterPageClient({
                       <ImageIcon size={20} color={entityColors.media} />
                       <Title order={4} c={textColors.media}>Media Gallery</Title>
                     </Group>
+                    <Button
+                      component={Link}
+                      href={`/media?ownerType=character&ownerId=${character.id}`}
+                      variant="outline"
+                      c={entityColors.media}
+                      size="sm"
+                      radius="xl"
+                    >
+                      View All
+                    </Button>
                   </Group>
                   <MediaGallery
                     ownerType="character"

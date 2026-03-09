@@ -25,7 +25,7 @@ import {
   backgroundStyles,
   getCardStyles
 } from '../../../lib/mantine-theme'
-import { CalendarSearch, BookOpen, Dice6, Users, Tag, Image as ImageIcon, Edit } from 'lucide-react'
+import { CalendarSearch, Dice6, Users, Tag, Image as ImageIcon, Edit } from 'lucide-react'
 import Link from 'next/link'
 import { useAuth } from '../../../providers/AuthProvider'
 import EnhancedSpoilerMarkdown from '../../../components/EnhancedSpoilerMarkdown'
@@ -85,8 +85,7 @@ export default function EventPageClient({ initialEvent }: EventPageClientProps) 
     character: getEntityThemeColor(theme, 'character'),
     arc: getEntityThemeColor(theme, 'arc'),
     gamble: getEntityThemeColor(theme, 'gamble'),
-    media: getEntityThemeColor(theme, 'media'),
-    organization: getEntityThemeColor(theme, 'organization')
+    media: getEntityThemeColor(theme, 'media')
   }
 
   return (
@@ -367,11 +366,11 @@ export default function EventPageClient({ initialEvent }: EventPageClientProps) 
 
                     {/* Tags Section */}
                     {initialEvent.tags && initialEvent.tags.length > 0 && (
-                      <Card withBorder radius="lg" shadow="lg" style={getCardStyles(theme, entityColors.organization)}>
+                      <Card withBorder radius="lg" shadow="lg" style={getCardStyles(theme, entityColors.event)}>
                         <Stack gap={theme.spacing.md} p={theme.spacing.md}>
                           <Group gap={theme.spacing.sm}>
-                            <Tag size={20} color={entityColors.organization} />
-                            <Title order={4} c={textColors.organization}>Tags</Title>
+                            <Tag size={20} color={entityColors.event} />
+                            <Title order={4} c={textColors.event}>Tags</Title>
                           </Group>
                           <Group gap="xs" wrap="wrap">
                             {initialEvent.tags.map((tag) => (
@@ -379,8 +378,8 @@ export default function EventPageClient({ initialEvent }: EventPageClientProps) 
                                 key={tag.id}
                                 variant="outline"
                                 radius="sm"
-                                c={entityColors.organization}
-                                style={{ borderColor: entityColors.organization }}
+                                c={entityColors.event}
+                                style={{ borderColor: entityColors.event }}
                               >
                                 {tag.name}
                               </Badge>
@@ -390,35 +389,6 @@ export default function EventPageClient({ initialEvent }: EventPageClientProps) 
                       </Card>
                     )}
 
-                    {/* Related Arc Section */}
-                    {initialEvent.arc && (
-                      <Card withBorder radius="lg" shadow="lg" style={getCardStyles(theme, entityColors.arc)}>
-                        <Stack gap={theme.spacing.md} p={theme.spacing.md}>
-                          <Group justify="space-between" align="center">
-                            <Group gap={theme.spacing.sm}>
-                              <BookOpen size={20} color={entityColors.arc} />
-                              <Title order={4} c={textColors.arc}>Story Arc</Title>
-                            </Group>
-                            <Button
-                              component={Link}
-                              href={`/arcs/${initialEvent.arc.id}`}
-                              variant="outline"
-                              c={entityColors.arc}
-                              size="sm"
-                              radius="xl"
-                              style={{
-                                fontWeight: 600,
-                                border: `2px solid ${entityColors.arc}`,
-                                transition: `all ${theme.other?.transitions?.durationShort || 200}ms ease`
-                              }}
-                            >
-                              View Arc
-                            </Button>
-                          </Group>
-                          <Text c={textColors.arc} fw={500}>{initialEvent.arc.name}</Text>
-                        </Stack>
-                      </Card>
-                    )}
 
                     {/* Other Gambles in this Arc */}
                     {arcGambles.length > 0 && (

@@ -7,7 +7,6 @@ import {
   Button,
   Card,
   Container,
-  Grid,
   Group,
   Stack,
   Tabs,
@@ -25,7 +24,7 @@ import {
   backgroundStyles,
   getCardStyles
 } from '../../../lib/mantine-theme'
-import { Users, Shield, Crown, Image as ImageIcon } from 'lucide-react'
+import { Users, Shield, Image as ImageIcon } from 'lucide-react'
 import Link from 'next/link'
 import EnhancedSpoilerMarkdown from '../../../components/EnhancedSpoilerMarkdown'
 import { motion } from 'motion/react'
@@ -159,7 +158,7 @@ export default function OrganizationPageClient({
             <Tabs.Tab value="members" leftSection={<Users size={16} />}>
               Members
             </Tabs.Tab>
-            <Tabs.Tab value="media" leftSection={<Crown size={16} />}>Media</Tabs.Tab>
+            <Tabs.Tab value="media" leftSection={<ImageIcon size={16} />}>Media</Tabs.Tab>
           </Tabs.List>
 
           <Tabs.Panel value="overview" pt={theme.spacing.md}>
@@ -199,35 +198,6 @@ export default function OrganizationPageClient({
                 </Card>
               )}
 
-              {/* Organization Details */}
-              <Card withBorder radius="lg" shadow="lg" style={getCardStyles(theme, entityColors.organization)}>
-                <Stack gap={theme.spacing.md} p={theme.spacing.md}>
-                  <Group gap={theme.spacing.sm}>
-                    <Users size={20} color={entityColors.organization} />
-                    <Title order={4} c={textColors.organization}>Organization Details</Title>
-                  </Group>
-                  <Grid gutter="md">
-                    <Grid.Col span={6}>
-                      <Stack gap={4}>
-                        <Text size="sm" c={textColors.secondary}>
-                          Organization Name
-                        </Text>
-                        <Text size="md">{initialOrganization.name}</Text>
-                      </Stack>
-                    </Grid.Col>
-                    <Grid.Col span={6}>
-                      <Stack gap={4}>
-                        <Text size="sm" c={textColors.secondary}>
-                          Known Members
-                        </Text>
-                        <Text size="md">
-                          {initialMembers.length} {initialMembers.length === 1 ? 'member' : 'members'}
-                        </Text>
-                      </Stack>
-                    </Grid.Col>
-                  </Grid>
-                </Stack>
-              </Card>
             </Stack>
           </Tabs.Panel>
 

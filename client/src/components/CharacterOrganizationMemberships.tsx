@@ -152,7 +152,7 @@ export default function CharacterOrganizationMemberships({
         <Group justify="flex-end">
           <UnstyledButton onClick={() => setIsCompact(v => !v)}>
             <Text size="xs" c={entityColor} fw={600} style={{ cursor: 'pointer' }}>
-              {isCompact ? 'Show details' : 'Collapse'}
+              {isCompact ? 'Expand all' : 'Collapse all'}
             </Text>
           </UnstyledButton>
         </Group>

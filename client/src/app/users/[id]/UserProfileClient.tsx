@@ -22,7 +22,8 @@ import {
   useMantineTheme
 } from '@mantine/core'
 import { getAlphaColor, getEntityThemeColor, headerColors, outlineStyles, textColors } from '../../../lib/mantine-theme'
-import { ArrowLeft, BookOpen, Camera, Dices, Eye, FileText, Heart, Quote, Star } from 'lucide-react'
+import { BreadcrumbNav, createEntityBreadcrumbs } from '../../../components/Breadcrumb'
+import { BookOpen, Camera, Dices, Eye, FileText, Heart, Quote, Star } from 'lucide-react'
 import Link from 'next/link'
 import { motion } from 'motion/react'
 import { api } from '../../../lib/api'
@@ -196,26 +197,10 @@ export default function UserProfileClient({ initialUser }: UserProfileClientProp
   return (
     <Container size="lg" py="xl">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-        <Button
-          component={Link}
-          href="/users"
-          variant="outline"
-          radius="md"
-          styles={{
-            root: {
-              borderColor: accentBorderColor,
-              color: accentTextColor,
-              backgroundColor: getAlphaColor(accentColor, 0.1),
-              _hover: {
-                backgroundColor: accentHoverColor
-              }
-            }
-          }}
-          leftSection={<ArrowLeft size={16} />}
-          mb="xl"
-        >
-          Back to Users
-        </Button>
+        <BreadcrumbNav
+          items={createEntityBreadcrumbs('user', user.username)}
+          entityType="user"
+        />
 
         {/* Main Profile Card */}
         <Card

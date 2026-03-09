@@ -366,20 +366,6 @@ export default function ChapterPageClient({
                       </Card>
                     )}
 
-                    {/* No Characters Info */}
-                    {initialCharacters.length === 0 && (
-                      <Card withBorder radius="lg" shadow="lg" style={getCardStyles(theme, entityColors.character)}>
-                        <Stack align="center" gap="sm" p={theme.spacing.xl}>
-                          <Users size={48} color={textColors.secondary} style={{ opacity: 0.5 }} />
-                          <Title order={4} c={textColors.secondary}>
-                            No Character Data
-                          </Title>
-                          <Text size="sm" c={textColors.tertiary} ta="center" maw={400}>
-                            Character information isn't available for this chapter yet.
-                          </Text>
-                        </Stack>
-                      </Card>
-                    )}
                   </Stack>
                 </Tabs.Panel>
 

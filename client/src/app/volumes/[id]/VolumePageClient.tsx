@@ -297,67 +297,6 @@ export default function VolumePageClient({ initialVolume, initialChapters, initi
                       </Stack>
                     </Card>
 
-                    {/* Volume Statistics Section */}
-                    <Card withBorder radius="lg" shadow="lg" style={getCardStyles(theme, entityColors.volume)}>
-                      <Stack gap={theme.spacing.md} p={theme.spacing.md}>
-                        <Group gap={theme.spacing.sm}>
-                          <Hash size={20} color={entityColors.volume} />
-                          <Title order={4} c={textColors.volume}>Volume Statistics</Title>
-                        </Group>
-                        <Grid gutter="md">
-                          <Grid.Col span={6}>
-                            <Stack gap={4}>
-                              <Text size="sm" c={textColors.secondary}>Volume Number</Text>
-                              <Badge
-                                variant="light"
-                                c={textColors.volume}
-                                size="lg"
-                                style={{
-                                  backgroundColor: getAlphaColor(entityColors.volume, 0.2),
-                                  border: `1px solid ${getAlphaColor(entityColors.volume, 0.4)}`
-                                }}
-                              >
-                                #{initialVolume.number}
-                              </Badge>
-                            </Stack>
-                          </Grid.Col>
-                          <Grid.Col span={6}>
-                            <Stack gap={4}>
-                              <Text size="sm" c={textColors.secondary}>Total Chapters</Text>
-                              <Text fw={600} c={textColors.volume}>{chapterCount}</Text>
-                            </Stack>
-                          </Grid.Col>
-                          <Grid.Col span={6}>
-                            <Stack gap={4}>
-                              <Text size="sm" c={textColors.secondary}>First Chapter</Text>
-                              <Text
-                                component={Link}
-                                href={`/chapters/${initialVolume.startChapter}`}
-                                fw={600}
-                                c={entityColors.volume}
-                                style={{ textDecoration: 'none' }}
-                              >
-                                Chapter {initialVolume.startChapter}
-                              </Text>
-                            </Stack>
-                          </Grid.Col>
-                          <Grid.Col span={6}>
-                            <Stack gap={4}>
-                              <Text size="sm" c={textColors.secondary}>Last Chapter</Text>
-                              <Text
-                                component={Link}
-                                href={`/chapters/${initialVolume.endChapter}`}
-                                fw={600}
-                                c={entityColors.volume}
-                                style={{ textDecoration: 'none' }}
-                              >
-                                Chapter {initialVolume.endChapter}
-                              </Text>
-                            </Stack>
-                          </Grid.Col>
-                        </Grid>
-                      </Stack>
-                    </Card>
                   </Stack>
                 </Tabs.Panel>
 
