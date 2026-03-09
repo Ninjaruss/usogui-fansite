@@ -59,6 +59,7 @@ export class EventsController {
     name: 'type',
     required: false,
     enum: EventType,
+    type: 'string',
     description: 'Filter by event type',
   })
   @ApiQuery({
@@ -70,6 +71,7 @@ export class EventsController {
     name: 'status',
     required: false,
     enum: EventStatus,
+    type: 'string',
     description: 'Filter by approval status',
   })
   @ApiQuery({
@@ -150,6 +152,7 @@ export class EventsController {
     name: 'type',
     required: false,
     enum: EventType,
+    type: 'string',
     description: 'Filter by event type',
   })
   @ApiQuery({
@@ -161,6 +164,7 @@ export class EventsController {
     name: 'status',
     required: false,
     enum: EventStatus,
+    type: 'string',
     description: 'Filter by approval status',
   })
   async getByArc(
@@ -206,6 +210,7 @@ export class EventsController {
     name: 'type',
     required: false,
     enum: EventType,
+    type: 'string',
     description: 'Filter by event type',
   })
   @ApiQuery({
@@ -217,6 +222,7 @@ export class EventsController {
     name: 'status',
     required: false,
     enum: EventStatus,
+    type: 'string',
     description: 'Filter by approval status',
   })
   async getByGamble(
@@ -262,6 +268,7 @@ export class EventsController {
     name: 'type',
     required: false,
     enum: EventType,
+    type: 'string',
     description: 'Filter by event type',
   })
   @ApiQuery({
@@ -273,6 +280,7 @@ export class EventsController {
     name: 'status',
     required: false,
     enum: EventStatus,
+    type: 'string',
     description: 'Filter by approval status',
   })
   async getByChapter(
@@ -394,12 +402,14 @@ export class EventsController {
     name: 'type',
     required: false,
     enum: EventType,
+    type: 'string',
     description: 'Filter by event type',
   })
   @ApiQuery({
     name: 'status',
     required: false,
     enum: EventStatus,
+    type: 'string',
     description: 'Filter by approval status',
   })
   @ApiQuery({

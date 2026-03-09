@@ -125,12 +125,14 @@ export class MediaController {
     required: false,
     description: 'Filter by media type',
     enum: MediaType,
+    type: 'string',
   })
   @ApiQuery({
     name: 'ownerType',
     required: false,
     description: 'Filter by owner type',
     enum: MediaOwnerType,
+    type: 'string',
   })
   @ApiQuery({
     name: 'ownerId',
@@ -143,6 +145,7 @@ export class MediaController {
     required: false,
     description: 'Filter by media purpose',
     enum: MediaPurpose,
+    type: 'string',
   })
   @ApiQuery({
     name: 'page',
@@ -590,12 +593,14 @@ export class MediaController {
     required: false,
     description: 'Filter by media type',
     enum: MediaType,
+    type: 'string',
   })
   @ApiQuery({
     name: 'ownerType',
     required: false,
     description: 'Filter by owner type',
     enum: MediaOwnerType,
+    type: 'string',
   })
   @ApiQuery({
     name: 'ownerId',
@@ -608,6 +613,7 @@ export class MediaController {
     required: false,
     description: 'Filter by media purpose',
     enum: MediaPurpose,
+    type: 'string',
   })
   @ApiQuery({
     name: 'sort',
@@ -1240,6 +1246,7 @@ export class MediaController {
     name: 'ownerType',
     description: 'Type of entity',
     enum: MediaOwnerType,
+    type: 'string',
   })
   @ApiParam({
     name: 'ownerId',
@@ -1257,12 +1264,14 @@ export class MediaController {
     required: false,
     description: 'Media type filter',
     enum: MediaType,
+    type: 'string',
   })
   @ApiQuery({
     name: 'purpose',
     required: false,
     description: 'Media purpose filter',
     enum: MediaPurpose,
+    type: 'string',
   })
   @ApiQuery({
     name: 'page',
@@ -1323,6 +1332,7 @@ export class MediaController {
     name: 'ownerType',
     description: 'Type of entity',
     enum: MediaOwnerType,
+    type: 'string',
   })
   @ApiParam({
     name: 'ownerId',
@@ -1340,6 +1350,7 @@ export class MediaController {
     required: false,
     description: 'Media type filter',
     enum: MediaType,
+    type: 'string',
   })
   @ApiQuery({
     name: 'page',
@@ -1379,6 +1390,7 @@ export class MediaController {
     name: 'ownerType',
     description: 'Type of entity',
     enum: MediaOwnerType,
+    type: 'string',
   })
   @ApiParam({
     name: 'ownerId',
@@ -1401,6 +1413,7 @@ export class MediaController {
     name: 'ownerType',
     description: 'Type of entity',
     enum: MediaOwnerType,
+    type: 'string',
   })
   @ApiParam({
     name: 'ownerId',
@@ -1418,6 +1431,7 @@ export class MediaController {
     required: false,
     description: 'Media type filter',
     enum: MediaType,
+    type: 'string',
   })
   @ApiQuery({
     name: 'page',
@@ -1456,6 +1470,7 @@ export class MediaController {
     name: 'ownerType',
     description: 'Type of entity',
     enum: MediaOwnerType,
+    type: 'string',
   })
   @ApiParam({
     name: 'ownerId',
@@ -1490,6 +1505,7 @@ export class MediaController {
     name: 'ownerType',
     description: 'Type of entity',
     enum: MediaOwnerType,
+    type: 'string',
   })
   @ApiParam({
     name: 'ownerId',
@@ -1523,6 +1539,7 @@ export class MediaController {
     name: 'ownerType',
     description: 'Type of entity',
     enum: MediaOwnerType,
+    type: 'string',
   })
   @ApiParam({
     name: 'ownerId',
@@ -1540,6 +1557,7 @@ export class MediaController {
     required: false,
     description: 'Media type filter',
     enum: MediaType,
+    type: 'string',
   })
   @ApiQuery({
     name: 'page',

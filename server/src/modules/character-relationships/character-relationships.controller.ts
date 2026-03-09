@@ -95,6 +95,7 @@ export class CharacterRelationshipsController {
     name: 'relationshipType',
     required: false,
     enum: RelationshipType,
+    type: 'string',
     description: 'Filter by relationship type',
   })
   @ApiQuery({

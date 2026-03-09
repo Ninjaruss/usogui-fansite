@@ -43,6 +43,7 @@ export class SearchController {
   @ApiQuery({
     name: 'type',
     enum: SearchType,
+    type: 'string',
     description: 'Type of content to search (default: all)',
     required: false,
   })
@@ -171,6 +172,7 @@ export class SearchController {
   @ApiQuery({
     name: 'type',
     enum: SearchType,
+    type: 'string',
     description: 'Type of content to search',
     required: false,
   })
@@ -245,6 +247,7 @@ export class SearchController {
   @ApiQuery({
     name: 'type',
     enum: SearchType,
+    type: 'string',
     description: 'Type of content to search (default: all)',
     required: false,
   })

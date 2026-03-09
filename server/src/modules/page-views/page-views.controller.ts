@@ -30,6 +30,7 @@ export class PageViewsController {
   @ApiParam({
     name: 'pageType',
     enum: PageType,
+    type: 'string',
     description: 'Type of page being viewed',
   })
   @ApiParam({
@@ -59,6 +60,7 @@ export class PageViewsController {
   @ApiParam({
     name: 'pageType',
     enum: PageType,
+    type: 'string',
     description: 'Type of page',
   })
   @ApiParam({
@@ -92,6 +94,7 @@ export class PageViewsController {
   @ApiParam({
     name: 'pageType',
     enum: PageType,
+    type: 'string',
     description: 'Type of page',
   })
   @ApiParam({
@@ -138,6 +141,13 @@ export class PageViewsController {
   @Get('trending')
   @ApiOperation({
     summary: 'Get trending pages across all types (based on unique views)',
+  })
+  @ApiQuery({
+    name: 'pageType',
+    required: false,
+    enum: PageType,
+    type: 'string',
+    description: 'Filter by page type',
   })
   @ApiResponse({
     status: 200,

@@ -75,6 +75,7 @@ export class TranslationsController {
     name: 'language',
     description: 'Optional language filter',
     enum: Language,
+    type: 'string',
     required: false,
     example: Language.JA,
   })
