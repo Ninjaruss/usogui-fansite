@@ -89,7 +89,7 @@ export class Donation {
 
   @ApiPropertyOptional({
     description: 'Message from the donor',
-    example: 'Love the fansite! Keep up the great work!',
+    example: 'Love the database! Keep up the great work!',
   })
   @Column({ type: 'text', nullable: true })
   message: string | null;

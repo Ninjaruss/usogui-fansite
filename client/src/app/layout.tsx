@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     default: 'L-File - Usogui Database'
   },
   description: 'The complete fan-made database for Usogui (Lie Eater) manga. Explore characters, story arcs, gambling mechanics, guides, and community content.',
-  keywords: ['Usogui', 'Lie Eater', 'manga', 'Baku Madarame', 'gambling', 'database', 'characters', 'arcs', 'gambles', 'fansite'],
+  keywords: ['Usogui', 'Lie Eater', 'manga', 'Baku Madarame', 'gambling', 'database', 'characters', 'arcs', 'gambles', 'database'],
   authors: [{ name: 'L-File Team' }],
   creator: 'L-File',
   publisher: 'L-File',

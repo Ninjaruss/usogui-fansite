@@ -63,12 +63,12 @@ export async function generateMetadata({ searchParams }: GuidesPageProps) {
   const page = parseInt(resolvedSearchParams.page || '1', 10)
 
   const title = authorName
-    ? `Guides by ${authorName} - Usogui Fansite`
+    ? `Guides by ${authorName} - Usogui Database`
     : search
-      ? `Guides matching "${search}" - Page ${page} - Usogui Fansite`
+      ? `Guides matching "${search}" - Page ${page} - Usogui Database`
       : page > 1
-        ? `Community Guides - Page ${page} - Usogui Fansite`
-        : 'Community Guides - Usogui Fansite'
+        ? `Community Guides - Page ${page} - Usogui Database`
+        : 'Community Guides - Usogui Database'
 
   const description = authorName
     ? `Browse community guides written by ${authorName}. In-depth analysis and insights about Usogui.`

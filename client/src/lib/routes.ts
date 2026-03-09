@@ -1,5 +1,5 @@
 /**
- * Centralized route configuration for the Usogui Fansite
+ * Centralized route configuration for the Usogui Database
  * Use these helpers instead of hardcoding route strings to prevent typos
  * and make refactoring easier.
  */

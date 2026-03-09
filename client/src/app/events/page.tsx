@@ -24,10 +24,10 @@ export async function generateMetadata({ searchParams }: EventsPageProps) {
   const character = resolvedSearchParams.character
 
   const title = search
-    ? `Events matching "${search}" - Usogui Fansite`
+    ? `Events matching "${search}" - Usogui Database`
     : character
-    ? `${character} Events - Usogui Fansite`
-    : 'Events - Usogui Fansite'
+    ? `${character} Events - Usogui Database`
+    : 'Events - Usogui Database'
 
   const description = search
     ? `Browse key Usogui events that match "${search}". Filter by type or character to explore the timeline.`

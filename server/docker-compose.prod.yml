@@ -1,5 +1,5 @@
 # =============================================================================
-# L-File Usogui Fansite - Production Docker Compose (Server Only)
+# L-File Usogui Database - Production Docker Compose (Server Only)
 # =============================================================================
 # Used for standalone server deployment (e.g. Dokploy single-service mode).
 # Set all environment variables via Dokploy's "Environment Variables" UI.

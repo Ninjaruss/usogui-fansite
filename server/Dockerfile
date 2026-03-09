@@ -1,5 +1,5 @@
 # =============================================================================
-# L-File Usogui Fansite - NestJS Backend Dockerfile
+# L-File Usogui Database - NestJS Backend Dockerfile
 # =============================================================================
 # Multi-stage build for optimal production image size
 # =============================================================================
@@ -47,8 +47,8 @@ ARG BUILD_DATE
 ARG VERSION=1.0.0
 
 # Add labels for container metadata
-LABEL maintainer="Usogui Fansite Team"
-LABEL description="NestJS backend API for Usogui Fansite"
+LABEL maintainer="Usogui Database Team"
+LABEL description="NestJS backend API for Usogui Database"
 LABEL build_date=$BUILD_DATE
 LABEL version=$VERSION
 

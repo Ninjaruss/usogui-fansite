@@ -28,12 +28,12 @@ export async function generateMetadata({ searchParams }: ArcsPageProps) {
   const page = parseInt(resolvedSearchParams.page || '1', 10)
 
   const title = character
-    ? `Story Arcs featuring ${character} - Usogui Fansite`
+    ? `Story Arcs featuring ${character} - Usogui Database`
     : search
-        ? `Arcs matching "${search}" - Page ${page} - Usogui Fansite`
+        ? `Arcs matching "${search}" - Page ${page} - Usogui Database`
         : page > 1
-          ? `Story Arcs - Page ${page} - Usogui Fansite`
-          : 'Story Arcs - Usogui Fansite'
+          ? `Story Arcs - Page ${page} - Usogui Database`
+          : 'Story Arcs - Usogui Database'
 
   const description = character
     ? `Explore story arcs from Usogui featuring ${character}. Detailed analysis and storylines.`

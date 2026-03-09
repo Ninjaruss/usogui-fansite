@@ -1,10 +1,10 @@
-# GitHub Copilot Instructions for Usogui Fansite Server
+# GitHub Copilot Instructions for Usogui Database Server
 
 This document provides guidance for AI assistants working with this NestJS-based server codebase.
 
 ## Project Overview
 
-This is a NestJS server application for the Usogui fansite, featuring:
+This is a NestJS server application for the Usogui database, featuring:
 - REST API endpoints for managing manga/anime content
 - TypeORM with PostgreSQL for data persistence
 - JWT-based authentication and authorization

@@ -64,7 +64,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   if (!data?.volume) {
     return {
-      title: 'Volume Not Found - Usogui Fansite',
+      title: 'Volume Not Found - Usogui Database',
       description: 'The requested volume could not be found.'
     }
   }

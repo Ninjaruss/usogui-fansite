@@ -65,7 +65,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   if (!chapter) {
     return {
-      title: 'Chapter Not Found - Usogui Fansite',
+      title: 'Chapter Not Found - Usogui Database',
       description: 'The requested chapter could not be found.'
     }
   }

@@ -79,7 +79,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   if (!data?.organization) {
     return {
-      title: 'Organization Not Found - Usogui Fansite',
+      title: 'Organization Not Found - Usogui Database',
       description: 'The requested organization could not be found.'
     }
   }

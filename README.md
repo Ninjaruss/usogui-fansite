@@ -1,6 +1,6 @@
-# L-file (Usogui Fansite)
+# L-file (Usogui Database)
 
-A comprehensive fansite dedicated to the **Usogui** manga series by Toshio Sako. Explore characters, story arcs, gambles, and community-contributed content with built-in spoiler protection based on your reading progress.
+A comprehensive database dedicated to the **Usogui** manga series by Toshio Sako. Explore characters, story arcs, gambles, and community-contributed content with built-in spoiler protection based on your reading progress.
 
 ## Features
 

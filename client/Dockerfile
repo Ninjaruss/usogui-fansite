@@ -1,5 +1,5 @@
 # =============================================================================
-# L-File Usogui Fansite - Next.js Frontend Dockerfile
+# L-File Usogui Database - Next.js Frontend Dockerfile
 # =============================================================================
 # Multi-stage build using Next.js standalone output for minimal image size.
 #

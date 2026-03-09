@@ -26,10 +26,10 @@ export async function generateMetadata({ searchParams }: ChaptersPageProps) {
   const page = parseInt(resolvedSearchParams.page || '1', 10)
 
   const title = search
-    ? `Chapters matching "${search}" - Page ${page} - Usogui Fansite`
+    ? `Chapters matching "${search}" - Page ${page} - Usogui Database`
     : page > 1
-      ? `Chapters - Page ${page} - Usogui Fansite`
-      : 'Chapters - Usogui Fansite'
+      ? `Chapters - Page ${page} - Usogui Database`
+      : 'Chapters - Usogui Database'
 
   const description = search
     ? `Browse Usogui chapters matching "${search}". Find chapter summaries, key events, and navigate through the series.`

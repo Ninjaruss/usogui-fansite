@@ -465,7 +465,7 @@ export default function ProfilePictureSelector({
               Want to unlock more options?
             </Text>
             <Text size="sm">
-              Support our fansite to get access to premium profile pictures and exclusive content!
+              Support our database to get access to premium profile pictures and exclusive content!
             </Text>
             <Button
               component="a"

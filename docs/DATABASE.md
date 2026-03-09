@@ -1,6 +1,6 @@
 # Database Management Guide
 
-This document outlines the procedures and best practices for managing the database in the Usogui Fansite project.
+This document outlines the procedures and best practices for managing the database in the Usogui Database project.
 
 ## Key Components
 

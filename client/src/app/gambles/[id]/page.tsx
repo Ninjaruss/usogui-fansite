@@ -72,7 +72,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   if (!gamble) {
     return {
-      title: 'Gamble Not Found - Usogui Fansite',
+      title: 'Gamble Not Found - Usogui Database',
       description: 'The requested gamble could not be found.'
     }
   }

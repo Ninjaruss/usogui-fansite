@@ -1,5 +1,5 @@
 # =============================================================================
-# L-File Usogui Fansite - Frontend Production Docker Compose
+# L-File Usogui Database - Frontend Production Docker Compose
 # =============================================================================
 # Uses the pre-built image from GHCR (built by GitHub Actions) so Dokploy
 # never runs a builder on the Hetzner server.

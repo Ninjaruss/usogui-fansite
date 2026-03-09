@@ -1,8 +1,8 @@
-# Usogui Fansite - Claude MCP Documentation
+# Usogui Database - Claude MCP Documentation
 
 ## Project Overview
 
-The Usogui Fansite is a comprehensive full-stack web application dedicated to the Japanese manga "Usogui" (Lie Eater). It serves as an unofficial database and community hub for fans to explore characters, story arcs, gambling events, quotes, and other content from the series.
+The Usogui Database is a comprehensive full-stack web application dedicated to the Japanese manga "Usogui" (Lie Eater). It serves as an unofficial database and community hub for fans to explore characters, story arcs, gambling events, quotes, and other content from the series.
 
 ### Architecture
 - **Backend**: NestJS REST API with TypeORM and PostgreSQL
@@ -328,4 +328,4 @@ RUN_MIGRATIONS=true
 - Social features and interactions
 - Gamification elements
 
-This documentation provides a comprehensive overview of the Usogui Fansite project architecture, enabling efficient development, maintenance, and feature expansion while maintaining code quality and user experience standards.
+This documentation provides a comprehensive overview of the Usogui Database project architecture, enabling efficient development, maintenance, and feature expansion while maintaining code quality and user experience standards.

@@ -30,16 +30,16 @@ export async function generateMetadata({ searchParams }: GamblesPageProps) {
   const character = resolvedSearchParams.character
   const page = parseInt(resolvedSearchParams.page || '1', 10)
 
-  let title = 'Gambles - Usogui Fansite'
+  let title = 'Gambles - Usogui Database'
   
   if (character && search) {
-    title = `Gambles featuring "${character}" matching "${search}" - Page ${page} - Usogui Fansite`
+    title = `Gambles featuring "${character}" matching "${search}" - Page ${page} - Usogui Database`
   } else if (character) {
-    title = `Gambles featuring "${character}" - ${page > 1 ? `Page ${page} - ` : ''}Usogui Fansite`
+    title = `Gambles featuring "${character}" - ${page > 1 ? `Page ${page} - ` : ''}Usogui Database`
   } else if (search) {
-    title = `Gambles matching "${search}" - Page ${page} - Usogui Fansite`
+    title = `Gambles matching "${search}" - Page ${page} - Usogui Database`
   } else if (page > 1) {
-    title = `Gambles - Page ${page} - Usogui Fansite`
+    title = `Gambles - Page ${page} - Usogui Database`
   }
 
   const description = character

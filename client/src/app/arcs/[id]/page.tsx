@@ -78,7 +78,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   if (!data?.arc) {
     return {
-      title: 'Arc Not Found - Usogui Fansite',
+      title: 'Arc Not Found - Usogui Database',
       description: 'The requested arc could not be found.'
     }
   }

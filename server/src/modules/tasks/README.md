@@ -1,6 +1,6 @@
 # Tasks Module
 
-This module handles scheduled tasks for the Usogui Fansite backend, primarily focused on automated badge management.
+This module handles scheduled tasks for the Usogui Database backend, primarily focused on automated badge management.
 
 ## Features
 

@@ -1,6 +1,6 @@
-# Usogui Fansite - Frontend
+# Usogui Database - Frontend
 
-A comprehensive Next.js frontend for the Usogui fansite with React Admin integration for content management.
+A comprehensive Next.js frontend for the Usogui database with React Admin integration for content management.
 
 ## Features
 
@@ -163,4 +163,4 @@ The application will be available on port 3000 by default (client), while the ba
 
 ## License
 
-This project is part of the Usogui Fansite and follows the same license terms.
+This project is part of the Usogui Database and follows the same license terms.

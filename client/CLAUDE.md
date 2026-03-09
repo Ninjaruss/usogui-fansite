@@ -1,6 +1,6 @@
-# Usogui Fansite - Frontend Client
+# Usogui Database - Frontend Client
 
-Next.js frontend application for the Usogui fansite with React Admin integration.
+Next.js frontend application for the Usogui database with React Admin integration.
 
 ## Technology Stack
 

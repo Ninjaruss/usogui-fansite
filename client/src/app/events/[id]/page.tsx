@@ -32,7 +32,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   if (!event) {
     return {
-      title: 'Event Not Found - Usogui Fansite',
+      title: 'Event Not Found - Usogui Database',
       description: 'The requested event could not be found.'
     }
   }

@@ -1544,7 +1544,7 @@ export default function ProfilePageClient() {
                       <Stack gap="xs">
                         <Text size="sm" fw={500}>Custom roles are exclusive to active supporters!</Text>
                         <Text size="sm">
-                          Support us on Ko-fi to unlock custom role customization and help keep this fansite running.
+                          Support us on Ko-fi to unlock custom role customization and help keep this database running.
                         </Text>
                         <Button
                           component="a"

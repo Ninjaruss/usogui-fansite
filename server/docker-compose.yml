@@ -1,5 +1,5 @@
 # =============================================================================
-# L-File Usogui Fansite - Development Docker Compose
+# L-File Usogui Database - Development Docker Compose
 # =============================================================================
 # Usage:
 #   docker-compose up        - Start the server with hot reload

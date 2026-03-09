@@ -1,6 +1,6 @@
-# Usogui Fansite - Backend Server
+# Usogui Database - Backend Server
 
-NestJS backend API server for the Usogui fansite with comprehensive content management and authentication.
+NestJS backend API server for the Usogui database with comprehensive content management and authentication.
 
 ## Technology Stack
 

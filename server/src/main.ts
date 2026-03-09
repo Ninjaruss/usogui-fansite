@@ -176,7 +176,7 @@ async function bootstrap() {
 
   // API Documentation
   const config = new DocumentBuilder()
-    .setTitle('L-file Usogui Fansite API')
+    .setTitle('L-file Usogui Database API')
     .setDescription(
       'Comprehensive API for managing Usogui manga content, user interactions, and community features',
     )
@@ -232,7 +232,7 @@ async function bootstrap() {
       displayRequestDuration: true,
       filter: true,
     },
-    customSiteTitle: 'L-file Usogui Fansite API Documentation',
+    customSiteTitle: 'L-file Usogui Database API Documentation',
     customfavIcon: '/favicon.ico',
     customCss: `
       .swagger-ui .topbar { display: none }

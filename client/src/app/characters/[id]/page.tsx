@@ -107,7 +107,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 
   if (isNaN(characterId) || characterId <= 0) {
     return {
-      title: 'Character Not Found - Usogui Fansite'
+      title: 'Character Not Found - Usogui Database'
     }
   }
 
@@ -118,26 +118,26 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
       : undefined
 
     return {
-      title: `${character.name} - Usogui Fansite`,
+      title: `${character.name} - Usogui Database`,
       description: character.description
         ? character.description.substring(0, 160).replace(/\n/g, ' ') + '...'
         : `Learn about ${character.name}, a character from the Usogui manga series. View their story arcs, gambles, quotes, and more.`,
       openGraph: {
-        title: `${character.name} - Usogui Fansite`,
+        title: `${character.name} - Usogui Database`,
         description: character.description?.substring(0, 160) || `Character profile for ${character.name}`,
         images: imageUrl ? [{ url: imageUrl, alt: character.name }] : [],
         type: 'article'
       },
       twitter: {
         card: 'summary_large_image',
-        title: `${character.name} - Usogui Fansite`,
+        title: `${character.name} - Usogui Database`,
         description: character.description?.substring(0, 160) || `Character profile for ${character.name}`,
         images: imageUrl ? [imageUrl] : []
       }
     }
   } catch {
     return {
-      title: 'Character Not Found - Usogui Fansite'
+      title: 'Character Not Found - Usogui Database'
     }
   }
 }

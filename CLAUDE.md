@@ -1,7 +1,7 @@
-# L-file (Usogui Fansite)
+# L-file (Usogui Database)
 
 ## WHY
-A comprehensive fansite dedicated to the Usogui manga series. The platform enables fans to explore character information, story arcs, gambles, and community-contributed content including guides, media galleries, and annotations. Features role-based access with public viewing, user submissions, moderator content approval, and admin management. Reading progress tracking provides spoiler protection throughout the site.
+A comprehensive database dedicated to the Usogui manga series. The platform enables fans to explore character information, story arcs, gambles, and community-contributed content including guides, media galleries, and annotations. Features role-based access with public viewing, user submissions, moderator content approval, and admin management. Reading progress tracking provides spoiler protection throughout the site.
 
 ## WHAT
 

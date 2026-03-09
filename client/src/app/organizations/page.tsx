@@ -20,10 +20,10 @@ export async function generateMetadata({ searchParams }: OrganizationsPageProps)
   const page = parseInt(resolvedSearchParams.page || '1', 10)
 
   const title = search
-    ? `Organizations matching "${search}" - Page ${page} - Usogui Fansite`
+    ? `Organizations matching "${search}" - Page ${page} - Usogui Database`
     : page > 1
-      ? `Organizations - Page ${page} - Usogui Fansite`
-      : 'Organizations - Usogui Fansite'
+      ? `Organizations - Page ${page} - Usogui Database`
+      : 'Organizations - Usogui Database'
 
   const description = search
     ? `Browse Usogui organizations matching "${search}". Explore factions, groups, and their roles in the gambling underworld.`

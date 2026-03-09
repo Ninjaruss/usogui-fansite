@@ -69,7 +69,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   if (!user) {
     return {
-      title: 'User Not Found - Usogui Fansite',
+      title: 'User Not Found - Usogui Database',
       description: 'The requested user could not be found.'
     }
   }
@@ -78,16 +78,16 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   return {
     title: `${user.username} - User Profile | Usogui Database`,
-    description: `View ${user.username}'s profile on Usogui Fansite. Reading progress: Chapter ${user.userProgress} (${readingProgress}%). ${user.userStats?.guidesWritten ? `Author of ${user.userStats.guidesWritten} guides.` : ''}`,
+    description: `View ${user.username}'s profile on Usogui Database. Reading progress: Chapter ${user.userProgress} (${readingProgress}%). ${user.userStats?.guidesWritten ? `Author of ${user.userStats.guidesWritten} guides.` : ''}`,
     keywords: `Usogui, ${user.username}, user profile, reading progress, guides${user.customRole ? `, ${user.customRole}` : ''}`,
     openGraph: {
-      title: `${user.username} - Usogui Fansite`,
+      title: `${user.username} - Usogui Database`,
       description: `${user.username} is on Chapter ${user.userProgress} of Usogui (${readingProgress}% complete).`,
       type: 'profile'
     },
     twitter: {
       card: 'summary',
-      title: `${user.username} - Usogui Fansite`,
+      title: `${user.username} - Usogui Database`,
       description: `View ${user.username}'s reading progress and contributions to the Usogui community.`
     }
   }

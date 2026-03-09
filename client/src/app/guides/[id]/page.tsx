@@ -39,7 +39,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   if (Number.isNaN(guideId) || guideId <= 0) {
     return {
-      title: 'Guide Not Found - Usogui Fansite'
+      title: 'Guide Not Found - Usogui Database'
     }
   }
 

@@ -137,8 +137,8 @@ export const Dashboard = () => {
       </Typography>
       <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
         {isModerator
-          ? 'Review pending submissions and manage content for the Usogui fansite.'
-          : 'Manage all content and users for the Usogui fansite. Click on any card to view and manage that content.'
+          ? 'Review pending submissions and manage content for the Usogui database.'
+          : 'Manage all content and users for the Usogui database. Click on any card to view and manage that content.'
         }
       </Typography>
 

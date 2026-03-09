@@ -96,7 +96,7 @@ export default function SupportersList() {
       <div className="bg-white/5 rounded-lg shadow-sm p-6">
         <h2 className="text-xl font-bold mb-4 text-white">Our Supporters</h2>
         <p className="text-white/55">
-          No supporters yet. Be the first to support our fansite!
+          No supporters yet. Be the first to support our database!
         </p>
       </div>
     );
@@ -125,7 +125,7 @@ export default function SupportersList() {
       </div>
 
       <p className="text-white/55 mb-6">
-        Thank you to all our amazing supporters who help keep this fansite running!
+        Thank you to all our amazing supporters who help keep this database running!
       </p>
 
       {sortedGroups.map(([badgeType, groupSupporters]) => {

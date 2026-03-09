@@ -1,6 +1,6 @@
 # Entity Embed System
 
-The Usogui Fansite includes a powerful entity embed system that allows you to create interactive cards within markdown content. These embeds help readers discover related content and make your guides more engaging.
+The Usogui Database includes a powerful entity embed system that allows you to create interactive cards within markdown content. These embeds help readers discover related content and make your guides more engaging.
 
 ## Basic Syntax
 
@@ -207,4 +207,4 @@ This analysis builds on {{guide:3:previous guide}} and focuses on events from {{
 
 ---
 
-*This entity embed system makes the Usogui Fansite more interconnected and helps readers discover related content naturally while reading guides and analysis.*
+*This entity embed system makes the Usogui Database more interconnected and helps readers discover related content naturally while reading guides and analysis.*
