@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import {
   EditLog,
   EditLogEntityType,
@@ -9,6 +9,11 @@ import {
 import { Guide, GuideStatus } from '../../entities/guide.entity';
 import { Media, MediaStatus } from '../../entities/media.entity';
 import { Annotation, AnnotationStatus } from '../../entities/annotation.entity';
+import { Character } from '../../entities/character.entity';
+import { Gamble } from '../../entities/gamble.entity';
+import { Arc } from '../../entities/arc.entity';
+import { Organization } from '../../entities/organization.entity';
+import { Event } from '../../entities/event.entity';
 
 @Injectable()
 export class EditLogService {
@@ -21,7 +26,91 @@ export class EditLogService {
     private mediaRepository: Repository<Media>,
     @InjectRepository(Annotation)
     private annotationRepository: Repository<Annotation>,
+    @InjectRepository(Character)
+    private characterRepository: Repository<Character>,
+    @InjectRepository(Gamble)
+    private gambleRepository: Repository<Gamble>,
+    @InjectRepository(Arc)
+    private arcRepository: Repository<Arc>,
+    @InjectRepository(Organization)
+    private organizationRepository: Repository<Organization>,
+    @InjectRepository(Event)
+    private eventRepository: Repository<Event>,
   ) {}
+
+  private async resolveEntityNames(
+    entries: Array<{ entityType: EditLogEntityType; entityId: number }>,
+  ): Promise<Map<string, string>> {
+    const groups = new Map<EditLogEntityType, number[]>();
+    for (const e of entries) {
+      if (!groups.has(e.entityType)) groups.set(e.entityType, []);
+      groups.get(e.entityType)!.push(e.entityId);
+    }
+
+    const nameMap = new Map<string, string>();
+
+    const fetch = async <T extends { id: number; name?: string; title?: string }>(
+      repo: Repository<T>,
+      type: EditLogEntityType,
+      ids: number[],
+      field: 'name' | 'title',
+    ) => {
+      const rows = await repo.find({ where: { id: In(ids) } as any, select: ['id', field] as any });
+      for (const row of rows) {
+        const val = (row as any)[field] as string | undefined;
+        if (val) nameMap.set(`${type}:${row.id}`, val);
+      }
+    };
+
+    await Promise.all([
+      groups.has(EditLogEntityType.CHARACTER)
+        ? fetch(this.characterRepository as any, EditLogEntityType.CHARACTER, groups.get(EditLogEntityType.CHARACTER)!, 'name')
+        : Promise.resolve(),
+      groups.has(EditLogEntityType.GAMBLE)
+        ? fetch(this.gambleRepository as any, EditLogEntityType.GAMBLE, groups.get(EditLogEntityType.GAMBLE)!, 'name')
+        : Promise.resolve(),
+      groups.has(EditLogEntityType.ARC)
+        ? fetch(this.arcRepository as any, EditLogEntityType.ARC, groups.get(EditLogEntityType.ARC)!, 'name')
+        : Promise.resolve(),
+      groups.has(EditLogEntityType.ORGANIZATION)
+        ? fetch(this.organizationRepository as any, EditLogEntityType.ORGANIZATION, groups.get(EditLogEntityType.ORGANIZATION)!, 'name')
+        : Promise.resolve(),
+      groups.has(EditLogEntityType.EVENT)
+        ? fetch(this.eventRepository as any, EditLogEntityType.EVENT, groups.get(EditLogEntityType.EVENT)!, 'title')
+        : Promise.resolve(),
+    ]);
+
+    return nameMap;
+  }
+
+  private async resolveEntityNamesByType(
+    entityType: string,
+    ids: number[],
+  ): Promise<Map<number, string>> {
+    const nameMap = new Map<number, string>();
+    if (!ids.length) return nameMap;
+
+    const fetch = async <T extends { id: number }>(
+      repo: Repository<T>,
+      field: 'name' | 'title',
+    ) => {
+      const rows = await repo.find({ where: { id: In(ids) } as any, select: ['id', field] as any });
+      for (const row of rows) {
+        const val = (row as any)[field] as string | undefined;
+        if (val) nameMap.set(row.id, val);
+      }
+    };
+
+    switch (entityType.toLowerCase()) {
+      case 'character': await fetch(this.characterRepository as any, 'name'); break;
+      case 'gamble': await fetch(this.gambleRepository as any, 'name'); break;
+      case 'arc': await fetch(this.arcRepository as any, 'name'); break;
+      case 'organization': await fetch(this.organizationRepository as any, 'name'); break;
+      case 'event': await fetch(this.eventRepository as any, 'title'); break;
+    }
+
+    return nameMap;
+  }
 
   async logEdit(
     entityType: EditLogEntityType,
@@ -129,7 +218,7 @@ export class EditLogService {
     page?: number;
     entityType?: EditLogEntityType;
   }): Promise<{
-    data: EditLog[];
+    data: Array<EditLog & { entityName?: string }>;
     total: number;
     page: number;
     totalPages: number;
@@ -146,7 +235,13 @@ export class EditLogService {
       take: limit,
     });
 
-    return { data, total, page, totalPages: Math.ceil(total / limit) };
+    const nameMap = await this.resolveEntityNames(data);
+    const enriched = data.map((e) => ({
+      ...e,
+      entityName: nameMap.get(`${e.entityType}:${e.entityId}`),
+    }));
+
+    return { data: enriched, total, page, totalPages: Math.ceil(total / limit) };
   }
 
   async getRecentApprovedSubmissions(options: {
@@ -159,6 +254,7 @@ export class EditLogService {
       title?: string;
       entityType?: string;
       entityId?: number;
+      entityName?: string;
       createdAt: Date;
       submittedBy?: { id: number; username: string; fluxerAvatar?: string; fluxerId?: string } | null;
     }>;
@@ -192,6 +288,7 @@ export class EditLogService {
       title?: string;
       entityType?: string;
       entityId?: number;
+      entityName?: string;
       createdAt: Date;
       submittedBy?: { id: number; username: string; fluxerAvatar?: string; fluxerId?: string } | null;
     }> = [
@@ -236,6 +333,28 @@ export class EditLogService {
     const total = combined.length;
     const data = combined.slice((page - 1) * limit, page * limit);
 
-    return { data, total, page, totalPages: Math.ceil(total / limit) };
+    // Enrich media/annotation entries with entityName
+    const byType = new Map<string, number[]>();
+    for (const item of data) {
+      if (item.entityType && item.entityId) {
+        if (!byType.has(item.entityType)) byType.set(item.entityType, []);
+        byType.get(item.entityType)!.push(item.entityId);
+      }
+    }
+    const typeNameMaps = new Map<string, Map<number, string>>();
+    await Promise.all(
+      Array.from(byType.entries()).map(async ([type, ids]) => {
+        typeNameMaps.set(type, await this.resolveEntityNamesByType(type, ids));
+      }),
+    );
+    const enrichedData = data.map((item) => ({
+      ...item,
+      entityName:
+        item.entityType && item.entityId
+          ? typeNameMaps.get(item.entityType)?.get(item.entityId)
+          : undefined,
+    }));
+
+    return { data: enrichedData, total, page, totalPages: Math.ceil(total / limit) };
   }
 }

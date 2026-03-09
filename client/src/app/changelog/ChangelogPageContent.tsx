@@ -29,6 +29,7 @@ interface EditEntry {
   action: string
   entityType: string
   entityId: number
+  entityName?: string
   createdAt: string
   user?: { id: number; username: string; fluxerAvatar?: string; fluxerId?: string } | null
 }
@@ -40,6 +41,7 @@ interface SubmissionEntry {
   title?: string
   entityType?: string
   entityId?: number
+  entityName?: string
   createdAt: string
   submittedBy?: { id: number; username: string; fluxerAvatar?: string; fluxerId?: string } | null
 }
@@ -129,6 +131,7 @@ export function ChangelogPageContent() {
           const editEntries: EditEntry[] = (edits?.data ?? []).map((e) => ({
             id: e.id, kind: 'edit' as const,
             action: e.action, entityType: e.entityType, entityId: e.entityId,
+            entityName: e.entityName,
             createdAt: e.createdAt, user: e.user,
           }))
           setEntries(editEntries)
@@ -143,6 +146,7 @@ export function ChangelogPageContent() {
           const submissionEntries: SubmissionEntry[] = (submissions?.data ?? []).map((s) => ({
             id: s.id, kind: 'submission' as const,
             type: s.type, title: s.title, entityType: s.entityType, entityId: s.entityId,
+            entityName: s.entityName,
             createdAt: s.createdAt, submittedBy: s.submittedBy,
           }))
           setEntries(submissionEntries)
@@ -159,11 +163,13 @@ export function ChangelogPageContent() {
       const editEntries: EditEntry[] = (edits?.data ?? []).map((e) => ({
         id: e.id, kind: 'edit' as const,
         action: e.action, entityType: e.entityType, entityId: e.entityId,
+        entityName: e.entityName,
         createdAt: e.createdAt, user: e.user,
       }))
       const submissionEntries: SubmissionEntry[] = (submissions?.data ?? []).map((s) => ({
         id: s.id, kind: 'submission' as const,
         type: s.type, title: s.title, entityType: s.entityType, entityId: s.entityId,
+        entityName: s.entityName,
         createdAt: s.createdAt, submittedBy: s.submittedBy,
       }))
       const combined = [...editEntries, ...submissionEntries]
@@ -265,6 +271,8 @@ export function ChangelogPageContent() {
             if (entry.kind === 'edit') {
               const user = entry.user
               const link = entityLink(entry.entityType, entry.entityId)
+              const displayName = entry.entityName ?? `#${entry.entityId}`
+              const entityTypeLabel = entry.entityType.charAt(0).toUpperCase() + entry.entityType.slice(1).toLowerCase()
               return (
                 <Box
                   key={`edit-${entry.id}`}
@@ -282,23 +290,32 @@ export function ChangelogPageContent() {
                     {user?.username?.[0]?.toUpperCase() ?? '?'}
                   </Avatar>
                   <Box style={{ flex: 1, minWidth: 0 }}>
-                    <Group gap={6} wrap="wrap" mb={4}>
-                      <Anchor component={Link} href={`/users/${user?.id}`} fw={600} style={{ color: textColors.primary }}>
+                    <Group gap={6} wrap="nowrap" mb={4}>
+                      <Anchor component={Link} href={`/users/${user?.id}`} fw={600} style={{ color: textColors.primary, flexShrink: 0 }}>
                         {user?.username ?? 'Unknown'}
                       </Anchor>
-                      <Badge size="sm" color={actionBadgeColor(entry.action)} variant="light" style={{ textTransform: 'capitalize' }}>
+                      <Badge size="sm" color={actionBadgeColor(entry.action)} variant="light" style={{ textTransform: 'capitalize', flexShrink: 0 }}>
                         {entry.action}
                       </Badge>
-                      <Text size="sm" c="dimmed">a</Text>
-                      <Badge size="sm" variant="dot" style={{ color: entityColor(entry.entityType), textTransform: 'capitalize' }}>
-                        {entry.entityType}
-                      </Badge>
-                      <Anchor component={Link} href={link} size="sm" style={{ color: entityColor(entry.entityType) }}>
-                        #{entry.entityId}
+                      <Anchor
+                        component={Link}
+                        href={link}
+                        size="sm"
+                        fw={500}
+                        style={{
+                          color: entityColor(entry.entityType),
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        {displayName}
                       </Anchor>
                     </Group>
                     <Group gap={4}>
-                      <Clock size={12} style={{ color: textColors.tertiary }} />
+                      <Text size="xs" c="dimmed">{entityTypeLabel}</Text>
+                      <Text size="xs" c="dimmed">·</Text>
+                      <Clock size={11} style={{ color: textColors.tertiary }} />
                       <Text size="xs" c="dimmed">{relativeTime(entry.createdAt)}</Text>
                       <Text size="xs" c="dimmed">·</Text>
                       <Text size="xs" c="dimmed">{new Date(entry.createdAt).toLocaleString()}</Text>
@@ -315,6 +332,7 @@ export function ChangelogPageContent() {
               : sub.entityType && sub.entityId
               ? entityLink(sub.entityType, sub.entityId)
               : '#'
+            const subTypeLabel = sub.type.charAt(0).toUpperCase() + sub.type.slice(1)
 
             return (
               <Box
@@ -333,21 +351,45 @@ export function ChangelogPageContent() {
                   {submitter?.username?.[0]?.toUpperCase() ?? '?'}
                 </Avatar>
                 <Box style={{ flex: 1, minWidth: 0 }}>
-                  <Group gap={6} wrap="wrap" mb={4}>
-                    <Anchor component={Link} href={`/users/${submitter?.id}`} fw={600} style={{ color: textColors.primary }}>
+                  <Group gap={6} wrap="nowrap" mb={4}>
+                    <Anchor component={Link} href={`/users/${submitter?.id}`} fw={600} style={{ color: textColors.primary, flexShrink: 0 }}>
                       {submitter?.username ?? 'Unknown'}
                     </Anchor>
-                    <Badge size="sm" color="green" variant="light">
-                      submitted {sub.type}
+                    <Badge size="sm" color="green" variant="light" style={{ flexShrink: 0 }}>
+                      submitted
                     </Badge>
                     {sub.title && (
-                      <Anchor component={Link} href={link} size="sm" style={{ color: entityColor(sub.type) }} fw={500}>
+                      <Anchor
+                        component={Link}
+                        href={link}
+                        size="sm"
+                        fw={500}
+                        style={{
+                          color: entityColor(sub.type),
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
                         {sub.title}
                       </Anchor>
                     )}
                   </Group>
                   <Group gap={4}>
-                    <Clock size={12} style={{ color: textColors.tertiary }} />
+                    <Text size="xs" c="dimmed">{subTypeLabel}</Text>
+                    {sub.entityName && sub.entityType && (
+                      <>
+                        <Text size="xs" c="dimmed">·</Text>
+                        <Text size="xs" c="dimmed">
+                          for{' '}
+                          <span style={{ color: entityColor(sub.entityType) }}>
+                            {sub.entityType.charAt(0).toUpperCase() + sub.entityType.slice(1).toLowerCase()}: {sub.entityName}
+                          </span>
+                        </Text>
+                      </>
+                    )}
+                    <Text size="xs" c="dimmed">·</Text>
+                    <Clock size={11} style={{ color: textColors.tertiary }} />
                     <Text size="xs" c="dimmed">{relativeTime(sub.createdAt)}</Text>
                     <Text size="xs" c="dimmed">·</Text>
                     <Text size="xs" c="dimmed">{new Date(sub.createdAt).toLocaleString()}</Text>

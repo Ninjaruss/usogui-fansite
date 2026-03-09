@@ -13,6 +13,7 @@ interface EditEntry {
   action: string
   entityType: string
   entityId: number
+  entityName?: string
   createdAt: string
   user?: { id: number; username: string; fluxerAvatar?: string; fluxerId?: string } | null
 }
@@ -24,6 +25,7 @@ interface SubmissionEntry {
   title?: string
   entityType?: string
   entityId?: number
+  entityName?: string
   createdAt: string
   submittedBy?: { id: number; username: string; fluxerAvatar?: string; fluxerId?: string } | null
 }
@@ -139,6 +141,7 @@ export function RecentActivityFeed({
           action: e.action,
           entityType: e.entityType,
           entityId: e.entityId,
+          entityName: e.entityName,
           createdAt: e.createdAt,
           user: e.user,
         }))
@@ -150,6 +153,7 @@ export function RecentActivityFeed({
           title: s.title,
           entityType: s.entityType,
           entityId: s.entityId,
+          entityName: s.entityName,
           createdAt: s.createdAt,
           submittedBy: s.submittedBy,
         }))
@@ -210,6 +214,8 @@ export function RecentActivityFeed({
             if (entry.kind === 'edit') {
               const user = entry.user
               const link = entityLink(entry.entityType, entry.entityId)
+              const displayName = entry.entityName ?? `#${entry.entityId}`
+              const entityTypeLabel = entityLabel(entry.entityType)
               return (
                 <Box
                   key={`edit-${entry.id}`}
@@ -254,7 +260,7 @@ export function RecentActivityFeed({
                           whiteSpace: 'nowrap',
                         }}
                       >
-                        {entityLabel(entry.entityType)} #{entry.entityId}
+                        {entityTypeLabel}: {displayName}
                       </Anchor>
                     </Group>
                     <Group gap={4}>
@@ -309,21 +315,21 @@ export function RecentActivityFeed({
                       leftSection={submissionIcon(sub.type)}
                       style={{ flexShrink: 0, textTransform: 'capitalize' }}
                     >
-                      submitted {sub.type}
+                      submitted
                     </Badge>
-                    {sub.title && (
+                    {(sub.title || (sub.entityName && sub.entityType)) && (
                       <Anchor
                         component={Link}
                         href={link}
                         size="sm"
                         style={{
-                          color: entityColor(sub.type),
+                          color: entityColor(sub.title ? sub.type : sub.entityType ?? sub.type),
                           overflow: 'hidden',
                           textOverflow: 'ellipsis',
                           whiteSpace: 'nowrap',
                         }}
                       >
-                        {sub.title}
+                        {sub.title ?? `${entityLabel(sub.entityType ?? sub.type)}: ${sub.entityName}`}
                       </Anchor>
                     )}
                   </Group>
@@ -332,6 +338,17 @@ export function RecentActivityFeed({
                     <Text size="xs" c="dimmed">
                       {relativeTime(sub.createdAt)}
                     </Text>
+                    {sub.entityName && sub.entityType && sub.type !== 'guide' && (
+                      <>
+                        <Text size="xs" c="dimmed">·</Text>
+                        <Text size="xs" c="dimmed">
+                          for{' '}
+                          <span style={{ color: entityColor(sub.entityType) }}>
+                            {entityLabel(sub.entityType)}
+                          </span>
+                        </Text>
+                      </>
+                    )}
                   </Group>
                 </Box>
               </Box>
