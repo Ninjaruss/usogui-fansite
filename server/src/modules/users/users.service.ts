@@ -12,7 +12,7 @@ import { User, UserRole, ProfilePictureType } from '../../entities/user.entity';
 import { Quote } from '../../entities/quote.entity';
 import { Gamble } from '../../entities/gamble.entity';
 import { Character } from '../../entities/character.entity';
-import { Media, MediaStatus, MediaPurpose } from '../../entities/media.entity';
+import { Media, MediaStatus, MediaPurpose, MediaOwnerType } from '../../entities/media.entity';
 import { Guide, GuideStatus } from '../../entities/guide.entity';
 import { GuideLike } from '../../entities/guide-like.entity';
 import { Annotation, AnnotationStatus } from '../../entities/annotation.entity';
@@ -993,10 +993,10 @@ export class UsersService {
   }
 
   async getCharacterFavoriteStats(): Promise<{
-    mostFavorited: Array<{ character: Character; totalCount: number }>;
-    mostPrimary: Array<{ character: Character; primaryCount: number }>;
+    mostFavorited: Array<{ character: { id: number; name: string; entityImageUrl: string | null }; totalCount: number }>;
+    mostPrimary: Array<{ character: { id: number; name: string; entityImageUrl: string | null }; primaryCount: number }>;
     mostLoyal: Array<{
-      character: Character;
+      character: { id: number; name: string; entityImageUrl: string | null };
       loyaltyRatio: number;
       primaryCount: number;
       totalCount: number;
@@ -1045,13 +1045,34 @@ export class UsersService {
     });
     const characterMap = new Map<number, Character>(characters.map((c) => [c.id, c]));
 
+    const mediaRepo = this.favoriteCharacterRepo.manager.getRepository(Media);
+    const entityImages = await mediaRepo.find({
+      where: {
+        ownerType: MediaOwnerType.CHARACTER,
+        ownerId: In(allCharacterIds),
+        purpose: MediaPurpose.ENTITY_DISPLAY,
+        status: MediaStatus.APPROVED,
+      },
+      select: ['ownerId', 'url'],
+    });
+    const entityImageMap = new Map<number, string>(
+      entityImages.map((m) => [m.ownerId, m.url]),
+    );
+
+    const toCharacterDto = (c: Character) => ({
+      id: c.id,
+      name: c.name,
+      entityImageUrl: entityImageMap.get(c.id) ?? null,
+    });
+
     const mostFavorited = totalStats
       .slice(0, 2)
       .map((s) => ({
         character: characterMap.get(s.characterId)!,
         totalCount: parseInt(s.totalcount),
       }))
-      .filter((r) => r.character);
+      .filter((r) => r.character)
+      .map((r) => ({ character: toCharacterDto(r.character), totalCount: r.totalCount }));
 
     const mostPrimary = primaryStats
       .slice(0, 2)
@@ -1059,7 +1080,8 @@ export class UsersService {
         character: characterMap.get(s.characterId)!,
         primaryCount: parseInt(s.primarycount),
       }))
-      .filter((r) => r.character);
+      .filter((r) => r.character)
+      .map((r) => ({ character: toCharacterDto(r.character), primaryCount: r.primaryCount }));
 
     const loyaltyRankings = allCharacterIds
       .map((id) => {
@@ -1078,7 +1100,13 @@ export class UsersService {
         primaryCount: r.primary,
         totalCount: r.total,
       }))
-      .filter((r) => r.character);
+      .filter((r) => r.character)
+      .map((r) => ({
+        character: toCharacterDto(r.character),
+        loyaltyRatio: r.loyaltyRatio,
+        primaryCount: r.primaryCount,
+        totalCount: r.totalCount,
+      }));
 
     return { mostFavorited, mostPrimary, mostLoyal };
   }
