@@ -2,6 +2,9 @@
 
 ## TODO
 
+## 2026-03-09
+- Favorite characters selection added
+
 ## 2026-03-08
 - Fixed a issue with SWC build (it was crashing the build due to missing decorators for swagger api)
 - Improved changelog and recent activity feed 

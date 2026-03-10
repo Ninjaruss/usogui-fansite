@@ -889,6 +889,13 @@ export default function ProfilePageClient() {
               <Stack gap="md">
                 <Title order={2} size="h3" c={headerColors.h2}>Favorites</Title>
 
+                <Stack gap="sm">
+                  <Text size="sm" fw={500}>Favorite Characters:</Text>
+                  <CharacterFavoritesManager />
+                </Stack>
+
+                <Divider />
+
                 <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
                   <Stack gap="sm">
                     <Text size="sm" fw={500}>Favorite Quote:</Text>
@@ -1601,14 +1608,6 @@ export default function ProfilePageClient() {
                     </>
                   )}
                 </Stack>
-              </Stack>
-            </Card>
-
-            {/* Favorite Characters Section */}
-            <Card shadow="sm" padding="md" radius="md" withBorder>
-              <Stack gap="md">
-                <Title order={2} size="h3" c={headerColors.h2}>Favorite Characters</Title>
-                <CharacterFavoritesManager />
               </Stack>
             </Card>
 

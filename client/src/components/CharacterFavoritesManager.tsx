@@ -82,7 +82,8 @@ export default function CharacterFavoritesManager() {
     const load = async () => {
       try {
         setLoading(true)
-        const data = await api.getMyFavoriteCharacters()
+        const rawData = await api.getMyFavoriteCharacters()
+        const data = Array.isArray(rawData) ? rawData : ((rawData as any)?.data ?? [])
         const mapped: PendingFavorite[] = data.map((item: FavoriteCharacterItem) => ({
           characterId: item.characterId,
           name: item.character.name,
@@ -171,13 +172,14 @@ export default function CharacterFavoritesManager() {
   const handleSave = async () => {
     try {
       setSaving(true)
-      const saved = await api.setFavoriteCharacters(
+      const rawSaved = await api.setFavoriteCharacters(
         pendingFavorites.map((f) => ({
           characterId: f.characterId,
           isPrimary: f.isPrimary,
           sortOrder: f.sortOrder,
         }))
       )
+      const saved = Array.isArray(rawSaved) ? rawSaved : ((rawSaved as any)?.data ?? [])
       const mapped: PendingFavorite[] = saved.map((item: FavoriteCharacterItem) => ({
         characterId: item.characterId,
         name: item.character.name,

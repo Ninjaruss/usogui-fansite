@@ -100,6 +100,10 @@ export function FavoritesSection() {
           </Text>
         </Box>
 
+        {favoriteCharacters && (
+          <FavoriteCharactersSection data={favoriteCharacters} />
+        )}
+
         <Grid gutter="xl">
           {favoriteCharacterMedia.length > 0 && (
             <Grid.Col span={{ base: 12, md: 4 }}>
@@ -337,10 +341,6 @@ export function FavoritesSection() {
           </Box>
         )}
       </motion.div>
-
-      {favoriteCharacters && (
-        <FavoriteCharactersSection data={favoriteCharacters} />
-      )}
     </Box>
   )
 }

@@ -51,7 +51,7 @@ interface FavoriteCharacterMedia {
 }
 
 interface CharacterFavoriteEntry {
-  character: { id: number; name: string }
+  character: { id: number; name: string; entityImageUrl?: string | null }
 }
 
 export interface FavoriteCharacterStats {
