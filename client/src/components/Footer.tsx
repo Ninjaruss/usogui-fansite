@@ -352,12 +352,24 @@ export const Footer: React.FC = () => {
             >
               © {currentYear} L-File — Fan-made, not affiliated with Sako Toshio or any publisher.
             </Text>
-            <Text
-              size="xs"
-              style={{ color: 'rgba(255,255,255,0.15)', letterSpacing: '0.04em' }}
-            >
-              Independent fan resource
-            </Text>
+            <Group gap="lg">
+              <Anchor
+                component={NextLink}
+                href="/disclaimer"
+                underline="never"
+                size="xs"
+                style={{ color: 'rgba(255,255,255,0.22)', letterSpacing: '0.03em', transition: 'color 200ms ease' }}
+                styles={{ root: { '&:hover': { color: 'rgba(255,255,255,0.5)' } } }}
+              >
+                Disclaimer
+              </Anchor>
+              <Text
+                size="xs"
+                style={{ color: 'rgba(255,255,255,0.15)', letterSpacing: '0.04em' }}
+              >
+                Independent fan resource
+              </Text>
+            </Group>
           </Group>
 
         </Box>

@@ -657,12 +657,37 @@ export default function ProfilePageClient() {
             shadow="xl"
             padding="xl"
             style={{
+              position: 'relative',
+              overflow: 'hidden',
               background: `linear-gradient(135deg, ${getAlphaColor(outlineStyles.accentColor, 0.15)}, ${getAlphaColor(outlineStyles.accentColor, 0.04)}), ${theme.colors.dark?.[7] ?? '#070707'}`,
               border: `1px solid ${getAlphaColor(outlineStyles.accentColor, 0.3)}`,
               boxShadow: `0 20px 45px ${getAlphaColor(outlineStyles.accentColor, 0.08)}`
             }}
           >
-            <Group align="flex-start" gap="xl">
+            {/* Top gradient accent bar */}
+            <Box
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                height: '3px',
+                background: 'linear-gradient(90deg, #e11d48 0%, rgba(124,58,237,0.6) 50%, transparent 100%)',
+                borderRadius: '12px 12px 0 0',
+                pointerEvents: 'none'
+              }}
+            />
+            {/* Ambient radial glow */}
+            <Box
+              style={{
+                position: 'absolute',
+                inset: 0,
+                pointerEvents: 'none',
+                backgroundImage: 'radial-gradient(ellipse at 15% 50%, rgba(225,29,72,0.07) 0%, transparent 55%)',
+                borderRadius: 'inherit'
+              }}
+            />
+            <Group align="flex-start" gap="xl" style={{ position: 'relative' }}>
               <Box
                 style={{
                   position: 'relative',
@@ -724,29 +749,42 @@ export default function ProfilePageClient() {
                     position: 'absolute',
                     bottom: 4,
                     right: 4,
-                    backgroundColor: theme.colors.blue[6],
+                    backgroundColor: outlineStyles.accentColor,
                     borderRadius: '50%',
                     width: '36px',
                     height: '36px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    border: `3px solid ${theme.white}`,
-                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)'
+                    border: `3px solid ${theme.colors.dark[7]}`,
+                    boxShadow: '0 2px 8px rgba(225, 29, 72, 0.4)'
                   }}
                 >
                   <Edit size={18} color="white" />
                 </Box>
               </Box>
-              <Stack gap="sm">
-                <Group align="center" gap="md">
+              <Stack gap="xs" style={{ flex: 1 }}>
+                {/* Case file micro-label */}
+                <Text
+                  style={{
+                    fontSize: '10px',
+                    letterSpacing: '0.25em',
+                    textTransform: 'uppercase',
+                    color: 'rgba(225, 29, 72, 0.65)',
+                    fontFamily: 'var(--font-noto-sans)',
+                    marginBottom: 2
+                  }}
+                >
+                  L-File · Operative Record
+                </Text>
+                <Group align="center" gap="md" wrap="wrap">
                   {editingUsername ? (
                     <Group gap="xs">
                       <TextInput
                         value={usernameInput}
                         onChange={(e) => setUsernameInput(e.currentTarget.value)}
                         size="md"
-                        styles={{ input: { fontWeight: 700, fontSize: '1.5rem' } }}
+                        styles={{ input: { fontWeight: 700, fontSize: '1.5rem', fontFamily: 'var(--font-opti-goudy-text)' } }}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter') {
                             handleSaveUsername()
@@ -777,8 +815,18 @@ export default function ProfilePageClient() {
                       </ActionIcon>
                     </Group>
                   ) : (
-                    <Group gap="xs">
-                      <Title order={2}>{user?.username}</Title>
+                    <Group gap="xs" align="center">
+                      <Title
+                        order={2}
+                        style={{
+                          fontFamily: 'var(--font-opti-goudy-text)',
+                          fontSize: '2rem',
+                          letterSpacing: '0.02em',
+                          lineHeight: 1.1
+                        }}
+                      >
+                        {user?.username}
+                      </Title>
                       <ActionIcon
                         variant="subtle"
                         color="gray"
@@ -787,11 +835,14 @@ export default function ProfilePageClient() {
                           setEditingUsername(true)
                         }}
                         aria-label="Edit username"
+                        style={{ marginTop: 4 }}
                       >
                         <Edit size={14} />
                       </ActionIcon>
                     </Group>
                   )}
+                </Group>
+                <Group gap="xs" wrap="wrap">
                   <UserRoleDisplay
                     userRole={user?.role as 'admin' | 'moderator' | 'user'}
                     customRole={user?.customRole || null}
@@ -800,9 +851,29 @@ export default function ProfilePageClient() {
                   />
                   <UserBadges userId={user?.id} />
                 </Group>
-                <Text size="sm" c="dimmed">
-                  Member since {new Date(user?.createdAt || '').toLocaleDateString()}
-                </Text>
+                {/* Member since - labeled data field */}
+                <Box
+                  style={{
+                    marginTop: 8,
+                    paddingTop: 8,
+                    borderTop: '1px solid rgba(255,255,255,0.08)'
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontSize: '10px',
+                      letterSpacing: '0.15em',
+                      textTransform: 'uppercase',
+                      color: 'rgba(255,255,255,0.4)',
+                      marginBottom: 2
+                    }}
+                  >
+                    Active Since
+                  </Text>
+                  <Text size="sm" fw={500}>
+                    {new Date(user?.createdAt || '').toLocaleDateString()}
+                  </Text>
+                </Box>
               </Stack>
             </Group>
           </Card>
@@ -899,55 +970,79 @@ export default function ProfilePageClient() {
                 <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
                   <Stack gap="sm">
                     <Text size="sm" fw={500}>Favorite Quote:</Text>
-                    <Button
-                      variant="outline"
-                      styles={{
-                        root: {
-                          height: 'auto',
-                          minHeight: '48px',
-                          padding: '12px 16px',
-                          borderColor: profileData.favoriteQuote ? getEntityThemeColor(theme, 'quote') : 'rgba(255, 255, 255, 0.2)',
-                          borderStyle: 'dashed',
-                          backgroundColor: profileData.favoriteQuote ? 'rgba(255, 255, 255, 0.03)' : 'transparent',
-                          justifyContent: 'flex-start',
-                          textAlign: 'left',
-                          whiteSpace: 'normal',
-                          wordBreak: 'break-word'
-                        },
-                        label: {
-                          whiteSpace: 'normal',
-                          overflow: 'visible'
-                        }
-                      }}
-                      leftSection={<Quote size={16} style={{ flexShrink: 0 }} />}
-                      onClick={() => {
-                        if (quotes.length === 0 && !loading) {
-                          notifications.show({
-                            title: 'No Quotes Available',
-                            message: 'No quotes are currently available to select from',
-                            color: 'yellow'
-                          });
-                        } else {
-                          openQuoteModal();
-                        }
-                      }}
-                      fullWidth
-                    >
-                      <Text size="sm" c={profileData.favoriteQuote ? undefined : 'dimmed'} style={{ lineHeight: 1.4 }}>
-                        {loading ? 'Loading...' :
-                         profileData.favoriteQuote ?
-                          (() => {
-                            const selectedQuote = quotes.find(q => q.id === parseInt(profileData.favoriteQuote) || 0);
-                            if (selectedQuote?.text) {
-                              return `"${selectedQuote.text.length > 100
-                                ? selectedQuote.text.substring(0, 100) + '...'
-                                : selectedQuote.text}"`;
-                            }
-                            return 'Selected quote not found';
-                          })()
-                          : 'Click to select a favorite quote'}
-                      </Text>
-                    </Button>
+                    {loading ? (
+                      <Text size="sm" c="dimmed">Loading...</Text>
+                    ) : profileData.favoriteQuote ? (
+                      (() => {
+                        const selectedQuote = quotes.find(q => q.id === parseInt(profileData.favoriteQuote) || 0)
+                        return (
+                          <Box
+                            style={{
+                              borderLeft: `3px solid ${getEntityThemeColor(theme, 'quote')}`,
+                              paddingLeft: 12,
+                              paddingTop: 8,
+                              paddingBottom: 8,
+                              paddingRight: 12,
+                              cursor: 'pointer',
+                              borderRadius: '0 4px 4px 0',
+                              background: getAlphaColor(getEntityThemeColor(theme, 'quote'), 0.05),
+                              transition: 'background 150ms ease'
+                            }}
+                            onClick={() => openQuoteModal()}
+                            onMouseEnter={(e: any) => {
+                              e.currentTarget.style.background = getAlphaColor(getEntityThemeColor(theme, 'quote'), 0.1)
+                            }}
+                            onMouseLeave={(e: any) => {
+                              e.currentTarget.style.background = getAlphaColor(getEntityThemeColor(theme, 'quote'), 0.05)
+                            }}
+                          >
+                            {selectedQuote?.text ? (
+                              <Text size="sm" style={{ fontStyle: 'italic', lineHeight: 1.5, color: 'rgba(255,255,255,0.9)' }}>
+                                &ldquo;{selectedQuote.text.length > 120
+                                  ? selectedQuote.text.substring(0, 120) + '...'
+                                  : selectedQuote.text}&rdquo;
+                              </Text>
+                            ) : (
+                              <Text size="sm" c="dimmed">Selected quote not found</Text>
+                            )}
+                            <Text size="xs" c="dimmed" mt={4} style={{ letterSpacing: '0.05em', textTransform: 'uppercase', fontSize: '10px' }}>
+                              Click to change
+                            </Text>
+                          </Box>
+                        )
+                      })()
+                    ) : (
+                      <Button
+                        variant="outline"
+                        styles={{
+                          root: {
+                            height: 'auto',
+                            minHeight: '48px',
+                            padding: '12px 16px',
+                            borderColor: 'rgba(255, 255, 255, 0.15)',
+                            borderStyle: 'dashed',
+                            backgroundColor: 'transparent',
+                            justifyContent: 'flex-start',
+                            textAlign: 'left'
+                          }
+                        }}
+                        leftSection={<Quote size={16} style={{ flexShrink: 0 }} />}
+                        onClick={() => {
+                          if (quotes.length === 0 && !loading) {
+                            notifications.show({
+                              title: 'No Quotes Available',
+                              message: 'No quotes are currently available to select from',
+                              color: 'yellow'
+                            });
+                          } else {
+                            openQuoteModal();
+                          }
+                        }}
+                        fullWidth
+                      >
+                        <Text size="sm" c="dimmed">Click to select a favorite quote</Text>
+                      </Button>
+                    )}
                   </Stack>
 
                   <Stack gap="sm">
@@ -1045,40 +1140,84 @@ export default function ProfilePageClient() {
 
                 {/* Quick Stats */}
                 <SimpleGrid cols={{ base: 2, sm: 4 }} spacing="sm">
-                  <Card withBorder padding="sm" radius="md" style={{ background: getAlphaColor(getEntityThemeColor(theme, 'guide'), 0.08) }}>
-                    <Stack gap={4} align="center">
-                      <CheckCircle size={18} color={getEntityThemeColor(theme, 'guide')} />
-                      <Text size="lg" fw={700} c={getEntityThemeColor(theme, 'guide')}>
+                  <Card
+                    withBorder
+                    padding="sm"
+                    radius="md"
+                    style={{
+                      background: 'transparent',
+                      borderLeft: `3px solid ${getEntityThemeColor(theme, 'guide')}`,
+                      borderTop: `1px solid ${getAlphaColor(getEntityThemeColor(theme, 'guide'), 0.2)}`,
+                      borderRight: `1px solid ${getAlphaColor(getEntityThemeColor(theme, 'guide'), 0.1)}`,
+                      borderBottom: `1px solid ${getAlphaColor(getEntityThemeColor(theme, 'guide'), 0.1)}`
+                    }}
+                  >
+                    <Stack gap={2} align="flex-start">
+                      <Text style={{ fontSize: '1.6rem', fontWeight: 800, lineHeight: 1 }} c={getEntityThemeColor(theme, 'guide')}>
                         {submissions.filter(s => s.status === 'approved').length}
                       </Text>
-                      <Text size="xs" c={textColors.tertiary} ta="center">Total Approved</Text>
+                      <Text size="xs" c={textColors.tertiary}>Total Approved</Text>
+                      <CheckCircle size={14} color={getEntityThemeColor(theme, 'guide')} style={{ opacity: 0.5, marginTop: 2 }} />
                     </Stack>
                   </Card>
-                  <Card withBorder padding="sm" radius="md" style={{ background: getAlphaColor(getEntityThemeColor(theme, 'event'), 0.08) }}>
-                    <Stack gap={4} align="center">
-                      <Clock size={18} color={getEntityThemeColor(theme, 'event')} />
-                      <Text size="lg" fw={700} c={getEntityThemeColor(theme, 'event')}>
+                  <Card
+                    withBorder
+                    padding="sm"
+                    radius="md"
+                    style={{
+                      background: 'transparent',
+                      borderLeft: `3px solid ${getEntityThemeColor(theme, 'event')}`,
+                      borderTop: `1px solid ${getAlphaColor(getEntityThemeColor(theme, 'event'), 0.2)}`,
+                      borderRight: `1px solid ${getAlphaColor(getEntityThemeColor(theme, 'event'), 0.1)}`,
+                      borderBottom: `1px solid ${getAlphaColor(getEntityThemeColor(theme, 'event'), 0.1)}`
+                    }}
+                  >
+                    <Stack gap={2} align="flex-start">
+                      <Text style={{ fontSize: '1.6rem', fontWeight: 800, lineHeight: 1 }} c={getEntityThemeColor(theme, 'event')}>
                         {submissions.filter(s => s.status === 'pending').length}
                       </Text>
-                      <Text size="xs" c={textColors.tertiary} ta="center">Pending Review</Text>
+                      <Text size="xs" c={textColors.tertiary}>Pending Review</Text>
+                      <Clock size={14} color={getEntityThemeColor(theme, 'event')} style={{ opacity: 0.5, marginTop: 2 }} />
                     </Stack>
                   </Card>
-                  <Card withBorder padding="sm" radius="md" style={{ background: getAlphaColor(getEntityThemeColor(theme, 'gamble'), 0.08) }}>
-                    <Stack gap={4} align="center">
-                      <AlertCircle size={18} color={getEntityThemeColor(theme, 'gamble')} />
-                      <Text size="lg" fw={700} c={getEntityThemeColor(theme, 'gamble')}>
+                  <Card
+                    withBorder
+                    padding="sm"
+                    radius="md"
+                    style={{
+                      background: 'transparent',
+                      borderLeft: `3px solid ${getEntityThemeColor(theme, 'gamble')}`,
+                      borderTop: `1px solid ${getAlphaColor(getEntityThemeColor(theme, 'gamble'), 0.2)}`,
+                      borderRight: `1px solid ${getAlphaColor(getEntityThemeColor(theme, 'gamble'), 0.1)}`,
+                      borderBottom: `1px solid ${getAlphaColor(getEntityThemeColor(theme, 'gamble'), 0.1)}`
+                    }}
+                  >
+                    <Stack gap={2} align="flex-start">
+                      <Text style={{ fontSize: '1.6rem', fontWeight: 800, lineHeight: 1 }} c={getEntityThemeColor(theme, 'gamble')}>
                         {submissions.filter(s => s.status === 'rejected').length}
                       </Text>
-                      <Text size="xs" c={textColors.tertiary} ta="center">Needs Resubmit</Text>
+                      <Text size="xs" c={textColors.tertiary}>Needs Resubmit</Text>
+                      <AlertCircle size={14} color={getEntityThemeColor(theme, 'gamble')} style={{ opacity: 0.5, marginTop: 2 }} />
                     </Stack>
                   </Card>
-                  <Card withBorder padding="sm" radius="md" style={{ background: getAlphaColor(getEntityThemeColor(theme, 'character'), 0.08) }}>
-                    <Stack gap={4} align="center">
-                      <BarChart2 size={18} color={getEntityThemeColor(theme, 'character')} />
-                      <Text size="lg" fw={700} c={getEntityThemeColor(theme, 'character')}>
+                  <Card
+                    withBorder
+                    padding="sm"
+                    radius="md"
+                    style={{
+                      background: 'transparent',
+                      borderLeft: `3px solid ${getEntityThemeColor(theme, 'character')}`,
+                      borderTop: `1px solid ${getAlphaColor(getEntityThemeColor(theme, 'character'), 0.2)}`,
+                      borderRight: `1px solid ${getAlphaColor(getEntityThemeColor(theme, 'character'), 0.1)}`,
+                      borderBottom: `1px solid ${getAlphaColor(getEntityThemeColor(theme, 'character'), 0.1)}`
+                    }}
+                  >
+                    <Stack gap={2} align="flex-start">
+                      <Text style={{ fontSize: '1.6rem', fontWeight: 800, lineHeight: 1 }} c={getEntityThemeColor(theme, 'character')}>
                         {submissions.length}
                       </Text>
-                      <Text size="xs" c={textColors.tertiary} ta="center">Total Submissions</Text>
+                      <Text size="xs" c={textColors.tertiary}>Total Submissions</Text>
+                      <BarChart2 size={14} color={getEntityThemeColor(theme, 'character')} style={{ opacity: 0.5, marginTop: 2 }} />
                     </Stack>
                   </Card>
                 </SimpleGrid>

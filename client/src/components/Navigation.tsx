@@ -381,9 +381,9 @@ const Navigation: React.FC = () => {
               dropdown: {
                 backgroundColor: theme.colors.dark[8],
                 border: '1px solid rgba(225, 29, 72, 0.15)',
-                borderTop: '2px solid rgba(225, 29, 72, 0.35)',
+                borderTop: '2px solid rgba(225, 29, 72, 0.4)',
                 borderRadius: theme.radius.md,
-                boxShadow: theme.shadows.xl,
+                boxShadow: '0 20px 40px rgba(0,0,0,0.5), 0 8px 16px rgba(225,29,72,0.08)',
                 minWidth: 'unset',
                 width: 'auto',
                 padding: rem(6),
@@ -430,14 +430,18 @@ const Navigation: React.FC = () => {
                   <Menu.Label
                     style={{
                       color: category.color,
-                      fontWeight: 600,
-                      fontSize: theme.fontSizes.xs,
+                      fontWeight: 700,
+                      fontSize: '10px',
                       textTransform: 'uppercase',
-                      letterSpacing: '0.06em',
+                      letterSpacing: '0.1em',
                       marginBottom: '4px',
+                      marginTop: '4px',
                       marginLeft: rem(4),
                       paddingLeft: rem(10),
-                      borderLeft: '2px solid currentColor'
+                      paddingTop: rem(4),
+                      paddingBottom: rem(4),
+                      borderLeft: '2px solid currentColor',
+                      opacity: 0.9
                     }}
                   >
                     {category.name}
@@ -465,8 +469,8 @@ const Navigation: React.FC = () => {
                         item: {
                           transition: 'background-color 150ms ease, color 150ms ease',
                           '&:hover': {
-                            backgroundColor: 'rgba(225, 29, 72, 0.08)',
-                            color: 'rgba(255, 255, 255, 0.95)',
+                            backgroundColor: 'rgba(225, 29, 72, 0.12)',
+                            color: 'rgba(255, 255, 255, 0.98)',
                             boxShadow: 'none'
                           }
                         }
@@ -496,9 +500,9 @@ const Navigation: React.FC = () => {
               dropdown: {
                 backgroundColor: theme.colors.dark[8],
                 border: '1px solid rgba(225, 29, 72, 0.15)',
-                borderTop: '2px solid rgba(225, 29, 72, 0.35)',
+                borderTop: '2px solid rgba(225, 29, 72, 0.4)',
                 borderRadius: theme.radius.md,
-                boxShadow: theme.shadows.xl,
+                boxShadow: '0 20px 40px rgba(0,0,0,0.5), 0 8px 16px rgba(225,29,72,0.08)',
                 minWidth: 'unset',
                 width: 'auto',
                 padding: rem(6),
@@ -591,9 +595,9 @@ const Navigation: React.FC = () => {
               dropdown: {
                 backgroundColor: theme.colors.dark[8],
                 border: '1px solid rgba(225, 29, 72, 0.15)',
-                borderTop: '2px solid rgba(225, 29, 72, 0.35)',
+                borderTop: '2px solid rgba(225, 29, 72, 0.4)',
                 borderRadius: theme.radius.md,
-                boxShadow: theme.shadows.xl,
+                boxShadow: '0 20px 40px rgba(0,0,0,0.5), 0 8px 16px rgba(225,29,72,0.08)',
                 minWidth: 'unset',
                 width: 'auto',
                 padding: rem(6),
@@ -889,13 +893,15 @@ const Navigation: React.FC = () => {
                 styles={{
                   dropdown: {
                     backgroundColor: theme.colors.dark[8],
-                    border: `1px solid ${theme.colors.dark[6]}`,
-                    borderRadius: theme.radius.sm,
-                    boxShadow: theme.shadows.md,
-                    minWidth: 'unset',
+                    border: '1px solid rgba(225, 29, 72, 0.2)',
+                    borderTop: '2px solid rgba(225, 29, 72, 0.4)',
+                    borderRadius: theme.radius.md,
+                    boxShadow: '0 20px 40px rgba(0,0,0,0.5), 0 8px 16px rgba(225,29,72,0.08)',
+                    minWidth: '180px',
                     width: 'auto',
-                    padding: rem(6),
-                    overflow: 'hidden'
+                    padding: 0,
+                    overflow: 'hidden',
+                    backdropFilter: 'blur(20px)'
                   }
                 }}
               >
@@ -904,67 +910,144 @@ const Navigation: React.FC = () => {
                     size="lg"
                     variant="transparent"
                     visibleFrom="md"
-                    style={{ 
+                    style={{
                       cursor: 'pointer'
                     }}
                     aria-label="account of current user"
                   >
-                  <Avatar src={avatarSrc || undefined} size={32} alt={user.username}>
+                  <Avatar
+                    src={avatarSrc || undefined}
+                    size={32}
+                    alt={user.username}
+                    style={{
+                      border: '2px solid rgba(225, 29, 72, 0.4)',
+                      transition: 'border-color 150ms ease'
+                    }}
+                  >
                     {!avatarSrc && user.username[0].toUpperCase()}
                   </Avatar>
                 </ActionIcon>
               </Menu.Target>
 
               <Menu.Dropdown>
+                {/* User identity header */}
+                <Box
+                  style={{
+                    padding: `${rem(10)} ${rem(12)} ${rem(8)}`,
+                    borderBottom: '1px solid rgba(225, 29, 72, 0.15)',
+                    marginBottom: rem(4)
+                  }}
+                >
+                  <Group gap="xs" wrap="nowrap">
+                    <Avatar
+                      src={avatarSrc || undefined}
+                      size={28}
+                      style={{ border: '1px solid rgba(225, 29, 72, 0.3)', flexShrink: 0 }}
+                    >
+                      {!avatarSrc && user.username[0].toUpperCase()}
+                    </Avatar>
+                    <Box style={{ minWidth: 0 }}>
+                      <Text
+                        size="sm"
+                        fw={600}
+                        style={{
+                          color: '#ffffff',
+                          lineHeight: 1.2,
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap'
+                        }}
+                      >
+                        {user.username}
+                      </Text>
+                      <Text
+                        style={{
+                          fontSize: '10px',
+                          letterSpacing: '0.12em',
+                          textTransform: 'uppercase',
+                          color: 'rgba(225, 29, 72, 0.7)',
+                          lineHeight: 1.2
+                        }}
+                      >
+                        {user.customRole || user.role || 'operative'}
+                      </Text>
+                    </Box>
+                  </Group>
+                </Box>
+                <Box style={{ padding: rem(4) }}>
                 <Menu.Item
                   component={Link}
                   href="/profile"
-                  leftSection={<User size={16} />}
+                  leftSection={<User size={15} />}
                   style={{
                     backgroundColor: 'transparent',
                     borderRadius: 6,
-                    transition: 'box-shadow 0.2s ease',
-                    /* keep an explicit active outline when the profile route is active */
-                    boxShadow: isActivePath('/profile') ? `inset 0 0 0 1px ${accentColor}` : undefined,
+                    color: isActivePath('/profile') ? accentColor : theme.colors.gray[0],
+                    borderLeft: isActivePath('/profile') ? `3px solid ${accentColor}` : '3px solid transparent',
+                    transition: 'background-color 150ms ease, color 150ms ease',
                     paddingTop: rem(6),
                     paddingBottom: rem(6)
                   }}
-                  styles={{ item: menuHoverStyles }}
+                  styles={{
+                    item: {
+                      '&:hover': {
+                        backgroundColor: 'rgba(225, 29, 72, 0.12)',
+                        color: '#ffffff'
+                      }
+                    }
+                  }}
                 >
                   Profile
                 </Menu.Item>
                 <Menu.Item
                   component={Link}
                   href="/about"
-                  leftSection={<Info size={16} />}
+                  leftSection={<Info size={15} />}
                   style={{
                     backgroundColor: 'transparent',
                     borderRadius: 6,
-                    transition: 'box-shadow 0.2s ease',
-                    boxShadow: isActivePath('/about') ? `inset 0 0 0 1px ${accentColor}` : undefined,
+                    color: isActivePath('/about') ? accentColor : theme.colors.gray[0],
+                    borderLeft: isActivePath('/about') ? `3px solid ${accentColor}` : '3px solid transparent',
+                    transition: 'background-color 150ms ease, color 150ms ease',
                     paddingTop: rem(6),
                     paddingBottom: rem(6)
                   }}
-                  styles={{ item: menuHoverStyles }}
+                  styles={{
+                    item: {
+                      '&:hover': {
+                        backgroundColor: 'rgba(225, 29, 72, 0.12)',
+                        color: '#ffffff'
+                      }
+                    }
+                  }}
                 >
                   About
                 </Menu.Item>
-                <Menu.Divider />
+                <Menu.Divider style={{ margin: `${rem(4)} 0` }} />
                 <Menu.Item
                   onClick={handleLogout}
-                  leftSection={<LogOut size={16} />}
+                  leftSection={<LogOut size={15} />}
                   style={{
                     color: getEntityThemeColor(theme, 'gamble'),
                     backgroundColor: 'transparent',
                     borderRadius: 6,
-                    transition: 'box-shadow 0.2s ease',
+                    borderLeft: '3px solid transparent',
+                    transition: 'background-color 150ms ease',
                     paddingTop: rem(6),
                     paddingBottom: rem(6)
                   }}
-                  styles={{ item: menuHoverStyles }}
+                  styles={{
+                    item: {
+                      '&:hover': {
+                        backgroundColor: 'rgba(255, 85, 85, 0.12)',
+                        color: getEntityThemeColor(theme, 'gamble')
+                      }
+                    }
+                  }}
                 >
                   Logout
                 </Menu.Item>
+                </Box>
               </Menu.Dropdown>
             </Menu>
             </>
