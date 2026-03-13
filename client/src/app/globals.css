@@ -339,11 +339,13 @@ body {
 
 /* Search result item hover */
 .search-result-item {
-  transition: background-color 200ms ease;
+  border-left: 2px solid transparent;
+  transition: background-color 150ms ease, border-left-color 150ms ease;
 }
 
 .search-result-item:hover {
-  background-color: rgba(225, 29, 72, 0.08);
+  background-color: rgba(255, 255, 255, 0.04);
+  border-left-color: rgba(225, 29, 72, 0.4);
 }
 
 /* Skip to content link for accessibility */
@@ -622,10 +624,7 @@ textarea:focus-visible {
 /* Floating Progress Indicator — dashed outer orbit ring */
 .fpi-outer-ring {
   position: absolute;
-  top: -5px;
-  left: -5px;
-  width: 74px;
-  height: 74px;
+  inset: 0;
   border-radius: 50%;
   border: 1.5px dashed rgba(225, 29, 72, 0.32);
   pointer-events: none;
@@ -833,7 +832,31 @@ textarea:focus-visible {
    Navigation Bar — Editorial Noir Styles
    ============================================ */
 
-/* Nav trigger buttons — typographic uppercase with sliding red underline */
+/* Nav header — gradient red divider line at bottom edge */
+.nav-header {
+  position: relative;
+}
+
+.nav-header::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(225, 29, 72, 0.35) 20%,
+    rgba(225, 29, 72, 0.55) 50%,
+    rgba(225, 29, 72, 0.35) 80%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Nav trigger buttons — typographic uppercase with full-width flush underline */
 .nav-trigger {
   position: relative;
   overflow: visible;
@@ -842,20 +865,24 @@ textarea:focus-visible {
 .nav-trigger::after {
   content: '';
   position: absolute;
-  bottom: 4px;
+  bottom: -1px;
   left: 50%;
   right: 50%;
   height: 2px;
   background-color: var(--usogui-red);
-  border-radius: 1px;
-  transition: left 220ms cubic-bezier(0.4, 0, 0.2, 1),
-              right 220ms cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 0;
+  opacity: 0;
+  transition: left 200ms cubic-bezier(0.4, 0, 0.2, 1),
+              right 200ms cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 200ms ease;
+  z-index: 2;
 }
 
 .nav-trigger:hover::after,
 .nav-trigger--active::after {
-  left: 8px;
-  right: 8px;
+  left: 0;
+  right: 0;
+  opacity: 1;
 }
 
 /* Search box — border and focus ring treatment */
@@ -869,15 +896,19 @@ textarea:focus-visible {
               0 0 8px rgba(225, 29, 72, 0.12) !important;
 }
 
-/* Reduced motion: disable sliding underline animation */
+/* Reduced motion: disable sliding underline and gradient line */
 @media (prefers-reduced-motion: reduce) {
+  .nav-header::after {
+    display: none;
+  }
   .nav-trigger::after {
     transition: none !important;
   }
   .nav-trigger:hover::after,
   .nav-trigger--active::after {
-    left: 8px;
-    right: 8px;
+    left: 0;
+    right: 0;
+    opacity: 1;
   }
   .nav-search-box:focus-within {
     box-shadow: 0 0 0 2px rgba(225, 29, 72, 0.4) !important;

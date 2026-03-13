@@ -30,7 +30,8 @@ import { useAuth } from '../providers/AuthProvider'
 import api from '../lib/api'
 
 const MAX_CHAPTER = 539
-const CIRCUMFERENCE = 2 * Math.PI * 30
+const RING_RADIUS = 28
+const CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS
 const successAnimationDuration = 1500
 
 const defaultPalette = {
@@ -240,24 +241,10 @@ export const FloatingProgressIndicator: React.FC = () => {
           height={64}
           style={{ position: 'absolute', top: 5, left: 5, transform: 'rotate(-90deg)' }}
         >
-          {/* Glow layer behind progress stroke */}
           <circle
             cx={32}
             cy={32}
-            r={28}
-            fill="none"
-            stroke={solidRed}
-            strokeWidth={8}
-            strokeLinecap="round"
-            strokeDasharray={CIRCUMFERENCE}
-            strokeDashoffset={progressDashoffset}
-            opacity={0.12}
-            style={{ transition: 'stroke-dashoffset 0.5s ease' }}
-          />
-          <circle
-            cx={32}
-            cy={32}
-            r={28}
+            r={RING_RADIUS}
             fill="none"
             stroke="rgba(255,255,255,0.08)"
             strokeWidth={3}
@@ -265,7 +252,7 @@ export const FloatingProgressIndicator: React.FC = () => {
           <circle
             cx={32}
             cy={32}
-            r={28}
+            r={RING_RADIUS}
             fill="none"
             stroke={solidRed}
             strokeWidth={3.5}
@@ -306,8 +293,6 @@ export const FloatingProgressIndicator: React.FC = () => {
                   position: 'absolute',
                   bottom: -5,
                   right: -8,
-                  minWidth:
-                    userProgress > 999 ? 32 : userProgress > 99 ? 28 : userProgress > 9 ? 24 : 22,
                   height: 18,
                   paddingLeft: 5,
                   paddingRight: 5,
@@ -317,8 +302,7 @@ export const FloatingProgressIndicator: React.FC = () => {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize:
-                    userProgress > 999 ? '9px' : userProgress > 99 ? '10px' : userProgress > 9 ? '11px' : '12px',
+                  fontSize: userProgress > 99 ? '10px' : '12px',
                   fontWeight: 'bold',
                   color: 'white',
                   letterSpacing: '0.05em',

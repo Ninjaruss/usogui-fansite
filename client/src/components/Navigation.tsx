@@ -301,6 +301,7 @@ const Navigation: React.FC = () => {
     <header
       role="banner"
       aria-label="Main navigation"
+      className="nav-header"
       style={{
         height: '60px',
         padding: `0 ${rem(16)}`,
@@ -308,9 +309,10 @@ const Navigation: React.FC = () => {
         position: 'sticky',
         top: 0,
         zIndex: 1000,
-        background: 'linear-gradient(180deg, var(--mantine-color-dark-9) 0%, var(--mantine-color-dark-8) 100%)',
+        background: 'linear-gradient(180deg, rgba(14,14,16,0.98) 0%, rgba(10,10,12,0.96) 100%)',
+        backdropFilter: 'blur(24px) saturate(180%)',
         borderBottom: 'none',
-        boxShadow: '0 1px 0 var(--mantine-color-dark-6), 0 1px 12px 0 rgba(225, 29, 72, 0.18)'
+        boxShadow: '0 1px 0 rgba(255,255,255,0.06), 0 0 0 1px rgba(225,29,72,0.08), 0 4px 32px rgba(0,0,0,0.6)'
       }}
       data-testid="navigation-bar"
     >
@@ -373,21 +375,21 @@ const Navigation: React.FC = () => {
             closeDelay={300}
             position="bottom"
             withArrow={false}
-            offset={4}
+            offset={6}
             opened={browseOpened}
             onOpen={() => setBrowseOpened(true)}
             onClose={() => setBrowseOpened(false)}
             styles={{
               dropdown: {
-                backgroundColor: theme.colors.dark[8],
-                border: '1px solid rgba(225, 29, 72, 0.15)',
-                borderTop: '2px solid rgba(225, 29, 72, 0.4)',
-                borderRadius: theme.radius.md,
-                boxShadow: '0 20px 40px rgba(0,0,0,0.5), 0 8px 16px rgba(225,29,72,0.08)',
+                backgroundColor: 'rgba(10, 10, 12, 0.97)',
+                border: '1px solid rgba(255, 255, 255, 0.06)',
+                borderTop: '2px solid rgba(225, 29, 72, 0.3)',
+                borderRadius: '6px',
+                boxShadow: '0 24px 48px rgba(0,0,0,0.7), 0 0 0 1px rgba(225,29,72,0.06), inset 0 1px 0 rgba(255,255,255,0.04)',
                 minWidth: 'unset',
                 width: 'auto',
                 padding: rem(6),
-                backdropFilter: 'blur(20px)'
+                backdropFilter: 'blur(24px) saturate(160%)'
               }
             }}
           >
@@ -405,18 +407,19 @@ const Navigation: React.FC = () => {
                     />
                   }
                   style={{
-                    backgroundColor: 'transparent',
+                    backgroundColor: browseOpened ? 'rgba(225, 29, 72, 0.07)' : 'transparent',
                     color: browseOpened ? accentColor : 'rgba(255, 255, 255, 0.88)',
                     fontWeight: 500,
                     fontSize: rem(13),
                     textTransform: 'uppercase',
-                    letterSpacing: '0.08em',
+                    letterSpacing: '0.10em',
                     padding: '0 8px',
-                    height: '36px'
+                    height: '36px',
+                    borderRadius: '4px'
                   }}
                   styles={{
                     root: {
-                      '&:hover': { backgroundColor: 'transparent', color: accentColor },
+                      '&:hover': { backgroundColor: 'rgba(225, 29, 72, 0.05)', color: accentColor },
                       '&:active': { backgroundColor: 'transparent' }
                     }
                   }}
@@ -430,18 +433,20 @@ const Navigation: React.FC = () => {
                   <Menu.Label
                     style={{
                       color: category.color,
-                      fontWeight: 700,
-                      fontSize: '10px',
+                      fontFamily: 'var(--font-opti-goudy-text)',
+                      fontWeight: 'normal',
+                      fontSize: '11px',
                       textTransform: 'uppercase',
-                      letterSpacing: '0.1em',
-                      marginBottom: '4px',
-                      marginTop: '4px',
-                      marginLeft: rem(4),
-                      paddingLeft: rem(10),
-                      paddingTop: rem(4),
-                      paddingBottom: rem(4),
-                      borderLeft: '2px solid currentColor',
-                      opacity: 0.9
+                      letterSpacing: '0.14em',
+                      marginTop: rem(8),
+                      marginBottom: rem(2),
+                      paddingTop: rem(5),
+                      paddingBottom: rem(5),
+                      paddingLeft: rem(12),
+                      paddingRight: rem(8),
+                      borderLeft: '3px solid currentColor',
+                      borderRadius: '0 3px 3px 0',
+                      backgroundColor: `${category.color}14`
                     }}
                   >
                     {category.name}
@@ -454,6 +459,7 @@ const Navigation: React.FC = () => {
                       leftSection={item.icon}
                       style={{
                         borderLeft: isActivePath(item.href) ? `3px solid ${accentColor}` : '3px solid transparent',
+                        boxShadow: isActivePath(item.href) ? 'inset 3px 0 8px rgba(225,29,72,0.15)' : 'none',
                         borderRadius: theme.radius.sm,
                         paddingLeft: theme.spacing.md,
                         color: isActivePath(item.href) ? accentColor : theme.colors.gray[0],
@@ -469,7 +475,7 @@ const Navigation: React.FC = () => {
                         item: {
                           transition: 'background-color 150ms ease, color 150ms ease',
                           '&:hover': {
-                            backgroundColor: 'rgba(225, 29, 72, 0.12)',
+                            backgroundColor: `${category.color}20`,
                             color: 'rgba(255, 255, 255, 0.98)',
                             boxShadow: 'none'
                           }
@@ -492,21 +498,21 @@ const Navigation: React.FC = () => {
             closeDelay={300}
             position="bottom"
             withArrow={false}
-            offset={4}
+            offset={6}
             opened={communityOpened}
             onOpen={() => setCommunityOpened(true)}
             onClose={() => setCommunityOpened(false)}
             styles={{
               dropdown: {
-                backgroundColor: theme.colors.dark[8],
-                border: '1px solid rgba(225, 29, 72, 0.15)',
+                backgroundColor: 'rgba(10, 10, 12, 0.97)',
+                border: '1px solid rgba(255, 255, 255, 0.06)',
                 borderTop: '2px solid rgba(225, 29, 72, 0.4)',
-                borderRadius: theme.radius.md,
-                boxShadow: '0 20px 40px rgba(0,0,0,0.5), 0 8px 16px rgba(225,29,72,0.08)',
+                borderRadius: '6px',
+                boxShadow: '0 24px 48px rgba(0,0,0,0.7), 0 0 0 1px rgba(225,29,72,0.06), inset 0 1px 0 rgba(255,255,255,0.04)',
                 minWidth: 'unset',
                 width: 'auto',
                 padding: rem(6),
-                backdropFilter: 'blur(20px)'
+                backdropFilter: 'blur(24px) saturate(160%)'
               }
             }}
           >
@@ -524,18 +530,19 @@ const Navigation: React.FC = () => {
                     />
                   }
                   style={{
-                    backgroundColor: 'transparent',
+                    backgroundColor: communityOpened ? 'rgba(225, 29, 72, 0.07)' : 'transparent',
                     color: communityOpened ? accentColor : 'rgba(255, 255, 255, 0.88)',
                     fontWeight: 500,
                     fontSize: rem(13),
                     textTransform: 'uppercase',
-                    letterSpacing: '0.08em',
+                    letterSpacing: '0.10em',
                     padding: '0 8px',
-                    height: '36px'
+                    height: '36px',
+                    borderRadius: '4px'
                   }}
                   styles={{
                     root: {
-                      '&:hover': { backgroundColor: 'transparent', color: accentColor },
+                      '&:hover': { backgroundColor: 'rgba(225, 29, 72, 0.05)', color: accentColor },
                       '&:active': { backgroundColor: 'transparent' }
                     }
                   }}
@@ -587,21 +594,21 @@ const Navigation: React.FC = () => {
             closeDelay={300}
             position="bottom"
             withArrow={false}
-            offset={4}
+            offset={6}
             opened={submitOpened}
             onOpen={() => setSubmitOpened(true)}
             onClose={() => setSubmitOpened(false)}
             styles={{
               dropdown: {
-                backgroundColor: theme.colors.dark[8],
-                border: '1px solid rgba(225, 29, 72, 0.15)',
+                backgroundColor: 'rgba(10, 10, 12, 0.97)',
+                border: '1px solid rgba(255, 255, 255, 0.06)',
                 borderTop: '2px solid rgba(225, 29, 72, 0.4)',
-                borderRadius: theme.radius.md,
-                boxShadow: '0 20px 40px rgba(0,0,0,0.5), 0 8px 16px rgba(225,29,72,0.08)',
+                borderRadius: '6px',
+                boxShadow: '0 24px 48px rgba(0,0,0,0.7), 0 0 0 1px rgba(225,29,72,0.06), inset 0 1px 0 rgba(255,255,255,0.04)',
                 minWidth: 'unset',
                 width: 'auto',
                 padding: rem(6),
-                backdropFilter: 'blur(20px)'
+                backdropFilter: 'blur(24px) saturate(160%)'
               }
             }}
           >
@@ -619,18 +626,19 @@ const Navigation: React.FC = () => {
                     />
                   }
                   style={{
-                    backgroundColor: 'transparent',
+                    backgroundColor: submitOpened ? 'rgba(225, 29, 72, 0.07)' : 'transparent',
                     color: submitOpened ? accentColor : 'rgba(255, 255, 255, 0.88)',
                     fontWeight: 500,
                     fontSize: rem(13),
                     textTransform: 'uppercase',
-                    letterSpacing: '0.08em',
+                    letterSpacing: '0.10em',
                     padding: '0 8px',
-                    height: '36px'
+                    height: '36px',
+                    borderRadius: '4px'
                   }}
                   styles={{
                     root: {
-                      '&:hover': { backgroundColor: 'transparent', color: accentColor },
+                      '&:hover': { backgroundColor: 'rgba(225, 29, 72, 0.05)', color: accentColor },
                       '&:active': { backgroundColor: 'transparent' }
                     }
                   }}
@@ -769,17 +777,19 @@ const Navigation: React.FC = () => {
                   style={{
                     maxHeight: 400,
                     overflow: 'auto',
-                    borderRadius: '8px',
-                    backgroundColor: '#0a0a0a',
-                    border: '1px solid rgba(225, 29, 72, 0.2)',
-                    backdropFilter: 'blur(10px)',
-                    boxShadow: '0 20px 25px -5px rgba(225, 29, 72, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.4)',
+                    borderRadius: '6px',
+                    backgroundColor: 'rgba(10, 10, 12, 0.97)',
+                    border: '1px solid rgba(255, 255, 255, 0.06)',
+                    borderTop: '2px solid rgba(225, 29, 72, 0.35)',
+                    backdropFilter: 'blur(24px) saturate(160%)',
+                    boxShadow: '0 24px 48px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.04)'
                   }}
                 >
                   {searchResults.length > 0 ? (
                     searchResults.slice(0, 8).map((result, index) => (
                       <div
                         key={`${result.type}-${result.id}`}
+                        className="search-result-item"
                         onClick={() => handleSearchResultClick(result)}
                         style={{
                           display: 'flex',
@@ -787,36 +797,30 @@ const Navigation: React.FC = () => {
                           padding: '12px 16px',
                           borderBottom: index === Math.min(searchResults.length, 8) - 1
                             ? 'none'
-                            : '1px solid rgba(225, 29, 72, 0.2)',
+                            : '1px solid rgba(255, 255, 255, 0.04)',
                           color: '#ffffff',
                           backgroundColor: 'transparent',
-                          cursor: 'pointer',
-                          transition: 'background-color 0.2s'
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = 'rgba(225, 29, 72, 0.1)'
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = 'transparent'
+                          cursor: 'pointer'
                         }}
                       >
                         <Box style={{ display: 'flex', alignItems: 'center', marginRight: '16px' }}>
-                          <Box style={{ color: getTypeColor(result.type) }}>
+                          <Box style={{ color: getTypeColor(result.type), opacity: 0.75 }}>
                             {getTypeIcon(result.type)}
                           </Box>
                         </Box>
                         <Box style={{ flex: 1 }}>
                           <Box style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                             <Box style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', flex: 1 }}>
-                              <Text style={{ color: '#ffffff', fontWeight: 500 }}>
+                              <Text style={{ color: '#ffffff', fontWeight: 500, letterSpacing: '0.01em' }}>
                                 {result.title}
                               </Text>
                               {result.type === 'character' && result.metadata && Array.isArray((result.metadata as Record<string, unknown>).alternateNames) && ((result.metadata as Record<string, unknown>).alternateNames as string[]).length > 0 && (
                                 <Text
                                   size="xs"
                                   style={{
-                                    color: 'rgba(255, 255, 255, 0.75)', // 4.6:1 contrast - WCAG AA compliant
-                                    fontStyle: 'italic'
+                                    color: 'rgba(255, 255, 255, 0.75)',
+                                    fontStyle: 'italic',
+                                    letterSpacing: '0.01em'
                                   }}
                                 >
                                   {((result.metadata as Record<string, unknown>).alternateNames as string[]).join(', ')}
@@ -827,8 +831,12 @@ const Navigation: React.FC = () => {
                               <Badge
                                 size="sm"
                                 style={{
-                                  backgroundColor: getTypeColor(result.type),
-                                  color: '#ffffff'
+                                  backgroundColor: `${getTypeColor(result.type)}22`,
+                                  color: getTypeColor(result.type),
+                                  border: `1px solid ${getTypeColor(result.type)}44`,
+                                  fontSize: '10px',
+                                  letterSpacing: '0.08em',
+                                  textTransform: 'uppercase'
                                 }}
                               >
                                 {result.type}
@@ -837,8 +845,11 @@ const Navigation: React.FC = () => {
                                 <Badge
                                   size="sm"
                                   style={{
-                                    backgroundColor: '#f57c00',
-                                    color: '#ffffff'
+                                    backgroundColor: 'rgba(245, 124, 0, 0.15)',
+                                    color: '#f57c00',
+                                    border: '1px solid rgba(245, 124, 0, 0.3)',
+                                    fontSize: '10px',
+                                    letterSpacing: '0.08em'
                                   }}
                                 >
                                   Spoilers
@@ -850,8 +861,13 @@ const Navigation: React.FC = () => {
                       </div>
                     ))
                   ) : (
-                    <Box style={{ padding: '12px 16px', textAlign: 'center' }}>
-                      <Text style={{ color: 'rgba(255, 255, 255, 0.75)' }}>
+                    <Box style={{ padding: '20px 16px', textAlign: 'center' }}>
+                      <Text style={{
+                        color: 'rgba(255, 255, 255, 0.45)',
+                        fontFamily: 'var(--font-opti-goudy-text)',
+                        fontSize: '13px',
+                        fontStyle: 'italic'
+                      }}>
                         {searchValue.trim().length < 2
                           ? 'Type at least 2 characters to search'
                           : 'No results found'}
@@ -889,19 +905,19 @@ const Navigation: React.FC = () => {
                 position="bottom"
                 withArrow
                 arrowPosition="center"
-                offset={4}
+                offset={6}
                 styles={{
                   dropdown: {
-                    backgroundColor: theme.colors.dark[8],
-                    border: '1px solid rgba(225, 29, 72, 0.2)',
+                    backgroundColor: 'rgba(10, 10, 12, 0.97)',
+                    border: '1px solid rgba(255, 255, 255, 0.06)',
                     borderTop: '2px solid rgba(225, 29, 72, 0.4)',
-                    borderRadius: theme.radius.md,
-                    boxShadow: '0 20px 40px rgba(0,0,0,0.5), 0 8px 16px rgba(225,29,72,0.08)',
+                    borderRadius: '6px',
+                    boxShadow: '0 24px 48px rgba(0,0,0,0.7), 0 0 0 1px rgba(225,29,72,0.06), inset 0 1px 0 rgba(255,255,255,0.04)',
                     minWidth: '180px',
                     width: 'auto',
                     padding: 0,
                     overflow: 'hidden',
-                    backdropFilter: 'blur(20px)'
+                    backdropFilter: 'blur(24px) saturate(160%)'
                   }
                 }}
               >
@@ -914,14 +930,30 @@ const Navigation: React.FC = () => {
                       cursor: 'pointer'
                     }}
                     aria-label="account of current user"
+                    onMouseEnter={(e) => {
+                      const avatar = e.currentTarget.querySelector('[data-avatar]') as HTMLElement
+                      if (avatar) {
+                        avatar.style.borderColor = 'rgba(225, 29, 72, 0.8)'
+                        avatar.style.boxShadow = '0 0 0 3px rgba(225, 29, 72, 0.12)'
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      const avatar = e.currentTarget.querySelector('[data-avatar]') as HTMLElement
+                      if (avatar) {
+                        avatar.style.borderColor = 'rgba(225, 29, 72, 0.4)'
+                        avatar.style.boxShadow = 'none'
+                      }
+                    }}
                   >
                   <Avatar
                     src={avatarSrc || undefined}
                     size={32}
                     alt={user.username}
+                    data-avatar
                     style={{
                       border: '2px solid rgba(225, 29, 72, 0.4)',
-                      transition: 'border-color 150ms ease'
+                      transition: 'border-color 200ms ease, box-shadow 200ms ease',
+                      borderRadius: '50%'
                     }}
                   >
                     {!avatarSrc && user.username[0].toUpperCase()}
@@ -933,8 +965,9 @@ const Navigation: React.FC = () => {
                 {/* User identity header */}
                 <Box
                   style={{
-                    padding: `${rem(10)} ${rem(12)} ${rem(8)}`,
-                    borderBottom: '1px solid rgba(225, 29, 72, 0.15)',
+                    padding: `${rem(12)} ${rem(14)} ${rem(10)}`,
+                    borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
+                    background: 'rgba(255, 255, 255, 0.03)',
                     marginBottom: rem(4)
                   }}
                 >
@@ -962,10 +995,11 @@ const Navigation: React.FC = () => {
                       </Text>
                       <Text
                         style={{
+                          fontFamily: 'var(--font-opti-goudy-text)',
                           fontSize: '10px',
                           letterSpacing: '0.12em',
                           textTransform: 'uppercase',
-                          color: 'rgba(225, 29, 72, 0.7)',
+                          color: 'rgba(225, 29, 72, 0.85)',
                           lineHeight: 1.2
                         }}
                       >
@@ -984,6 +1018,7 @@ const Navigation: React.FC = () => {
                     borderRadius: 6,
                     color: isActivePath('/profile') ? accentColor : theme.colors.gray[0],
                     borderLeft: isActivePath('/profile') ? `3px solid ${accentColor}` : '3px solid transparent',
+                    boxShadow: isActivePath('/profile') ? 'inset 3px 0 8px rgba(225,29,72,0.15)' : 'none',
                     transition: 'background-color 150ms ease, color 150ms ease',
                     paddingTop: rem(6),
                     paddingBottom: rem(6)
@@ -991,7 +1026,7 @@ const Navigation: React.FC = () => {
                   styles={{
                     item: {
                       '&:hover': {
-                        backgroundColor: 'rgba(225, 29, 72, 0.12)',
+                        backgroundColor: 'rgba(225, 29, 72, 0.08)',
                         color: '#ffffff'
                       }
                     }
@@ -1008,6 +1043,7 @@ const Navigation: React.FC = () => {
                     borderRadius: 6,
                     color: isActivePath('/about') ? accentColor : theme.colors.gray[0],
                     borderLeft: isActivePath('/about') ? `3px solid ${accentColor}` : '3px solid transparent',
+                    boxShadow: isActivePath('/about') ? 'inset 3px 0 8px rgba(225,29,72,0.15)' : 'none',
                     transition: 'background-color 150ms ease, color 150ms ease',
                     paddingTop: rem(6),
                     paddingBottom: rem(6)
@@ -1015,7 +1051,7 @@ const Navigation: React.FC = () => {
                   styles={{
                     item: {
                       '&:hover': {
-                        backgroundColor: 'rgba(225, 29, 72, 0.12)',
+                        backgroundColor: 'rgba(225, 29, 72, 0.08)',
                         color: '#ffffff'
                       }
                     }
@@ -1032,14 +1068,15 @@ const Navigation: React.FC = () => {
                     backgroundColor: 'transparent',
                     borderRadius: 6,
                     borderLeft: '3px solid transparent',
-                    transition: 'background-color 150ms ease',
+                    transition: 'background-color 150ms ease, border-color 150ms ease',
                     paddingTop: rem(6),
                     paddingBottom: rem(6)
                   }}
                   styles={{
                     item: {
                       '&:hover': {
-                        backgroundColor: 'rgba(255, 85, 85, 0.12)',
+                        backgroundColor: 'rgba(255, 85, 85, 0.08)',
+                        borderLeft: '3px solid rgba(255, 85, 85, 0.4)',
                         color: getEntityThemeColor(theme, 'gamble')
                       }
                     }
@@ -1128,7 +1165,7 @@ const Navigation: React.FC = () => {
                 className="nav-search-box"
                 onSubmit={handleSearchSubmit}
                 style={{
-                  borderRadius: rem(4),
+                  borderRadius: rem(6),
                   backgroundColor: 'rgba(255, 255, 255, 0.06)',
                   border: '1px solid rgba(255, 255, 255, 0.12)',
                   transition: 'border-color 200ms ease, box-shadow 200ms ease'
@@ -1156,6 +1193,19 @@ const Navigation: React.FC = () => {
             {/* User Section */}
             {user ? (
               <>
+                <Menu.Label
+                  style={{
+                    fontFamily: 'var(--font-opti-goudy-text)',
+                    fontSize: '12px',
+                    letterSpacing: '0.12em',
+                    textTransform: 'uppercase',
+                    color: 'rgba(255, 255, 255, 0.4)',
+                    paddingLeft: rem(12),
+                    borderLeft: '2px solid rgba(255, 255, 255, 0.15)'
+                  }}
+                >
+                  Account
+                </Menu.Label>
                 <Menu.Item
                   component={Link}
                   href="/profile"
@@ -1267,13 +1317,17 @@ const Navigation: React.FC = () => {
                 <Menu.Label
                   style={{
                     color: category.color,
-                    fontWeight: 600,
-                    fontSize: '0.75rem',
+                    fontFamily: 'var(--font-opti-goudy-text)',
+                    fontWeight: 'normal',
+                    fontSize: '12px',
                     textTransform: 'uppercase',
-                    letterSpacing: '0.06em',
-                    marginLeft: rem(4),
-                    paddingLeft: rem(10),
-                    borderLeft: '2px solid currentColor'
+                    letterSpacing: '0.12em',
+                    paddingLeft: rem(12),
+                    paddingTop: rem(5),
+                    paddingBottom: rem(5),
+                    borderLeft: '3px solid currentColor',
+                    borderRadius: '0 3px 3px 0',
+                    backgroundColor: `${category.color}14`
                   }}
                 >
                   {category.name}
@@ -1286,8 +1340,9 @@ const Navigation: React.FC = () => {
                     leftSection={item.icon}
                     onClick={handleMobileMenuClose}
                     style={{
-                      paddingLeft: '2rem',
-                      borderLeft: isActivePath(item.href) ? '3px solid #e11d48' : '3px solid transparent'
+                      paddingLeft: rem(20),
+                      borderLeft: isActivePath(item.href) ? '3px solid #e11d48' : '3px solid transparent',
+                      boxShadow: isActivePath(item.href) ? 'inset 3px 0 8px rgba(225,29,72,0.15)' : 'none'
                     }}
                     styles={{ item: menuHoverStyles }}
                   >
@@ -1297,19 +1352,23 @@ const Navigation: React.FC = () => {
               </Box>
             ))}
 
-            <Menu.Divider />
+            <Box style={{ margin: '4px 0' }}><Menu.Divider /></Box>
 
             {/* Community Section */}
             <Menu.Label
               style={{
-                color: '#ff7043',
-                fontWeight: 600,
-                fontSize: '0.75rem',
+                color: 'rgba(225, 29, 72, 0.85)',
+                fontFamily: 'var(--font-opti-goudy-text)',
+                fontWeight: 'normal',
+                fontSize: '12px',
                 textTransform: 'uppercase',
-                letterSpacing: '0.06em',
-                marginLeft: rem(4),
-                paddingLeft: rem(10),
-                borderLeft: '2px solid currentColor'
+                letterSpacing: '0.12em',
+                paddingLeft: rem(12),
+                paddingTop: rem(5),
+                paddingBottom: rem(5),
+                borderLeft: '3px solid currentColor',
+                borderRadius: '0 3px 3px 0',
+                backgroundColor: 'rgba(225, 29, 72, 0.08)'
               }}
             >
               Community
@@ -1322,8 +1381,9 @@ const Navigation: React.FC = () => {
                 leftSection={item.icon}
                 onClick={handleMobileMenuClose}
                 style={{
-                  paddingLeft: '2rem',
-                  borderLeft: isActivePath(item.href) ? '3px solid #e11d48' : '3px solid transparent'
+                  paddingLeft: rem(20),
+                  borderLeft: isActivePath(item.href) ? '3px solid #e11d48' : '3px solid transparent',
+                  boxShadow: isActivePath(item.href) ? 'inset 3px 0 8px rgba(225,29,72,0.15)' : 'none'
                 }}
                 styles={{ item: menuHoverStyles }}
               >
@@ -1331,19 +1391,23 @@ const Navigation: React.FC = () => {
               </Menu.Item>
             ))}
 
-            <Menu.Divider />
+            <Box style={{ margin: '4px 0' }}><Menu.Divider /></Box>
 
             {/* Submit Section */}
             <Menu.Label
               style={{
-                color: '#8e24aa',
-                fontWeight: 600,
-                fontSize: '0.75rem',
+                color: '#7c3aed',
+                fontFamily: 'var(--font-opti-goudy-text)',
+                fontWeight: 'normal',
+                fontSize: '12px',
                 textTransform: 'uppercase',
-                letterSpacing: '0.06em',
-                marginLeft: rem(4),
-                paddingLeft: rem(10),
-                borderLeft: '2px solid currentColor'
+                letterSpacing: '0.12em',
+                paddingLeft: rem(12),
+                paddingTop: rem(5),
+                paddingBottom: rem(5),
+                borderLeft: '3px solid currentColor',
+                borderRadius: '0 3px 3px 0',
+                backgroundColor: 'rgba(124, 58, 237, 0.08)'
               }}
             >
               Submit
@@ -1356,8 +1420,9 @@ const Navigation: React.FC = () => {
                 leftSection={item.icon}
                 onClick={handleMobileMenuClose}
                 style={{
-                  paddingLeft: '2rem',
-                  borderLeft: isActivePath(item.href) ? '3px solid #e11d48' : '3px solid transparent'
+                  paddingLeft: rem(20),
+                  borderLeft: isActivePath(item.href) ? '3px solid #e11d48' : '3px solid transparent',
+                  boxShadow: isActivePath(item.href) ? 'inset 3px 0 8px rgba(225,29,72,0.15)' : 'none'
                 }}
                 styles={{ item: menuHoverStyles }}
               >
@@ -1368,7 +1433,7 @@ const Navigation: React.FC = () => {
             {/* Logout at bottom */}
             {user && (
               <>
-                <Menu.Divider />
+                <Box style={{ margin: '4px 0' }}><Menu.Divider /></Box>
                 <Menu.Item
                   onClick={handleLogout}
                   leftSection={<LogOut size={16} />}

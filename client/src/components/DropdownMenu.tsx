@@ -1,5 +1,5 @@
 import React from 'react'
-import { Menu, Box, Divider } from '@mantine/core'
+import { Menu, Divider } from '@mantine/core'
 import Link from 'next/link'
 
 export interface MenuItemData {
@@ -47,15 +47,13 @@ export const DropdownMenu: React.FC<DropdownMenuProps> = ({
       href={item.href}
       onMouseEnter={handlers.onDropdownEnter}
       onMouseLeave={handlers.onDropdownLeave}
-      leftSection={
-        <Box style={{
-          paddingLeft: isCategorized ? 24 : 16,
-          borderLeft: isActivePath(item.href) ? '3px solid #e11d48' : '3px solid transparent',
-          display: 'flex'
-        }}>
-          {item.icon}
-        </Box>
-      }
+      leftSection={item.icon}
+      style={{
+        borderLeft: isActivePath(item.href) ? '3px solid #e11d48' : '3px solid transparent',
+        boxShadow: isActivePath(item.href) ? 'inset 3px 0 8px rgba(225,29,72,0.15)' : 'none',
+        borderRadius: '4px',
+        transition: 'background-color 150ms ease, color 150ms ease'
+      }}
     >
       {item.label}
     </Menu.Item>
@@ -65,15 +63,26 @@ export const DropdownMenu: React.FC<DropdownMenuProps> = ({
     const items: React.ReactNode[] = []
 
     categories.forEach((category, index, array) => {
+      const categoryColor = category.color || '#4dabf7'
       items.push(
         <Menu.Label
           key={`header-${category.name}`}
           style={{
-            fontWeight: 'bold',
-            color: category.color || '#2196f3',
-            fontSize: '0.9rem',
+            fontFamily: 'var(--font-opti-goudy-text)',
+            fontWeight: 'normal',
+            color: categoryColor,
+            fontSize: '11px',
             textTransform: 'uppercase',
-            letterSpacing: '0.5px'
+            letterSpacing: '0.14em',
+            marginTop: '8px',
+            marginBottom: '2px',
+            paddingTop: '5px',
+            paddingBottom: '5px',
+            paddingLeft: '12px',
+            paddingRight: '8px',
+            borderLeft: '3px solid currentColor',
+            borderRadius: '0 3px 3px 0',
+            backgroundColor: `${categoryColor}14`
           }}
         >
           {category.name}
@@ -107,11 +116,16 @@ export const DropdownMenu: React.FC<DropdownMenuProps> = ({
       opened={state.isOpen}
       onChange={handlers.setOpen}
       position="bottom-start"
-      offset={4}
+      offset={6}
       styles={{
         dropdown: {
-          boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
-          padding: '4px'
+          backgroundColor: 'rgba(10, 10, 12, 0.97)',
+          border: '1px solid rgba(255, 255, 255, 0.06)',
+          borderTop: '2px solid rgba(225, 29, 72, 0.4)',
+          borderRadius: '6px',
+          boxShadow: '0 24px 48px rgba(0,0,0,0.7), 0 0 0 1px rgba(225,29,72,0.06), inset 0 1px 0 rgba(255,255,255,0.04)',
+          backdropFilter: 'blur(24px) saturate(160%)',
+          padding: '6px'
         }
       }}
     >
