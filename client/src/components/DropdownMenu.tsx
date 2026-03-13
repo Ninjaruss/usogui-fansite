@@ -68,12 +68,12 @@ export const DropdownMenu: React.FC<DropdownMenuProps> = ({
         <Menu.Label
           key={`header-${category.name}`}
           style={{
-            fontFamily: 'var(--font-opti-goudy-text)',
-            fontWeight: 'normal',
+            fontFamily: 'var(--font-noto-sans)',
+            fontWeight: 600,
             color: categoryColor,
-            fontSize: '11px',
+            fontSize: '10px',
             textTransform: 'uppercase',
-            letterSpacing: '0.14em',
+            letterSpacing: '0.12em',
             marginTop: '8px',
             marginBottom: '2px',
             paddingTop: '5px',

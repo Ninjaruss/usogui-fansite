@@ -433,11 +433,11 @@ const Navigation: React.FC = () => {
                   <Menu.Label
                     style={{
                       color: category.color,
-                      fontFamily: 'var(--font-opti-goudy-text)',
-                      fontWeight: 'normal',
-                      fontSize: '11px',
+                      fontFamily: 'var(--font-noto-sans)',
+                      fontWeight: 600,
+                      fontSize: '10px',
                       textTransform: 'uppercase',
-                      letterSpacing: '0.14em',
+                      letterSpacing: '0.12em',
                       marginTop: rem(8),
                       marginBottom: rem(2),
                       paddingTop: rem(5),
@@ -995,12 +995,12 @@ const Navigation: React.FC = () => {
                       </Text>
                       <Text
                         style={{
-                          fontFamily: 'var(--font-opti-goudy-text)',
                           fontSize: '10px',
                           letterSpacing: '0.12em',
                           textTransform: 'uppercase',
                           color: 'rgba(225, 29, 72, 0.85)',
-                          lineHeight: 1.2
+                          lineHeight: 1.2,
+                          fontWeight: 600
                         }}
                       >
                         {user.customRole || user.role || 'operative'}
@@ -1195,8 +1195,9 @@ const Navigation: React.FC = () => {
               <>
                 <Menu.Label
                   style={{
-                    fontFamily: 'var(--font-opti-goudy-text)',
-                    fontSize: '12px',
+                    fontFamily: 'var(--font-noto-sans)',
+                    fontWeight: 600,
+                    fontSize: '10px',
                     letterSpacing: '0.12em',
                     textTransform: 'uppercase',
                     color: 'rgba(255, 255, 255, 0.4)',
@@ -1317,9 +1318,9 @@ const Navigation: React.FC = () => {
                 <Menu.Label
                   style={{
                     color: category.color,
-                    fontFamily: 'var(--font-opti-goudy-text)',
-                    fontWeight: 'normal',
-                    fontSize: '12px',
+                    fontFamily: 'var(--font-noto-sans)',
+                    fontWeight: 600,
+                    fontSize: '10px',
                     textTransform: 'uppercase',
                     letterSpacing: '0.12em',
                     paddingLeft: rem(12),
@@ -1358,9 +1359,9 @@ const Navigation: React.FC = () => {
             <Menu.Label
               style={{
                 color: 'rgba(225, 29, 72, 0.85)',
-                fontFamily: 'var(--font-opti-goudy-text)',
-                fontWeight: 'normal',
-                fontSize: '12px',
+                fontFamily: 'var(--font-noto-sans)',
+                fontWeight: 600,
+                fontSize: '10px',
                 textTransform: 'uppercase',
                 letterSpacing: '0.12em',
                 paddingLeft: rem(12),
@@ -1397,9 +1398,9 @@ const Navigation: React.FC = () => {
             <Menu.Label
               style={{
                 color: '#7c3aed',
-                fontFamily: 'var(--font-opti-goudy-text)',
-                fontWeight: 'normal',
-                fontSize: '12px',
+                fontFamily: 'var(--font-noto-sans)',
+                fontWeight: 600,
+                fontSize: '10px',
                 textTransform: 'uppercase',
                 letterSpacing: '0.12em',
                 paddingLeft: rem(12),
