@@ -24,6 +24,7 @@ import { getEntityThemeColor } from '../lib/mantine-theme'
 import { BookOpen, Check, X, User, ChevronLeft, ChevronRight } from 'lucide-react'
 import Link from 'next/link'
 import { AnimatePresence, motion } from 'motion/react'
+import { SuitWatermark } from './decorative/MangaPatterns'
 import { useProgress } from '../providers/ProgressProvider'
 import { useAuth } from '../providers/AuthProvider'
 import api from '../lib/api'
@@ -216,40 +217,58 @@ export const FloatingProgressIndicator: React.FC = () => {
       <motion.div
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
-        transition={{ delay: 1, type: 'spring', stiffness: 200, damping: 20 }}
+        whileHover={{ scale: 1.08 }}
+        transition={{ delay: 1, type: 'spring', stiffness: 260, damping: 18 }}
         style={{
           position: 'fixed',
           bottom: 24,
           right: 24,
           zIndex: 1000,
-          width: 64,
-          height: 64,
+          width: 74,
+          height: 74,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center'
         }}
       >
+        {/* Dashed outer orbit ring */}
+        <div className="fpi-outer-ring" aria-hidden="true" />
+
         {/* Circular progress ring */}
         <svg
           width={64}
           height={64}
-          style={{ position: 'absolute', top: 0, left: 0, transform: 'rotate(-90deg)' }}
+          style={{ position: 'absolute', top: 5, left: 5, transform: 'rotate(-90deg)' }}
         >
+          {/* Glow layer behind progress stroke */}
           <circle
             cx={32}
             cy={32}
-            r={30}
+            r={28}
             fill="none"
-            stroke="rgba(255,255,255,0.15)"
+            stroke={solidRed}
+            strokeWidth={8}
+            strokeLinecap="round"
+            strokeDasharray={CIRCUMFERENCE}
+            strokeDashoffset={progressDashoffset}
+            opacity={0.12}
+            style={{ transition: 'stroke-dashoffset 0.5s ease' }}
+          />
+          <circle
+            cx={32}
+            cy={32}
+            r={28}
+            fill="none"
+            stroke="rgba(255,255,255,0.08)"
             strokeWidth={3}
           />
           <circle
             cx={32}
             cy={32}
-            r={30}
+            r={28}
             fill="none"
             stroke={solidRed}
-            strokeWidth={3}
+            strokeWidth={3.5}
             strokeLinecap="round"
             strokeDasharray={CIRCUMFERENCE}
             strokeDashoffset={progressDashoffset}
@@ -260,6 +279,7 @@ export const FloatingProgressIndicator: React.FC = () => {
         <Tooltip label={tooltipLabel} position="left" withinPortal>
           <ActionIcon
             aria-label="Open reading progress"
+            className="fpi-button-glow"
             size={52}
             radius="xl"
             onClick={handleOpen}
@@ -267,14 +287,8 @@ export const FloatingProgressIndicator: React.FC = () => {
               root: {
                 backgroundColor: solidRed,
                 color: '#ffffff',
-                boxShadow: `0 4px 12px ${theme.colors.red[5]}40`,
                 border: `1px solid ${theme.colors.red[5]}33`,
-                transition: 'all 0.2s ease-in-out',
-                '&:hover': {
-                  boxShadow: `0 8px 24px ${theme.colors.red[5]}66`,
-                  transform: 'scale(1.05)',
-                  border: `1px solid ${palette.red}`
-                }
+                transition: 'border-color 0.2s ease-in-out',
               }
             }}
           >
@@ -298,7 +312,7 @@ export const FloatingProgressIndicator: React.FC = () => {
                   paddingLeft: 5,
                   paddingRight: 5,
                   borderRadius: 12,
-                  backgroundColor: '#0a0a0a',
+                  backgroundColor: 'rgba(7,7,7,0.95)',
                   border: `1.5px solid ${solidRed}`,
                   display: 'flex',
                   alignItems: 'center',
@@ -307,6 +321,8 @@ export const FloatingProgressIndicator: React.FC = () => {
                     userProgress > 999 ? '9px' : userProgress > 99 ? '10px' : userProgress > 9 ? '11px' : '12px',
                   fontWeight: 'bold',
                   color: 'white',
+                  letterSpacing: '0.05em',
+                  fontFamily: 'var(--font-opti-goudy-text)',
                   boxShadow: '0 2px 4px rgba(0, 0, 0, 0.4)'
                 }}
               >
@@ -320,9 +336,10 @@ export const FloatingProgressIndicator: React.FC = () => {
       <AnimatePresence>
         {showSuccess && (
           <motion.div
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0, opacity: 0 }}
+            initial={{ scale: 0, opacity: 0, y: 10 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0, opacity: 0, y: -8 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 20 }}
             style={{
               position: 'fixed',
               bottom: 100,
@@ -393,7 +410,8 @@ export const FloatingProgressIndicator: React.FC = () => {
                 size="lg"
                 style={{
                   color: '#fff',
-                  letterSpacing: '0.01em'
+                  letterSpacing: '0.01em',
+                  fontFamily: 'var(--font-opti-goudy-text)'
                 }}
               >
                 Reading Progress
@@ -427,12 +445,14 @@ export const FloatingProgressIndicator: React.FC = () => {
             style={{
               backgroundColor: 'rgba(225, 29, 72, 0.10)',
               border: `1px solid ${theme.colors.red[7]}40`,
-              borderTop: `2px solid ${theme.colors.red[5]}80`,
+              borderTop: `3px solid ${theme.colors.red[5]}`,
               textAlign: 'center',
               position: 'relative',
               overflow: 'hidden'
             }}
           >
+            {/* Spade suit watermark */}
+            <SuitWatermark suit="spade" color="#e11d48" size={80} opacity={0.06} position="center" />
             {/* Subtle radial glow behind chapter number */}
             <Box
               aria-hidden
@@ -441,20 +461,21 @@ export const FloatingProgressIndicator: React.FC = () => {
                 top: '50%',
                 left: '50%',
                 transform: 'translate(-50%, -50%)',
-                width: 120,
-                height: 120,
+                width: 160,
+                height: 160,
                 borderRadius: '50%',
-                background: `radial-gradient(circle, ${theme.colors.red[9]}50 0%, transparent 70%)`,
+                background: `radial-gradient(circle, ${theme.colors.red[9]}65 0%, transparent 70%)`,
                 pointerEvents: 'none'
               }}
             />
             <Text
               fw={800}
               style={{
-                fontSize: rem(44),
+                fontSize: rem(52),
                 lineHeight: 1,
                 color: theme.colors.red[4],
                 position: 'relative',
+                fontFamily: 'var(--font-opti-goudy-text)',
                 textShadow: `0 0 20px ${theme.colors.red[6]}60`
               }}
             >
@@ -473,11 +494,12 @@ export const FloatingProgressIndicator: React.FC = () => {
             )}
             <Group justify="center" gap="xs" mt="sm" style={{ position: 'relative' }}>
               <Badge
-                variant="outline"
+                variant="light"
                 size="sm"
-                radius="sm"
+                radius="xs"
                 styles={{
                   root: {
+                    backgroundColor: `${theme.colors.red[6]}20`,
                     borderColor: `${theme.colors.red[6]}60`,
                     color: theme.colors.red[4]
                   }
@@ -486,11 +508,12 @@ export const FloatingProgressIndicator: React.FC = () => {
                 Vol. {volumeInfo.volume} · Ch. {volumeInfo.chapterInVolume}/11
               </Badge>
               <Badge
-                variant="outline"
+                variant="light"
                 size="sm"
-                radius="sm"
+                radius="xs"
                 styles={{
                   root: {
+                    backgroundColor: 'rgba(255,255,255,0.06)',
                     borderColor: 'rgba(255,255,255,0.18)',
                     color: 'rgba(255,255,255,0.55)'
                   }
@@ -682,46 +705,48 @@ export const FloatingProgressIndicator: React.FC = () => {
               Read Chapter {tempProgress}
             </Button>
 
-            <Button
-              variant="filled"
-              onClick={handleSave}
-              disabled={isUpdating || !isChanged}
-              leftSection={
-                isUpdating ? (
-                  <Loader size="xs" color="white" />
-                ) : (
-                  <Check size={14} />
-                )
-              }
-              fullWidth
-              size="sm"
-              radius="md"
-              styles={{
-                root: {
-                  fontWeight: 600,
-                  backgroundColor: isChanged ? theme.colors.red[6] : 'rgba(255,255,255,0.07)',
-                  color: isChanged ? '#fff' : 'rgba(255,255,255,0.30)',
-                  border: isChanged ? `1px solid ${theme.colors.red[5]}60` : '1px solid rgba(255,255,255,0.08)',
-                  boxShadow: isChanged ? `0 4px 16px ${theme.colors.red[8]}50` : 'none',
-                  transition: 'all 200ms ease',
-                  '&:hover:not(:disabled)': {
-                    backgroundColor: theme.colors.red[5],
-                    boxShadow: `0 6px 20px ${theme.colors.red[7]}60`
-                  },
-                  '&:disabled': {
-                    backgroundColor: 'rgba(255,255,255,0.07)',
-                    color: 'rgba(255,255,255,0.30)',
-                    border: '1px solid rgba(255,255,255,0.08)'
-                  }
+            <motion.div whileHover={{ scale: isChanged && !isUpdating ? 1.02 : 1 }} whileTap={{ scale: isChanged && !isUpdating ? 0.98 : 1 }}>
+              <Button
+                variant="filled"
+                onClick={handleSave}
+                disabled={isUpdating || !isChanged}
+                leftSection={
+                  isUpdating ? (
+                    <Loader size="xs" color="white" />
+                  ) : (
+                    <Check size={14} />
+                  )
                 }
-              }}
-            >
-              {isUpdating
-                ? 'Updating...'
-                : isChanged
-                  ? 'Update Progress'
-                  : 'Progress Saved'}
-            </Button>
+                fullWidth
+                size="sm"
+                radius="md"
+                styles={{
+                  root: {
+                    fontWeight: 600,
+                    backgroundColor: isChanged ? theme.colors.red[6] : 'rgba(255,255,255,0.07)',
+                    color: isChanged ? '#fff' : 'rgba(255,255,255,0.30)',
+                    border: isChanged ? `1px solid ${theme.colors.red[5]}60` : '1px solid rgba(255,255,255,0.08)',
+                    boxShadow: isChanged ? `0 4px 16px ${theme.colors.red[8]}50` : 'none',
+                    transition: 'all 200ms ease',
+                    '&:hover:not(:disabled)': {
+                      backgroundColor: theme.colors.red[5],
+                      boxShadow: `0 6px 20px ${theme.colors.red[7]}60`
+                    },
+                    '&:disabled': {
+                      backgroundColor: 'rgba(255,255,255,0.07)',
+                      color: 'rgba(255,255,255,0.30)',
+                      border: '1px solid rgba(255,255,255,0.08)'
+                    }
+                  }
+                }}
+              >
+                {isUpdating
+                  ? 'Updating...'
+                  : isChanged
+                    ? 'Update Progress'
+                    : 'Progress Saved'}
+              </Button>
+            </motion.div>
           </Stack>
         </Stack>
       </Modal>

@@ -2,8 +2,9 @@
 
 import React, { useState } from 'react'
 import { Box, Text, Accordion, Paper, Anchor, Group, useMantineTheme, rgba } from '@mantine/core'
-import { ChevronDown, HelpCircle } from 'lucide-react'
+import { ChevronDown } from 'lucide-react'
 import Link from 'next/link'
+import { motion } from 'motion/react'
 
 interface FAQItem {
   question: string
@@ -159,8 +160,8 @@ export const FAQ: React.FC<FAQProps> = ({ showTitle = true, maxItems }) => {
       {showTitle && (
         <Box style={{ textAlign: 'center', marginBottom: '2rem' }}>
           <Group justify="center" gap="sm" style={{ marginBottom: '0.75rem' }}>
-            <HelpCircle className="w-6 h-6" color={theme.other?.usogui?.character || accent} />
-            <Text fw={700} size="xl">
+            <span style={{ fontSize: '1.2rem', color: accent, opacity: 0.75, lineHeight: 1 }}>♠</span>
+            <Text fw={700} style={{ fontFamily: 'var(--font-opti-goudy-text)', fontSize: 'clamp(1.6rem, 3vw, 2.2rem)', lineHeight: 1.2 }}>
               Frequently Asked Questions
             </Text>
           </Group>
@@ -174,15 +175,22 @@ export const FAQ: React.FC<FAQProps> = ({ showTitle = true, maxItems }) => {
         shadow="sm"
         p="md"
         radius="md"
+        className="community-card-elevated"
         style={{
           backgroundColor: withAlpha(surface, 0.94, surface),
-          border: `1px solid ${borderColor}`
-        }}
+          border: `1px solid ${borderColor}`,
+          '--card-accent': 'rgba(225,29,72,0.4)',
+          '--card-shadow': 'rgba(225,29,72,0.10)'
+        } as React.CSSProperties}
       >
         <Accordion
           value={expanded}
           onChange={setExpanded}
-          chevron={<ChevronDown className="w-4 h-4" />}
+          chevron={
+            <motion.div animate={{ rotate: 0 }} style={{ display: 'flex' }}>
+              <ChevronDown className="w-4 h-4" />
+            </motion.div>
+          }
           chevronPosition="right"
           multiple={false}
         >
@@ -195,11 +203,13 @@ export const FAQ: React.FC<FAQProps> = ({ showTitle = true, maxItems }) => {
               <Accordion.Item
                 key={value}
                 value={value}
+                className={isActive ? 'faq-item-shimmer' : undefined}
                 style={{
                   border: `1px solid ${isHighlighted ? highlightBorder : borderColor}`,
+                  borderLeft: isActive ? `2px solid rgba(225,29,72,0.6)` : `1px solid ${isHighlighted ? highlightBorder : borderColor}`,
                   borderRadius: '0.75rem',
                   overflow: 'hidden',
-                  marginBottom: '0.75rem',
+                  marginBottom: '0.5rem',
                   backgroundColor: baseBackground,
                   transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
                   boxShadow: isHighlighted ? `0 0 0 2px ${highlightRing}` : 'none'
@@ -212,7 +222,7 @@ export const FAQ: React.FC<FAQProps> = ({ showTitle = true, maxItems }) => {
                   onBlur={() => setHovered((current) => (current === value ? null : current))}
                   style={{
                     padding: '0.9rem 1.1rem',
-                    color: '#ffffff',
+                    color: isActive ? '#ffffff' : 'rgba(255,255,255,0.85)',
                     backgroundColor: 'transparent',
                     transition: 'color 0.2s ease'
                   }}
@@ -220,9 +230,15 @@ export const FAQ: React.FC<FAQProps> = ({ showTitle = true, maxItems }) => {
                   <Text fw={600}>{faq.question}</Text>
                 </Accordion.Control>
                 <Accordion.Panel>
-                  <Box style={{ color: muted, fontSize: '0.95rem', lineHeight: 1.6 }}>
-                    {faq.answer}
-                  </Box>
+                  <motion.div
+                    initial={{ opacity: 0, y: -4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.25, ease: 'easeOut' }}
+                  >
+                    <Box style={{ color: muted, fontSize: '0.95rem', lineHeight: 1.6 }}>
+                      {faq.answer}
+                    </Box>
+                  </motion.div>
                 </Accordion.Panel>
               </Accordion.Item>
             )

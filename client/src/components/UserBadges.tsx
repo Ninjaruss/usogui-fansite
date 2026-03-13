@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { Group, Skeleton, ThemeIcon, Text, rem } from '@mantine/core'
+import { motion } from 'motion/react'
 import { UserBadge } from '../types'
 import { api } from '../lib/api'
 import BadgeDisplay from './BadgeDisplay'
@@ -77,25 +78,41 @@ export default function UserBadges({
   const remainingCount = badges.length - maxDisplay;
 
   return (
-    <Group gap={rem(8)} align="center" className={className}>
+    <motion.div
+      style={{ display: 'flex', flexWrap: 'wrap', gap: rem(8), alignItems: 'center' }}
+      initial="hidden"
+      animate="visible"
+      variants={{ visible: { transition: { staggerChildren: 0.05 } } }}
+      className={className}
+    >
       {visibleBadges.map((userBadge) => (
-        <BadgeDisplay
+        <motion.div
           key={userBadge.id}
-          userBadge={userBadge}
-          size={size}
-        />
+          variants={{ hidden: { opacity: 0, y: 4 }, visible: { opacity: 1, y: 0 } }}
+          transition={{ duration: 0.2 }}
+        >
+          <BadgeDisplay
+            userBadge={userBadge}
+            size={size}
+          />
+        </motion.div>
       ))}
       {remainingCount > 0 && (
-        <ThemeIcon
-          radius="xl"
-          variant="filled"
-          color="dark"
-          size={iconSize}
-          title={`+${remainingCount} more badge${remainingCount > 1 ? 's' : ''}`}
+        <motion.div
+          variants={{ hidden: { opacity: 0, y: 4 }, visible: { opacity: 1, y: 0 } }}
+          transition={{ duration: 0.2 }}
         >
-          <Text size="xs" fw={500}>+{remainingCount}</Text>
-        </ThemeIcon>
+          <ThemeIcon
+            radius="xl"
+            variant="outline"
+            size={iconSize}
+            title={`+${remainingCount} more badge${remainingCount > 1 ? 's' : ''}`}
+            style={{ borderColor: 'rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.6)' }}
+          >
+            <Text size="xs" fw={500}>+{remainingCount}</Text>
+          </ThemeIcon>
+        </motion.div>
       )}
-    </Group>
+    </motion.div>
   );
 }

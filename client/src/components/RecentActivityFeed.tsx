@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { Box, Text, Group, Avatar, Stack, Anchor, Badge, Skeleton } from '@mantine/core'
 import { Clock, ArrowRight, BookOpen, Image, FileText, Edit3, Plus, Trash2 } from 'lucide-react'
 import Link from 'next/link'
+import { motion } from 'motion/react'
 import { api } from '../lib/api'
 import { textColors } from '../lib/mantine-theme'
 
@@ -178,8 +179,20 @@ export function RecentActivityFeed({
       {showHeader && (
         <Group justify="space-between" mb="md">
           <Group gap={8}>
-            <Clock size={16} style={{ color: textColors.secondary }} />
-            <Text fw={600} style={{ color: textColors.primary }}>
+            <Box
+              component="span"
+              aria-hidden="true"
+              style={{
+                display: 'inline-block',
+                width: 6,
+                height: 6,
+                borderRadius: '50%',
+                backgroundColor: '#e11d48',
+                flexShrink: 0,
+                animation: 'glow-pulse 2s ease-in-out infinite'
+              }}
+            />
+            <Text fw={600} style={{ color: textColors.primary, fontFamily: 'var(--font-opti-goudy-text)' }}>
               Recent Wiki Activity
             </Text>
           </Group>
@@ -194,6 +207,7 @@ export function RecentActivityFeed({
         </Group>
       )}
 
+      <Box className="activity-newsreel">
       <Stack gap="xs">
         {loading ? (
           Array.from({ length: Math.min(limit, 5) }).map((_, i) => (
@@ -210,29 +224,40 @@ export function RecentActivityFeed({
             No recent activity yet.
           </Text>
         ) : (
-          entries.map((entry) => {
+          entries.map((entry, index) => {
             if (entry.kind === 'edit') {
               const user = entry.user
               const link = entityLink(entry.entityType, entry.entityId)
               const displayName = entry.entityName ?? `#${entry.entityId}`
               const entityTypeLabel = entityLabel(entry.entityType)
+              const actionBg = entry.action === 'create'
+                ? 'rgba(81,207,102,0.12)'
+                : entry.action === 'delete'
+                ? 'rgba(255,85,85,0.12)'
+                : 'rgba(255,255,255,0.06)'
               return (
-                <Box
+                <motion.div
                   key={`edit-${entry.id}`}
+                  initial={{ opacity: 0, x: -12 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.25, delay: index * 0.05 }}
+                >
+                <Box
+                  className="activity-row"
                   style={{
                     display: 'flex',
                     gap: '0.625rem',
                     alignItems: 'flex-start',
                     padding: '0.5rem',
-                    borderRadius: '0.5rem',
                     background: 'rgba(255,255,255,0.02)',
-                  }}
+                    '--row-accent': entityColor(entry.entityType)
+                  } as React.CSSProperties}
                 >
                   <Avatar
                     src={avatarUrl(user)}
-                    size={32}
+                    size={36}
                     radius="xl"
-                    style={{ flexShrink: 0 }}
+                    style={{ flexShrink: 0, border: '1.5px solid rgba(255,255,255,0.12)' }}
                   >
                     {user?.username?.[0]?.toUpperCase() ?? '?'}
                   </Avatar>
@@ -245,7 +270,7 @@ export function RecentActivityFeed({
                         size="xs"
                         variant="light"
                         leftSection={actionIcon(entry.action)}
-                        style={{ flexShrink: 0, textTransform: 'capitalize' }}
+                        style={{ flexShrink: 0, textTransform: 'capitalize', backgroundColor: actionBg }}
                       >
                         {entry.action}
                       </Badge>
@@ -271,6 +296,7 @@ export function RecentActivityFeed({
                     </Group>
                   </Box>
                 </Box>
+                </motion.div>
               )
             }
 
@@ -284,22 +310,28 @@ export function RecentActivityFeed({
               : '#'
 
             return (
-              <Box
+              <motion.div
                 key={`sub-${sub.id}`}
+                initial={{ opacity: 0, x: -12 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.25, delay: index * 0.05 }}
+              >
+              <Box
+                className="activity-row"
                 style={{
                   display: 'flex',
                   gap: '0.625rem',
                   alignItems: 'flex-start',
                   padding: '0.5rem',
-                  borderRadius: '0.5rem',
                   background: 'rgba(255,255,255,0.02)',
-                }}
+                  '--row-accent': entityColor(sub.entityType ?? sub.type)
+                } as React.CSSProperties}
               >
                 <Avatar
                   src={avatarUrl(submitter)}
-                  size={32}
+                  size={36}
                   radius="xl"
-                  style={{ flexShrink: 0 }}
+                  style={{ flexShrink: 0, border: '1.5px solid rgba(255,255,255,0.12)' }}
                 >
                   {submitter?.username?.[0]?.toUpperCase() ?? '?'}
                 </Avatar>
@@ -352,10 +384,12 @@ export function RecentActivityFeed({
                   </Group>
                 </Box>
               </Box>
+              </motion.div>
             )
           })
         )}
       </Stack>
+      </Box>
     </Box>
   )
 }

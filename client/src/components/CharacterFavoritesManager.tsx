@@ -225,8 +225,9 @@ export default function CharacterFavoritesManager() {
             key={fav.characterId}
             withBorder
             padding="sm"
+            className="hoverable-card"
             style={{
-              backgroundColor: withAlpha(surface, 0.6, surface),
+              backgroundColor: withAlpha(surface, 0.85, surface),
               border: `1px solid ${borderColor}`,
             }}
           >
@@ -238,10 +239,15 @@ export default function CharacterFavoritesManager() {
                   size="sm"
                   onClick={() => setPrimary(fav.characterId)}
                   title={fav.isPrimary ? 'Primary favorite' : 'Set as primary'}
+                  style={fav.isPrimary ? { filter: 'drop-shadow(0 0 4px rgba(251,191,36,0.6))' } : undefined}
                 >
                   <Star size={14} fill={fav.isPrimary ? 'currentColor' : 'none'} />
                 </ActionIcon>
-                <Text size="sm" fw={fav.isPrimary ? 700 : 400}>
+                <Text
+                  size="sm"
+                  fw={fav.isPrimary ? 700 : 400}
+                  style={fav.isPrimary ? { fontFamily: 'var(--font-opti-goudy-text)' } : undefined}
+                >
                   {fav.name}
                 </Text>
                 {fav.isPrimary && (
@@ -320,7 +326,12 @@ export default function CharacterFavoritesManager() {
                           size="xs"
                           justify="start"
                           onClick={() => addCharacter(character)}
-                          style={{ color: '#fff' }}
+                          style={{ color: '#fff', transition: 'background 150ms ease' }}
+                          styles={{
+                            root: {
+                              '&:hover': { backgroundColor: 'rgba(77,171,247,0.08)' }
+                            }
+                          }}
                         >
                           {character.name}
                         </Button>

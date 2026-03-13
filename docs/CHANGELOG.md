@@ -2,6 +2,8 @@
 
 ## TODO
 
+## 2026-03-12
+- Additional frontend improvements using frontend design skill on profile page, changelog, submit pages
 ## 2026-03-10
 - Noticable frontend improvements using frontend design skill; used on landing page, list/detail pages, navbar, and footer
 

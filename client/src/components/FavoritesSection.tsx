@@ -1,5 +1,6 @@
 'use client'
 
+import React from 'react'
 import {
   Box,
   Card,
@@ -90,8 +91,8 @@ export function FavoritesSection() {
       >
         <Box style={{ textAlign: 'center', marginBottom: '2rem' }}>
           <Group justify="center" gap="xs" style={{ marginBottom: '0.75rem' }}>
-            <TrendingUp className="w-6 h-6" color={theme.other?.usogui?.purple || accent} />
-            <Text fw={700} size="xl">
+            <span aria-hidden="true" style={{ fontSize: '1.3rem', color: theme.other?.usogui?.purple || accent, opacity: 0.8, lineHeight: 1 }}>♦</span>
+            <Text fw={700} style={{ fontFamily: 'var(--font-opti-goudy-text)', fontSize: 'clamp(1.5rem, 3vw, 2rem)', lineHeight: 1.2 }}>
               Community Favorites
             </Text>
           </Group>
@@ -108,13 +109,16 @@ export function FavoritesSection() {
           {favoriteCharacterMedia.length > 0 && (
             <Grid.Col span={{ base: 12, md: 4 }}>
               <Card
+                className="community-card-elevated"
                 style={{
                   height: '100%',
                   display: 'flex',
                   flexDirection: 'column',
                   backgroundColor: softSurface,
-                  border: `1px solid ${borderColor}`
-                }}
+                  border: `1px solid ${borderColor}`,
+                  '--card-accent': 'rgba(77,171,247,0.5)',
+                  '--card-shadow': 'rgba(77,171,247,0.10)'
+                } as React.CSSProperties}
               >
                 <Box style={{ flexGrow: 1 }}>
                   <Box style={{ textAlign: 'center', marginBottom: '1rem' }}>
@@ -129,7 +133,7 @@ export function FavoritesSection() {
                         key={item.media.id}
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.3, delay: index * 0.1 }}
+                        transition={{ duration: 0.3, delay: index * 0.07 }}
                       >
                         <Card
                           withBorder
@@ -196,13 +200,16 @@ export function FavoritesSection() {
           {favoriteQuotes.length > 0 && (
             <Grid.Col span={{ base: 12, md: 4 }}>
               <Card
+                className="community-card-elevated"
                 style={{
                   height: '100%',
                   display: 'flex',
                   flexDirection: 'column',
                   backgroundColor: softSurface,
-                  border: `1px solid ${borderColor}`
-                }}
+                  border: `1px solid ${borderColor}`,
+                  '--card-accent': 'rgba(81,207,102,0.5)',
+                  '--card-shadow': 'rgba(81,207,102,0.10)'
+                } as React.CSSProperties}
               >
                 <Box style={{ flexGrow: 1 }}>
                   <Box style={{ textAlign: 'center', marginBottom: '1rem' }}>
@@ -217,7 +224,7 @@ export function FavoritesSection() {
                         key={item.quote.id}
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.3, delay: index * 0.1 }}
+                        transition={{ duration: 0.3, delay: index * 0.07 }}
                       >
                         <Card
                           withBorder
@@ -239,8 +246,9 @@ export function FavoritesSection() {
                               WebkitLineClamp: 3,
                               WebkitBoxOrient: 'vertical',
                               textAlign: 'center',
-                              fontSize: '1rem',
-                              lineHeight: '1.4'
+                              fontSize: '1.05rem',
+                              lineHeight: '1.55',
+                              fontFamily: 'var(--font-opti-goudy-text)'
                             }}
                           >
                             "{item.quote.text}"
@@ -265,13 +273,16 @@ export function FavoritesSection() {
           {favoriteGambles.length > 0 && (
             <Grid.Col span={{ base: 12, md: 4 }}>
               <Card
+                className="community-card-elevated"
                 style={{
                   height: '100%',
                   display: 'flex',
                   flexDirection: 'column',
                   backgroundColor: softSurface,
-                  border: `1px solid ${borderColor}`
-                }}
+                  border: `1px solid ${borderColor}`,
+                  '--card-accent': 'rgba(255,85,85,0.5)',
+                  '--card-shadow': 'rgba(255,85,85,0.10)'
+                } as React.CSSProperties}
               >
                 <Box style={{ flexGrow: 1 }}>
                   <Box style={{ textAlign: 'center', marginBottom: '1rem' }}>
@@ -286,7 +297,7 @@ export function FavoritesSection() {
                         key={item.gamble.id}
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.3, delay: index * 0.1 }}
+                        transition={{ duration: 0.3, delay: index * 0.07 }}
                       >
                         <Card
                           withBorder
@@ -296,8 +307,8 @@ export function FavoritesSection() {
                             border: `1px solid ${borderColor}`
                           }}
                         >
-                          <Text fw={700} size="md" style={{ marginBottom: '0.5rem', textAlign: 'center', fontSize: '1.1rem' }}>
-                            {item.gamble.name}
+                          <Text fw={700} size="md" style={{ marginBottom: '0.5rem', textAlign: 'center', fontSize: '1.1rem', fontFamily: 'var(--font-opti-goudy-text)', letterSpacing: '0.02em' }}>
+                            <span aria-hidden="true" style={{ color: 'rgba(225,29,72,0.4)', marginRight: '0.3em' }}>♠</span>{item.gamble.name}
                           </Text>
                           <Text
                             size="md"

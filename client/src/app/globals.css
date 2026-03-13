@@ -592,6 +592,183 @@ textarea:focus-visible {
   animation: badge-shimmer 3s linear infinite;
 }
 
+/* ============================================
+   Design Elevation — New Keyframes & Classes
+   ============================================ */
+
+/* Slow breathing red glow for the floating progress button */
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 12px 2px rgba(225, 29, 72, 0.30), 0 4px 12px rgba(225, 29, 72, 0.25); }
+  50%       { box-shadow: 0 0 28px 6px rgba(225, 29, 72, 0.55), 0 6px 24px rgba(225, 29, 72, 0.40); }
+}
+
+/* Dashed outer orbit ring rotation */
+@keyframes ring-rotate {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* One-shot horizontal shimmer for FAQ panel open */
+@keyframes shimmer-sweep {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+/* Floating Progress Indicator — glowing button core */
+.fpi-button-glow {
+  animation: glow-pulse 3s ease-in-out infinite;
+}
+
+/* Floating Progress Indicator — dashed outer orbit ring */
+.fpi-outer-ring {
+  position: absolute;
+  top: -5px;
+  left: -5px;
+  width: 74px;
+  height: 74px;
+  border-radius: 50%;
+  border: 1.5px dashed rgba(225, 29, 72, 0.32);
+  pointer-events: none;
+  animation: ring-rotate 20s linear infinite;
+}
+
+/* FAQ shimmer pseudo-element — fires once on open via class toggle */
+.faq-item-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+.faq-item-shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(225, 29, 72, 0.07) 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: shimmer-sweep 0.6s ease forwards;
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+/* Activity feed row — hover slide + left accent line */
+.activity-row {
+  position: relative;
+  border-radius: 0.5rem;
+  transition: background 150ms ease, transform 120ms ease;
+  padding-left: 0.5rem;
+}
+.activity-row:hover {
+  background: rgba(255, 255, 255, 0.035) !important;
+  transform: translateX(2px);
+}
+.activity-row::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 20%;
+  bottom: 20%;
+  width: 2px;
+  background: var(--row-accent, rgba(225, 29, 72, 0.5));
+  border-radius: 1px;
+  opacity: 0;
+  transform: scaleY(0);
+  transform-origin: top;
+  transition: opacity 200ms ease, transform 200ms ease;
+}
+.activity-row:hover::before {
+  opacity: 0.75;
+  transform: scaleY(1);
+}
+
+/* Profile section label — small tracked uppercase */
+.profile-section-label {
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.38);
+  font-family: var(--font-noto-sans);
+}
+
+/* Favorites column header with extending rule */
+.favorites-column-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+.favorites-column-header::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, rgba(255, 255, 255, 0.12), transparent);
+}
+
+/* Elevated community card — top accent bar + hover shadow */
+.community-card-elevated {
+  position: relative;
+  overflow: hidden;
+}
+.community-card-elevated::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--card-accent, rgba(225, 29, 72, 0.5));
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 1;
+}
+.community-card-elevated:hover {
+  box-shadow: 0 12px 40px var(--card-shadow, rgba(225, 29, 72, 0.12));
+}
+
+/* Search bar spotlight ring — appears on focus/open */
+.search-spotlight-ring {
+  position: absolute;
+  inset: -1px;
+  border-radius: 0.85rem;
+  border: 1px solid rgba(225, 29, 72, 0);
+  pointer-events: none;
+  transition: border-color 300ms ease, box-shadow 300ms ease;
+  z-index: 1;
+}
+.search-spotlight-ring.active {
+  border-color: rgba(225, 29, 72, 0.28);
+  box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.07), 0 16px 48px rgba(225, 29, 72, 0.10);
+}
+
+/* Activity newsreel — vertical gradient red left line */
+.activity-newsreel {
+  position: relative;
+  padding-left: 1.25rem;
+}
+.activity-newsreel::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 2px;
+  height: 100%;
+  background: linear-gradient(
+    to bottom,
+    var(--usogui-red) 0%,
+    rgba(225, 29, 72, 0.15) 100%
+  );
+  border-radius: 1px;
+}
+
+/* Reduced motion overrides for new animations */
+@media (prefers-reduced-motion: reduce) {
+  .fpi-button-glow,
+  .fpi-outer-ring,
+  .faq-item-shimmer::after {
+    animation: none !important;
+  }
+  .activity-row:hover {
+    transform: none !important;
+  }
+}
+
 /* Suit watermark - faded suit icon in backgrounds */
 .suit-watermark {
   position: absolute;

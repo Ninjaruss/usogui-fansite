@@ -396,6 +396,11 @@ export const EnhancedSearchBar: React.FC<EnhancedSearchBarProps> = ({ trendingDa
 
   return (
     <Box ref={searchContainerRef} style={{ position: 'relative', width: '100%' }}>
+      {/* Spotlight ring that glows when dropdown is open */}
+      <Box
+        className={showResults ? 'search-spotlight-ring active' : 'search-spotlight-ring'}
+        aria-hidden="true"
+      />
       <TextInput
         value={query}
         onChange={handleInputChange}
@@ -416,6 +421,7 @@ export const EnhancedSearchBar: React.FC<EnhancedSearchBarProps> = ({ trendingDa
             color: '#ffffff',
             transition: 'all 0.3s ease',
             paddingLeft: '3rem',
+            fontSize: '0.9375rem',
             '::placeholder': {
               color: mutedText
             },
@@ -447,15 +453,17 @@ export const EnhancedSearchBar: React.FC<EnhancedSearchBarProps> = ({ trendingDa
             }}
           >
             <Paper
+              className="community-card-elevated"
               style={{
                 backgroundColor: dropdownBg,
                 border: `1px solid ${borderColor}`,
-                borderRadius: '0.75rem',
+                borderRadius: '1rem',
                 boxShadow: dropdownShadow,
                 backdropFilter: 'blur(8px)',
                 maxHeight: '400px',
-                overflow: 'hidden'
-              }}
+                overflow: 'hidden',
+                '--card-accent': 'rgba(225,29,72,0.3)'
+              } as React.CSSProperties}
             >
               {query.length < 2 ? (
                 renderSuggestions()
@@ -544,8 +552,8 @@ export const EnhancedSearchBar: React.FC<EnhancedSearchBarProps> = ({ trendingDa
                         <Box
                           style={{
                             padding: '0.75rem 1rem',
-                            borderTop: `1px solid ${borderColor}`,
-                            backgroundColor: withAlpha(accent, 0.05, 'rgba(225, 29, 72, 0.05)')
+                            borderTop: '1px solid rgba(225,29,72,0.12)',
+                            backgroundColor: withAlpha(accent, 0.04, 'rgba(225, 29, 72, 0.04)')
                           }}
                         >
                           <Button

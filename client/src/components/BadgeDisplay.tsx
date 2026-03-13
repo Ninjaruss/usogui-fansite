@@ -138,12 +138,14 @@ export default function BadgeDisplay({
 
   const textSize = size === 'sm' ? '0.6875rem' : size === 'md' ? '0.75rem' : '0.8125rem'
 
+  const isSupporter = badge.type === BadgeType.SUPPORTER
+
   const badgeElement = (
     <Badge
       size={sizeMap[size]}
       radius="md"
       variant="outline"
-      className={className}
+      className={isSupporter ? `${className} badge-shimmer` : className}
       styles={{
         root: {
           borderColor: badgeColor,
@@ -152,7 +154,7 @@ export default function BadgeDisplay({
           fontWeight: 600,
           fontSize: textSize,
           textTransform: 'uppercase',
-          letterSpacing: '0.025em',
+          letterSpacing: '0.07em',
           transition: 'transform 150ms ease, background-color 150ms ease',
           '&:hover': {
             backgroundColor: badgeBackgroundColor
@@ -180,7 +182,8 @@ export default function BadgeDisplay({
       styles={{
         tooltip: {
           maxWidth: rem(300),
-          backgroundColor: `${theme.colors.dark?.[9] ?? '#000000'}E6`,
+          backgroundColor: 'rgba(7,7,7,0.95)',
+          border: '1px solid rgba(225,29,72,0.18)',
           color: '#ffffff',
           fontSize: '0.875rem',
           padding: '8px 12px',

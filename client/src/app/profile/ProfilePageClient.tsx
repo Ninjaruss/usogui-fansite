@@ -693,17 +693,18 @@ export default function ProfilePageClient() {
                   position: 'relative',
                   cursor: 'pointer',
                   borderRadius: '50%',
-                  transition: 'all 0.2s ease'
+                  transition: 'all 0.2s ease',
+                  boxShadow: '0 0 0 2px rgba(225,29,72,0.18)'
                 }}
                 onMouseEnter={(e: any) => {
                   e.currentTarget.style.transform = 'scale(1.05)'
-                  e.currentTarget.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.3)'
+                  e.currentTarget.style.boxShadow = '0 0 0 4px rgba(225,29,72,0.25), 0 8px 32px rgba(0,0,0,0.4)'
                   const overlay = e.currentTarget.querySelector('.profile-edit-overlay')
                   if (overlay) overlay.style.opacity = '1'
                 }}
                 onMouseLeave={(e: any) => {
                   e.currentTarget.style.transform = 'scale(1)'
-                  e.currentTarget.style.boxShadow = 'none'
+                  e.currentTarget.style.boxShadow = '0 0 0 2px rgba(225,29,72,0.18)'
                   const overlay = e.currentTarget.querySelector('.profile-edit-overlay')
                   if (overlay) overlay.style.opacity = '0'
                 }}
@@ -757,7 +758,7 @@ export default function ProfilePageClient() {
                     alignItems: 'center',
                     justifyContent: 'center',
                     border: `3px solid ${theme.colors.dark[7]}`,
-                    boxShadow: '0 2px 8px rgba(225, 29, 72, 0.4)'
+                    boxShadow: '0 2px 8px rgba(225, 29, 72, 0.4), 0 0 0 2px rgba(225,29,72,0.3)'
                   }}
                 >
                   <Edit size={18} color="white" />
@@ -902,10 +903,13 @@ export default function ProfilePageClient() {
               radius="lg"
               padding="lg"
               shadow="lg"
+              className="community-card-elevated"
               style={{
                 background: getAlphaColor(getEntityThemeColor(theme, 'arc'), 0.12),
-                border: `1px solid ${getAlphaColor(getEntityThemeColor(theme, 'arc'), 0.35)}`
-              }}
+                border: `1px solid ${getAlphaColor(getEntityThemeColor(theme, 'arc'), 0.35)}`,
+                '--card-accent': 'rgba(249,115,22,0.5)',
+                '--card-shadow': 'rgba(249,115,22,0.10)'
+              } as React.CSSProperties}
             >
               <Stack gap="md">
                 <Group gap="sm" align="center">
@@ -949,7 +953,9 @@ export default function ProfilePageClient() {
                 <Title order={2} size="h3" c={headerColors.h2}>Favorites</Title>
 
                 <Stack gap="sm">
-                  <Text size="sm" fw={500}>Favorite Characters:</Text>
+                  <div className="favorites-column-header">
+                    <Text size="sm" fw={600} style={{ letterSpacing: '0.04em', textTransform: 'uppercase', fontSize: '0.7rem', opacity: 0.7 }}>Favorite Characters</Text>
+                  </div>
                   <CharacterFavoritesManager />
                 </Stack>
 
@@ -957,7 +963,9 @@ export default function ProfilePageClient() {
 
                 <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
                   <Stack gap="sm">
-                    <Text size="sm" fw={500}>Favorite Quote:</Text>
+                    <div className="favorites-column-header">
+                      <Text size="sm" fw={600} style={{ letterSpacing: '0.04em', textTransform: 'uppercase', fontSize: '0.7rem', opacity: 0.7 }}>Favorite Quote</Text>
+                    </div>
                     {loading ? (
                       <Text size="sm" c="dimmed">Loading...</Text>
                     ) : profileData.favoriteQuote ? (
@@ -985,7 +993,7 @@ export default function ProfilePageClient() {
                             }}
                           >
                             {selectedQuote?.text ? (
-                              <Text size="sm" style={{ fontStyle: 'italic', lineHeight: 1.5, color: 'rgba(255,255,255,0.9)' }}>
+                              <Text size="sm" style={{ fontStyle: 'italic', lineHeight: 1.6, color: 'rgba(255,255,255,0.9)', fontFamily: 'var(--font-opti-goudy-text)', fontSize: '0.95rem' }}>
                                 &ldquo;{selectedQuote.text.length > 120
                                   ? selectedQuote.text.substring(0, 120) + '...'
                                   : selectedQuote.text}&rdquo;
@@ -1034,7 +1042,9 @@ export default function ProfilePageClient() {
                   </Stack>
 
                   <Stack gap="sm">
-                    <Text size="sm" fw={500}>Favorite Gamble:</Text>
+                    <div className="favorites-column-header">
+                      <Text size="sm" fw={600} style={{ letterSpacing: '0.04em', textTransform: 'uppercase', fontSize: '0.7rem', opacity: 0.7 }}>Favorite Gamble</Text>
+                    </div>
                     <Button
                       variant="outline"
                       styles={{
