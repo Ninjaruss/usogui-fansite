@@ -222,14 +222,34 @@ body {
 }
 
 /* Entity-specific tabs styling - using theme accent colors */
+/* Tab list pill container */
+.character-tabs .mantine-Tabs-list,
+.gamble-tabs .mantine-Tabs-list,
+.arc-tabs .mantine-Tabs-list,
+.guide-tabs .mantine-Tabs-list,
+.volume-tabs .mantine-Tabs-list,
+.organization-tabs .mantine-Tabs-list,
+.chapter-tabs .mantine-Tabs-list,
+.event-tabs .mantine-Tabs-list {
+  background: rgba(0, 0, 0, 0.45);
+  border-radius: 10px;
+  padding: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  gap: 2px;
+}
+
 /* Base tab styles for all entity types */
 .character-tabs .mantine-Tabs-tab,
 .gamble-tabs .mantine-Tabs-tab,
 .arc-tabs .mantine-Tabs-tab,
-.guide-tabs .mantine-Tabs-tab {
+.guide-tabs .mantine-Tabs-tab,
+.volume-tabs .mantine-Tabs-tab,
+.organization-tabs .mantine-Tabs-tab,
+.chapter-tabs .mantine-Tabs-tab,
+.event-tabs .mantine-Tabs-tab {
   color: rgba(255, 255, 255, 0.7) !important;
   background-color: transparent !important;
-  border-radius: 6px !important;
+  border-radius: 7px !important;
   font-weight: 500 !important;
   padding: 12px 20px !important;
   transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1) !important;
@@ -237,27 +257,59 @@ body {
 
 /* Hover states - Synced with mantine-theme.ts */
 .character-tabs .mantine-Tabs-tab:hover {
-  background-color: rgba(77, 171, 247, 0.25) !important;
+  background-color: rgba(77, 171, 247, 0.18) !important;
   color: rgba(255, 255, 255, 0.95) !important;
   transform: translateY(-1px) !important;
+  border-radius: 7px !important;
 }
 
 .gamble-tabs .mantine-Tabs-tab:hover {
-  background-color: rgba(255, 85, 85, 0.25) !important;
+  background-color: rgba(255, 85, 85, 0.18) !important;
   color: rgba(255, 255, 255, 0.95) !important;
   transform: translateY(-1px) !important;
+  border-radius: 7px !important;
 }
 
 .arc-tabs .mantine-Tabs-tab:hover {
-  background-color: rgba(249, 115, 22, 0.25) !important;
+  background-color: rgba(249, 115, 22, 0.18) !important;
   color: rgba(255, 255, 255, 0.95) !important;
   transform: translateY(-1px) !important;
+  border-radius: 7px !important;
 }
 
 .guide-tabs .mantine-Tabs-tab:hover {
-  background-color: rgba(81, 207, 102, 0.25) !important;
+  background-color: rgba(81, 207, 102, 0.18) !important;
   color: rgba(255, 255, 255, 0.95) !important;
   transform: translateY(-1px) !important;
+  border-radius: 7px !important;
+}
+
+.volume-tabs .mantine-Tabs-tab:hover {
+  background-color: rgba(255, 105, 180, 0.18) !important;
+  color: rgba(255, 255, 255, 0.95) !important;
+  transform: translateY(-1px) !important;
+  border-radius: 7px !important;
+}
+
+.organization-tabs .mantine-Tabs-tab:hover {
+  background-color: rgba(192, 132, 252, 0.18) !important;
+  color: rgba(255, 255, 255, 0.95) !important;
+  transform: translateY(-1px) !important;
+  border-radius: 7px !important;
+}
+
+.chapter-tabs .mantine-Tabs-tab:hover {
+  background-color: rgba(56, 189, 248, 0.18) !important;
+  color: rgba(255, 255, 255, 0.95) !important;
+  transform: translateY(-1px) !important;
+  border-radius: 7px !important;
+}
+
+.event-tabs .mantine-Tabs-tab:hover {
+  background-color: rgba(243, 156, 18, 0.18) !important;
+  color: rgba(255, 255, 255, 0.95) !important;
+  transform: translateY(-1px) !important;
+  border-radius: 7px !important;
 }
 
 /* Active states */
@@ -267,9 +319,11 @@ body {
 .character-tabs [data-active="true"],
 .character-tabs [data-active],
 .character-tabs [aria-selected="true"] {
-  background-color: var(--color-character) !important;
-  color: var(--usogui-white) !important;
-  border-color: var(--color-character) !important;
+  background: linear-gradient(135deg, rgba(77, 171, 247, 0.45), rgba(77, 171, 247, 0.20)) !important;
+  border: 1px solid rgba(77, 171, 247, 0.55) !important;
+  border-radius: 7px !important;
+  box-shadow: 0 0 16px rgba(77, 171, 247, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
 }
 
 .gamble-tabs .mantine-Tabs-tab[data-active="true"],
@@ -278,9 +332,11 @@ body {
 .gamble-tabs [data-active="true"],
 .gamble-tabs [data-active],
 .gamble-tabs [aria-selected="true"] {
-  background-color: var(--color-gamble) !important;
-  color: var(--usogui-white) !important;
-  border-color: var(--color-gamble) !important;
+  background: linear-gradient(135deg, rgba(255, 85, 85, 0.45), rgba(255, 85, 85, 0.20)) !important;
+  border: 1px solid rgba(255, 85, 85, 0.55) !important;
+  border-radius: 7px !important;
+  box-shadow: 0 0 16px rgba(255, 85, 85, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
 }
 
 .arc-tabs .mantine-Tabs-tab[data-active="true"],
@@ -289,9 +345,11 @@ body {
 .arc-tabs [data-active="true"],
 .arc-tabs [data-active],
 .arc-tabs [aria-selected="true"] {
-  background-color: var(--color-arc) !important;
-  color: var(--usogui-white) !important;
-  border-color: var(--color-arc) !important;
+  background: linear-gradient(135deg, rgba(249, 115, 22, 0.45), rgba(249, 115, 22, 0.20)) !important;
+  border: 1px solid rgba(249, 115, 22, 0.55) !important;
+  border-radius: 7px !important;
+  box-shadow: 0 0 16px rgba(249, 115, 22, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
 }
 
 .guide-tabs .mantine-Tabs-tab[data-active="true"],
@@ -300,16 +358,74 @@ body {
 .guide-tabs [data-active="true"],
 .guide-tabs [data-active],
 .guide-tabs [aria-selected="true"] {
-  background-color: var(--color-guide) !important;
-  color: var(--usogui-white) !important;
-  border-color: var(--color-guide) !important;
+  background: linear-gradient(135deg, rgba(81, 207, 102, 0.45), rgba(81, 207, 102, 0.20)) !important;
+  border: 1px solid rgba(81, 207, 102, 0.55) !important;
+  border-radius: 7px !important;
+  box-shadow: 0 0 16px rgba(81, 207, 102, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
+}
+
+.volume-tabs .mantine-Tabs-tab[data-active="true"],
+.volume-tabs .mantine-Tabs-tab[data-active],
+.volume-tabs .mantine-Tabs-tab[aria-selected="true"],
+.volume-tabs [data-active="true"],
+.volume-tabs [data-active],
+.volume-tabs [aria-selected="true"] {
+  background: linear-gradient(135deg, rgba(255, 105, 180, 0.45), rgba(255, 105, 180, 0.20)) !important;
+  border: 1px solid rgba(255, 105, 180, 0.55) !important;
+  border-radius: 7px !important;
+  box-shadow: 0 0 16px rgba(255, 105, 180, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
+}
+
+.organization-tabs .mantine-Tabs-tab[data-active="true"],
+.organization-tabs .mantine-Tabs-tab[data-active],
+.organization-tabs .mantine-Tabs-tab[aria-selected="true"],
+.organization-tabs [data-active="true"],
+.organization-tabs [data-active],
+.organization-tabs [aria-selected="true"] {
+  background: linear-gradient(135deg, rgba(192, 132, 252, 0.45), rgba(192, 132, 252, 0.20)) !important;
+  border: 1px solid rgba(192, 132, 252, 0.55) !important;
+  border-radius: 7px !important;
+  box-shadow: 0 0 16px rgba(192, 132, 252, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
+}
+
+.chapter-tabs .mantine-Tabs-tab[data-active="true"],
+.chapter-tabs .mantine-Tabs-tab[data-active],
+.chapter-tabs .mantine-Tabs-tab[aria-selected="true"],
+.chapter-tabs [data-active="true"],
+.chapter-tabs [data-active],
+.chapter-tabs [aria-selected="true"] {
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.45), rgba(56, 189, 248, 0.20)) !important;
+  border: 1px solid rgba(56, 189, 248, 0.55) !important;
+  border-radius: 7px !important;
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
+}
+
+.event-tabs .mantine-Tabs-tab[data-active="true"],
+.event-tabs .mantine-Tabs-tab[data-active],
+.event-tabs .mantine-Tabs-tab[aria-selected="true"],
+.event-tabs [data-active="true"],
+.event-tabs [data-active],
+.event-tabs [aria-selected="true"] {
+  background: linear-gradient(135deg, rgba(243, 156, 18, 0.45), rgba(243, 156, 18, 0.20)) !important;
+  border: 1px solid rgba(243, 156, 18, 0.55) !important;
+  border-radius: 7px !important;
+  box-shadow: 0 0 16px rgba(243, 156, 18, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
 }
 
 /* Disabled tab states - clear visual feedback */
 .character-tabs .mantine-Tabs-tab[data-disabled],
 .gamble-tabs .mantine-Tabs-tab[data-disabled],
 .arc-tabs .mantine-Tabs-tab[data-disabled],
-.guide-tabs .mantine-Tabs-tab[data-disabled] {
+.guide-tabs .mantine-Tabs-tab[data-disabled],
+.volume-tabs .mantine-Tabs-tab[data-disabled],
+.organization-tabs .mantine-Tabs-tab[data-disabled],
+.chapter-tabs .mantine-Tabs-tab[data-disabled],
+.event-tabs .mantine-Tabs-tab[data-disabled] {
   color: rgba(255, 255, 255, 0.35) !important;
   background-color: rgba(255, 255, 255, 0.02) !important;
   border-color: rgba(255, 255, 255, 0.08) !important;
@@ -321,7 +437,11 @@ body {
 .character-tabs .mantine-Tabs-tab[data-disabled]:hover,
 .gamble-tabs .mantine-Tabs-tab[data-disabled]:hover,
 .arc-tabs .mantine-Tabs-tab[data-disabled]:hover,
-.guide-tabs .mantine-Tabs-tab[data-disabled]:hover {
+.guide-tabs .mantine-Tabs-tab[data-disabled]:hover,
+.volume-tabs .mantine-Tabs-tab[data-disabled]:hover,
+.organization-tabs .mantine-Tabs-tab[data-disabled]:hover,
+.chapter-tabs .mantine-Tabs-tab[data-disabled]:hover,
+.event-tabs .mantine-Tabs-tab[data-disabled]:hover {
   background-color: rgba(255, 255, 255, 0.02) !important;
   border-color: rgba(255, 255, 255, 0.08) !important;
   transform: none !important;
