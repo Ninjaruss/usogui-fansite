@@ -220,6 +220,7 @@ export default function VolumesPageContent({
           onMouseLeave={handleModalMouseLeave}
           onClose={closeModal}
           showCloseButton={isTouchDevice}
+          entityLabel="volume"
         >
           {hoveredVolume && (
             <>

@@ -229,6 +229,7 @@ export default function OrganizationsPageContent({
           onMouseLeave={handleModalMouseLeave}
           onClose={closeModal}
           showCloseButton={isTouchDevice}
+          entityLabel="organization"
         >
           {hoveredOrganization && (
             <>

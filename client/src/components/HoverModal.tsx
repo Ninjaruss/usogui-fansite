@@ -1,10 +1,9 @@
 'use client'
 
 import React, { useEffect } from 'react'
-import { ActionIcon, Box, Paper, Stack, rem } from '@mantine/core'
+import { ActionIcon, Box, Paper, Stack, Text, rem } from '@mantine/core'
 import { X } from 'lucide-react'
 import { motion, AnimatePresence } from 'motion/react'
-import { backgroundStyles } from '../lib/mantine-theme'
 
 interface HoverModalPosition {
   x: number
@@ -20,6 +19,8 @@ interface HoverModalProps {
   onMouseLeave?: () => void
   onClose?: () => void
   showCloseButton?: boolean
+  /** Optional entity type label shown as eyebrow above content */
+  entityLabel?: string
   children: React.ReactNode
 }
 
@@ -32,6 +33,7 @@ export function HoverModal({
   onMouseLeave,
   onClose,
   showCloseButton = false,
+  entityLabel,
   children
 }: HoverModalProps) {
   // Handle Escape key to close modal
@@ -93,15 +95,26 @@ export function HoverModal({
               radius="lg"
               p="md"
               style={{
-                backgroundColor: backgroundStyles.modal,
+                backgroundColor: 'rgba(6,6,14,0.97)',
                 border: `1px solid ${accentColor}CC`,
                 backdropFilter: 'blur(10px)',
                 width: rem(width),
                 maxWidth: '90vw',
                 position: 'relative',
-                boxShadow: `0 24px 48px rgba(0,0,0,0.7), 0 0 0 1px ${accentColor}30, inset 0 0 0 1px ${accentColor}18`
+                boxShadow: `0 24px 48px rgba(0,0,0,0.80), 0 0 0 1px ${accentColor}20, 0 0 32px ${accentColor}08, inset 0 0 0 1px ${accentColor}18`
               }}
             >
+              {/* Top accent stripe — flush with card edges */}
+              <Box aria-hidden style={{
+                height: 3,
+                background: `linear-gradient(90deg, ${accentColor} 0%, ${accentColor}66 60%, transparent 100%)`,
+                borderRadius: `${rem(8)} ${rem(8)} 0 0`,
+                marginTop: rem(-16),
+                marginLeft: rem(-16),
+                marginRight: rem(-16),
+                marginBottom: rem(8),
+              }} />
+
               {/* Horizontal scan-line texture */}
               <Box
                 aria-hidden
@@ -144,6 +157,14 @@ export function HoverModal({
               )}
               <Box style={{ position: 'relative', zIndex: 1 }}>
                 <Stack gap="sm">
+                  {entityLabel && (
+                    <Text
+                      className="eyebrow-label"
+                      style={{ color: accentColor, fontSize: '0.6rem', letterSpacing: '0.22em' }}
+                    >
+                      {entityLabel.toUpperCase()}
+                    </Text>
+                  )}
                   {children}
                 </Stack>
               </Box>

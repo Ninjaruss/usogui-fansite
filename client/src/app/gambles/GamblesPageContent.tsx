@@ -347,6 +347,7 @@ export default function GamblesPageContent({
           onMouseLeave={handleModalMouseLeave}
           onClose={closeModal}
           showCloseButton={isTouchDevice}
+          entityLabel="gamble"
         >
           {hoveredGamble && (
             <>

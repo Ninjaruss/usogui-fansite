@@ -416,6 +416,7 @@ export default function QuotesPageContent({
           onMouseLeave={handleModalMouseLeave}
           onClose={closeModal}
           showCloseButton={isTouchDevice}
+          entityLabel="quote"
         >
           {hoveredQuote && (
             <>

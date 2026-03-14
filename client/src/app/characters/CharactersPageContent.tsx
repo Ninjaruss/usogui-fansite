@@ -414,6 +414,7 @@ export default function CharactersPageContent({
             onMouseLeave={handleModalMouseLeave}
             onClose={closeModal}
             showCloseButton={isTouchDevice}
+            entityLabel="character"
           >
             {hoveredCharacter &&
               (!shouldHideSpoiler(hoveredCharacter.firstAppearanceChapter, userProgress, spoilerSettings) ||

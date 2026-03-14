@@ -385,6 +385,7 @@ export default function ArcsPageContent({
             onMouseLeave={handleModalMouseLeave}
             onClose={closeModal}
             showCloseButton={isTouchDevice}
+            entityLabel="arc"
           >
             {hoveredArc && (
               <>
