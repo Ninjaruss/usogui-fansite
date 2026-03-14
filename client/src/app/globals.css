@@ -404,89 +404,99 @@ textarea:focus-visible {
 }
 
 .hoverable-card:hover {
-  transform: perspective(700px) rotateY(3deg) translateY(-7px);
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.38), 0 0 0 1px rgba(0, 0, 0, 0.20);
+  transform: perspective(700px) rotateY(5deg) translateY(-10px);
+  box-shadow: 0 20px 56px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(0, 0, 0, 0.25);
 }
 
 /* Entity-specific hoverable cards with accent colors */
 .hoverable-card-character:hover {
   border-color: var(--color-character);
   box-shadow:
-    0 16px 52px rgba(77, 171, 247, 0.38),
-    0 4px 16px rgba(77, 171, 247, 0.20),
-    inset 0 0 0 1px rgba(77, 171, 247, 0.45);
+    0 0 28px rgba(77, 171, 247, 0.35),
+    0 16px 52px rgba(77, 171, 247, 0.50),
+    0 4px 16px rgba(77, 171, 247, 0.28),
+    inset 0 0 0 1px rgba(77, 171, 247, 0.55);
 }
 
 .hoverable-card-gamble:hover {
   border-color: var(--color-gamble);
   box-shadow:
-    0 16px 52px rgba(255, 85, 85, 0.38),
-    0 4px 16px rgba(255, 85, 85, 0.20),
-    inset 0 0 0 1px rgba(255, 85, 85, 0.45);
+    0 0 28px rgba(255, 85, 85, 0.35),
+    0 16px 52px rgba(255, 85, 85, 0.50),
+    0 4px 16px rgba(255, 85, 85, 0.28),
+    inset 0 0 0 1px rgba(255, 85, 85, 0.55);
 }
 
 .hoverable-card-arc:hover {
   border-color: var(--color-arc);
   box-shadow:
-    0 16px 52px rgba(249, 115, 22, 0.38),
-    0 4px 16px rgba(249, 115, 22, 0.20),
-    inset 0 0 0 1px rgba(249, 115, 22, 0.45);
+    0 0 28px rgba(249, 115, 22, 0.35),
+    0 16px 52px rgba(249, 115, 22, 0.50),
+    0 4px 16px rgba(249, 115, 22, 0.28),
+    inset 0 0 0 1px rgba(249, 115, 22, 0.55);
 }
 
 .hoverable-card-event:hover {
   border-color: var(--color-event);
   box-shadow:
-    0 16px 52px rgba(243, 156, 18, 0.38),
-    0 4px 16px rgba(243, 156, 18, 0.20),
-    inset 0 0 0 1px rgba(243, 156, 18, 0.45);
+    0 0 28px rgba(243, 156, 18, 0.35),
+    0 16px 52px rgba(243, 156, 18, 0.50),
+    0 4px 16px rgba(243, 156, 18, 0.28),
+    inset 0 0 0 1px rgba(243, 156, 18, 0.55);
 }
 
 .hoverable-card-guide:hover {
   border-color: var(--color-guide);
   box-shadow:
-    0 16px 52px rgba(81, 207, 102, 0.38),
-    0 4px 16px rgba(81, 207, 102, 0.20),
-    inset 0 0 0 1px rgba(81, 207, 102, 0.45);
+    0 0 28px rgba(81, 207, 102, 0.35),
+    0 16px 52px rgba(81, 207, 102, 0.50),
+    0 4px 16px rgba(81, 207, 102, 0.28),
+    inset 0 0 0 1px rgba(81, 207, 102, 0.55);
 }
 
 .hoverable-card-media:hover {
   border-color: var(--color-media);
   box-shadow:
-    0 16px 52px rgba(168, 85, 247, 0.38),
-    0 4px 16px rgba(168, 85, 247, 0.20),
-    inset 0 0 0 1px rgba(168, 85, 247, 0.45);
+    0 0 28px rgba(168, 85, 247, 0.35),
+    0 16px 52px rgba(168, 85, 247, 0.50),
+    0 4px 16px rgba(168, 85, 247, 0.28),
+    inset 0 0 0 1px rgba(168, 85, 247, 0.55);
 }
 
 .hoverable-card-quote:hover {
   border-color: var(--color-quote);
   box-shadow:
-    0 16px 52px rgba(32, 201, 151, 0.38),
-    0 4px 16px rgba(32, 201, 151, 0.20),
-    inset 0 0 0 1px rgba(32, 201, 151, 0.45);
+    0 0 28px rgba(32, 201, 151, 0.35),
+    0 16px 52px rgba(32, 201, 151, 0.50),
+    0 4px 16px rgba(32, 201, 151, 0.28),
+    inset 0 0 0 1px rgba(32, 201, 151, 0.55);
 }
 
 .hoverable-card-volume:hover {
   border-color: var(--color-volume);
   box-shadow:
-    0 16px 52px rgba(255, 105, 180, 0.38),
-    0 4px 16px rgba(255, 105, 180, 0.20),
-    inset 0 0 0 1px rgba(255, 105, 180, 0.45);
+    0 0 28px rgba(255, 105, 180, 0.35),
+    0 16px 52px rgba(255, 105, 180, 0.50),
+    0 4px 16px rgba(255, 105, 180, 0.28),
+    inset 0 0 0 1px rgba(255, 105, 180, 0.55);
 }
 
 .hoverable-card-chapter:hover {
   border-color: var(--color-chapter);
   box-shadow:
-    0 16px 52px rgba(56, 189, 248, 0.38),
-    0 4px 16px rgba(56, 189, 248, 0.20),
-    inset 0 0 0 1px rgba(56, 189, 248, 0.45);
+    0 0 28px rgba(56, 189, 248, 0.35),
+    0 16px 52px rgba(56, 189, 248, 0.50),
+    0 4px 16px rgba(56, 189, 248, 0.28),
+    inset 0 0 0 1px rgba(56, 189, 248, 0.55);
 }
 
 .hoverable-card-organization:hover {
   border-color: var(--color-organization);
   box-shadow:
-    0 16px 52px rgba(192, 132, 252, 0.38),
-    0 4px 16px rgba(192, 132, 252, 0.20),
-    inset 0 0 0 1px rgba(192, 132, 252, 0.45);
+    0 0 28px rgba(192, 132, 252, 0.35),
+    0 16px 52px rgba(192, 132, 252, 0.50),
+    0 4px 16px rgba(192, 132, 252, 0.28),
+    inset 0 0 0 1px rgba(192, 132, 252, 0.55);
 }
 
 /* Hoverable badge - for tags and small interactive elements */
