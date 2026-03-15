@@ -109,9 +109,6 @@ export default function OrganizationPageClient({
         entityId={initialOrganization.id}
         entityName={initialOrganization.name}
       >
-        <Stack gap={theme.spacing.sm}>
-        </Stack>
-
         <Stack gap={theme.spacing.md} style={{ flex: 1, justifyContent: 'center' }}>
           {/* Content Stats */}
           <Group gap={theme.spacing.md} wrap="wrap" mt={theme.spacing.sm}>
