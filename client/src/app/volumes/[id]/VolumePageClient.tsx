@@ -128,32 +128,32 @@ export default function VolumePageClient({ initialVolume, initialChapters, initi
                 {initialVolume.number}
               </Text>
               <Box style={{ position: 'relative', zIndex: 1 }}>
-            <Stack gap={theme.spacing.sm}>
-              {initialVolume.title && (
-                <Text size="lg" c={textColors.secondary} fw={500}>
-                  {initialVolume.title}
-                </Text>
-              )}
+                <Stack gap={theme.spacing.sm}>
+                  {initialVolume.title && (
+                    <Text size="lg" c={textColors.secondary} fw={500}>
+                      {initialVolume.title}
+                    </Text>
+                  )}
 
-              {/* Chapter Range Badge */}
-              <Badge
-                variant="filled"
-                size="lg"
-                radius="md"
-                leftSection={<Hash size={14} />}
-                style={{
-                  background: `linear-gradient(135deg, ${entityColors.volume} 0%, ${entityColors.volume}dd 100%)`,
-                  border: `1px solid ${entityColors.volume}`,
-                  boxShadow: theme.shadows.md,
-                  fontSize: fontSize.sm,
-                  color: textColors.primary,
-                  fontWeight: 600,
-                  alignSelf: 'flex-start'
-                }}
-              >
-                Chapters {initialVolume.startChapter} - {initialVolume.endChapter}
-              </Badge>
-            </Stack>
+                  {/* Chapter Range Badge */}
+                  <Badge
+                    variant="filled"
+                    size="lg"
+                    radius="md"
+                    leftSection={<Hash size={14} />}
+                    style={{
+                      background: `linear-gradient(135deg, ${entityColors.volume} 0%, ${entityColors.volume}dd 100%)`,
+                      border: `1px solid ${entityColors.volume}`,
+                      boxShadow: theme.shadows.md,
+                      fontSize: fontSize.sm,
+                      color: textColors.primary,
+                      fontWeight: 600,
+                      alignSelf: 'flex-start'
+                    }}
+                  >
+                    Chapters {initialVolume.startChapter} - {initialVolume.endChapter}
+                  </Badge>
+                </Stack>
               </Box>
             </Box>
 

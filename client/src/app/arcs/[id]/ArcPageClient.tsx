@@ -19,7 +19,6 @@ import {
   getEntityThemeColor,
   textColors,
   getAlphaColor,
-  spacing,
   fontSize,
   setTabAccentColors,
   backgroundStyles
