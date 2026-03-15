@@ -1,158 +1,302 @@
 'use client'
 
 import React from 'react'
-import { Box, Card, Stack, Title, useMantineTheme } from '@mantine/core'
+import { Box, Title, Text, useMantineTheme } from '@mantine/core'
 import {
   getEntityThemeColor,
-  backgroundStyles,
-  getCardStyles,
-  type EntityAccentKey
+  type EntityAccentKey,
 } from '../../lib/mantine-theme'
-import { mangaPatterns } from '../../lib/manga-decorations'
-import { SpeedLines } from '../decorative/MangaPatterns'
 import MediaThumbnail from '../MediaThumbnail'
 
+interface StatItem {
+  value: string | number
+  label: string
+}
+
+interface TagItem {
+  label: string
+  variant: 'accent' | 'neutral'
+}
+
 interface DetailPageHeaderProps {
-  /** Entity type for theming */
+  /** Entity type key — drives theming */
   entityType: EntityAccentKey
-  /** Entity ID for media lookup */
+  /** Entity ID for MediaThumbnail */
   entityId: number
-  /** Entity display name */
+  /** Large serif name */
   entityName: string
-  /** Below-portrait content (badges, stats, etc.) */
-  children?: React.ReactNode
-  /** Image width (default 200px) */
-  imageWidth?: string
-  /** Image height (default 280px) */
-  imageHeight?: string
-  /** Whether to show the entity image */
+  /** Up to 3 key stats shown below the name */
+  stats?: StatItem[]
+  /** Chips shown below stats */
+  tags?: TagItem[]
+  /** Whether to render the portrait area */
   showImage?: boolean
-  /** Chapter number for spoiler protection */
+  /** Spoiler gate chapter for the portrait */
   spoilerChapter?: number | null
-  /** Callback when spoiler is revealed */
+  /** Called when portrait spoiler is dismissed */
   onSpoilerRevealed?: () => void
+  /** Any per-page additions rendered at the bottom of the content column */
+  children?: React.ReactNode
 }
 
 export function DetailPageHeader({
   entityType,
   entityId,
   entityName,
-  children,
-  imageWidth = '200px',
-  imageHeight = '280px',
+  stats,
+  tags,
   showImage = true,
   spoilerChapter,
   onSpoilerRevealed,
+  children,
 }: DetailPageHeaderProps) {
   const theme = useMantineTheme()
   const accentColor = getEntityThemeColor(theme, entityType)
 
   return (
-    <Card
-      withBorder
-      radius="lg"
-      shadow="lg"
-      p={0}
+    <Box
       style={{
-        ...getCardStyles(theme, accentColor),
-        border: `2px solid ${accentColor}`,
         position: 'relative',
+        height: 280,
         overflow: 'hidden',
-        boxShadow: `0 24px 64px ${accentColor}22, 0 8px 24px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.04)`
+        borderRadius: 10,
+        background: '#080c14',
       }}
     >
-      {/* Top accent stripe */}
+      {/* Atmospheric background */}
       <Box
         aria-hidden
         style={{
-          height: 4,
-          background: `linear-gradient(90deg, ${accentColor}FF 0%, ${accentColor}88 40%, transparent 100%)`,
+          position: 'absolute',
+          inset: 0,
+          background: `radial-gradient(ellipse 60% 80% at 70% 50%, ${accentColor}12 0%, transparent 60%), linear-gradient(135deg, #0a0f1e 0%, #080c14 100%)`,
         }}
       />
 
-      {/* Halftone pattern overlay */}
+      {/* Dot texture */}
       <Box
-        aria-hidden="true"
+        aria-hidden
         style={{
           position: 'absolute',
           inset: 0,
-          ...mangaPatterns.halftoneBackground(`${accentColor}20`, 12),
-          pointerEvents: 'none'
+          backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px)',
+          backgroundSize: '16px 16px',
+          opacity: 0.5,
+          pointerEvents: 'none',
         }}
       />
 
-      {/* Speed lines overlay */}
-      <SpeedLines color={`${accentColor}05`} angle={-20} />
+      {/* Left-edge entity color strip */}
+      <Box
+        aria-hidden
+        style={{
+          position: 'absolute',
+          left: 0,
+          top: 0,
+          bottom: 0,
+          width: 3,
+          background: `linear-gradient(180deg, ${accentColor} 0%, ${accentColor}10 100%)`,
+          zIndex: 4,
+        }}
+      />
 
-
-      {/* Cinematic centered layout */}
-      <Box style={{ position: 'relative', zIndex: 1 }}>
-        {/* Page-colored fade at bottom */}
+      {/* Portrait area — right 42% */}
+      {showImage ? (
+        <Box
+          className="detail-hero-portrait"
+          style={{
+            position: 'absolute',
+            right: 0,
+            top: 0,
+            bottom: 0,
+            width: '42%',
+            overflow: 'hidden',
+          }}
+        >
+          <MediaThumbnail
+            entityType={entityType}
+            entityId={entityId}
+            entityName={entityName}
+            allowCycling={false}
+            maxWidth="100%"
+            maxHeight="100%"
+            spoilerChapter={spoilerChapter ?? undefined}
+            onSpoilerRevealed={onSpoilerRevealed}
+          />
+          {/* Left-edge fade blending portrait into content */}
+          <Box
+            aria-hidden
+            style={{
+              position: 'absolute',
+              left: 0,
+              top: 0,
+              bottom: 0,
+              width: '55%',
+              background: 'linear-gradient(90deg, #080c14 0%, rgba(8,12,20,0.6) 50%, transparent 100%)',
+              zIndex: 2,
+              pointerEvents: 'none',
+            }}
+          />
+          {/* Bottom fade */}
+          <Box
+            aria-hidden
+            style={{
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: 60,
+              background: 'linear-gradient(0deg, #080c14, transparent)',
+              zIndex: 2,
+              pointerEvents: 'none',
+            }}
+          />
+        </Box>
+      ) : (
+        /* No-image fallback: entity-tinted glow on right side */
         <Box
           aria-hidden
           style={{
             position: 'absolute',
-            bottom: 0, left: 0, right: 0,
-            height: '40%',
-            background: `linear-gradient(0deg, ${backgroundStyles.page(theme)} 0%, transparent 100%)`,
-            pointerEvents: 'none',
-            zIndex: 2,
+            right: 0,
+            top: 0,
+            bottom: 0,
+            width: '42%',
+            background: `linear-gradient(160deg, ${accentColor}18 0%, transparent 70%)`,
           }}
         />
+      )}
 
-        {/* Portrait */}
-        {showImage && (
-          <Box style={{ display: 'flex', justifyContent: 'center', paddingTop: theme.spacing.xl, position: 'relative', zIndex: 1 }}>
-            <Card
-              style={{
-                ...getCardStyles(theme, accentColor),
-                width: imageWidth,
-                height: imageHeight,
-                overflow: 'hidden',
-                position: 'relative',
-              }}
-              p={0}
-              radius="md"
-            >
-              <MediaThumbnail
-                entityType={entityType}
-                entityId={entityId}
-                entityName={entityName}
-                allowCycling={false}
-                maxWidth={imageWidth}
-                maxHeight={imageHeight}
-                spoilerChapter={spoilerChapter ?? undefined}
-                onSpoilerRevealed={onSpoilerRevealed}
-              />
-            </Card>
+      {/* Content column — left 65%, bottom-anchored */}
+      <Box
+        style={{
+          position: 'absolute',
+          left: 0,
+          bottom: 0,
+          top: 0,
+          width: '65%',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'flex-end',
+          padding: '28px 32px',
+          zIndex: 3,
+        }}
+      >
+        {/* Eyebrow label */}
+        <Box style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+          <Box
+            aria-hidden
+            style={{ width: 18, height: 2, background: accentColor, flexShrink: 0 }}
+          />
+          <Text
+            style={{
+              fontSize: 10,
+              letterSpacing: '3px',
+              textTransform: 'uppercase',
+              color: accentColor,
+              fontWeight: 700,
+            }}
+          >
+            {entityType}
+          </Text>
+        </Box>
+
+        {/* Entity name */}
+        <Title
+          order={1}
+          style={{
+            fontSize: 'clamp(28px, 4vw, 46px)',
+            fontFamily: 'var(--font-opti-goudy-text)',
+            fontWeight: 900,
+            letterSpacing: -1,
+            color: '#fff',
+            lineHeight: 1,
+            marginBottom: 14,
+            textShadow: '0 2px 24px rgba(0,0,0,0.9)',
+          }}
+        >
+          {entityName}
+        </Title>
+
+        {/* Stats row */}
+        {stats && stats.length > 0 && (
+          <Box style={{ display: 'flex', alignItems: 'center', marginBottom: 14 }}>
+            {stats.map((stat, i) => (
+              <React.Fragment key={stat.label}>
+                {i > 0 && (
+                  <Box
+                    aria-hidden
+                    style={{
+                      width: 1,
+                      background: '#222',
+                      alignSelf: 'stretch',
+                      marginLeft: 20,
+                    }}
+                  />
+                )}
+                <Box
+                  style={{
+                    paddingLeft: i > 0 ? 20 : 0,
+                    paddingRight: 20,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 2,
+                  }}
+                >
+                  <Text
+                    style={{ fontSize: 20, fontWeight: 800, color: accentColor, lineHeight: 1 }}
+                  >
+                    {stat.value}
+                  </Text>
+                  <Text
+                    style={{
+                      fontSize: 9,
+                      textTransform: 'uppercase',
+                      letterSpacing: '1.5px',
+                      color: '#555',
+                    }}
+                  >
+                    {stat.label}
+                  </Text>
+                </Box>
+              </React.Fragment>
+            ))}
           </Box>
         )}
 
-        {/* Name + children below portrait */}
-        <Stack
-          align="center"
-          gap={theme.spacing.sm}
-          style={{
-            padding: `${theme.spacing.lg} ${theme.spacing.xl} ${theme.spacing.xl}`,
-            position: 'relative',
-            zIndex: 3,
-          }}
-        >
-          <Title
-            order={1}
-            ta="center"
-            style={{
-              fontSize: 'clamp(1.6rem, 4vw, 2.8rem)',
-              fontFamily: 'var(--font-opti-goudy-text)',
-              textShadow: `0 2px 24px ${accentColor}50`,
-            }}
-          >
-            {entityName}
-          </Title>
-          {children}
-        </Stack>
+        {/* Tags */}
+        {tags && tags.length > 0 && (
+          <Box style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: children ? 12 : 0 }}>
+            {tags.map((tag) => (
+              <Box
+                key={tag.label}
+                style={{
+                  padding: '3px 9px',
+                  borderRadius: 3,
+                  fontSize: 10,
+                  fontWeight: 600,
+                  ...(tag.variant === 'accent'
+                    ? {
+                        background: `${accentColor}1f`,
+                        border: `1px solid ${accentColor}38`,
+                        color: accentColor,
+                      }
+                    : {
+                        background: 'rgba(255,255,255,0.05)',
+                        border: '1px solid rgba(255,255,255,0.08)',
+                        color: '#666',
+                      }),
+                }}
+              >
+                {tag.label}
+              </Box>
+            ))}
+          </Box>
+        )}
+
+        {children}
       </Box>
-    </Card>
+    </Box>
   )
 }
 
