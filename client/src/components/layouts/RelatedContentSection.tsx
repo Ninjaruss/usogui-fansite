@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { Button, Card, Group, Stack, Title, useMantineTheme } from '@mantine/core'
+import { Box, Button, Card, Group, Stack, Text, Title, useMantineTheme } from '@mantine/core'
 import Link from 'next/link'
 import {
   getEntityThemeColor,
@@ -14,7 +14,7 @@ interface RelatedContentSectionProps<T> {
   /** Entity type for section theming */
   entityType: EntityAccentKey
   /** Section icon (lucide-react) */
-  icon: React.ReactNode
+  icon?: React.ReactNode
   /** Section title (e.g., "Related Story Arcs") */
   title: string
   /** All items */
@@ -24,11 +24,19 @@ interface RelatedContentSectionProps<T> {
   /** "View All" link destination */
   viewAllHref?: string
   /** Render function for each item */
-  renderItem: (item: T, index: number) => React.ReactNode
+  renderItem?: (item: T, index: number) => React.ReactNode
   /** Key extractor */
   getKey: (item: T) => string | number
   /** Use title text color from entity type (default: uses textColors[entityType]) */
   titleColorKey?: keyof typeof textColors
+  /** 'cards' (default) uses renderItem. 'compact' renders a flat linked list. */
+  variant?: 'cards' | 'compact'
+  /** Required when variant="compact": returns the display label for an item */
+  getLabel?: (item: T) => string
+  /** Required when variant="compact": returns the href for an item */
+  getHref?: (item: T) => string
+  /** Dot color for compact rows (defaults to accentColor) */
+  itemDotColor?: string
 }
 
 export function RelatedContentSection<T>({
@@ -40,7 +48,11 @@ export function RelatedContentSection<T>({
   viewAllHref,
   renderItem,
   getKey,
-  titleColorKey
+  titleColorKey,
+  variant = 'cards',
+  getLabel,
+  getHref,
+  itemDotColor,
 }: RelatedContentSectionProps<T>) {
   const theme = useMantineTheme()
   const accentColor = getEntityThemeColor(theme, entityType)
@@ -51,6 +63,67 @@ export function RelatedContentSection<T>({
   if (items.length === 0) return null
 
   const displayItems = items.slice(0, previewCount)
+
+  if (variant === 'compact') {
+    const dotColor = itemDotColor ?? accentColor
+    return (
+      <Box>
+        <Text
+          style={{
+            fontSize: 9,
+            fontWeight: 700,
+            textTransform: 'uppercase',
+            letterSpacing: '2px',
+            color: '#555',
+            marginBottom: 10,
+          }}
+        >
+          {title}
+        </Text>
+        {displayItems.map((item) => (
+          <Box
+            key={getKey(item)}
+            component={Link}
+            href={getHref!(item)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              padding: '6px 0',
+              borderBottom: '1px solid #181818',
+              textDecoration: 'none',
+            }}
+          >
+            <Box
+              aria-hidden
+              style={{
+                width: 5,
+                height: 5,
+                borderRadius: '50%',
+                background: dotColor,
+                flexShrink: 0,
+              }}
+            />
+            <Text style={{ fontSize: 13, color: '#777', flex: 1 }}>
+              {getLabel!(item)}
+            </Text>
+            <Text style={{ fontSize: 12, color: '#333' }}>›</Text>
+          </Box>
+        ))}
+        {viewAllHref && items.length > (previewCount ?? 4) && (
+          <Box pt={8}>
+            <Text
+              component={Link}
+              href={viewAllHref}
+              style={{ fontSize: 12, color: '#444', textDecoration: 'none' }}
+            >
+              View all {items.length} →
+            </Text>
+          </Box>
+        )}
+      </Box>
+    )
+  }
 
   return (
     <Card withBorder radius="lg" shadow="lg" style={getCardStyles(theme, accentColor)}>
@@ -94,7 +167,7 @@ export function RelatedContentSection<T>({
         <Stack gap={theme.spacing.sm}>
           {displayItems.map((item, index) => (
             <React.Fragment key={getKey(item)}>
-              {renderItem(item, index)}
+              {renderItem!(item, index)}
             </React.Fragment>
           ))}
         </Stack>
