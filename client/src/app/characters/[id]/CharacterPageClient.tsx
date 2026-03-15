@@ -17,12 +17,13 @@ import {
 } from '@mantine/core'
 import {
   getEntityThemeColor,
+  getAlphaColor,
   textColors,
   setTabAccentColors,
   backgroundStyles,
   getCardStyles
 } from '../../../lib/mantine-theme'
-import { User, Calendar, Image as ImageIcon, MessageSquare } from 'lucide-react'
+import { User, Scroll, Users, BookOpen, Crown, Building2, Bookmark, Calendar, Image as ImageIcon, MessageSquare } from 'lucide-react'
 import Link from 'next/link'
 import { motion } from 'motion/react'
 import { pageEnter } from '../../../lib/motion-presets'
@@ -219,23 +220,20 @@ export default function CharacterPageClient({
                   withBorder
                   radius="lg"
                   shadow="lg"
-                  style={{
-                    ...getCardStyles(theme, entityColors.character),
-                    borderLeft: `3px solid ${entityColors.character}`,
-                  }}
+                  padding={0}
+                  style={getCardStyles(theme, entityColors.character)}
                 >
-                  <Stack gap={theme.spacing.md} p={theme.spacing.lg}>
-                    <Text
-                      style={{
-                        fontSize: 9,
-                        fontWeight: 700,
-                        textTransform: 'uppercase',
-                        letterSpacing: '2px',
-                        color: '#555',
-                      }}
-                    >
-                      Description
-                    </Text>
+                  <Box style={{ height: 3, borderRadius: '6px 6px 0 0', background: `linear-gradient(90deg, ${entityColors.character}, transparent 70%)` }} />
+                  <Box p="lg">
+                    <Group gap={10} mb={14} align="center">
+                      <Box style={{ width: 28, height: 28, borderRadius: 6, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: getAlphaColor(entityColors.character, 0.15), border: `1px solid ${getAlphaColor(entityColors.character, 0.30)}` }}>
+                        <User size={16} color={entityColors.character} />
+                      </Box>
+                      <Text style={{ fontSize: '0.65rem', fontWeight: 800, letterSpacing: '0.18em', textTransform: 'uppercase', color: entityColors.character, opacity: 0.85 }}>
+                        Description
+                      </Text>
+                      <Box style={{ flex: 1, height: 1, background: `linear-gradient(to right, ${getAlphaColor(entityColors.character, 0.20)}, transparent)` }} />
+                    </Group>
                     {character.description ? (
                       <TimelineSpoilerWrapper chapterNumber={character.firstAppearanceChapter ?? undefined}>
                         <Box style={{ lineHeight: 1.6, fontSize: 14 }}>
@@ -251,24 +249,29 @@ export default function CharacterPageClient({
                         No description available yet.
                       </Text>
                     )}
-                  </Stack>
+                  </Box>
                 </Card>
 
                 {/* Backstory */}
                 {character.backstory && (
-                  <Card withBorder radius="lg" shadow="lg" style={getCardStyles(theme, entityColors.character)}>
-                    <Stack gap={theme.spacing.md} p={theme.spacing.lg}>
-                      <Text
-                        style={{
-                          fontSize: 9,
-                          fontWeight: 700,
-                          textTransform: 'uppercase',
-                          letterSpacing: '2px',
-                          color: '#555',
-                        }}
-                      >
-                        Backstory
-                      </Text>
+                  <Card
+                    withBorder
+                    radius="lg"
+                    shadow="lg"
+                    padding={0}
+                    style={getCardStyles(theme, entityColors.character)}
+                  >
+                    <Box style={{ height: 3, borderRadius: '6px 6px 0 0', background: `linear-gradient(90deg, ${entityColors.character}, transparent 70%)` }} />
+                    <Box p="lg">
+                      <Group gap={10} mb={14} align="center">
+                        <Box style={{ width: 28, height: 28, borderRadius: 6, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: getAlphaColor(entityColors.character, 0.15), border: `1px solid ${getAlphaColor(entityColors.character, 0.30)}` }}>
+                          <Scroll size={16} color={entityColors.character} />
+                        </Box>
+                        <Text style={{ fontSize: '0.65rem', fontWeight: 800, letterSpacing: '0.18em', textTransform: 'uppercase', color: entityColors.character, opacity: 0.85 }}>
+                          Backstory
+                        </Text>
+                        <Box style={{ flex: 1, height: 1, background: `linear-gradient(to right, ${getAlphaColor(entityColors.character, 0.20)}, transparent)` }} />
+                      </Group>
                       <TimelineSpoilerWrapper chapterNumber={character.firstAppearanceChapter ?? undefined}>
                         <Box style={{ lineHeight: 1.6, fontSize: 14 }}>
                           <EnhancedSpoilerMarkdown
@@ -278,7 +281,7 @@ export default function CharacterPageClient({
                           />
                         </Box>
                       </TimelineSpoilerWrapper>
-                    </Stack>
+                    </Box>
                   </Card>
                 )}
 
@@ -287,24 +290,29 @@ export default function CharacterPageClient({
 
                 {/* Organization memberships */}
                 {character.organizations && character.organizations.length > 0 && (
-                  <Card withBorder radius="lg" shadow="lg" style={getCardStyles(theme, entityColors.organization)}>
-                    <Stack gap={theme.spacing.md} p={theme.spacing.md}>
-                      <Text
-                        style={{
-                          fontSize: 9,
-                          fontWeight: 700,
-                          textTransform: 'uppercase',
-                          letterSpacing: '2px',
-                          color: '#555',
-                        }}
-                      >
-                        Organizations
-                      </Text>
+                  <Card
+                    withBorder
+                    radius="lg"
+                    shadow="lg"
+                    padding={0}
+                    style={getCardStyles(theme, entityColors.organization)}
+                  >
+                    <Box style={{ height: 3, borderRadius: '6px 6px 0 0', background: `linear-gradient(90deg, ${entityColors.organization}, transparent 70%)` }} />
+                    <Box p="md">
+                      <Group gap={10} mb={14} align="center">
+                        <Box style={{ width: 28, height: 28, borderRadius: 6, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: getAlphaColor(entityColors.organization, 0.15), border: `1px solid ${getAlphaColor(entityColors.organization, 0.30)}` }}>
+                          <Users size={16} color={entityColors.organization} />
+                        </Box>
+                        <Text style={{ fontSize: '0.65rem', fontWeight: 800, letterSpacing: '0.18em', textTransform: 'uppercase', color: entityColors.organization, opacity: 0.85 }}>
+                          Organizations
+                        </Text>
+                        <Box style={{ flex: 1, height: 1, background: `linear-gradient(to right, ${getAlphaColor(entityColors.organization, 0.20)}, transparent)` }} />
+                      </Group>
                       <CharacterOrganizationMemberships
                         characterId={character.id}
                         characterName={character.name}
                       />
-                    </Stack>
+                    </Box>
                   </Card>
                 )}
               </Stack>
@@ -316,60 +324,56 @@ export default function CharacterPageClient({
                   withBorder
                   radius="lg"
                   shadow="md"
-                  style={{ background: '#111', border: '1px solid #1a1a1a' }}
-                  p="md"
+                  padding={0}
+                  style={getCardStyles(theme, entityColors.character)}
                 >
-                  <Text
-                    style={{
-                      fontSize: 9,
-                      fontWeight: 700,
-                      textTransform: 'uppercase',
-                      letterSpacing: '2px',
-                      color: '#555',
-                      marginBottom: 10,
-                    }}
-                  >
-                    Details
-                  </Text>
-                  <Stack gap={0}>
+                  <Box style={{ height: 3, borderRadius: '6px 6px 0 0', background: `linear-gradient(90deg, ${entityColors.character}, transparent 70%)` }} />
+                  <Box p="md">
+                    <Group gap={10} mb={14} align="center">
+                      <Text style={{ fontSize: '0.65rem', fontWeight: 800, letterSpacing: '0.18em', textTransform: 'uppercase', color: entityColors.character, opacity: 0.85 }}>
+                        Details
+                      </Text>
+                      <Box style={{ flex: 1, height: 1, background: `linear-gradient(to right, ${getAlphaColor(entityColors.character, 0.20)}, transparent)` }} />
+                    </Group>
                     {character.firstAppearanceChapter != null && (
-                      <Group
-                        justify="space-between"
-                        style={{ padding: '7px 0', borderBottom: '1px solid #191919' }}
-                      >
-                        <Text style={{ fontSize: 13, color: '#444' }}>Debut</Text>
-                        <Text style={{ fontSize: 13, color: entityColors.character, fontWeight: 600 }}>
-                          Ch. {character.firstAppearanceChapter}
-                        </Text>
-                      </Group>
+                      <Box style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: '1px solid #161616' }}>
+                        <Box style={{ width: 24, height: 24, borderRadius: 5, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: getAlphaColor(entityColors.character, 0.10), border: `1px solid ${getAlphaColor(entityColors.character, 0.20)}` }}>
+                          <BookOpen size={14} color={entityColors.character} />
+                        </Box>
+                        <Text style={{ fontSize: 11, color: '#555', flex: 1 }}>Debut</Text>
+                        <Text style={{ fontSize: 12, fontWeight: 700, color: entityColors.character }}>Ch. {character.firstAppearanceChapter}</Text>
+                      </Box>
                     )}
                     {character.organizations && character.organizations.length > 0 && (
-                      <Group
-                        justify="space-between"
-                        style={{ padding: '7px 0', borderBottom: '1px solid #191919' }}
-                      >
-                        <Text style={{ fontSize: 13, color: '#444' }}>Organization</Text>
-                        <Text style={{ fontSize: 13, color: '#999', fontWeight: 600 }}>
+                      <Box style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: '1px solid #161616' }}>
+                        <Box style={{ width: 24, height: 24, borderRadius: 5, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: getAlphaColor(entityColors.character, 0.10), border: `1px solid ${getAlphaColor(entityColors.character, 0.20)}` }}>
+                          <Building2 size={14} color={entityColors.character} />
+                        </Box>
+                        <Text style={{ fontSize: 11, color: '#555', flex: 1 }}>Organization</Text>
+                        <Text
+                          component={Link}
+                          href={`/organizations/${character.organizations[0].id}`}
+                          style={{ fontSize: 12, fontWeight: 700, color: entityColors.organization, textDecoration: 'none' }}
+                        >
                           {character.organizations[0].name}
                         </Text>
-                      </Group>
+                      </Box>
                     )}
-                    <Group
-                      justify="space-between"
-                      style={{ padding: '7px 0', borderBottom: '1px solid #191919' }}
-                    >
-                      <Text style={{ fontSize: 13, color: '#444' }}>Gambles</Text>
-                      <Text style={{ fontSize: 13, color: entityColors.character, fontWeight: 600 }}>
-                        {gambles.length}
-                      </Text>
-                    </Group>
-                    <Group justify="space-between" style={{ padding: '7px 0' }}>
-                      <Text style={{ fontSize: 13, color: '#444' }}>Arcs</Text>
-                      <Text style={{ fontSize: 13, color: entityColors.character, fontWeight: 600 }}>
-                        {arcs.length}
-                      </Text>
-                    </Group>
-                  </Stack>
+                    <Box style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: '1px solid #161616' }}>
+                      <Box style={{ width: 24, height: 24, borderRadius: 5, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: getAlphaColor(entityColors.character, 0.10), border: `1px solid ${getAlphaColor(entityColors.character, 0.20)}` }}>
+                        <Crown size={14} color={entityColors.character} />
+                      </Box>
+                      <Text style={{ fontSize: 11, color: '#555', flex: 1 }}>Gambles</Text>
+                      <Text style={{ fontSize: 12, fontWeight: 700, color: entityColors.character }}>{gambles.length}</Text>
+                    </Box>
+                    <Box style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0' }}>
+                      <Box style={{ width: 24, height: 24, borderRadius: 5, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: getAlphaColor(entityColors.character, 0.10), border: `1px solid ${getAlphaColor(entityColors.character, 0.20)}` }}>
+                        <Bookmark size={14} color={entityColors.character} />
+                      </Box>
+                      <Text style={{ fontSize: 11, color: '#555', flex: 1 }}>Arcs</Text>
+                      <Text style={{ fontSize: 12, fontWeight: 700, color: entityColors.character }}>{arcs.length}</Text>
+                    </Box>
+                  </Box>
                 </Card>
 
                 {/* Story Arcs compact */}
@@ -378,7 +382,7 @@ export default function CharacterPageClient({
                     withBorder
                     radius="lg"
                     shadow="md"
-                    style={{ background: '#111', border: '1px solid #1a1a1a' }}
+                    style={getCardStyles(theme, entityColors.arc)}
                     p="md"
                   >
                     <RelatedContentSection
@@ -402,7 +406,7 @@ export default function CharacterPageClient({
                     withBorder
                     radius="lg"
                     shadow="md"
-                    style={{ background: '#111', border: '1px solid #1a1a1a' }}
+                    style={getCardStyles(theme, entityColors.gamble)}
                     p="md"
                   >
                     <RelatedContentSection
@@ -426,7 +430,7 @@ export default function CharacterPageClient({
                     withBorder
                     radius="lg"
                     shadow="md"
-                    style={{ background: '#111', border: '1px solid #1a1a1a' }}
+                    style={getCardStyles(theme, entityColors.quote)}
                     p="md"
                   >
                     <RelatedContentSection
