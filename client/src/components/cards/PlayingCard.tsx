@@ -5,7 +5,6 @@ import { Card, Box, Badge, Text, ActionIcon, rem, useMantineTheme } from '@manti
 import Link from 'next/link'
 import { Camera } from 'lucide-react'
 import { getPlayingCardStyles, getEntityThemeColor, type EntityAccentKey } from '../../lib/mantine-theme'
-import { mangaPatterns } from '../../lib/manga-decorations'
 import MediaThumbnail, { type MediaItem } from '../MediaThumbnail'
 import classes from './PlayingCard.module.css'
 
@@ -225,18 +224,6 @@ export function PlayingCard({
           gap: rem(4)
         }}
       >
-        {/* Diagonal stripe background accent */}
-        <Box
-          aria-hidden="true"
-          style={{
-            position: 'absolute',
-            inset: 0,
-            backgroundImage: mangaPatterns.diagonalStripes(`${accentColor}10`, 1, 6),
-            borderRadius: `0 0 ${rem(8)} ${rem(8)}`,
-            pointerEvents: 'none'
-          }}
-        />
-
         <Text
           size="sm"
           fw={600}
@@ -247,13 +234,10 @@ export function PlayingCard({
             lineHeight: 1.4,
             fontSize: rem(15),
             color: '#ffffff',
-            textShadow: '0 1px 4px rgba(0,0,0,0.8)',
-            background: 'linear-gradient(180deg, rgba(4,2,2,0.72) 0%, rgba(8,5,5,0.82) 100%)',
-            backdropFilter: 'blur(4px)',
             borderRadius: rem(6),
             padding: `${rem(6)} ${rem(10)}`,
-            border: `1px solid ${accentColor}65`,
-            boxShadow: `0 0 14px ${accentColor}28, inset 0 1px 0 rgba(255,255,255,0.07)`,
+            border: `1px solid ${accentColor}40`,
+            boxShadow: `0 0 14px ${accentColor}20`,
             fontFamily: 'var(--font-opti-goudy-text), serif',
             fontWeight: 600,
             letterSpacing: '0.025em',

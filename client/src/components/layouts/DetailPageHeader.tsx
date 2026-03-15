@@ -9,7 +9,7 @@ import {
   type EntityAccentKey
 } from '../../lib/mantine-theme'
 import { mangaPatterns } from '../../lib/manga-decorations'
-import { EntitySuitWatermark, SpeedLines } from '../decorative/MangaPatterns'
+import { SpeedLines } from '../decorative/MangaPatterns'
 import MediaThumbnail from '../MediaThumbnail'
 
 interface DetailPageHeaderProps {
@@ -84,17 +84,6 @@ export function DetailPageHeader({
       {/* Speed lines overlay */}
       <SpeedLines color={`${accentColor}05`} angle={-20} />
 
-      {/* Suit watermark */}
-      <EntitySuitWatermark
-        entityType={entityType}
-        color={accentColor}
-        size={150}
-        style={{
-          bottom: -20,
-          right: -20,
-          opacity: 0.09
-        }}
-      />
 
       {/* Cinematic centered layout */}
       <Box style={{ position: 'relative', zIndex: 1 }}>
