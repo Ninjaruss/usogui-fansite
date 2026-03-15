@@ -11,7 +11,6 @@ import {
   Grid,
   Group,
   Loader,
-  Paper,
   Stack,
   Tabs,
   Text,
