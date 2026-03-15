@@ -12,19 +12,17 @@ import {
   Stack,
   Tabs,
   Text,
-  Title,
   useMantineTheme
 } from '@mantine/core'
 import {
   getEntityThemeColor,
   textColors,
   getAlphaColor,
-  fontSize,
   setTabAccentColors,
   backgroundStyles,
   getCardStyles
 } from '../../../lib/mantine-theme'
-import { ArrowUp, BookOpen, Calendar, Image as ImageIcon, MessageSquare } from 'lucide-react'
+import { ArrowUp, BookOpen, ArrowRight, Crown, GitBranch, Calendar, Image as ImageIcon, MessageSquare } from 'lucide-react'
 import Link from 'next/link'
 import { BreadcrumbNav, createEntityBreadcrumbs } from '../../../components/Breadcrumb'
 import EnhancedSpoilerMarkdown from '../../../components/EnhancedSpoilerMarkdown'
@@ -243,23 +241,17 @@ export default function ArcPageClient({ initialArc, initialEvents, initialGamble
               {/* Main column */}
               <Stack gap={theme.spacing.md}>
                 {/* Arc Description Section */}
-                <Card withBorder radius="lg" shadow="lg" style={{
-                  ...getCardStyles(theme, entityColors.arc),
-                  borderLeft: `3px solid ${entityColors.arc}`,
-                }}>
-                  <Stack gap={theme.spacing.md} p={theme.spacing.lg}>
-                    <Group gap={theme.spacing.sm} align="center">
-                      <BookOpen size={24} color={entityColors.arc} />
-                    </Group>
-                    <Group justify="flex-start" gap="sm" style={{ marginBottom: 12, marginTop: 4 }}>
-                      <Box style={{ height: 1, width: 40, background: `linear-gradient(to right, transparent, ${entityColors.arc}40)` }} />
-                      <Text
-                        className="eyebrow-label"
-                        style={{ color: 'rgba(255,255,255,0.55)', fontSize: '0.68rem' }}
-                      >
-                        ABOUT THIS ARC
+                <Card withBorder radius="lg" shadow="lg" padding={0} style={getCardStyles(theme, entityColors.arc)}>
+                  <Box style={{ height: 3, borderRadius: '6px 6px 0 0', background: `linear-gradient(90deg, ${entityColors.arc}, transparent 70%)` }} />
+                  <Box p="lg">
+                    <Group gap={10} mb={14} align="center">
+                      <Box style={{ width: 28, height: 28, borderRadius: 6, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: getAlphaColor(entityColors.arc, 0.15), border: `1px solid ${getAlphaColor(entityColors.arc, 0.30)}` }}>
+                        <BookOpen size={16} color={entityColors.arc} />
+                      </Box>
+                      <Text style={{ fontSize: '0.65rem', fontWeight: 800, letterSpacing: '0.18em', textTransform: 'uppercase', color: entityColors.arc, opacity: 0.85 }}>
+                        About This Arc
                       </Text>
-                      <Box style={{ height: 1, flex: 1, maxWidth: 120, background: `linear-gradient(to left, transparent, ${entityColors.arc}20)` }} />
+                      <Box style={{ flex: 1, height: 1, background: `linear-gradient(to right, ${getAlphaColor(entityColors.arc, 0.20)}, transparent)` }} />
                     </Group>
                     <TimelineSpoilerWrapper chapterNumber={initialArc.startChapter}>
                       <Box style={{ fontSize: 14, lineHeight: 1.6 }}>
@@ -271,30 +263,21 @@ export default function ArcPageClient({ initialArc, initialEvents, initialGamble
                         />
                       </Box>
                     </TimelineSpoilerWrapper>
-                  </Stack>
+                  </Box>
                 </Card>
 
                 {/* Chapter Navigation */}
-                <Card withBorder radius="lg" shadow="lg" style={{
-                  background: backgroundStyles.card,
-                  border: `1px solid ${getAlphaColor(entityColors.arc, 0.4)}`,
-                  transition: `all ${theme.other?.transitions?.durationShort || 200}ms ease-in-out`
-                }}>
-                  <Stack gap={theme.spacing.md} p={theme.spacing.md}>
-                    <Group justify="space-between" align="center">
-                      <Group gap={theme.spacing.sm}>
-                        <BookOpen size={20} color={entityColors.arc} />
-                      </Group>
-                    </Group>
-                    <Group justify="flex-start" gap="sm" style={{ marginBottom: 4, marginTop: 4 }}>
-                      <Box style={{ height: 1, width: 40, background: `linear-gradient(to right, transparent, ${entityColors.arc}40)` }} />
-                      <Text
-                        className="eyebrow-label"
-                        style={{ color: 'rgba(255,255,255,0.55)', fontSize: '0.68rem' }}
-                      >
-                        CHAPTER NAVIGATION
+                <Card withBorder radius="lg" shadow="lg" padding={0} style={{ background: backgroundStyles.card, border: `1px solid ${getAlphaColor(entityColors.arc, 0.4)}` }}>
+                  <Box style={{ height: 3, borderRadius: '6px 6px 0 0', background: `linear-gradient(90deg, ${entityColors.arc}, transparent 70%)` }} />
+                  <Box p="md">
+                    <Group gap={10} mb={14} align="center">
+                      <Box style={{ width: 28, height: 28, borderRadius: 6, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: getAlphaColor(entityColors.arc, 0.15), border: `1px solid ${getAlphaColor(entityColors.arc, 0.30)}` }}>
+                        <ArrowRight size={16} color={entityColors.arc} />
+                      </Box>
+                      <Text style={{ fontSize: '0.65rem', fontWeight: 800, letterSpacing: '0.18em', textTransform: 'uppercase', color: entityColors.arc, opacity: 0.85 }}>
+                        Chapter Navigation
                       </Text>
-                      <Box style={{ height: 1, flex: 1, maxWidth: 120, background: `linear-gradient(to left, transparent, ${entityColors.arc}20)` }} />
+                      <Box style={{ flex: 1, height: 1, background: `linear-gradient(to right, ${getAlphaColor(entityColors.arc, 0.20)}, transparent)` }} />
                     </Group>
                     <Group gap={theme.spacing.md} wrap="wrap">
                       <Button
@@ -333,50 +316,46 @@ export default function ArcPageClient({ initialArc, initialEvents, initialGamble
                         End: Chapter {initialArc.endChapter}
                       </Button>
                     </Group>
-                  </Stack>
+                  </Box>
                 </Card>
               </Stack>
 
               {/* Aside column */}
               <Stack gap={theme.spacing.sm}>
                 {/* Details card */}
-                <Card withBorder radius="lg" shadow="lg" style={getCardStyles(theme, entityColors.arc)}>
-                  <Stack gap={theme.spacing.sm} p={theme.spacing.md}>
-                    <Text
-                      style={{
-                        fontSize: 9,
-                        fontWeight: 700,
-                        textTransform: 'uppercase',
-                        letterSpacing: '2px',
-                        color: '#555',
-                        marginBottom: 4,
-                      }}
-                    >
-                      Details
-                    </Text>
-                    {initialArc.startChapter != null && initialArc.endChapter != null && (
-                      <Group justify="space-between">
-                        <Text style={{ fontSize: fontSize.sm, color: textColors.secondary }}>Chapters</Text>
-                        <Text style={{ fontSize: fontSize.sm, color: textColors.primary, fontWeight: 600 }}>
-                          {initialArc.startChapter}–{initialArc.endChapter}
-                        </Text>
-                      </Group>
-                    )}
-                    <Group justify="space-between">
-                      <Text style={{ fontSize: fontSize.sm, color: textColors.secondary }}>Gambles</Text>
-                      <Text style={{ fontSize: fontSize.sm, color: textColors.primary, fontWeight: 600 }}>
-                        {initialGambles.length}
-                      </Text>
+                <Card withBorder radius="lg" shadow="lg" padding={0} style={getCardStyles(theme, entityColors.arc)}>
+                  <Box style={{ height: 3, borderRadius: '6px 6px 0 0', background: `linear-gradient(90deg, ${entityColors.arc}, transparent 70%)` }} />
+                  <Box p="md">
+                    <Group gap={10} mb={14} align="center">
+                      <Text style={{ fontSize: '0.65rem', fontWeight: 800, letterSpacing: '0.18em', textTransform: 'uppercase', color: entityColors.arc, opacity: 0.85 }}>Details</Text>
+                      <Box style={{ flex: 1, height: 1, background: `linear-gradient(to right, ${getAlphaColor(entityColors.arc, 0.20)}, transparent)` }} />
                     </Group>
-                    {initialArc.children != null && initialArc.children.length > 0 && (
-                      <Group justify="space-between">
-                        <Text style={{ fontSize: fontSize.sm, color: textColors.secondary }}>Sub-arcs</Text>
-                        <Text style={{ fontSize: fontSize.sm, color: textColors.primary, fontWeight: 600 }}>
-                          {initialArc.children.length}
-                        </Text>
-                      </Group>
+                    {initialArc.startChapter != null && initialArc.endChapter != null && (
+                      <Box style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: '1px solid #161616' }}>
+                        <Box style={{ width: 24, height: 24, borderRadius: 5, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: getAlphaColor(entityColors.arc, 0.10), border: `1px solid ${getAlphaColor(entityColors.arc, 0.20)}` }}>
+                          <BookOpen size={14} color={entityColors.arc} />
+                        </Box>
+                        <Text style={{ fontSize: 11, color: '#555', flex: 1 }}>Chapters</Text>
+                        <Text style={{ fontSize: 12, fontWeight: 700, color: entityColors.arc }}>{initialArc.startChapter}–{initialArc.endChapter}</Text>
+                      </Box>
                     )}
-                  </Stack>
+                    <Box style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: initialArc.children?.length ? '1px solid #161616' : 'none' }}>
+                      <Box style={{ width: 24, height: 24, borderRadius: 5, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: getAlphaColor(entityColors.arc, 0.10), border: `1px solid ${getAlphaColor(entityColors.arc, 0.20)}` }}>
+                        <Crown size={14} color={entityColors.arc} />
+                      </Box>
+                      <Text style={{ fontSize: 11, color: '#555', flex: 1 }}>Gambles</Text>
+                      <Text style={{ fontSize: 12, fontWeight: 700, color: entityColors.arc }}>{initialGambles.length}</Text>
+                    </Box>
+                    {initialArc.children != null && initialArc.children.length > 0 && (
+                      <Box style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0' }}>
+                        <Box style={{ width: 24, height: 24, borderRadius: 5, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: getAlphaColor(entityColors.arc, 0.10), border: `1px solid ${getAlphaColor(entityColors.arc, 0.20)}` }}>
+                          <GitBranch size={14} color={entityColors.arc} />
+                        </Box>
+                        <Text style={{ fontSize: 11, color: '#555', flex: 1 }}>Sub-arcs</Text>
+                        <Text style={{ fontSize: 12, fontWeight: 700, color: entityColors.arc }}>{initialArc.children.length}</Text>
+                      </Box>
+                    )}
+                  </Box>
                 </Card>
 
                 {/* Gambles compact list */}
@@ -429,24 +408,19 @@ export default function ArcPageClient({ initialArc, initialEvents, initialGamble
 
           <Tabs.Panel value="media" pt={theme.spacing.md}>
             <Stack gap="md">
-              <Card withBorder radius="lg" shadow="lg" style={{
-                background: backgroundStyles.card,
-                border: `1px solid ${getAlphaColor(getEntityThemeColor(theme, 'media'), 0.4)}`
-              }}>
-                <Stack gap="md" p="md">
-                  <Group justify="space-between" align="center">
-                    <Group gap="sm">
-                      <ImageIcon size={20} color={getEntityThemeColor(theme, 'media')} />
-                      <Title order={4} c={textColors.media}>Media Gallery</Title>
+              <Card withBorder radius="lg" shadow="lg" padding={0} style={{ background: backgroundStyles.card, border: `1px solid ${getAlphaColor(getEntityThemeColor(theme, 'media'), 0.4)}` }}>
+                <Box style={{ height: 3, borderRadius: '6px 6px 0 0', background: `linear-gradient(90deg, ${getEntityThemeColor(theme, 'media')}, transparent 70%)` }} />
+                <Box p="md">
+                  <Group justify="space-between" align="center" mb={14}>
+                    <Group gap={10} align="center">
+                      <Box style={{ width: 28, height: 28, borderRadius: 6, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: getAlphaColor(getEntityThemeColor(theme, 'media'), 0.15), border: `1px solid ${getAlphaColor(getEntityThemeColor(theme, 'media'), 0.30)}` }}>
+                        <ImageIcon size={16} color={getEntityThemeColor(theme, 'media')} />
+                      </Box>
+                      <Text style={{ fontSize: '0.65rem', fontWeight: 800, letterSpacing: '0.18em', textTransform: 'uppercase', color: getEntityThemeColor(theme, 'media'), opacity: 0.85 }}>
+                        Media Gallery
+                      </Text>
                     </Group>
-                    <Button
-                      component={Link}
-                      href={`/media?ownerType=arc&ownerId=${initialArc.id}`}
-                      variant="outline"
-                      c={getEntityThemeColor(theme, 'media')}
-                      size="sm"
-                      radius="xl"
-                    >
+                    <Button component={Link} href={`/media?ownerType=arc&ownerId=${initialArc.id}`} variant="outline" c={getEntityThemeColor(theme, 'media')} size="sm" radius="xl">
                       View All
                     </Button>
                   </Group>
@@ -460,7 +434,7 @@ export default function ArcPageClient({ initialArc, initialEvents, initialGamble
                     showFilters={false}
                     initialMediaId={mediaId}
                   />
-                </Stack>
+                </Box>
               </Card>
             </Stack>
           </Tabs.Panel>
