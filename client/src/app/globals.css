@@ -1125,3 +1125,13 @@ textarea:focus-visible {
   .hero-scan-line { animation: none; }
   .stamp-reveal   { animation: none; }
 }
+
+/* Detail page editorial grid — mobile collapse */
+@media (max-width: 768px) {
+  .detail-editorial-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .detail-hero-portrait {
+    display: none !important;
+  }
+}
