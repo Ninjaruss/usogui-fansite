@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { Box, Card, Group, Stack, Title, Text, useMantineTheme } from '@mantine/core'
+import { Box, Card, Stack, Title, useMantineTheme } from '@mantine/core'
 import {
   getEntityThemeColor,
   backgroundStyles,
@@ -11,7 +11,6 @@ import {
 import { mangaPatterns } from '../../lib/manga-decorations'
 import { EntitySuitWatermark, SpeedLines } from '../decorative/MangaPatterns'
 import MediaThumbnail from '../MediaThumbnail'
-import ErrorBoundary from '../ErrorBoundary'
 
 interface DetailPageHeaderProps {
   /** Entity type for theming */
