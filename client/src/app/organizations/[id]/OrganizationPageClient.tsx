@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from 'react'
 import {
-  Badge,
   Box,
   Button,
   Card,
@@ -17,7 +16,6 @@ import {
 import {
   getEntityThemeColor,
   textColors,
-  getAlphaColor,
   fontSize,
   setTabAccentColors,
   backgroundStyles,
@@ -31,6 +29,7 @@ import { pageEnter } from '../../../lib/motion-presets'
 import MediaGallery from '../../../components/MediaGallery'
 import { BreadcrumbNav, createEntityBreadcrumbs } from '../../../components/Breadcrumb'
 import { DetailPageHeader } from '../../../components/layouts/DetailPageHeader'
+import { RelatedContentSection } from '../../../components/layouts/RelatedContentSection'
 import { usePageView } from '../../../hooks/usePageView'
 import TimelineSpoilerWrapper from '../../../components/TimelineSpoilerWrapper'
 import OrganizationMembers from '../../../components/OrganizationMembers'
@@ -60,7 +59,7 @@ export default function OrganizationPageClient({
   initialOrganization,
   initialMembers,
   initialEvents: _initialEvents,
-  initialGambles: _initialGambles
+  initialGambles
 }: OrganizationPageClientProps) {
   const theme = useMantineTheme()
   const [activeTab, setActiveTab] = useState<string>('overview')
@@ -108,21 +107,11 @@ export default function OrganizationPageClient({
         entityType="organization"
         entityId={initialOrganization.id}
         entityName={initialOrganization.name}
-      >
-        <Stack gap={theme.spacing.md} style={{ flex: 1, justifyContent: 'center' }}>
-          {/* Content Stats */}
-          <Group gap={theme.spacing.md} wrap="wrap" mt={theme.spacing.sm}>
-            <Badge size="lg" variant="light" c={textColors.character} style={{
-              fontSize: fontSize.xs,
-              fontWeight: 600,
-              background: getAlphaColor(entityColors.character, 0.2),
-              border: `1px solid ${getAlphaColor(entityColors.character, 0.4)}`
-            }}>
-              {initialMembers.length} Members
-            </Badge>
-          </Group>
-        </Stack>
-      </DetailPageHeader>
+        stats={[
+          { value: initialMembers?.length ?? 0, label: 'Members' },
+          { value: initialGambles?.length ?? 0, label: 'Gambles' },
+        ]}
+      />
 
       <motion.div {...pageEnter}>
         <Card withBorder radius="lg" className="gambling-card" shadow="xl" style={getCardStyles(theme)}>
@@ -142,49 +131,115 @@ export default function OrganizationPageClient({
           </Tabs.List>
 
           <Tabs.Panel value="overview" pt={theme.spacing.md}>
-            <Stack gap={theme.spacing.lg}>
-              {/* Organization Description Section */}
-              {initialOrganization.description && (
-                <Card withBorder radius="lg" shadow="lg" style={getCardStyles(theme, entityColors.organization)}>
-                  <Stack gap={theme.spacing.md} p={theme.spacing.lg}>
-                    <Group justify="flex-start" gap="sm" style={{ marginBottom: 12, marginTop: 24 }}>
-                      <Box style={{ height: 1, width: 40, background: `linear-gradient(to right, transparent, ${entityColors.organization}40)` }} />
-                      <Text className="eyebrow-label" style={{ color: 'rgba(255,255,255,0.55)', fontSize: '0.68rem' }}>
-                        ORGANIZATION OVERVIEW
-                      </Text>
-                      <Box style={{ height: 1, flex: 1, maxWidth: 120, background: `linear-gradient(to left, transparent, ${entityColors.organization}20)` }} />
-                    </Group>
-                    <TimelineSpoilerWrapper chapterNumber={1}>
-                      <Box style={{ lineHeight: 1.6 }}>
-                        <EnhancedSpoilerMarkdown
-                          content={initialOrganization.description}
-                          enableEntityEmbeds
-                          compactEntityCards={false}
-                        />
-                      </Box>
-                    </TimelineSpoilerWrapper>
-                  </Stack>
-                </Card>
-              )}
+            <Box
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'minmax(0, 1fr) 260px',
+                gap: 12,
+                alignItems: 'start',
+              }}
+              className="detail-editorial-grid"
+            >
+              {/* Main column */}
+              <Stack gap={theme.spacing.md}>
+                {/* Organization Description Section */}
+                {initialOrganization.description && (
+                  <Card withBorder radius="lg" shadow="lg" style={{
+                    ...getCardStyles(theme, entityColors.organization),
+                    borderLeft: `3px solid ${entityColors.organization}`,
+                  }}>
+                    <Stack gap={theme.spacing.md} p={theme.spacing.lg}>
+                      <Group justify="flex-start" gap="sm" style={{ marginBottom: 12, marginTop: 24 }}>
+                        <Box style={{ height: 1, width: 40, background: `linear-gradient(to right, transparent, ${entityColors.organization}40)` }} />
+                        <Text className="eyebrow-label" style={{ color: 'rgba(255,255,255,0.55)', fontSize: '0.68rem' }}>
+                          ORGANIZATION OVERVIEW
+                        </Text>
+                        <Box style={{ height: 1, flex: 1, maxWidth: 120, background: `linear-gradient(to left, transparent, ${entityColors.organization}20)` }} />
+                      </Group>
+                      <TimelineSpoilerWrapper chapterNumber={1}>
+                        <Box style={{ fontSize: 14, lineHeight: 1.6 }}>
+                          <EnhancedSpoilerMarkdown
+                            content={initialOrganization.description}
+                            enableEntityEmbeds
+                            compactEntityCards={false}
+                          />
+                        </Box>
+                      </TimelineSpoilerWrapper>
+                    </Stack>
+                  </Card>
+                )}
 
-              {!initialOrganization.description && (
-                <Card withBorder radius="lg" shadow="lg" style={getCardStyles(theme, entityColors.organization)}>
-                  <Stack gap={theme.spacing.md} p={theme.spacing.lg}>
-                    <Group justify="flex-start" gap="sm" style={{ marginBottom: 12, marginTop: 24 }}>
-                      <Box style={{ height: 1, width: 40, background: `linear-gradient(to right, transparent, ${entityColors.organization}40)` }} />
-                      <Text className="eyebrow-label" style={{ color: 'rgba(255,255,255,0.55)', fontSize: '0.68rem' }}>
-                        ORGANIZATION OVERVIEW
+                {!initialOrganization.description && (
+                  <Card withBorder radius="lg" shadow="lg" style={{
+                    ...getCardStyles(theme, entityColors.organization),
+                    borderLeft: `3px solid ${entityColors.organization}`,
+                  }}>
+                    <Stack gap={theme.spacing.md} p={theme.spacing.lg}>
+                      <Group justify="flex-start" gap="sm" style={{ marginBottom: 12, marginTop: 24 }}>
+                        <Box style={{ height: 1, width: 40, background: `linear-gradient(to right, transparent, ${entityColors.organization}40)` }} />
+                        <Text className="eyebrow-label" style={{ color: 'rgba(255,255,255,0.55)', fontSize: '0.68rem' }}>
+                          ORGANIZATION OVERVIEW
+                        </Text>
+                        <Box style={{ height: 1, flex: 1, maxWidth: 120, background: `linear-gradient(to left, transparent, ${entityColors.organization}20)` }} />
+                      </Group>
+                      <Text size="sm" c={textColors.tertiary} style={{ fontStyle: 'italic', textAlign: 'center', padding: theme.spacing.xl }}>
+                        No description available for this organization yet. Check back later for updates!
                       </Text>
-                      <Box style={{ height: 1, flex: 1, maxWidth: 120, background: `linear-gradient(to left, transparent, ${entityColors.organization}20)` }} />
-                    </Group>
-                    <Text size="sm" c={textColors.tertiary} style={{ fontStyle: 'italic', textAlign: 'center', padding: theme.spacing.xl }}>
-                      No description available for this organization yet. Check back later for updates!
+                    </Stack>
+                  </Card>
+                )}
+              </Stack>
+
+              {/* Aside column */}
+              <Stack gap={theme.spacing.sm}>
+                {/* Details card */}
+                <Card radius="lg" shadow="md" style={{ background: '#111', border: '1px solid #1a1a1a' }}>
+                  <Stack gap={theme.spacing.xs} p={theme.spacing.md}>
+                    <Text style={{ fontSize: fontSize.xs, textTransform: 'uppercase', letterSpacing: '1.5px', color: '#555', marginBottom: 4 }}>
+                      Details
                     </Text>
+                    <Group justify="space-between">
+                      <Text size="xs" c={textColors.tertiary}>Members</Text>
+                      <Text size="xs" style={{ color: entityColors.character, fontWeight: 600 }}>
+                        {initialMembers?.length ?? 0}
+                      </Text>
+                    </Group>
+                    <Group justify="space-between">
+                      <Text size="xs" c={textColors.tertiary}>Gambles</Text>
+                      <Text size="xs" style={{ color: entityColors.gamble, fontWeight: 600 }}>
+                        {initialGambles?.length ?? 0}
+                      </Text>
+                    </Group>
                   </Stack>
                 </Card>
-              )}
 
-            </Stack>
+                {/* Members compact list */}
+                <RelatedContentSection
+                  entityType="character"
+                  title="Members"
+                  items={initialMembers ?? []}
+                  previewCount={4}
+                  getKey={(m) => m.id}
+                  variant="compact"
+                  getLabel={(m) => m.name}
+                  getHref={(m) => `/characters/${m.id}`}
+                  itemDotColor={entityColors.character}
+                />
+
+                {/* Gambles compact list */}
+                <RelatedContentSection
+                  entityType="gamble"
+                  title="Gambles"
+                  items={initialGambles ?? []}
+                  previewCount={4}
+                  getKey={(g) => g.id}
+                  variant="compact"
+                  getLabel={(g) => g.name}
+                  getHref={(g) => `/gambles/${g.id}`}
+                  itemDotColor={entityColors.gamble}
+                />
+              </Stack>
+            </Box>
           </Tabs.Panel>
 
           <Tabs.Panel value="members" pt={theme.spacing.md}>
