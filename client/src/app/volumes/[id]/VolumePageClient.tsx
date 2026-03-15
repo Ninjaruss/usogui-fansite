@@ -24,7 +24,7 @@ import {
   backgroundStyles,
   getCardStyles
 } from '../../../lib/mantine-theme'
-import { Book, Hash, BookOpen } from 'lucide-react'
+import { Book, Hash, BookOpen, ArrowRight, Bookmark } from 'lucide-react'
 import Link from 'next/link'
 import { motion } from 'motion/react'
 import { pageEnter } from '../../../lib/motion-presets'
@@ -150,22 +150,15 @@ export default function VolumePageClient({ initialVolume, initialChapters, initi
                     {/* Main column */}
                     <Stack gap={theme.spacing.md}>
                       {/* Volume Summary Section */}
-                      <Card
-                        withBorder
-                        radius="lg"
-                        shadow="lg"
-                        style={{
-                          ...getCardStyles(theme, entityColors.volume),
-                          borderLeft: `3px solid ${entityColors.volume}`,
-                        }}
-                      >
-                        <Stack gap={theme.spacing.md} p={theme.spacing.lg}>
-                          <Group justify="flex-start" gap="sm" style={{ marginBottom: 12, marginTop: 24 }}>
-                            <Box style={{ height: 1, width: 40, background: `linear-gradient(to right, transparent, ${entityColors.volume}40)` }} />
-                            <Text className="eyebrow-label" style={{ color: 'rgba(255,255,255,0.55)', fontSize: '0.68rem' }}>
-                              VOLUME SUMMARY
-                            </Text>
-                            <Box style={{ height: 1, flex: 1, maxWidth: 120, background: `linear-gradient(to left, transparent, ${entityColors.volume}20)` }} />
+                      <Card withBorder radius="lg" shadow="lg" padding={0} style={getCardStyles(theme, entityColors.volume)}>
+                        <Box style={{ height: 3, borderRadius: '6px 6px 0 0', background: `linear-gradient(90deg, ${entityColors.volume}, transparent 70%)` }} />
+                        <Box p="lg">
+                          <Group gap={10} mb={14} align="center">
+                            <Box style={{ width: 28, height: 28, borderRadius: 6, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: getAlphaColor(entityColors.volume, 0.15), border: `1px solid ${getAlphaColor(entityColors.volume, 0.30)}` }}>
+                              <Book size={16} color={entityColors.volume} />
+                            </Box>
+                            <Text style={{ fontSize: '0.65rem', fontWeight: 800, letterSpacing: '0.18em', textTransform: 'uppercase', color: entityColors.volume, opacity: 0.85 }}>Volume Summary</Text>
+                            <Box style={{ flex: 1, height: 1, background: `linear-gradient(to right, ${getAlphaColor(entityColors.volume, 0.20)}, transparent)` }} />
                           </Group>
                           {initialVolume.description ? (
                             <TimelineSpoilerWrapper chapterNumber={initialVolume.startChapter}>
@@ -178,18 +171,19 @@ export default function VolumePageClient({ initialVolume, initialChapters, initi
                               No summary available for this volume yet. Check back later for updates!
                             </Text>
                           )}
-                        </Stack>
+                        </Box>
                       </Card>
 
                       {/* Chapter Navigation Section */}
-                      <Card withBorder radius="lg" shadow="lg" style={getCardStyles(theme, entityColors.volume)}>
-                        <Stack gap={theme.spacing.md} p={theme.spacing.md}>
-                          <Group justify="flex-start" gap="sm" style={{ marginBottom: 12, marginTop: 24 }}>
-                            <Box style={{ height: 1, width: 40, background: `linear-gradient(to right, transparent, ${entityColors.volume}40)` }} />
-                            <Text className="eyebrow-label" style={{ color: 'rgba(255,255,255,0.55)', fontSize: '0.68rem' }}>
-                              CHAPTER NAVIGATION
-                            </Text>
-                            <Box style={{ height: 1, flex: 1, maxWidth: 120, background: `linear-gradient(to left, transparent, ${entityColors.volume}20)` }} />
+                      <Card withBorder radius="lg" shadow="lg" padding={0} style={getCardStyles(theme, entityColors.volume)}>
+                        <Box style={{ height: 3, borderRadius: '6px 6px 0 0', background: `linear-gradient(90deg, ${entityColors.volume}, transparent 70%)` }} />
+                        <Box p="md">
+                          <Group gap={10} mb={14} align="center">
+                            <Box style={{ width: 28, height: 28, borderRadius: 6, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: getAlphaColor(entityColors.volume, 0.15), border: `1px solid ${getAlphaColor(entityColors.volume, 0.30)}` }}>
+                              <ArrowRight size={16} color={entityColors.volume} />
+                            </Box>
+                            <Text style={{ fontSize: '0.65rem', fontWeight: 800, letterSpacing: '0.18em', textTransform: 'uppercase', color: entityColors.volume, opacity: 0.85 }}>Chapter Navigation</Text>
+                            <Box style={{ flex: 1, height: 1, background: `linear-gradient(to right, ${getAlphaColor(entityColors.volume, 0.20)}, transparent)` }} />
                           </Group>
                           <Group gap={theme.spacing.md} wrap="wrap">
                             <Button
@@ -224,39 +218,44 @@ export default function VolumePageClient({ initialVolume, initialChapters, initi
                               End: Chapter {initialVolume.endChapter}
                             </Button>
                           </Group>
-                        </Stack>
+                        </Box>
                       </Card>
                     </Stack>
 
                     {/* Aside column */}
                     <Stack gap={theme.spacing.sm}>
                       {/* Details card */}
-                      <Card withBorder radius="lg" shadow="lg" style={getCardStyles(theme, entityColors.volume)}>
-                        <Stack gap={theme.spacing.sm} p={theme.spacing.md}>
-                          <Text style={{ color: 'rgba(255,255,255,0.55)', fontSize: '0.68rem', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-                            Details
-                          </Text>
+                      <Card withBorder radius="lg" shadow="lg" padding={0} style={getCardStyles(theme, entityColors.volume)}>
+                        <Box style={{ height: 3, borderRadius: '6px 6px 0 0', background: `linear-gradient(90deg, ${entityColors.volume}, transparent 70%)` }} />
+                        <Box p="md">
+                          <Group gap={10} mb={14} align="center">
+                            <Text style={{ fontSize: '0.65rem', fontWeight: 800, letterSpacing: '0.18em', textTransform: 'uppercase', color: entityColors.volume, opacity: 0.85 }}>Details</Text>
+                            <Box style={{ flex: 1, height: 1, background: `linear-gradient(to right, ${getAlphaColor(entityColors.volume, 0.20)}, transparent)` }} />
+                          </Group>
                           {initialVolume.startChapter != null && initialVolume.endChapter != null && (
-                            <Group justify="space-between">
-                              <Text size="xs" c={textColors.secondary}>Chapter Range</Text>
-                              <Text size="xs" fw={600} c={entityColors.volume}>
-                                Ch. {initialVolume.startChapter}–{initialVolume.endChapter}
-                              </Text>
-                            </Group>
+                            <Box style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: '1px solid #161616' }}>
+                              <Box style={{ width: 24, height: 24, borderRadius: 5, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: getAlphaColor(entityColors.volume, 0.10), border: `1px solid ${getAlphaColor(entityColors.volume, 0.20)}` }}>
+                                <BookOpen size={14} color={entityColors.volume} />
+                              </Box>
+                              <Text style={{ fontSize: 11, color: '#555', flex: 1 }}>Chapter Range</Text>
+                              <Text style={{ fontSize: 12, fontWeight: 700, color: entityColors.volume }}>Ch. {initialVolume.startChapter}–{initialVolume.endChapter}</Text>
+                            </Box>
                           )}
-                          <Group justify="space-between">
-                            <Text size="xs" c={textColors.secondary}>Chapter Count</Text>
-                            <Text size="xs" fw={600} c={entityColors.volume}>
-                              {initialChapters?.length ?? 0}
-                            </Text>
-                          </Group>
-                          <Group justify="space-between">
-                            <Text size="xs" c={textColors.secondary}>Arc Count</Text>
-                            <Text size="xs" fw={600} c={entityColors.volume}>
-                              {initialArcs?.length ?? 0}
-                            </Text>
-                          </Group>
-                        </Stack>
+                          <Box style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: '1px solid #161616' }}>
+                            <Box style={{ width: 24, height: 24, borderRadius: 5, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: getAlphaColor(entityColors.volume, 0.10), border: `1px solid ${getAlphaColor(entityColors.volume, 0.20)}` }}>
+                              <Book size={14} color={entityColors.volume} />
+                            </Box>
+                            <Text style={{ fontSize: 11, color: '#555', flex: 1 }}>Chapter Count</Text>
+                            <Text style={{ fontSize: 12, fontWeight: 700, color: entityColors.volume }}>{initialChapters?.length ?? 0}</Text>
+                          </Box>
+                          <Box style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0' }}>
+                            <Box style={{ width: 24, height: 24, borderRadius: 5, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: getAlphaColor(entityColors.volume, 0.10), border: `1px solid ${getAlphaColor(entityColors.volume, 0.20)}` }}>
+                              <Bookmark size={14} color={entityColors.volume} />
+                            </Box>
+                            <Text style={{ fontSize: 11, color: '#555', flex: 1 }}>Arc Count</Text>
+                            <Text style={{ fontSize: 12, fontWeight: 700, color: entityColors.volume }}>{initialArcs?.length ?? 0}</Text>
+                          </Box>
+                        </Box>
                       </Card>
 
                       {/* Chapters compact list */}
@@ -290,15 +289,15 @@ export default function VolumePageClient({ initialVolume, initialChapters, initi
 
                 <Tabs.Panel value="chapters" pt={theme.spacing.md}>
                   <Stack gap={theme.spacing.lg}>
-                    <Card withBorder radius="lg" shadow="lg" style={getCardStyles(theme, entityColors.chapter)}>
-                      <Stack gap={theme.spacing.md} p={theme.spacing.md}>
-                        <Group justify="space-between" align="center">
-                          <Group justify="flex-start" gap="sm" style={{ marginBottom: 12, marginTop: 24 }}>
-                            <Box style={{ height: 1, width: 40, background: `linear-gradient(to right, transparent, ${entityColors.chapter}40)` }} />
-                            <Text className="eyebrow-label" style={{ color: 'rgba(255,255,255,0.55)', fontSize: '0.68rem' }}>
-                              CHAPTERS IN THIS VOLUME
-                            </Text>
-                            <Box style={{ height: 1, flex: 1, maxWidth: 120, background: `linear-gradient(to left, transparent, ${entityColors.chapter}20)` }} />
+                    <Card withBorder radius="lg" shadow="lg" padding={0} style={getCardStyles(theme, entityColors.volume)}>
+                      <Box style={{ height: 3, borderRadius: '6px 6px 0 0', background: `linear-gradient(90deg, ${entityColors.volume}, transparent 70%)` }} />
+                      <Box p="md">
+                        <Group justify="space-between" align="center" mb={14}>
+                          <Group gap={10} align="center">
+                            <Box style={{ width: 28, height: 28, borderRadius: 6, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: getAlphaColor(entityColors.volume, 0.15), border: `1px solid ${getAlphaColor(entityColors.volume, 0.30)}` }}>
+                              <BookOpen size={16} color={entityColors.volume} />
+                            </Box>
+                            <Text style={{ fontSize: '0.65rem', fontWeight: 800, letterSpacing: '0.18em', textTransform: 'uppercase', color: entityColors.volume, opacity: 0.85 }}>Chapters in This Volume</Text>
                           </Group>
                           <Box
                             style={{
@@ -350,7 +349,7 @@ export default function VolumePageClient({ initialVolume, initialChapters, initi
                             </Grid.Col>
                           ))}
                         </Grid>
-                      </Stack>
+                      </Box>
                     </Card>
                   </Stack>
                 </Tabs.Panel>
