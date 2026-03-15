@@ -34,13 +34,13 @@ import { useAuth } from '../../../providers/AuthProvider'
 import EnhancedSpoilerMarkdown from '../../../components/EnhancedSpoilerMarkdown'
 import EntityEmbedHelperWithSearch from '../../../components/EntityEmbedHelperWithSearch'
 import TimelineSpoilerWrapper from '../../../components/TimelineSpoilerWrapper'
-import MediaThumbnail from '../../../components/MediaThumbnail'
 import { motion } from 'motion/react'
 import { GuideStatus } from '../../../types'
 import AuthorProfileImage from '../../../components/AuthorProfileImage'
 import { UserRoleDisplay } from '../../../components/BadgeDisplay'
 import { usePageView } from '../../../hooks/usePageView'
 import { BreadcrumbNav, createEntityBreadcrumbs } from '../../../components/Breadcrumb'
+import { DetailPageHeader } from '../../../components/layouts/DetailPageHeader'
 
 interface Guide {
   id: number
@@ -422,259 +422,26 @@ export default function GuidePageClient({ initialGuide, guideId }: GuidePageClie
             <Card withBorder radius="md" shadow="md" style={{ borderColor: textColors.warning, backgroundColor: getAlphaColor(textColors.warning, 0.1) }}>
               <Stack gap="sm" p="md">
                 <Text size="sm" c={textColors.warning} fw={500}>
-                  📝 This is your {guide.status} guide. It's only visible to you until it gets approved by moderators.
+                  📝 This is your {guide.status} guide. It&apos;s only visible to you until it gets approved by moderators.
                 </Text>
               </Stack>
             </Card>
           )}
 
-          {/* Enhanced Guide Header */}
-          <Card
-            withBorder
-            radius="lg"
-            shadow="lg"
-            p={0}
-            style={{
-              ...getCardStyles(theme, entityColors.guide),
-              border: `2px solid ${entityColors.guide}`,
-              position: 'relative',
-              overflow: 'hidden'
-            }}
-          >
-            {/* Subtle Pattern Overlay */}
-            <Box
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                backgroundImage: `
-                  radial-gradient(circle at 1px 1px, rgba(255,255,255,0.05) 1px, transparent 0),
-                  radial-gradient(circle at 20px 20px, rgba(255,255,255,0.03) 1px, transparent 0)
-                `,
-                backgroundSize: '40px 40px, 80px 80px',
-                backgroundPosition: '0 0, 20px 20px',
-                pointerEvents: 'none'
-              }}
-            />
-
-            {/* Content */}
-            <Box p={theme.spacing.lg} style={{ position: 'relative', zIndex: 1 }}>
-              <Stack gap={theme.spacing.md}>
-                {/* Header with title - thumbnail shown inline when available */}
-                <Stack gap={theme.spacing.md}>
-                  {/* Title and description */}
-                  <Stack gap={theme.spacing.sm}>
-                    <Title
-                      order={1}
-                      size="2rem"
-                      fw={800}
-                      c={headerColors.h1}
-                      style={{
-                        lineHeight: 1.2,
-                        textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
-                        letterSpacing: '-0.02em',
-                        wordBreak: 'break-word'
-                      }}
-                    >
-                      {guide.title}
-                    </Title>
-
-                    {guide.description && (
-                      <Text size="md" c={textColors.secondary} style={{ lineHeight: 1.5 }}>
-                        {guide.description}
-                      </Text>
-                    )}
-                  </Stack>
-
-                  {/* Thumbnail - only takes space when media exists */}
-                  <MediaThumbnail
-                    entityType="guide"
-                    entityId={guide.id}
-                    entityName={guide.title}
-                    allowCycling
-                    maxWidth="200px"
-                    maxHeight="280px"
-                    hideIfEmpty
-                  />
-                </Stack>
-
-                {/* Author Info */}
-                <Group gap={theme.spacing.md} align="center">
-                  <AuthorProfileImage author={guide.author} size={40} showFallback />
-                  <Stack gap={2}>
-                    <Text
-                      className="eyebrow-label"
-                      style={{ color: 'rgba(255,255,255,0.4)', marginBottom: 4 }}
-                    >
-                      Written by
-                    </Text>
-                    <Text
-                      component={Link}
-                      href={`/users/${guide.author.id}`}
-                      style={{
-                        textDecoration: 'none',
-                        fontFamily: 'var(--font-opti-goudy-text), serif',
-                        fontWeight: 400,
-                        fontSize: '1.1rem',
-                        color: textColors.secondary as string,
-                      }}
-                    >
-                      {guide.author.username}
-                    </Text>
-                    <Group gap="xs">
-                      {guide.author.customRole && (
-                        <Badge
-                          c={entityColors.media}
-                          variant="outline"
-                          radius="sm"
-                          size="xs"
-                          style={{ borderColor: entityColors.media }}
-                        >
-                          {guide.author.customRole}
-                        </Badge>
-                      )}
-                      <UserRoleDisplay
-                        userRole={(guide.author.role === 'admin' || guide.author.role === 'moderator') ? guide.author.role : 'user'}
-                        customRole={guide.author.customRole}
-                        size="small"
-                      />
-                    </Group>
-                  </Stack>
-                </Group>
-
-                {/* Stats Badges */}
-                <Group gap={theme.spacing.sm} wrap="wrap">
-                  <Badge
-                    size="lg"
-                    variant="light"
-                    c={textColors.guide}
-                    leftSection={<Calendar size={14} />}
-                    style={{
-                      fontSize: fontSize.xs,
-                      fontWeight: 600,
-                      background: getAlphaColor(entityColors.guide, 0.2),
-                      border: `1px solid ${getAlphaColor(entityColors.guide, 0.4)}`
-                    }}
-                  >
-                    {new Date(guide.createdAt).toLocaleDateString()}
-                  </Badge>
-                  <Box style={{
-                    display: 'inline-flex', alignItems: 'center', gap: 6,
-                    background: `${entityColors.character}08`,
-                    border: `1px solid ${entityColors.character}20`,
-                    borderRadius: 4, padding: '2px 8px',
-                  }}>
-                    <Eye size={12} color={entityColors.character} />
-                    <Text style={{ fontFamily: 'var(--font-opti-goudy-text), serif', fontSize: '1rem', fontWeight: 400, color: entityColors.character }}>
-                      {guide.viewCount}
-                    </Text>
-                    <Text className="eyebrow-label" style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.6rem' }}>
-                      {guide.viewCount !== 1 ? 'VIEWS' : 'VIEW'}
-                    </Text>
-                  </Box>
-                  <Box style={{
-                    display: 'inline-flex', alignItems: 'center', gap: 6,
-                    background: `${entityColors.gamble}08`,
-                    border: `1px solid ${entityColors.gamble}20`,
-                    borderRadius: 4, padding: '2px 8px',
-                  }}>
-                    <Heart size={12} color={entityColors.gamble} />
-                    <Text style={{ fontFamily: 'var(--font-opti-goudy-text), serif', fontSize: '1rem', fontWeight: 400, color: entityColors.gamble }}>
-                      {guide.likeCount}
-                    </Text>
-                    <Text className="eyebrow-label" style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.6rem' }}>
-                      {guide.likeCount !== 1 ? 'LIKES' : 'LIKE'}
-                    </Text>
-                  </Box>
-                </Group>
-
-                {/* Related Entities - Consolidated */}
-                {hasRelatedEntities && (
-                  <Group gap={theme.spacing.sm} wrap="wrap">
-                    {guide.arc && (
-                      <Badge
-                        component={Link}
-                        href={`/arcs/${guide.arc.id}`}
-                        radius="lg"
-                        variant="light"
-                        size="lg"
-                        c={textColors.arc}
-                        leftSection={<BookOpen size={14} />}
-                        style={{
-                          textDecoration: 'none',
-                          cursor: 'pointer',
-                          background: getAlphaColor(entityColors.arc, 0.2),
-                          border: `1px solid ${getAlphaColor(entityColors.arc, 0.4)}`
-                        }}
-                      >
-                        {guide.arc.name}
-                      </Badge>
-                    )}
-                    {guide.gambles && guide.gambles.map((gamble) => (
-                      <Badge
-                        key={gamble.id}
-                        component={Link}
-                        href={`/gambles/${gamble.id}`}
-                        radius="lg"
-                        variant="light"
-                        size="lg"
-                        c={textColors.gamble}
-                        leftSection={<Dice6 size={14} />}
-                        style={{
-                          textDecoration: 'none',
-                          cursor: 'pointer',
-                          background: getAlphaColor(entityColors.gamble, 0.2),
-                          border: `1px solid ${getAlphaColor(entityColors.gamble, 0.4)}`
-                        }}
-                      >
-                        {gamble.name}
-                      </Badge>
-                    ))}
-                    {guide.characters && guide.characters.map((character) => (
-                      <Badge
-                        key={character.id}
-                        component={Link}
-                        href={`/characters/${character.id}`}
-                        radius="lg"
-                        variant="light"
-                        size="lg"
-                        c={textColors.character}
-                        leftSection={<Users size={14} />}
-                        style={{
-                          textDecoration: 'none',
-                          cursor: 'pointer',
-                          background: getAlphaColor(entityColors.character, 0.2),
-                          border: `1px solid ${getAlphaColor(entityColors.character, 0.4)}`
-                        }}
-                      >
-                        {character.name}
-                      </Badge>
-                    ))}
-                  </Group>
-                )}
-
-                {/* Tags */}
-                {guide.tags.length > 0 && (
-                  <Group gap="xs" wrap="wrap">
-                    {guide.tags.map((tag) => (
-                      <Badge
-                        key={tag.id}
-                        variant="outline"
-                        radius="sm"
-                        c={entityColors.organization}
-                        leftSection={<Tag size={12} />}
-                        style={{ borderColor: entityColors.organization }}
-                      >
-                        {tag.name}
-                      </Badge>
-                    ))}
-                  </Group>
-                )}
-              </Stack>
-            </Box>
-          </Card>
+          {/* Detail Page Hero Header */}
+          <DetailPageHeader
+            entityType="guide"
+            entityId={guide.id}
+            entityName={guide.title}
+            stats={[
+              { value: guide.viewCount ?? 0, label: 'Views' },
+              { value: guide.likeCount ?? 0, label: 'Likes' },
+              { value: new Date(guide.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }), label: 'Posted' },
+            ]}
+            tags={[
+              ...(guide.tags?.map((t) => ({ label: t.name, variant: 'neutral' as const })) ?? []),
+            ]}
+          />
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -697,25 +464,181 @@ export default function GuidePageClient({ initialGuide, guideId }: GuidePageClie
                 </Tabs.List>
 
                 <Tabs.Panel value="content" pt={theme.spacing.md}>
-                  <Card withBorder radius="lg" shadow="lg" style={getCardStyles(theme, entityColors.guide)}>
-                    <Stack gap={theme.spacing.md} p={theme.spacing.lg}>
-                      <Group justify="flex-start" gap="sm" style={{ marginBottom: 12, marginTop: 8 }}>
-                        <Box style={{ height: 1, width: 40, background: `linear-gradient(to right, transparent, ${entityColors.guide}40)` }} />
-                        <Text className="eyebrow-label" style={{ color: 'rgba(255,255,255,0.55)', fontSize: '0.68rem' }}>
-                          GUIDE CONTENT
-                        </Text>
-                        <Box style={{ height: 1, flex: 1, maxWidth: 120, background: `linear-gradient(to left, transparent, ${entityColors.guide}20)` }} />
-                      </Group>
-                      <TimelineSpoilerWrapper chapterNumber={undefined}>
-                        <EnhancedSpoilerMarkdown
-                          content={guide.content}
-                          enableEntityEmbeds
-                          compactEntityCards={false}
-                          className="guide-content"
-                        />
-                      </TimelineSpoilerWrapper>
+                  <Box
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'minmax(0, 1fr) 260px',
+                      gap: 12,
+                      alignItems: 'start',
+                    }}
+                    className="detail-editorial-grid"
+                  >
+                    {/* Main column — guide content */}
+                    <Stack gap={theme.spacing.md}>
+                      <Card
+                        withBorder
+                        radius="lg"
+                        shadow="lg"
+                        style={{
+                          ...getCardStyles(theme, entityColors.guide),
+                          borderLeft: `3px solid ${entityColors.guide}`,
+                        }}
+                      >
+                        <Stack gap={theme.spacing.md} p={theme.spacing.lg}>
+                          <Group justify="flex-start" gap="sm" style={{ marginBottom: 12, marginTop: 8 }}>
+                            <Box style={{ height: 1, width: 40, background: `linear-gradient(to right, transparent, ${entityColors.guide}40)` }} />
+                            <Text className="eyebrow-label" style={{ color: 'rgba(255,255,255,0.55)', fontSize: '0.68rem' }}>
+                              GUIDE CONTENT
+                            </Text>
+                            <Box style={{ height: 1, flex: 1, maxWidth: 120, background: `linear-gradient(to left, transparent, ${entityColors.guide}20)` }} />
+                          </Group>
+                          <TimelineSpoilerWrapper chapterNumber={undefined}>
+                            <EnhancedSpoilerMarkdown
+                              content={guide.content}
+                              enableEntityEmbeds
+                              compactEntityCards={false}
+                              className="guide-content"
+                            />
+                          </TimelineSpoilerWrapper>
+                        </Stack>
+                      </Card>
                     </Stack>
-                  </Card>
+
+                    {/* Aside column */}
+                    <Stack gap={theme.spacing.sm}>
+                      {/* Author card */}
+                      <Card withBorder radius="md" shadow="sm" style={getCardStyles(theme)}>
+                        <Stack gap={theme.spacing.sm} p={theme.spacing.sm}>
+                          <Text className="eyebrow-label" style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.65rem', letterSpacing: '2px' }}>
+                            WRITTEN BY
+                          </Text>
+                          <Group gap={theme.spacing.sm} align="center">
+                            <AuthorProfileImage author={guide.author} size={36} showFallback />
+                            <Stack gap={2}>
+                              <Text
+                                component={Link}
+                                href={`/users/${guide.author.id}`}
+                                style={{
+                                  textDecoration: 'none',
+                                  fontFamily: 'var(--font-opti-goudy-text), serif',
+                                  fontWeight: 400,
+                                  fontSize: '1rem',
+                                  color: textColors.secondary as string,
+                                }}
+                              >
+                                {guide.author.username}
+                              </Text>
+                              <Group gap="xs">
+                                {guide.author.customRole && (
+                                  <Badge
+                                    c={entityColors.media}
+                                    variant="outline"
+                                    radius="sm"
+                                    size="xs"
+                                    style={{ borderColor: entityColors.media }}
+                                  >
+                                    {guide.author.customRole}
+                                  </Badge>
+                                )}
+                                <UserRoleDisplay
+                                  userRole={(guide.author.role === 'admin' || guide.author.role === 'moderator') ? guide.author.role : 'user'}
+                                  customRole={guide.author.customRole}
+                                  size="small"
+                                />
+                              </Group>
+                            </Stack>
+                          </Group>
+                        </Stack>
+                      </Card>
+
+                      {/* Tags compact list */}
+                      {guide.tags.length > 0 && (
+                        <Card withBorder radius="md" shadow="sm" style={getCardStyles(theme)}>
+                          <Stack gap={theme.spacing.xs} p={theme.spacing.sm}>
+                            <Text className="eyebrow-label" style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.65rem', letterSpacing: '2px' }}>
+                              TAGS
+                            </Text>
+                            <Group gap="xs" wrap="wrap">
+                              {guide.tags.map((tag) => (
+                                <Badge
+                                  key={tag.id}
+                                  variant="outline"
+                                  radius="sm"
+                                  size="sm"
+                                  c={entityColors.organization}
+                                  leftSection={<Tag size={10} />}
+                                  style={{ borderColor: entityColors.organization }}
+                                >
+                                  {tag.name}
+                                </Badge>
+                              ))}
+                            </Group>
+                          </Stack>
+                        </Card>
+                      )}
+
+                      {/* Related entities compact list */}
+                      {hasRelatedEntities && (
+                        <Card withBorder radius="md" shadow="sm" style={getCardStyles(theme)}>
+                          <Stack gap={theme.spacing.xs} p={theme.spacing.sm}>
+                            <Text className="eyebrow-label" style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.65rem', letterSpacing: '2px' }}>
+                              RELATED
+                            </Text>
+                            <Stack gap={6}>
+                              {guide.arc && (
+                                <Group gap="xs" align="center">
+                                  <BookOpen size={12} color={entityColors.arc} />
+                                  <Text
+                                    component={Link}
+                                    href={`/arcs/${guide.arc.id}`}
+                                    size="xs"
+                                    style={{
+                                      textDecoration: 'none',
+                                      color: textColors.secondary as string,
+                                    }}
+                                  >
+                                    {guide.arc.name}
+                                  </Text>
+                                </Group>
+                              )}
+                              {guide.gambles && guide.gambles.map((gamble) => (
+                                <Group key={gamble.id} gap="xs" align="center">
+                                  <Dice6 size={12} color={entityColors.gamble} />
+                                  <Text
+                                    component={Link}
+                                    href={`/gambles/${gamble.id}`}
+                                    size="xs"
+                                    style={{
+                                      textDecoration: 'none',
+                                      color: textColors.secondary as string,
+                                    }}
+                                  >
+                                    {gamble.name}
+                                  </Text>
+                                </Group>
+                              ))}
+                              {guide.characters && guide.characters.map((character) => (
+                                <Group key={character.id} gap="xs" align="center">
+                                  <Users size={12} color={entityColors.character} />
+                                  <Text
+                                    component={Link}
+                                    href={`/characters/${character.id}`}
+                                    size="xs"
+                                    style={{
+                                      textDecoration: 'none',
+                                      color: textColors.secondary as string,
+                                    }}
+                                  >
+                                    {character.name}
+                                  </Text>
+                                </Group>
+                              ))}
+                            </Stack>
+                          </Stack>
+                        </Card>
+                      )}
+                    </Stack>
+                  </Box>
                 </Tabs.Panel>
 
                 {canEdit && (
