@@ -38,7 +38,6 @@ import { AnnotationOwnerType } from '../../../types'
 import {
   getEntityThemeColor,
   textColors,
-  headerColors,
   getAlphaColor,
   spacing,
   fontSize,
@@ -250,24 +249,6 @@ export default function GamblePageClient({ initialGamble }: GamblePageClientProp
         entityName={initialGamble.name}
       >
         <Stack gap={theme.spacing.sm}>
-          <Group gap={theme.spacing.sm} align="center">
-            <Crown size={28} color={gambleColor} />
-            <Title
-              order={1}
-              size="2.8rem"
-              fw={800}
-              c={headerColors.h1}
-              style={{
-                lineHeight: 1.1,
-                textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
-                letterSpacing: '-0.02em',
-                fontFamily: 'var(--font-opti-goudy-text), serif'
-              }}
-            >
-              {initialGamble.name}
-            </Title>
-          </Group>
-
           <Badge
             variant="filled"
             size="lg"

@@ -12,13 +12,11 @@ import {
   Stack,
   Tabs,
   Text,
-  Title,
   useMantineTheme
 } from '@mantine/core'
 import {
   getEntityThemeColor,
   textColors,
-  headerColors,
   getAlphaColor,
   fontSize,
   setTabAccentColors,
@@ -117,22 +115,6 @@ export default function EventPageClient({ initialEvent }: EventPageClientProps) 
                   {initialEvent.arc.name}
                 </Text>
               )}
-              <Group gap={theme.spacing.sm} align="center">
-                <CalendarSearch size={28} color={entityColors.event} />
-                <Title
-                  order={1}
-                  size="2.8rem"
-                  fw={800}
-                  c={headerColors.h1}
-                  style={{
-                    lineHeight: 1.1,
-                    textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
-                    letterSpacing: '-0.02em'
-                  }}
-                >
-                  {initialEvent.title}
-                </Title>
-              </Group>
 
               {/* Chapter Badge and Edit Button */}
               <Group gap={theme.spacing.sm}>

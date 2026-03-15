@@ -17,7 +17,6 @@ import {
 import {
   getEntityThemeColor,
   textColors,
-  headerColors,
   getAlphaColor,
   fontSize,
   setTabAccentColors,
@@ -111,23 +110,6 @@ export default function OrganizationPageClient({
         entityName={initialOrganization.name}
       >
         <Stack gap={theme.spacing.sm}>
-          <Group gap={theme.spacing.sm} align="center">
-            <Shield size={28} color={entityColors.organization} />
-            <Title
-              order={1}
-              size="2.8rem"
-              fw={400}
-              c={headerColors.h1}
-              style={{
-                lineHeight: 1.1,
-                textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
-                letterSpacing: '-0.02em',
-                fontFamily: 'var(--font-opti-goudy-text), serif',
-              }}
-            >
-              {initialOrganization.name}
-            </Title>
-          </Group>
         </Stack>
 
         <Stack gap={theme.spacing.md} style={{ flex: 1, justifyContent: 'center' }}>

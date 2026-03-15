@@ -13,21 +13,19 @@ import {
   Stack,
   Tabs,
   Text,
-  Title,
   Tooltip,
   useMantineTheme
 } from '@mantine/core'
 import {
   getEntityThemeColor,
   textColors,
-  headerColors,
   getAlphaColor,
   fontSize,
   setTabAccentColors,
   backgroundStyles,
   getCardStyles
 } from '../../../lib/mantine-theme'
-import { Book, Hash, FileText, BookOpen } from 'lucide-react'
+import { Book, Hash, BookOpen } from 'lucide-react'
 import Link from 'next/link'
 import { motion } from 'motion/react'
 import { pageEnter } from '../../../lib/motion-presets'
@@ -131,24 +129,6 @@ export default function VolumePageClient({ initialVolume, initialChapters, initi
               </Text>
               <Box style={{ position: 'relative', zIndex: 1 }}>
             <Stack gap={theme.spacing.sm}>
-              <Group gap={theme.spacing.sm} align="center">
-                <Book size={28} color={entityColors.volume} />
-                <Title
-                  order={1}
-                  size="2.8rem"
-                  fw={400}
-                  c={headerColors.h1}
-                  style={{
-                    lineHeight: 1.1,
-                    textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
-                    letterSpacing: '-0.02em',
-                    fontFamily: 'var(--font-opti-goudy-text), serif',
-                  }}
-                >
-                  Volume {initialVolume.number}
-                </Title>
-              </Group>
-
               {initialVolume.title && (
                 <Text size="lg" c={textColors.secondary} fw={500}>
                   {initialVolume.title}

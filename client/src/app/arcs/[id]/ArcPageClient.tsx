@@ -18,7 +18,6 @@ import {
 import {
   getEntityThemeColor,
   textColors,
-  headerColors,
   getAlphaColor,
   spacing,
   fontSize,
@@ -189,21 +188,6 @@ export default function ArcPageClient({ initialArc, initialEvents, initialGamble
         entityName={initialArc.name}
       >
         <Stack gap={theme.spacing.sm}>
-          <Title
-            order={1}
-            size="2.8rem"
-            fw={800}
-            c={headerColors.h1}
-            style={{
-              lineHeight: 1.1,
-              textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
-              letterSpacing: '-0.02em',
-              fontFamily: 'var(--font-opti-goudy-text), serif'
-            }}
-          >
-            {initialArc.name}
-          </Title>
-
           {/* Chapter Range Info */}
           <Badge
             variant="filled"

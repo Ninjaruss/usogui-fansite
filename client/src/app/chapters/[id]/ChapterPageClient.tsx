@@ -12,21 +12,19 @@ import {
   Stack,
   Tabs,
   Text,
-  Title,
   Tooltip,
   useMantineTheme
 } from '@mantine/core'
 import {
   getEntityThemeColor,
   textColors,
-  headerColors,
   getAlphaColor,
   fontSize,
   setTabAccentColors,
   backgroundStyles,
   getCardStyles
 } from '../../../lib/mantine-theme'
-import { BookOpen, Hash, FileText, Users, MessageSquareQuote, CalendarSearch, MessageSquare } from 'lucide-react'
+import { BookOpen, Hash, MessageSquareQuote, CalendarSearch, MessageSquare } from 'lucide-react'
 import Link from 'next/link'
 import { motion } from 'motion/react'
 import { pageEnter } from '../../../lib/motion-presets'
@@ -127,25 +125,6 @@ export default function ChapterPageClient({
             showImage={false}
           >
             <Stack gap={theme.spacing.sm}>
-              <Group gap={theme.spacing.sm} align="center">
-                <BookOpen size={28} color={entityColors.chapter} />
-                <Stack gap={2}>
-                  <Text className="eyebrow-label" style={{ color: 'rgba(255,255,255,0.55)', fontSize: '0.68rem' }}>
-                    CHAPTER
-                  </Text>
-                  <Text style={{
-                    fontFamily: 'var(--font-opti-goudy-text), serif',
-                    fontSize: '3rem',
-                    fontWeight: 400,
-                    color: entityColors.chapter,
-                    lineHeight: 1,
-                    textShadow: `0 2px 20px ${entityColors.chapter}30`,
-                  }}>
-                    {initialChapter.number}
-                  </Text>
-                </Stack>
-              </Group>
-
               {initialChapter.title && (
                 <Text size="lg" c={textColors.secondary} fw={500}>
                   {initialChapter.title}
