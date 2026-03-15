@@ -159,7 +159,6 @@ export function HoverModal({
                 <Stack gap="sm">
                   {entityLabel && (
                     <Text
-                      className="eyebrow-label"
                       style={{ color: accentColor, fontSize: '0.6rem', letterSpacing: '0.22em' }}
                     >
                       {entityLabel.toUpperCase()}

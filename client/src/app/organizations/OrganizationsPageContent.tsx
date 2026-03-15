@@ -233,10 +233,6 @@ export default function OrganizationsPageContent({
         >
           {hoveredOrganization && (
             <>
-              <Text className="eyebrow-label" style={{ color: 'rgba(255,255,255,0.45)', marginBottom: 4 }}>
-                Faction
-              </Text>
-
               <Title order={4} size="md" fw={400} ta="center" lineClamp={2} style={{ fontFamily: 'var(--font-opti-goudy-text), serif', fontSize: '1.4rem', color: accentOrganization }}>
                 {hoveredOrganization.name}
               </Title>

@@ -224,10 +224,6 @@ export default function VolumesPageContent({
         >
           {hoveredVolume && (
             <>
-              <Text className="eyebrow-label" style={{ color: 'rgba(255,255,255,0.45)', marginBottom: 4 }}>
-                Volume
-              </Text>
-
               <Title order={4} size="md" fw={400} ta="center" lineClamp={2} style={{ fontFamily: 'var(--font-opti-goudy-text), serif', fontSize: '1.4rem', color: accentVolume }}>
                 {hoveredVolume.title || (
                   <span style={{ fontFamily: 'var(--font-opti-goudy-text), serif', fontSize: '2.5rem', fontWeight: 400, color: accentVolume }}>

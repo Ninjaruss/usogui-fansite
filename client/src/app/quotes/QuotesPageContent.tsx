@@ -420,9 +420,6 @@ export default function QuotesPageContent({
         >
           {hoveredQuote && (
             <>
-              <Text className="eyebrow-label" style={{ color: 'rgba(255,255,255,0.45)', marginBottom: 4 }}>
-                Quote
-              </Text>
               <Title order={4} size="md" c={accentQuote} ta="center" lineClamp={2} style={{ fontFamily: 'var(--font-opti-goudy-text), serif', fontWeight: 400 }}>
                 {hoveredQuote.speakerId ? (
                   <Text
