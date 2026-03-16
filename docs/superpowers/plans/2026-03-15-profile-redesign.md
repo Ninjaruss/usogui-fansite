@@ -103,7 +103,6 @@ Username editing state lives here (it's local UI state). The save action and pro
   } from '@mantine/core'
   import { notifications } from '@mantine/notifications'
   import { Edit, Check, X, Settings } from 'lucide-react'
-  import { useMantineTheme } from '@mantine/core'
   import { outlineStyles } from '../../lib/mantine-theme'
   import UserProfileImage from '../../components/UserProfileImage'
   import UserBadges from '../../components/UserBadges'
@@ -132,7 +131,6 @@ Username editing state lives here (it's local UI state). The save action and pro
     onSaveUsername,
     onOpenSettings,
   }: ProfileHeaderProps) {
-    const theme = useMantineTheme()
     const [editingUsername, setEditingUsername] = useState(false)
     const [usernameInput, setUsernameInput] = useState('')
     const [savingUsername, setSavingUsername] = useState(false)
@@ -410,7 +408,7 @@ Renders the reading progress bar with gradient fill and arc milestone tick marks
                 key={arc.name}
                 style={{ position: 'absolute', left: `${pct}%`, top: '-9px', transform: 'translateX(-50%)' }}
               >
-                <Box style={{ width: '1px', height: '22px', background: isReached ? '#222' : '#1a1a1a', margin: '0 auto' }} />
+                <Box style={{ width: '1px', height: '22px', background: userProgress >= arc.startChapter ? '#222' : '#1a1a1a', margin: '0 auto' }} />
                 {showLabel && (
                   <Text style={{ fontSize: '6px', color: labelColor, whiteSpace: 'nowrap', marginTop: '2px', transform: 'translateX(-50%)', position: 'absolute', left: '50%' }}>
                     {arc.name}
@@ -466,8 +464,6 @@ Renders the Favorites section: `CharacterFavoritesManager` (self-contained), quo
 
   import React from 'react'
   import { Box, Text, Group } from '@mantine/core'
-  import { useMantineTheme } from '@mantine/core'
-  import { getEntityThemeColor } from '../../lib/mantine-theme'
   import CharacterFavoritesManager from '../../components/CharacterFavoritesManager'
 
   interface ProfileIntelPanelProps {
@@ -489,8 +485,6 @@ Renders the Favorites section: `CharacterFavoritesManager` (self-contained), quo
     onOpenQuoteModal,
     onOpenGambleModal,
   }: ProfileIntelPanelProps) {
-    const theme = useMantineTheme()
-
     const selectedQuote = favoriteQuoteId
       ? quotes.find(q => q.id === parseInt(favoriteQuoteId))
       : null
@@ -869,7 +863,6 @@ Extracts the full My Content section (tabs, filter bars, submission cards, show-
     onDeleteEvent,
     onDeleteAnnotation,
   }: ProfileContentTabsProps) {
-    const theme = useMantineTheme()
     const [activeTab, setActiveTab] = useState<ContentTab>('guides')
     const [filters, setFilters] = useState<Record<ContentTab, { status: string; search: string; visible: number }>>({
       guides:      { status: 'all', search: '', visible: 6 },
@@ -1100,14 +1093,14 @@ Extracts the Settings tab content: linked accounts, custom role editor, account 
   ```typescript
   'use client'
 
-  import React, { useState, useCallback, useRef } from 'react'
+  import React, { useState } from 'react'
   import {
-    Box, Text, Group, Stack, Button, TextInput, PasswordInput, Divider, Alert,
+    Box, Text, Group, Stack, Button, TextInput, PasswordInput, Divider, Alert, useMantineTheme,
   } from '@mantine/core'
   import { notifications } from '@mantine/notifications'
-  import { useMantineTheme } from '@mantine/core'
   import { getEntityThemeColor } from '../../lib/mantine-theme'
   import { api } from '../../lib/api'
+
 
   interface SettingsPanelUser {
     id?: number
