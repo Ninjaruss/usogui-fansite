@@ -11,7 +11,7 @@ declare global {
   }
 }
 
-interface User {
+export interface User {
   id: number
   username: string
   email: string | null
@@ -22,6 +22,7 @@ interface User {
   favoriteQuoteId?: number
   favoriteGambleId?: number
   createdAt?: string
+  updatedAt?: string
   // Fluxer fields
   fluxerId?: string | null
   fluxerUsername?: string | null

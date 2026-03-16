@@ -50,3 +50,20 @@ export const RETRY_CONFIG = {
   MAX_RETRIES: 3,
   DELAYS: [1000, 2000, 4000], // Progressive backoff
 } as const
+
+export interface ArcMilestone {
+  name: string
+  startChapter: number
+}
+
+// Usogui manga arc boundaries — verify against actual chapter ranges
+export const PROFILE_ARC_MILESTONES: ArcMilestone[] = [
+  { name: 'Babel', startChapter: 1 },
+  { name: 'Face Poker', startChapter: 18 },
+  { name: 'Old Maid', startChapter: 48 },
+  { name: "Liar's Dice", startChapter: 88 },
+  { name: 'Chess', startChapter: 140 },
+  { name: "Blind Man's Bluff", startChapter: 195 },
+  { name: 'Mahjong', startChapter: 270 },
+  { name: 'Final', startChapter: 360 },
+]
