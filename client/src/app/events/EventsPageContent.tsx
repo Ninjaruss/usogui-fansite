@@ -29,6 +29,7 @@ import type { Arc, Event } from '../../types'
 import { EventStatus } from '../../types'
 import { ListPageLayout } from '../../components/layouts/ListPageLayout'
 import TimelineSpoilerWrapper from '../../components/TimelineSpoilerWrapper'
+import { shouldHideSpoiler } from '../../lib/spoiler-utils'
 
 const eventTypeOptions = [
   { value: '', label: 'All Types' },
@@ -99,12 +100,8 @@ export default function EventsPageContent({
   const hasAnyFilter = Boolean(searchTerm.trim() || selectedType || selectedStatus || selectedCharacter)
 
   const shouldHideEventSpoiler = (event: Event) => {
-    if (settings.showAllSpoilers) return false
     const chapterNumber = event.spoilerChapter || event.chapterNumber
-    if (!chapterNumber) return false
-    const effectiveProgress = settings.chapterTolerance > 0 ? settings.chapterTolerance : userProgress
-    if (effectiveProgress === 0) return false
-    return chapterNumber > effectiveProgress
+    return shouldHideSpoiler(chapterNumber, userProgress, settings)
   }
 
   const updateUrl = useCallback(
