@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { API_BASE_URL } from '../../lib/api'
+import { MAX_CHAPTER } from '../../lib/constants'
 import BadgeDisplay from '../BadgeDisplay'
 import {
   List,
@@ -11,7 +12,6 @@ import {
   Show,
   SimpleForm,
   TextInput,
-  SimpleShowLayout,
   BooleanField,
   BooleanInput,
   SelectInput,
@@ -573,9 +573,8 @@ const UserBadgesField = () => {
   return (
     <Box>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-        <span className="text-sm font-medium">Current Active Badges</span>
         <Tooltip title="Add Badge">
-          <IconButton size="small" onClick={() => setAddModalOpen(true)}>
+          <IconButton size="small" onClick={() => setAddModalOpen(true)} sx={{ color: 'rgba(255,255,255,0.6)', '&:hover': { color: '#e11d48' } }}>
             <Add />
           </IconButton>
         </Tooltip>
@@ -658,9 +657,6 @@ const UserBadgeHistoryField = () => {
 
   return (
     <div className="space-y-2">
-      <div className="text-sm text-gray-300 mb-3">
-        <strong>Badge History</strong> - Complete record of all badge activities (active, expired, and removed)
-      </div>
 
       {sortedBadges.map((userBadge: any) => {
         const badge = userBadge.badge;
@@ -738,61 +734,284 @@ const UserBadgeHistoryField = () => {
         );
       })}
 
-      <div className="text-xs text-gray-400 mt-3 p-2 bg-gray-800 rounded">
-        <strong>Note:</strong> Badge history shows all badges ever awarded to this user. 
-        Use "Current Active Badges" section above to manage active badges. 
-        Removed and expired badges are logged here for audit purposes.
-      </div>
     </div>
   );
 };
 
+const getRoleColor = (role: string): string => {
+  switch (role) {
+    case 'admin': return '#ef4444'
+    case 'moderator': return '#f59e0b'
+    case 'editor': return '#3b82f6'
+    default: return '#6b7280'
+  }
+}
+
+const SectionDivider = ({ label, color = '#818cf8' }: { label: string; color?: string }) => (
+  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, my: 2.5 }}>
+    <Box sx={{ height: '1px', width: 40, background: `linear-gradient(to right, transparent, ${color}60)` }} />
+    <Typography sx={{
+      color: 'rgba(255,255,255,0.5)',
+      fontSize: '0.63rem',
+      letterSpacing: '0.12em',
+      textTransform: 'uppercase',
+      fontWeight: 700,
+      whiteSpace: 'nowrap',
+      flexShrink: 0,
+    }}>
+      {label}
+    </Typography>
+    <Box sx={{ height: '1px', flex: 1, maxWidth: 120, background: `linear-gradient(to left, transparent, ${color}30)` }} />
+  </Box>
+)
+
+const UserShowContent = () => {
+  const record = useRecordContext()
+
+  if (!record) return null
+
+  const accentColor = '#e11d48'
+  const arcColor = '#818cf8'
+  const guideColor = '#f59e0b'
+  const mediaColor = '#06b6d4'
+  const annoColor = '#a78bfa'
+  const eventColor = '#34d399'
+
+  const readingProgress = record.userProgress != null
+    ? Math.min(Math.round((record.userProgress / MAX_CHAPTER) * 100), 100)
+    : null
+
+  const avatarUrl = record.fluxerId && record.fluxerAvatar
+    ? `https://fluxerusercontent.com/avatars/${record.fluxerId}/${record.fluxerAvatar}.png`
+    : null
+
+  const roleColor = getRoleColor(record.role)
+  const joinDate = record.createdAt
+    ? new Date(record.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+    : 'Unknown'
+
+  const stats = record?.stats || {}
+  const statItems = [
+    { label: 'Guides', value: stats.guidesWritten ?? 0, color: guideColor },
+    { label: 'Media', value: stats.mediaSubmitted ?? 0, color: mediaColor },
+    { label: 'Annotations', value: stats.annotationsSubmitted ?? 0, color: annoColor },
+    { label: 'Events', value: stats.eventsSubmitted ?? 0, color: eventColor },
+    { label: 'Likes', value: stats.likesReceived ?? 0, color: accentColor },
+  ]
+
+  return (
+    <Box sx={{ p: 3, background: 'transparent' }}>
+      {/* Main Profile Card */}
+      <Box sx={{
+        background: 'linear-gradient(135deg, rgba(127,29,29,0.45), rgba(127,29,29,0.15)), #0a0a0a',
+        border: '1px solid rgba(225,29,72,0.4)',
+        borderRadius: 3,
+        boxShadow: '0 20px 45px rgba(225,29,72,0.12)',
+        p: 4,
+        mb: 3,
+        color: '#fff',
+      }}>
+        {/* Profile Header: Avatar + Info */}
+        <Box sx={{ display: 'flex', gap: 4, alignItems: 'flex-start', mb: 4, flexWrap: 'wrap' }}>
+          {/* Avatar */}
+          <Box sx={{
+            flexShrink: 0,
+            width: 120,
+            height: 120,
+            borderRadius: '50%',
+            border: '3px solid rgba(225,29,72,0.5)',
+            boxShadow: '0 0 24px rgba(225,29,72,0.2), 0 0 8px rgba(225,29,72,0.1)',
+            overflow: 'hidden',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'rgba(225,29,72,0.08)',
+          }}>
+            {avatarUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={avatarUrl} alt={record.username} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            ) : (
+              <Typography sx={{ fontSize: '3rem', fontWeight: 800, color: accentColor, lineHeight: 1, fontFamily: 'Georgia, serif' }}>
+                {record.username?.[0]?.toUpperCase() ?? '?'}
+              </Typography>
+            )}
+          </Box>
+
+          {/* User Info */}
+          <Box sx={{ flex: 1, minWidth: 200 }}>
+            {/* Name + Role chips */}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap', mb: 0.75 }}>
+              <Typography sx={{
+                fontSize: '1.85rem',
+                fontWeight: 800,
+                color: '#fff',
+                lineHeight: 1.1,
+                fontFamily: 'Georgia, "Times New Roman", serif',
+                letterSpacing: '-0.01em',
+              }}>
+                {record.username}
+              </Typography>
+              <Chip
+                label={record.role?.toUpperCase()}
+                size="small"
+                sx={{
+                  backgroundColor: `${roleColor}20`,
+                  border: `1px solid ${roleColor}50`,
+                  color: roleColor,
+                  fontWeight: 700,
+                  fontSize: '0.62rem',
+                  letterSpacing: '0.1em',
+                  height: 22,
+                  '& .MuiChip-label': { px: 1.2 },
+                }}
+              />
+              {record.customRole && (
+                <Chip
+                  label={record.customRole}
+                  size="small"
+                  sx={{
+                    color: 'rgba(255,255,255,0.6)',
+                    border: '1px solid rgba(255,255,255,0.2)',
+                    backgroundColor: 'rgba(255,255,255,0.05)',
+                    fontSize: '0.7rem',
+                    height: 22,
+                    '& .MuiChip-label': { px: 1.2 },
+                  }}
+                />
+              )}
+            </Box>
+
+            {/* Meta */}
+            <Typography sx={{ color: 'rgba(255,255,255,0.45)', fontSize: '0.78rem', mb: 1 }}>
+              Joined {joinDate} · ID #{record.id}
+            </Typography>
+
+            {/* Email + verified chip */}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2.5 }}>
+              <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem' }}>
+                {record.email}
+              </Typography>
+              {record.isEmailVerified ? (
+                <Chip label="Verified" size="small" color="success" sx={{ height: 18, fontSize: '0.6rem', '& .MuiChip-label': { px: 0.8 } }} />
+              ) : (
+                <Chip label="Unverified" size="small" color="warning" sx={{ height: 18, fontSize: '0.6rem', '& .MuiChip-label': { px: 0.8 } }} />
+              )}
+            </Box>
+
+            {/* Stats row */}
+            <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
+              {statItems.map((stat) => (
+                <Box key={stat.label} sx={{
+                  px: 1.75,
+                  py: 1.25,
+                  background: `${stat.color}08`,
+                  border: `1px solid ${stat.color}22`,
+                  borderRadius: 1.5,
+                  textAlign: 'center',
+                  minWidth: 64,
+                }}>
+                  <Typography sx={{
+                    fontSize: '1.5rem',
+                    fontWeight: 400,
+                    color: stat.color,
+                    lineHeight: 1,
+                    mb: 0.3,
+                    fontFamily: 'Georgia, serif',
+                  }}>
+                    {stat.value}
+                  </Typography>
+                  <Typography sx={{
+                    color: 'rgba(255,255,255,0.4)',
+                    fontSize: '0.56rem',
+                    letterSpacing: '0.08em',
+                    textTransform: 'uppercase',
+                    fontWeight: 700,
+                    display: 'block',
+                  }}>
+                    {stat.label}
+                  </Typography>
+                </Box>
+              ))}
+            </Box>
+          </Box>
+        </Box>
+
+        <Box sx={{ height: '1px', background: 'rgba(225,29,72,0.25)', my: 3 }} />
+
+        {/* Reading Progress */}
+        {readingProgress !== null && (
+          <Box sx={{
+            background: 'rgba(129,140,248,0.12)',
+            border: '1px solid rgba(129,140,248,0.35)',
+            borderRadius: 2,
+            p: 3,
+            mb: 3,
+          }}>
+            <SectionDivider label="Reading Progress" color={arcColor} />
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', mb: 2 }}>
+              <Box>
+                <Typography sx={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.63rem', textTransform: 'uppercase', letterSpacing: '0.1em', mb: 0.5 }}>
+                  Current Chapter
+                </Typography>
+                <Typography sx={{ color: arcColor, fontSize: '1.5rem', fontFamily: 'Georgia, serif', lineHeight: 1 }}>
+                  {record.userProgress ?? 0}
+                </Typography>
+              </Box>
+              <Box sx={{ textAlign: 'right' }}>
+                <Typography sx={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.63rem', textTransform: 'uppercase', letterSpacing: '0.1em', mb: 0.5 }}>
+                  Total Chapters
+                </Typography>
+                <Typography sx={{ color: 'rgba(255,255,255,0.45)', fontSize: '1.5rem', fontFamily: 'Georgia, serif', lineHeight: 1 }}>
+                  {MAX_CHAPTER}
+                </Typography>
+              </Box>
+            </Box>
+            <Box sx={{ position: 'relative', height: 8, borderRadius: 4, background: 'rgba(255,255,255,0.08)', overflow: 'hidden' }}>
+              <Box sx={{
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                height: '100%',
+                width: `${readingProgress}%`,
+                background: `linear-gradient(to right, ${arcColor}80, ${arcColor})`,
+                borderRadius: 4,
+                transition: 'width 0.8s ease',
+              }} />
+            </Box>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
+              <Typography sx={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.7rem' }}>0%</Typography>
+              <Typography sx={{ color: arcColor, fontSize: '0.8rem', fontWeight: 600 }}>{readingProgress}%</Typography>
+              <Typography sx={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.7rem' }}>100%</Typography>
+            </Box>
+          </Box>
+        )}
+
+        {/* Active Badges */}
+        <Box>
+          <SectionDivider label="Active Badges" color={accentColor} />
+          <UserBadgesField />
+        </Box>
+      </Box>
+
+      {/* Badge History Card */}
+      <Box sx={{
+        background: 'linear-gradient(135deg, rgba(225,29,72,0.14), rgba(225,29,72,0.04)), #0a0a0a',
+        border: '1px solid rgba(225,29,72,0.35)',
+        borderRadius: 3,
+        boxShadow: '0 16px 36px rgba(225,29,72,0.1)',
+        p: 4,
+        color: '#fff',
+      }}>
+        <SectionDivider label="Badge History" color={accentColor} />
+        <UserBadgeHistoryField />
+      </Box>
+    </Box>
+  )
+}
+
 export const UserShow = () => (
   <Show actions={<UserShowActions />}>
-    <SimpleShowLayout>
-      <TextField source="id" />
-      <TextField source="username" />
-      <EmailField source="email" />
-      <TextField source="role" />
-      <BooleanField source="isEmailVerified" />
-      <FunctionField
-        label="Current Badges"
-        render={() => <UserBadgesField />}
-      />
-      <FunctionField
-        label="Badge History"
-        render={() => <UserBadgeHistoryField />}
-      />
-      <DateField source="createdAt" />
-      <DateField source="updatedAt" />
-
-      {/* Submission Stats Section */}
-      <FunctionField
-        label="Submission Statistics"
-        render={(record: any) => {
-          if (!record?.stats) return <span>No stats available</span>
-          return (
-            <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap', marginTop: '8px' }}>
-              <div>
-                <strong>Guides Written:</strong> {record.stats.guidesWritten ?? 0}
-              </div>
-              <div>
-                <strong>Media Submitted:</strong> {record.stats.mediaSubmitted ?? 0}
-              </div>
-              <div>
-                <strong>Annotations Submitted:</strong> {record.stats.annotationsSubmitted ?? 0}
-              </div>
-              <div>
-                <strong>Events Submitted:</strong> {record.stats.eventsSubmitted ?? 0}
-              </div>
-              <div>
-                <strong>Likes Received:</strong> {record.stats.likesReceived ?? 0}
-              </div>
-            </div>
-          )
-        }}
-      />
-    </SimpleShowLayout>
+    <UserShowContent />
   </Show>
 )
 
