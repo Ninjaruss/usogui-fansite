@@ -23,7 +23,7 @@ import {
   backgroundStyles,
   getCardStyles
 } from '../../../lib/mantine-theme'
-import { CalendarSearch, Image as ImageIcon, Edit } from 'lucide-react'
+import { CalendarSearch, Image as ImageIcon, Edit, Crown, Users, Tag, Map, Check, BookOpen } from 'lucide-react'
 import Link from 'next/link'
 import { useAuth } from '../../../providers/AuthProvider'
 import EnhancedSpoilerMarkdown from '../../../components/EnhancedSpoilerMarkdown'
@@ -146,14 +146,15 @@ export default function EventPageClient({ initialEvent }: EventPageClientProps) 
                     {/* Main column — narrative content */}
                     <Stack gap={theme.spacing.md}>
                       {/* Event Description Section */}
-                      <Card withBorder radius="lg" shadow="lg" style={{ ...getCardStyles(theme, entityColors.event), borderLeft: `3px solid ${entityColors.event}` }}>
-                        <Stack gap={theme.spacing.md} p={theme.spacing.lg}>
-                          <Group justify="flex-start" gap="sm" style={{ marginBottom: 12, marginTop: 8 }}>
-                            <Box style={{ height: 1, width: 40, background: `linear-gradient(to right, transparent, ${entityColors.event}40)` }} />
-                            <Text className="eyebrow-label" style={{ color: 'rgba(255,255,255,0.55)', fontSize: '0.68rem' }}>
-                              DESCRIPTION
-                            </Text>
-                            <Box style={{ height: 1, flex: 1, maxWidth: 120, background: `linear-gradient(to left, transparent, ${entityColors.event}20)` }} />
+                      <Card withBorder radius="lg" shadow="lg" padding={0} style={getCardStyles(theme, entityColors.event)}>
+                        <Box style={{ height: 3, borderRadius: '6px 6px 0 0', background: `linear-gradient(90deg, ${entityColors.event}, transparent 70%)` }} />
+                        <Box p="lg">
+                          <Group gap={10} mb={14} align="center">
+                            <Box style={{ width: 28, height: 28, borderRadius: 6, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: getAlphaColor(entityColors.event, 0.15), border: `1px solid ${getAlphaColor(entityColors.event, 0.30)}` }}>
+                              <CalendarSearch size={16} color={entityColors.event} />
+                            </Box>
+                            <Text style={{ fontSize: '0.65rem', fontWeight: 800, letterSpacing: '0.18em', textTransform: 'uppercase', color: entityColors.event, opacity: 0.85 }}>Description</Text>
+                            <Box style={{ flex: 1, height: 1, background: `linear-gradient(to right, ${getAlphaColor(entityColors.event, 0.20)}, transparent)` }} />
                           </Group>
                           <TimelineSpoilerWrapper chapterNumber={initialEvent.chapterNumber}>
                             <Box style={{ lineHeight: 1.6, fontSize: 14 }}>
@@ -165,34 +166,22 @@ export default function EventPageClient({ initialEvent }: EventPageClientProps) 
                               />
                             </Box>
                           </TimelineSpoilerWrapper>
-                        </Stack>
+                        </Box>
                       </Card>
 
                       {/* Related Gamble Section */}
                       {initialEvent.gamble && (
-                        <Card withBorder radius="lg" shadow="lg" style={getCardStyles(theme, entityColors.gamble)}>
-                          <Stack gap={theme.spacing.md} p={theme.spacing.lg}>
-                            <Group justify="space-between" align="center">
-                              <Group justify="flex-start" gap="sm">
-                                <Box style={{ height: 1, width: 40, background: `linear-gradient(to right, transparent, ${entityColors.gamble}40)` }} />
-                                <Text className="eyebrow-label" style={{ color: 'rgba(255,255,255,0.55)', fontSize: '0.68rem' }}>
-                                  RELATED GAMBLE
-                                </Text>
-                                <Box style={{ height: 1, flex: 1, maxWidth: 120, background: `linear-gradient(to left, transparent, ${entityColors.gamble}20)` }} />
+                        <Card withBorder radius="lg" shadow="lg" padding={0} style={getCardStyles(theme, entityColors.gamble)}>
+                          <Box style={{ height: 3, borderRadius: '6px 6px 0 0', background: `linear-gradient(90deg, ${entityColors.gamble}, transparent 70%)` }} />
+                          <Box p="lg">
+                            <Group justify="space-between" align="center" mb={14}>
+                              <Group gap={10} align="center">
+                                <Box style={{ width: 28, height: 28, borderRadius: 6, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: getAlphaColor(entityColors.gamble, 0.15), border: `1px solid ${getAlphaColor(entityColors.gamble, 0.30)}` }}>
+                                  <Crown size={16} color={entityColors.gamble} />
+                                </Box>
+                                <Text style={{ fontSize: '0.65rem', fontWeight: 800, letterSpacing: '0.18em', textTransform: 'uppercase', color: entityColors.gamble, opacity: 0.85 }}>Related Gamble</Text>
                               </Group>
-                              <Button
-                                component={Link}
-                                href={`/gambles/${initialEvent.gamble.id}`}
-                                variant="outline"
-                                c={entityColors.gamble}
-                                size="sm"
-                                radius="xl"
-                                style={{
-                                  fontWeight: 600,
-                                  border: `2px solid ${entityColors.gamble}`,
-                                  transition: `all ${theme.other?.transitions?.durationShort || 200}ms ease`
-                                }}
-                              >
+                              <Button component={Link} href={`/gambles/${initialEvent.gamble.id}`} variant="outline" c={entityColors.gamble} size="sm" radius="xl" style={{ fontWeight: 600, border: `2px solid ${entityColors.gamble}` }}>
                                 View Gamble
                               </Button>
                             </Group>
@@ -225,7 +214,7 @@ export default function EventPageClient({ initialEvent }: EventPageClientProps) 
                                 </Stack>
                               </Paper>
                             </TimelineSpoilerWrapper>
-                          </Stack>
+                          </Box>
                         </Card>
                       )}
                     </Stack>
@@ -233,48 +222,55 @@ export default function EventPageClient({ initialEvent }: EventPageClientProps) 
                     {/* Aside column — details and related content */}
                     <Stack gap={theme.spacing.sm}>
                       {/* Details card */}
-                      <Card withBorder radius="lg" shadow="lg" style={getCardStyles(theme, entityColors.event)}>
-                        <Stack gap={theme.spacing.sm} p={theme.spacing.md}>
-                          <Group justify="flex-start" gap="sm" style={{ marginBottom: 8, marginTop: 4 }}>
-                            <Box style={{ height: 1, width: 40, background: `linear-gradient(to right, transparent, ${entityColors.event}40)` }} />
-                            <Text className="eyebrow-label" style={{ color: 'rgba(255,255,255,0.55)', fontSize: '0.68rem' }}>
-                              DETAILS
-                            </Text>
-                            <Box style={{ height: 1, flex: 1, maxWidth: 120, background: `linear-gradient(to left, transparent, ${entityColors.event}20)` }} />
+                      <Card withBorder radius="lg" shadow="md" padding={0} style={getCardStyles(theme, entityColors.event)}>
+                        <Box style={{ height: 3, borderRadius: '6px 6px 0 0', background: `linear-gradient(90deg, ${entityColors.event}, transparent 70%)` }} />
+                        <Box p="md">
+                          <Group gap={10} mb={14} align="center">
+                            <Text style={{ fontSize: '0.65rem', fontWeight: 800, letterSpacing: '0.18em', textTransform: 'uppercase', color: entityColors.event, opacity: 0.85 }}>Details</Text>
+                            <Box style={{ flex: 1, height: 1, background: `linear-gradient(to right, ${getAlphaColor(entityColors.event, 0.20)}, transparent)` }} />
                           </Group>
-                          <Stack gap={6}>
-                            {initialEvent.chapterNumber != null && (
-                              <Group justify="space-between">
-                                <Text size="xs" c={textColors.secondary} fw={600}>Chapter</Text>
-                                <Text size="xs" c={textColors.primary}>{initialEvent.chapterNumber}</Text>
-                              </Group>
-                            )}
-                            {initialEvent.arc && (
-                              <Group justify="space-between">
-                                <Text size="xs" c={textColors.secondary} fw={600}>Arc</Text>
-                                <Text
-                                  size="xs"
-                                  component={Link}
-                                  href={`/arcs/${initialEvent.arc.id}`}
-                                  style={{ color: entityColors.arc, textDecoration: 'none' }}
-                                >
-                                  {initialEvent.arc.name}
-                                </Text>
-                              </Group>
-                            )}
-                            {initialEvent.type && (
-                              <Group justify="space-between">
-                                <Text size="xs" c={textColors.secondary} fw={600}>Type</Text>
-                                <Text size="xs" c={textColors.primary} style={{ textTransform: 'capitalize' }}>{initialEvent.type}</Text>
-                              </Group>
-                            )}
-                            <Group justify="space-between">
-                              <Text size="xs" c={textColors.secondary} fw={600}>Status</Text>
-                              <Text size="xs" c={textColors.primary}>
+                          {/* Chapter row */}
+                          {initialEvent.chapterNumber != null && (
+                            <Box style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: '1px solid #161616' }}>
+                              <Box style={{ width: 24, height: 24, borderRadius: 5, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: getAlphaColor(entityColors.event, 0.10), border: `1px solid ${getAlphaColor(entityColors.event, 0.20)}` }}>
+                                <BookOpen size={14} color={entityColors.event} />
+                              </Box>
+                              <Text style={{ fontSize: 11, color: '#555', flex: 1 }}>Chapter</Text>
+                              <Text style={{ fontSize: 12, fontWeight: 700, color: entityColors.event }}>Ch. {initialEvent.chapterNumber}</Text>
+                            </Box>
+                          )}
+                          {/* Arc row */}
+                          {initialEvent.arc != null && (
+                            <Box style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: '1px solid #161616' }}>
+                              <Box style={{ width: 24, height: 24, borderRadius: 5, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: getAlphaColor(entityColors.event, 0.10), border: `1px solid ${getAlphaColor(entityColors.event, 0.20)}` }}>
+                                <Map size={14} color={entityColors.event} />
+                              </Box>
+                              <Text style={{ fontSize: 11, color: '#555', flex: 1 }}>Arc</Text>
+                              <Text component={Link} href={`/arcs/${initialEvent.arc.id}`} style={{ fontSize: 12, fontWeight: 700, color: entityColors.arc, textDecoration: 'none' }}>{initialEvent.arc.name}</Text>
+                            </Box>
+                          )}
+                          {/* Type row */}
+                          {initialEvent.type != null && (
+                            <Box style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: '1px solid #161616' }}>
+                              <Box style={{ width: 24, height: 24, borderRadius: 5, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: getAlphaColor(entityColors.event, 0.10), border: `1px solid ${getAlphaColor(entityColors.event, 0.20)}` }}>
+                                <Tag size={14} color={entityColors.event} />
+                              </Box>
+                              <Text style={{ fontSize: 11, color: '#555', flex: 1 }}>Type</Text>
+                              <Text style={{ fontSize: 12, fontWeight: 700, color: entityColors.event, textTransform: 'capitalize' }}>{initialEvent.type}</Text>
+                            </Box>
+                          )}
+                          {/* Status row */}
+                          {initialEvent.status != null && (
+                            <Box style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0' }}>
+                              <Box style={{ width: 24, height: 24, borderRadius: 5, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: getAlphaColor(entityColors.event, 0.10), border: `1px solid ${getAlphaColor(entityColors.event, 0.20)}` }}>
+                                <Check size={14} color={entityColors.event} />
+                              </Box>
+                              <Text style={{ fontSize: 11, color: '#555', flex: 1 }}>Status</Text>
+                              <Text style={{ fontSize: 12, fontWeight: 700, color: entityColors.event, textTransform: 'capitalize' }}>
                                 {initialEvent.status === 'pending' ? 'Unverified' : initialEvent.status === 'approved' ? 'Verified' : initialEvent.status}
                               </Text>
-                            </Group>
-                          </Stack>
+                            </Box>
+                          )}
                           {canEdit && (
                             <Button
                               component={Link}
@@ -284,62 +280,59 @@ export default function EventPageClient({ initialEvent }: EventPageClientProps) 
                               radius="xl"
                               leftSection={<Edit size={14} />}
                               color={isRejected ? 'orange' : 'gray'}
-                              style={{ fontWeight: 600, marginTop: 4 }}
+                              style={{ fontWeight: 600, marginTop: 12 }}
                               fullWidth
                             >
                               {isRejected ? 'Edit & Resubmit' : 'Edit'}
                             </Button>
                           )}
-                        </Stack>
+                        </Box>
                       </Card>
 
                       {/* Featured Characters Section */}
                       {initialEvent.characters && initialEvent.characters.length > 0 && (
-                        <Card withBorder radius="lg" shadow="lg" style={getCardStyles(theme, entityColors.character)}>
-                          <Stack gap={theme.spacing.sm} p={theme.spacing.md}>
-                            <Group justify="flex-start" gap="sm" style={{ marginBottom: 8, marginTop: 4 }}>
-                              <Box style={{ height: 1, width: 40, background: `linear-gradient(to right, transparent, ${entityColors.character}40)` }} />
-                              <Text className="eyebrow-label" style={{ color: 'rgba(255,255,255,0.55)', fontSize: '0.68rem' }}>
-                                FEATURED CHARACTERS
-                              </Text>
-                              <Box style={{ height: 1, flex: 1, maxWidth: 120, background: `linear-gradient(to left, transparent, ${entityColors.character}20)` }} />
+                        <Card withBorder radius="lg" shadow="lg" padding={0} style={getCardStyles(theme, entityColors.character)}>
+                          <Box style={{ height: 3, borderRadius: '6px 6px 0 0', background: `linear-gradient(90deg, ${entityColors.character}, transparent 70%)` }} />
+                          <Box p="md">
+                            <Group gap={10} mb={14} align="center">
+                              <Box style={{ width: 28, height: 28, borderRadius: 6, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: getAlphaColor(entityColors.character, 0.15), border: `1px solid ${getAlphaColor(entityColors.character, 0.30)}` }}>
+                                <Users size={16} color={entityColors.character} />
+                              </Box>
+                              <Text style={{ fontSize: '0.65rem', fontWeight: 800, letterSpacing: '0.18em', textTransform: 'uppercase', color: entityColors.character, opacity: 0.85 }}>Featured Characters</Text>
+                              <Box style={{ flex: 1, height: 1, background: `linear-gradient(to right, ${getAlphaColor(entityColors.character, 0.20)}, transparent)` }} />
                             </Group>
-                            <Group gap={theme.spacing.xs} wrap="wrap">
+                            <Box style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                               {initialEvent.characters.map((character) => (
-                                <Badge
+                                <Box
                                   key={character.id}
                                   component={Link}
                                   href={`/characters/${character.id}`}
-                                  variant="light"
-                                  size="md"
-                                  radius="md"
-                                  c={textColors.character}
-                                  style={{
-                                    background: getAlphaColor(entityColors.character, 0.2),
-                                    border: `1px solid ${getAlphaColor(entityColors.character, 0.4)}`,
-                                    textDecoration: 'none',
-                                    cursor: 'pointer',
-                                    transition: `all ${theme.other?.transitions?.durationShort || 200}ms ease`
-                                  }}
+                                  style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#131313', border: '1px solid #222', borderRadius: 8, padding: '6px 10px', textDecoration: 'none', cursor: 'pointer', transition: `all ${theme.other?.transitions?.durationShort || 200}ms ease` }}
+                                  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.borderColor = entityColors.character }}
+                                  onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.borderColor = '#222' }}
                                 >
-                                  {character.name}
-                                </Badge>
+                                  <Box style={{ width: 28, height: 28, borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: getAlphaColor(entityColors.character, 0.20), border: `1px solid ${getAlphaColor(entityColors.character, 0.40)}`, fontSize: 10, fontWeight: 700, color: entityColors.character }}>
+                                    {character.name.split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase()}
+                                  </Box>
+                                  <Text style={{ fontSize: 13, fontWeight: 600, color: '#ddd' }}>{character.name}</Text>
+                                </Box>
                               ))}
-                            </Group>
-                          </Stack>
+                            </Box>
+                          </Box>
                         </Card>
                       )}
 
                       {/* Tags Section */}
                       {initialEvent.tags && initialEvent.tags.length > 0 && (
-                        <Card withBorder radius="lg" shadow="lg" style={getCardStyles(theme, entityColors.event)}>
-                          <Stack gap={theme.spacing.sm} p={theme.spacing.md}>
-                            <Group justify="flex-start" gap="sm" style={{ marginBottom: 8, marginTop: 4 }}>
-                              <Box style={{ height: 1, width: 40, background: `linear-gradient(to right, transparent, ${entityColors.event}40)` }} />
-                              <Text className="eyebrow-label" style={{ color: 'rgba(255,255,255,0.55)', fontSize: '0.68rem' }}>
-                                TAGS
-                              </Text>
-                              <Box style={{ height: 1, flex: 1, maxWidth: 120, background: `linear-gradient(to left, transparent, ${entityColors.event}20)` }} />
+                        <Card withBorder radius="lg" shadow="lg" padding={0} style={getCardStyles(theme, entityColors.event)}>
+                          <Box style={{ height: 3, borderRadius: '6px 6px 0 0', background: `linear-gradient(90deg, ${entityColors.event}, transparent 70%)` }} />
+                          <Box p="md">
+                            <Group gap={10} mb={14} align="center">
+                              <Box style={{ width: 28, height: 28, borderRadius: 6, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: getAlphaColor(entityColors.event, 0.15), border: `1px solid ${getAlphaColor(entityColors.event, 0.30)}` }}>
+                                <Tag size={16} color={entityColors.event} />
+                              </Box>
+                              <Text style={{ fontSize: '0.65rem', fontWeight: 800, letterSpacing: '0.18em', textTransform: 'uppercase', color: entityColors.event, opacity: 0.85 }}>Tags</Text>
+                              <Box style={{ flex: 1, height: 1, background: `linear-gradient(to right, ${getAlphaColor(entityColors.event, 0.20)}, transparent)` }} />
                             </Group>
                             <Group gap="xs" wrap="wrap">
                               {initialEvent.tags.map((tag) => (
@@ -355,23 +348,24 @@ export default function EventPageClient({ initialEvent }: EventPageClientProps) 
                                 </Badge>
                               ))}
                             </Group>
-                          </Stack>
+                          </Box>
                         </Card>
                       )}
 
                       {/* Other Gambles in this Arc */}
                       {arcGambles.length > 0 && (
-                        <Card withBorder radius="lg" shadow="lg" style={getCardStyles(theme, entityColors.gamble)}>
-                          <Stack gap={theme.spacing.sm} p={theme.spacing.md}>
-                            <Group justify="flex-start" gap="sm" style={{ marginBottom: 8, marginTop: 4 }}>
-                              <Box style={{ height: 1, width: 40, background: `linear-gradient(to right, transparent, ${entityColors.gamble}40)` }} />
-                              <Text className="eyebrow-label" style={{ color: 'rgba(255,255,255,0.55)', fontSize: '0.68rem' }}>
-                                GAMBLES IN THIS ARC
-                              </Text>
+                        <Card withBorder radius="lg" shadow="lg" padding={0} style={getCardStyles(theme, entityColors.gamble)}>
+                          <Box style={{ height: 3, borderRadius: '6px 6px 0 0', background: `linear-gradient(90deg, ${entityColors.gamble}, transparent 70%)` }} />
+                          <Box p="md">
+                            <Group gap={10} mb={14} align="center">
+                              <Box style={{ width: 28, height: 28, borderRadius: 6, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: getAlphaColor(entityColors.gamble, 0.15), border: `1px solid ${getAlphaColor(entityColors.gamble, 0.30)}` }}>
+                                <Crown size={16} color={entityColors.gamble} />
+                              </Box>
+                              <Text style={{ fontSize: '0.65rem', fontWeight: 800, letterSpacing: '0.18em', textTransform: 'uppercase', color: entityColors.gamble, opacity: 0.85 }}>Gambles in this Arc</Text>
                               <Badge size="sm" variant="light" c={entityColors.gamble}>
                                 {arcGambles.length}
                               </Badge>
-                              <Box style={{ height: 1, flex: 1, maxWidth: 120, background: `linear-gradient(to left, transparent, ${entityColors.gamble}20)` }} />
+                              <Box style={{ flex: 1, height: 1, background: `linear-gradient(to right, ${getAlphaColor(entityColors.gamble, 0.20)}, transparent)` }} />
                             </Group>
                             <Group gap={theme.spacing.xs} wrap="wrap">
                               {arcGambles.map(gamble => (
@@ -400,7 +394,7 @@ export default function EventPageClient({ initialEvent }: EventPageClientProps) 
                                 </Badge>
                               ))}
                             </Group>
-                          </Stack>
+                          </Box>
                         </Card>
                       )}
                     </Stack>
@@ -409,24 +403,19 @@ export default function EventPageClient({ initialEvent }: EventPageClientProps) 
 
                 <Tabs.Panel value="media" pt={theme.spacing.md}>
                   <Stack gap="md">
-                    <Card withBorder radius="lg" shadow="lg" style={getCardStyles(theme, entityColors.media)}>
-                      <Stack gap="md" p="md">
-                        <Group justify="space-between" align="center">
-                          <Group justify="flex-start" gap="sm">
-                            <Box style={{ height: 1, width: 40, background: `linear-gradient(to right, transparent, ${entityColors.media}40)` }} />
-                            <Text className="eyebrow-label" style={{ color: 'rgba(255,255,255,0.55)', fontSize: '0.68rem' }}>
-                              MEDIA GALLERY
+                    <Card withBorder radius="lg" shadow="lg" padding={0} style={{ background: backgroundStyles.card, border: `1px solid ${getAlphaColor(getEntityThemeColor(theme, 'media'), 0.4)}` }}>
+                      <Box style={{ height: 3, borderRadius: '6px 6px 0 0', background: `linear-gradient(90deg, ${getEntityThemeColor(theme, 'media')}, transparent 70%)` }} />
+                      <Box p="md">
+                        <Group justify="space-between" align="center" mb={14}>
+                          <Group gap={10} align="center">
+                            <Box style={{ width: 28, height: 28, borderRadius: 6, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: getAlphaColor(getEntityThemeColor(theme, 'media'), 0.15), border: `1px solid ${getAlphaColor(getEntityThemeColor(theme, 'media'), 0.30)}` }}>
+                              <ImageIcon size={16} color={getEntityThemeColor(theme, 'media')} />
+                            </Box>
+                            <Text style={{ fontSize: '0.65rem', fontWeight: 800, letterSpacing: '0.18em', textTransform: 'uppercase', color: getEntityThemeColor(theme, 'media'), opacity: 0.85 }}>
+                              Media Gallery
                             </Text>
-                            <Box style={{ height: 1, flex: 1, maxWidth: 120, background: `linear-gradient(to left, transparent, ${entityColors.media}20)` }} />
                           </Group>
-                          <Button
-                            component={Link}
-                            href={`/media?ownerType=event&ownerId=${initialEvent.id}`}
-                            variant="outline"
-                            c={entityColors.media}
-                            size="sm"
-                            radius="xl"
-                          >
+                          <Button component={Link} href={`/media?ownerType=event&ownerId=${initialEvent.id}`} variant="outline" c={getEntityThemeColor(theme, 'media')} size="sm" radius="xl">
                             View All
                           </Button>
                         </Group>
@@ -439,7 +428,7 @@ export default function EventPageClient({ initialEvent }: EventPageClientProps) 
                           compactMode
                           showFilters={false}
                         />
-                      </Stack>
+                      </Box>
                     </Card>
                   </Stack>
                 </Tabs.Panel>
