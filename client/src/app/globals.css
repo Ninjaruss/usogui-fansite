@@ -1135,3 +1135,10 @@ textarea:focus-visible {
     display: none !important;
   }
 }
+
+/* Profile page section grid — mobile collapse */
+@media (max-width: 640px) {
+  .profile-section-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
