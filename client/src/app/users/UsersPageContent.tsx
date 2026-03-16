@@ -256,7 +256,7 @@ export default function UsersPageContent() {
         {!errorMessage && (
           <Container size="lg" px="md" pb="xl">
             {isLoading ? (
-              <CardGridSkeleton count={12} cardWidth={280} cardHeight={160} accentColor={accentCommunity} />
+              <CardGridSkeleton count={12} cardWidth={280} cardHeight={220} accentColor={accentCommunity} />
             ) : (
               <>
                 {users.length === 0 ? (
@@ -282,7 +282,7 @@ export default function UsersPageContent() {
                       </Group>
                     )}
 
-                    <SimpleGrid cols={{ base: 1, xs: 2, sm: 2, md: 3, lg: 4, xl: 5 }} spacing={rem(20)}>
+                    <SimpleGrid cols={{ base: 1, xs: 2, sm: 2, md: 3, lg: 4, xl: 4 }} spacing={rem(20)}>
                       {sortedUsers.map((user, index) => (
                           <motion.div
                             key={user.id}
