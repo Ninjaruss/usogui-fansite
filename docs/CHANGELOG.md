@@ -2,8 +2,15 @@
 
 ## TODO
 
+## 2026-03-14
+- Detail page header redesigned with superpowers + frontend design skill
+
+### Notes
+Superpowers skill seems to be pretty useful in making sure to cover most bases when making changes to the code base; however, it still isn't perfect and will make a minor quirk mistake here and there. It is still pretty good
+
 ## 2026-03-12
 - Additional frontend improvements using frontend design skill on profile page, changelog, submit pages
+
 ## 2026-03-10
 - Noticable frontend improvements using frontend design skill; used on landing page, list/detail pages, navbar, and footer
 
