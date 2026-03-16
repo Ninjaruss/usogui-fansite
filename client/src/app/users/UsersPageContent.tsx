@@ -352,24 +352,23 @@ export default function UsersPageContent() {
                                     />
                                   </Box>
 
-                                  <Stack gap={2} align="center" w="100%">
-                                    <Text
-                                      fw={700}
-                                      c={accentCommunity}
-                                      ta="center"
-                                      size="sm"
-                                      lineClamp={1}
-                                      title={user.username}
-                                    >
-                                      {user.username}
-                                    </Text>
-                                    <UserRoleDisplay
-                                      userRole={user.role as 'admin' | 'moderator' | 'user'}
-                                      customRole={user.customRole}
-                                      size="small"
-                                      spacing={0.5}
-                                    />
-                                  </Stack>
+                                  <Text
+                                    fw={700}
+                                    c={accentCommunity}
+                                    ta="center"
+                                    size="sm"
+                                    lineClamp={1}
+                                    title={user.username}
+                                  >
+                                    {user.username}
+                                  </Text>
+
+                                  <UserRoleDisplay
+                                    userRole={user.role as 'admin' | 'moderator' | 'user'}
+                                    customRole={user.customRole}
+                                    size="small"
+                                    spacing={0.5}
+                                  />
 
                                   <UserBadges userId={user.id} size="sm" maxDisplay={3} />
 
