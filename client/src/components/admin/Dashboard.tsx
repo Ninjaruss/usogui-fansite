@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, Grid, Box, Typography, Chip } from '@mui
 import { useTheme } from '@mui/material/styles'
 import { useGetList, usePermissions } from 'react-admin'
 import { Link } from 'react-router-dom'
-import { Users, BookOpen, Crown, Zap, FileText, Image, Quote, Shield, Plus, ChevronRight, CheckCircle } from 'lucide-react'
+import { Users, BookOpen, Crown, Zap, FileText, Image, Quote, Shield, Plus, ChevronRight, CheckCircle, MessageSquare, Library } from 'lucide-react'
 import { usePendingCounts } from '../../hooks/usePendingCounts'
 
 interface StatCardProps {
@@ -143,6 +143,8 @@ export const Dashboard = () => {
   const { total: guidesCount } = useGetList('guides', { pagination: { page: 1, perPage: 1 } })
   const { total: mediaCount } = useGetList('media', { pagination: { page: 1, perPage: 1 } })
   const { total: quotesCount } = useGetList('quotes', { pagination: { page: 1, perPage: 1 } })
+  const { total: annotationsCount } = useGetList('annotations', { pagination: { page: 1, perPage: 1 } })
+  const { total: volumesCount } = useGetList('volumes', { pagination: { page: 1, perPage: 1 } })
   const { total: usersCount } = useGetList('users', { pagination: { page: 1, perPage: 1 } }, { enabled: permissions === 'admin' })
 
   const isModerator = permissions === 'moderator' || permissions === 'editor'
@@ -316,6 +318,25 @@ export const Dashboard = () => {
             resource="quotes"
           />
         </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <StatCard
+            title="Annotations"
+            count={annotationsCount}
+            icon={MessageSquare}
+            color="#06b6d4"
+            resource="annotations"
+            pendingCount={pendingCounts.annotations}
+          />
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <StatCard
+            title="Volumes"
+            count={volumesCount}
+            icon={Library}
+            color="#8b5cf6"
+            resource="volumes"
+          />
+        </Grid>
         {permissions === 'admin' && (
           <Grid item xs={12} sm={6} md={3}>
             <StatCard
@@ -400,6 +421,21 @@ export const Dashboard = () => {
                 <QuickActionItem
                   text="Add new story arc"
                   to="/arcs/create"
+                  icon={Plus}
+                />
+                <QuickActionItem
+                  text="Add new volume"
+                  to="/volumes/create"
+                  icon={Plus}
+                />
+                <QuickActionItem
+                  text="Add new event"
+                  to="/events/create"
+                  icon={Plus}
+                />
+                <QuickActionItem
+                  text="Add new organization"
+                  to="/organizations/create"
                   icon={Plus}
                 />
                 <QuickActionItem
@@ -521,6 +557,16 @@ export const Dashboard = () => {
                 <QuickActionItem
                   text="Add new gamble"
                   to="/gambles/create"
+                  icon={Plus}
+                />
+                <QuickActionItem
+                  text="Add new event"
+                  to="/events/create"
+                  icon={Plus}
+                />
+                <QuickActionItem
+                  text="Add new volume"
+                  to="/volumes/create"
                   icon={Plus}
                 />
                 <QuickActionItem

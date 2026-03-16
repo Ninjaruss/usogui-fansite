@@ -14,7 +14,9 @@ import {
   Shield,
   Link2,
   Building2,
-  MessageSquare
+  MessageSquare,
+  Library,
+  Award
 } from 'lucide-react'
 import { usePendingCounts } from '../../hooks/usePendingCounts'
 
@@ -61,6 +63,11 @@ export const AdminMenu = () => {
         leftIcon={<BookOpen size={20} />}
       />
       <MenuItemLink
+        to="/volumes"
+        primaryText="Volumes"
+        leftIcon={<Library size={20} />}
+      />
+      <MenuItemLink
         to="/gambles"
         primaryText="Gambles"
         leftIcon={<Crown size={20} />}
@@ -68,7 +75,22 @@ export const AdminMenu = () => {
       <MenuItemLink
         to="/events"
         primaryText="Events"
-        leftIcon={<Zap size={20} />}
+        leftIcon={
+          <Badge
+            badgeContent={counts.events}
+            color="warning"
+            sx={{
+              '& .MuiBadge-badge': {
+                fontSize: '0.65rem',
+                minWidth: '16px',
+                height: '16px',
+                padding: '0 4px'
+              }
+            }}
+          >
+            <Zap size={20} />
+          </Badge>
+        }
       />
 
       <Divider sx={{ my: 1 }} />
@@ -180,6 +202,13 @@ export const AdminMenu = () => {
           to="/users"
           primaryText="Users"
           leftIcon={<Users size={20} />}
+        />
+      )}
+      {permissions === 'admin' && (
+        <MenuItemLink
+          to="/badges"
+          primaryText="Badges"
+          leftIcon={<Award size={20} />}
         />
       )}
     </Menu>

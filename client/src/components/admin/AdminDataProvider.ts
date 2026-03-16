@@ -94,7 +94,7 @@ const cleanUpdateData = (resource: string, data: Record<string, unknown>) => {
     } else if (data.participants && Array.isArray(data.participants)) {
       // If participantIds doesn't exist but participants does, extract IDs from participants
       gambleCleaned.participantIds = data.participants.map((p: any) =>
-        typeof p === 'object' && p !== null ? (p.id || p.characterId) : p
+        typeof p === 'object' && p !== null ? p.id : p
       ).filter((id: any) => id !== null && id !== undefined && !isNaN(Number(id)))
     }
 

@@ -1009,6 +1009,7 @@ export const UserEdit = () => (
       <TextInput source="username" required />
       <TextInput source="email" type="email" required />
       <RoleSelectInput />
+      <TextInput source="customRole" label="Custom Role" helperText="Optional display title shown on the user's profile (e.g. 'Site Founder')" />
       <BooleanInput source="isEmailVerified" />
     </SimpleForm>
   </Edit>

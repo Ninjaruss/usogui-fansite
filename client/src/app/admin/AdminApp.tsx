@@ -18,15 +18,16 @@ import { GuideList, GuideEdit, GuideCreate, GuideShow } from '../../components/a
 import { MediaList, MediaEdit, MediaShow, MediaCreate } from '../../components/admin/Media'
 import { UserList, UserEdit, UserShow } from '../../components/admin/Users'
 import { QuoteList, QuoteEdit, QuoteCreate, QuoteShow } from '../../components/admin/Quotes'
-import { TagList, TagEdit, TagCreate } from '../../components/admin/Tags'
-import { OrganizationList, OrganizationEdit, OrganizationCreate } from '../../components/admin/Organizations'
+import { TagList, TagEdit, TagCreate, TagShow } from '../../components/admin/Tags'
+import { OrganizationList, OrganizationEdit, OrganizationCreate, OrganizationShow } from '../../components/admin/Organizations'
+import { BadgeList, BadgeEdit, BadgeCreate, BadgeShow } from '../../components/admin/Badges'
 import { CharacterRelationshipList, CharacterRelationshipEdit, CharacterRelationshipCreate, CharacterRelationshipShow } from '../../components/admin/CharacterRelationships'
 import { CharacterOrganizationList, CharacterOrganizationEdit, CharacterOrganizationCreate, CharacterOrganizationShow } from '../../components/admin/CharacterOrganizations'
 import { AnnotationList, AnnotationEdit, AnnotationCreate, AnnotationShow } from '../../components/admin/Annotations'
 import { VolumeList, VolumeEdit, VolumeCreate, VolumeShow } from '../../components/admin/Volumes'
 
 // Icons
-import { Users, User, BookOpen, Crown, Zap, FileText, Image, Quote, Tag, Shield, Link2, Building2, MessageSquare, Library } from 'lucide-react'
+import { Users, User, BookOpen, Crown, Zap, FileText, Image, Quote, Tag, Shield, Link2, Building2, MessageSquare, Library, Award } from 'lucide-react'
 
 // Convert icons to components
 const UsersIcon = () => <Users />
@@ -43,6 +44,7 @@ const Link2Icon = () => <Link2 />
 const Building2Icon = () => <Building2 />
 const MessageSquareIcon = () => <MessageSquare />
 const LibraryIcon = () => <Library />
+const AwardIcon = () => <Award />
 
 export default function AdminApp() {
   return (
@@ -138,6 +140,7 @@ export default function AdminApp() {
         list={TagList}
         edit={TagEdit}
         create={TagCreate}
+        show={TagShow}
         icon={TagIcon}
       />
       <Resource
@@ -145,7 +148,16 @@ export default function AdminApp() {
         list={OrganizationList}
         edit={OrganizationEdit}
         create={OrganizationCreate}
+        show={OrganizationShow}
         icon={ShieldIcon}
+      />
+      <Resource
+        name="badges"
+        list={BadgeList}
+        edit={BadgeEdit}
+        create={BadgeCreate}
+        show={BadgeShow}
+        icon={AwardIcon}
       />
       <Resource
         name="character-relationships"
