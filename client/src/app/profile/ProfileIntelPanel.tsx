@@ -41,18 +41,18 @@ export default function ProfileIntelPanel({
   return (
     <Box style={{ background: '#0d0d0d', border: '1px solid #1a1a1a', borderRadius: '4px', padding: '12px' }}>
       <Group gap={6} align="baseline" mb={10}>
-        <Text style={{ fontSize: '11px', fontWeight: 600, color: '#d4d4d4', letterSpacing: '0.04em' }}>Favorites</Text>
-        <Text style={{ fontSize: '6px', color: '#1e1e1e', letterSpacing: '0.15em', textTransform: 'uppercase' }}>· intel</Text>
+        <Text style={{ fontSize: '13px', fontWeight: 600, color: '#d4d4d4', letterSpacing: '0.04em' }}>Favorites</Text>
+        <Text style={{ fontSize: '9px', color: '#1e1e1e', letterSpacing: '0.15em', textTransform: 'uppercase' }}>· intel</Text>
       </Group>
 
       {/* Characters — delegated to CharacterFavoritesManager */}
-      <Text style={{ fontSize: '7px', color: '#444', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '6px' }}>Characters</Text>
+      <Text style={{ fontSize: '10px', color: '#444', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '6px' }}>Characters</Text>
       <Box mb={12}>
         <CharacterFavoritesManager />
       </Box>
 
       {/* Quote */}
-      <Text style={{ fontSize: '7px', color: '#444', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '6px' }}>Quote</Text>
+      <Text style={{ fontSize: '10px', color: '#444', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '6px' }}>Quote</Text>
       {loading ? (
         <Box style={{ height: '48px', background: '#0f0f0f', borderRadius: '3px', marginBottom: '12px' }} />
       ) : selectedQuote ? (
@@ -67,11 +67,11 @@ export default function ProfileIntelPanel({
             cursor: 'pointer',
           }}
         >
-          <Text style={{ fontSize: '10px', color: '#ccc', fontStyle: 'italic', lineHeight: 1.6, fontFamily: 'var(--font-opti-goudy-text)' }}>
+          <Text style={{ fontSize: '13px', color: '#ccc', fontStyle: 'italic', lineHeight: 1.6, fontFamily: 'var(--font-opti-goudy-text)' }}>
             &ldquo;{selectedQuote.text?.length > 120 ? selectedQuote.text.substring(0, 120) + '...' : selectedQuote.text}&rdquo;
           </Text>
           {selectedQuote.character?.name && (
-            <Text style={{ fontSize: '7px', color: '#2d2d2d', marginTop: '4px' }}>
+            <Text style={{ fontSize: '11px', color: '#555', marginTop: '4px' }}>
               — {selectedQuote.character.name}{selectedQuote.chapter ? ` · Ch. ${selectedQuote.chapter}` : ''}
             </Text>
           )}
@@ -89,7 +89,7 @@ export default function ProfileIntelPanel({
       )}
 
       {/* Gamble */}
-      <Text style={{ fontSize: '7px', color: '#444', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '6px' }}>Gamble</Text>
+      <Text style={{ fontSize: '10px', color: '#444', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '6px' }}>Gamble</Text>
       <Box
         onClick={onOpenGambleModal}
         style={{
@@ -99,11 +99,11 @@ export default function ProfileIntelPanel({
         }}
       >
         <Box style={{ width: '6px', height: '6px', background: '#e11d48', borderRadius: '50%', flexShrink: 0 }} />
-        <Text style={{ fontSize: '10px', color: selectedGamble ? '#ccc' : '#555', flex: 1 }}>
+        <Text style={{ fontSize: '13px', color: selectedGamble ? '#ccc' : '#555', flex: 1 }}>
           {selectedGamble ? selectedGamble.name : 'Select a favorite gamble'}
         </Text>
         {gambleRange && (
-          <Text style={{ fontSize: '7px', color: '#1e1e1e' }}>{gambleRange}</Text>
+          <Text style={{ fontSize: '11px', color: '#444' }}>{gambleRange}</Text>
         )}
       </Box>
     </Box>

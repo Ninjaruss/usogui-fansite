@@ -113,8 +113,8 @@ export default function ProfileContentTabs({
       {/* Header */}
       <Group justify="space-between" align="center" mb={10}>
         <Group gap={6} align="baseline">
-          <Text style={{ fontSize: '11px', fontWeight: 600, color: '#d4d4d4', letterSpacing: '0.04em' }}>My Content</Text>
-          <Text style={{ fontSize: '6px', color: '#1e1e1e', letterSpacing: '0.15em', textTransform: 'uppercase' }}>· case files</Text>
+          <Text style={{ fontSize: '13px', fontWeight: 600, color: '#d4d4d4', letterSpacing: '0.04em' }}>My Content</Text>
+          <Text style={{ fontSize: '9px', color: '#1e1e1e', letterSpacing: '0.15em', textTransform: 'uppercase' }}>· case files</Text>
         </Group>
         <Menu shadow="md" width={200}>
           <Menu.Target>

@@ -98,7 +98,7 @@ export default function ProfileHeader({
       />
 
       {/* Ghost micro-label */}
-      <Text style={{ fontSize: '7px', letterSpacing: '0.2em', color: '#1e1e1e', textTransform: 'uppercase', marginBottom: '12px', fontFamily: 'monospace' }}>
+      <Text style={{ fontSize: '9px', letterSpacing: '0.2em', color: '#1e1e1e', textTransform: 'uppercase', marginBottom: '12px', fontFamily: 'monospace' }}>
         usogui database · classified
       </Text>
 
@@ -181,7 +181,7 @@ export default function ProfileHeader({
 
         {/* Dossier metadata — ghosted */}
         <Stack gap={2} style={{ textAlign: 'right', paddingBottom: '6px' }}>
-          <Text style={{ fontSize: '7px', color: '#1e1e1e', letterSpacing: '0.12em', fontFamily: 'monospace', lineHeight: 1.9 }}>
+          <Text style={{ fontSize: '10px', color: '#1e1e1e', letterSpacing: '0.12em', fontFamily: 'monospace', lineHeight: 1.9 }}>
             #{caseRef}<br />
             active<br />
             {memberSince}
@@ -205,10 +205,10 @@ export default function ProfileHeader({
               paddingLeft: i === 0 ? 0 : '16px',
             }}
           >
-            <Text style={{ fontSize: '15px', fontWeight: 800, color: stat.accent ? '#e11d48' : '#aaa', lineHeight: 1, marginBottom: '1px', display: 'block' }}>
+            <Text style={{ fontSize: '17px', fontWeight: 800, color: stat.accent ? '#e11d48' : '#aaa', lineHeight: 1, marginBottom: '1px', display: 'block' }}>
               {stat.value}
             </Text>
-            <Text style={{ fontSize: '10px', color: '#555' }}>{stat.label}</Text>
+            <Text style={{ fontSize: '12px', color: '#555' }}>{stat.label}</Text>
           </Box>
         ))}
         <Box style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', padding: '0 16px' }}>

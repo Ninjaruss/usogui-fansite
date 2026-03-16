@@ -15,15 +15,15 @@ export default function ProfileProgressReport({ userProgress }: ProfileProgressR
   return (
     <Box style={{ background: '#0d0d0d', border: '1px solid #1a1a1a', borderRadius: '4px', padding: '12px' }}>
       <Group gap={6} align="baseline" mb={14}>
-        <Text style={{ fontSize: '11px', fontWeight: 600, color: '#d4d4d4', letterSpacing: '0.04em' }}>Reading Progress</Text>
-        <Text style={{ fontSize: '6px', color: '#1e1e1e', letterSpacing: '0.15em', textTransform: 'uppercase' }}>· chapter log</Text>
+        <Text style={{ fontSize: '13px', fontWeight: 600, color: '#d4d4d4', letterSpacing: '0.04em' }}>Reading Progress</Text>
+        <Text style={{ fontSize: '9px', color: '#1e1e1e', letterSpacing: '0.15em', textTransform: 'uppercase' }}>· chapter log</Text>
       </Group>
 
       <Group justify="space-between" mb={8}>
-        <Text style={{ fontSize: '9px', color: '#555' }}>
+        <Text style={{ fontSize: '12px', color: '#777' }}>
           Chapter <span style={{ color: '#e5e5e5', fontWeight: 700 }}>{userProgress}</span> of {MAX_CHAPTER}
         </Text>
-        <Text style={{ fontSize: '9px', color: '#e11d48', fontWeight: 700 }}>{readPercent}%</Text>
+        <Text style={{ fontSize: '12px', color: '#e11d48', fontWeight: 700 }}>{readPercent}%</Text>
       </Group>
 
       {/* Progress bar + milestone ticks */}
@@ -61,7 +61,7 @@ export default function ProfileProgressReport({ userProgress }: ProfileProgressR
             >
               <Box style={{ width: '1px', height: '22px', background: userProgress >= arc.startChapter ? '#222' : '#1a1a1a', margin: '0 auto' }} />
               {showLabel && (
-                <Text style={{ fontSize: '6px', color: labelColor, whiteSpace: 'nowrap', marginTop: '2px', transform: 'translateX(-50%)', position: 'absolute', left: '50%' }}>
+                <Text style={{ fontSize: '9px', color: labelColor, whiteSpace: 'nowrap', marginTop: '2px', transform: 'translateX(-50%)', position: 'absolute', left: '50%' }}>
                   {arc.name}
                 </Text>
               )}
@@ -72,7 +72,7 @@ export default function ProfileProgressReport({ userProgress }: ProfileProgressR
         {/* "you" marker */}
         <Box style={{ position: 'absolute', left: `${youPercent}%`, top: '-9px', transform: 'translateX(-50%)' }}>
           <Box style={{ width: '1px', height: '22px', background: 'rgba(225,29,72,0.4)', margin: '0 auto' }} />
-          <Text style={{ fontSize: '6px', color: 'rgba(225,29,72,0.6)', whiteSpace: 'nowrap', marginTop: '2px', transform: 'translateX(-50%)', position: 'absolute', left: '50%' }}>
+          <Text style={{ fontSize: '9px', color: 'rgba(225,29,72,0.6)', whiteSpace: 'nowrap', marginTop: '2px', transform: 'translateX(-50%)', position: 'absolute', left: '50%' }}>
             you
           </Text>
         </Box>
