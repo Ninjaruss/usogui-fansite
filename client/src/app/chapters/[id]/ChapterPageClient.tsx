@@ -33,7 +33,6 @@ import { DetailPageHeader } from '../../../components/layouts/DetailPageHeader'
 import { RelatedContentSection } from '../../../components/layouts/RelatedContentSection'
 import type { Chapter as ChapterResource } from '../../../types'
 import { AnnotationSection } from '../../../components/annotations'
-import { EntityQuickActions } from '../../../components/EntityQuickActions'
 import { useAuth } from '../../../providers/AuthProvider'
 import { AnnotationOwnerType } from '../../../types'
 
@@ -431,12 +430,6 @@ export default function ChapterPageClient({
           </motion.div>
         </Stack>
 
-        {/* Quick Actions for authenticated users */}
-        <EntityQuickActions
-          entityType="chapter"
-          entityId={initialChapter.id}
-          isAuthenticated={!!user}
-        />
       </Container>
     </Box>
   )

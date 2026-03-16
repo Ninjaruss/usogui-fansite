@@ -1,6 +1,10 @@
 # Changelog and notes
 
 ## TODO
+- Frontend design skill to make user detail page up to par with the profile page
+- Improve reading progress clarity on profile page
+- Make profile page activity feed more robust similar to changelog page
+- Improve/fix the editing of submissions
 
 ## 2026-03-14
 - Detail page header redesigned with superpowers + frontend design skill

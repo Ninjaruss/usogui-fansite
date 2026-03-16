@@ -36,7 +36,6 @@ import { DetailPageHeader } from '../../../components/layouts/DetailPageHeader'
 import { RelatedContentSection } from '../../../components/layouts/RelatedContentSection'
 import { ArcStructuredData } from '../../../components/StructuredData'
 import { AnnotationSection } from '../../../components/annotations'
-import { EntityQuickActions } from '../../../components/EntityQuickActions'
 import { useAuth } from '../../../providers/AuthProvider'
 import { AnnotationOwnerType } from '../../../types'
 
@@ -454,12 +453,6 @@ export default function ArcPageClient({ initialArc, initialEvents, initialGamble
     </motion.div>
     </Stack>
 
-    {/* Quick Actions for authenticated users */}
-    <EntityQuickActions
-      entityType="arc"
-      entityId={initialArc.id}
-      isAuthenticated={!!user}
-    />
     </Container>
     </Box>
   )

@@ -37,7 +37,6 @@ import CharacterRelationships from '../../../components/CharacterRelationships'
 import CharacterOrganizationMemberships from '../../../components/CharacterOrganizationMemberships'
 import { BreadcrumbNav, createEntityBreadcrumbs } from '../../../components/Breadcrumb'
 import { AnnotationSection } from '../../../components/annotations'
-import { EntityQuickActions } from '../../../components/EntityQuickActions'
 import { useAuth } from '../../../providers/AuthProvider'
 import { AnnotationOwnerType } from '../../../types'
 import { DetailPageHeader } from '../../../components/layouts/DetailPageHeader'
@@ -509,11 +508,6 @@ export default function CharacterPageClient({
       </motion.div>
     </Stack>
 
-    <EntityQuickActions
-      entityType="character"
-      entityId={character.id}
-      isAuthenticated={!!user}
-    />
     </Container>
     </Box>
   )

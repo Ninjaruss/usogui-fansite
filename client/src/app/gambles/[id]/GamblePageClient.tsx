@@ -30,7 +30,6 @@ import { GambleStructuredData } from '../../../components/StructuredData'
 import { BreadcrumbNav, createEntityBreadcrumbs } from '../../../components/Breadcrumb'
 import { api } from '../../../lib/api'
 import { AnnotationSection } from '../../../components/annotations'
-import { EntityQuickActions } from '../../../components/EntityQuickActions'
 import { useAuth } from '../../../providers/AuthProvider'
 import { AnnotationOwnerType } from '../../../types'
 import {
@@ -630,11 +629,6 @@ export default function GamblePageClient({ initialGamble }: GamblePageClientProp
       </motion.div>
     </Stack>
 
-    <EntityQuickActions
-      entityType="gamble"
-      entityId={initialGamble.id}
-      isAuthenticated={!!user}
-    />
     </Container>
     </Box>
   )
