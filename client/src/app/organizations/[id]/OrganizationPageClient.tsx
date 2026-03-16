@@ -10,18 +10,17 @@ import {
   Stack,
   Tabs,
   Text,
-  Title,
   useMantineTheme
 } from '@mantine/core'
 import {
   getEntityThemeColor,
+  getAlphaColor,
   textColors,
-  fontSize,
   setTabAccentColors,
   backgroundStyles,
   getCardStyles
 } from '../../../lib/mantine-theme'
-import { Users, Shield, Image as ImageIcon } from 'lucide-react'
+import { Users, Shield, Image as ImageIcon, Crown } from 'lucide-react'
 import Link from 'next/link'
 import EnhancedSpoilerMarkdown from '../../../components/EnhancedSpoilerMarkdown'
 import { motion } from 'motion/react'
@@ -143,74 +142,56 @@ export default function OrganizationPageClient({
               {/* Main column */}
               <Stack gap={theme.spacing.md}>
                 {/* Organization Description Section */}
-                {initialOrganization.description && (
-                  <Card withBorder radius="lg" shadow="lg" style={{
-                    ...getCardStyles(theme, entityColors.organization),
-                    borderLeft: `3px solid ${entityColors.organization}`,
-                  }}>
-                    <Stack gap={theme.spacing.md} p={theme.spacing.lg}>
-                      <Group justify="flex-start" gap="sm" style={{ marginBottom: 12, marginTop: 24 }}>
-                        <Box style={{ height: 1, width: 40, background: `linear-gradient(to right, transparent, ${entityColors.organization}40)` }} />
-                        <Text className="eyebrow-label" style={{ color: 'rgba(255,255,255,0.55)', fontSize: '0.68rem' }}>
-                          ORGANIZATION OVERVIEW
-                        </Text>
-                        <Box style={{ height: 1, flex: 1, maxWidth: 120, background: `linear-gradient(to left, transparent, ${entityColors.organization}20)` }} />
-                      </Group>
+                <Card withBorder radius="lg" shadow="lg" padding={0} style={getCardStyles(theme, entityColors.organization)}>
+                  <Box style={{ height: 3, borderRadius: '6px 6px 0 0', background: `linear-gradient(90deg, ${entityColors.organization}, transparent 70%)` }} />
+                  <Box p="lg">
+                    <Group gap={10} mb={14} align="center">
+                      <Box style={{ width: 28, height: 28, borderRadius: 6, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: getAlphaColor(entityColors.organization, 0.15), border: `1px solid ${getAlphaColor(entityColors.organization, 0.30)}` }}>
+                        <Shield size={16} color={entityColors.organization} />
+                      </Box>
+                      <Text style={{ fontSize: '0.65rem', fontWeight: 800, letterSpacing: '0.18em', textTransform: 'uppercase', color: entityColors.organization, opacity: 0.85 }}>Organization Overview</Text>
+                      <Box style={{ flex: 1, height: 1, background: `linear-gradient(to right, ${getAlphaColor(entityColors.organization, 0.20)}, transparent)` }} />
+                    </Group>
+                    {initialOrganization.description ? (
                       <TimelineSpoilerWrapper chapterNumber={1}>
                         <Box style={{ fontSize: 14, lineHeight: 1.6 }}>
-                          <EnhancedSpoilerMarkdown
-                            content={initialOrganization.description}
-                            enableEntityEmbeds
-                            compactEntityCards={false}
-                          />
+                          <EnhancedSpoilerMarkdown content={initialOrganization.description} enableEntityEmbeds compactEntityCards={false} />
                         </Box>
                       </TimelineSpoilerWrapper>
-                    </Stack>
-                  </Card>
-                )}
-
-                {!initialOrganization.description && (
-                  <Card withBorder radius="lg" shadow="lg" style={{
-                    ...getCardStyles(theme, entityColors.organization),
-                    borderLeft: `3px solid ${entityColors.organization}`,
-                  }}>
-                    <Stack gap={theme.spacing.md} p={theme.spacing.lg}>
-                      <Group justify="flex-start" gap="sm" style={{ marginBottom: 12, marginTop: 24 }}>
-                        <Box style={{ height: 1, width: 40, background: `linear-gradient(to right, transparent, ${entityColors.organization}40)` }} />
-                        <Text className="eyebrow-label" style={{ color: 'rgba(255,255,255,0.55)', fontSize: '0.68rem' }}>
-                          ORGANIZATION OVERVIEW
-                        </Text>
-                        <Box style={{ height: 1, flex: 1, maxWidth: 120, background: `linear-gradient(to left, transparent, ${entityColors.organization}20)` }} />
-                      </Group>
+                    ) : (
                       <Text size="sm" c={textColors.tertiary} style={{ fontStyle: 'italic', textAlign: 'center', padding: theme.spacing.xl }}>
                         No description available for this organization yet. Check back later for updates!
                       </Text>
-                    </Stack>
-                  </Card>
-                )}
+                    )}
+                  </Box>
+                </Card>
               </Stack>
 
               {/* Aside column */}
               <Stack gap={theme.spacing.sm}>
                 {/* Details card */}
-                <Card radius="lg" shadow="md" style={{ background: '#111', border: '1px solid #1a1a1a' }}>
-                  <Stack gap={theme.spacing.xs} p={theme.spacing.md}>
-                    <Text style={{ fontSize: fontSize.xs, textTransform: 'uppercase', letterSpacing: '1.5px', color: '#555', marginBottom: 4 }}>
-                      Details
-                    </Text>
-                    <Group justify="space-between">
-                      <Text size="xs" c={textColors.tertiary}>Members</Text>
-                      <Text size="xs" style={{ color: entityColors.character, fontWeight: 600 }}>
-                        {initialMembers?.length ?? 0}
-                      </Text>
+                <Card withBorder radius="lg" shadow="md" padding={0} style={getCardStyles(theme, entityColors.organization)}>
+                  <Box style={{ height: 3, borderRadius: '6px 6px 0 0', background: `linear-gradient(90deg, ${entityColors.organization}, transparent 70%)` }} />
+                  <Box p="md">
+                    <Group gap={10} mb={14} align="center">
+                      <Text style={{ fontSize: '0.65rem', fontWeight: 800, letterSpacing: '0.18em', textTransform: 'uppercase', color: entityColors.organization, opacity: 0.85 }}>Details</Text>
+                      <Box style={{ flex: 1, height: 1, background: `linear-gradient(to right, ${getAlphaColor(entityColors.organization, 0.20)}, transparent)` }} />
                     </Group>
-                    <Group justify="space-between">
-                      <Text size="xs" c={textColors.tertiary}>Gambles</Text>
-                      <Text size="xs" style={{ color: entityColors.gamble, fontWeight: 600 }}>
-                        {initialGambles?.length ?? 0}
-                      </Text>
-                    </Group>
-                  </Stack>
+                    <Box style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: '1px solid #161616' }}>
+                      <Box style={{ width: 24, height: 24, borderRadius: 5, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: getAlphaColor(entityColors.organization, 0.10), border: `1px solid ${getAlphaColor(entityColors.organization, 0.20)}` }}>
+                        <Users size={14} color={entityColors.character} />
+                      </Box>
+                      <Text style={{ fontSize: 11, color: '#555', flex: 1 }}>Members</Text>
+                      <Text style={{ fontSize: 12, fontWeight: 700, color: entityColors.character }}>{initialMembers?.length ?? 0}</Text>
+                    </Box>
+                    <Box style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0' }}>
+                      <Box style={{ width: 24, height: 24, borderRadius: 5, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: getAlphaColor(entityColors.organization, 0.10), border: `1px solid ${getAlphaColor(entityColors.organization, 0.20)}` }}>
+                        <Crown size={14} color={entityColors.gamble} />
+                      </Box>
+                      <Text style={{ fontSize: 11, color: '#555', flex: 1 }}>Gambles</Text>
+                      <Text style={{ fontSize: 12, fontWeight: 700, color: entityColors.gamble }}>{initialGambles?.length ?? 0}</Text>
+                    </Box>
+                  </Box>
                 </Card>
 
                 {/* Members compact list */}
@@ -248,21 +229,19 @@ export default function OrganizationPageClient({
 
           <Tabs.Panel value="media" pt={theme.spacing.md}>
             <Stack gap="md">
-              <Card withBorder radius="lg" shadow="lg" style={getCardStyles(theme, entityColors.media)}>
-                <Stack gap="md" p="md">
-                  <Group justify="space-between" align="center">
-                    <Group gap="sm">
-                      <ImageIcon size={20} color={entityColors.media} />
-                      <Title order={4} c={textColors.media}>Media Gallery</Title>
+              <Card withBorder radius="lg" shadow="lg" padding={0} style={{ background: backgroundStyles.card, border: `1px solid ${getAlphaColor(getEntityThemeColor(theme, 'media'), 0.4)}` }}>
+                <Box style={{ height: 3, borderRadius: '6px 6px 0 0', background: `linear-gradient(90deg, ${getEntityThemeColor(theme, 'media')}, transparent 70%)` }} />
+                <Box p="md">
+                  <Group justify="space-between" align="center" mb={14}>
+                    <Group gap={10} align="center">
+                      <Box style={{ width: 28, height: 28, borderRadius: 6, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: getAlphaColor(getEntityThemeColor(theme, 'media'), 0.15), border: `1px solid ${getAlphaColor(getEntityThemeColor(theme, 'media'), 0.30)}` }}>
+                        <ImageIcon size={16} color={getEntityThemeColor(theme, 'media')} />
+                      </Box>
+                      <Text style={{ fontSize: '0.65rem', fontWeight: 800, letterSpacing: '0.18em', textTransform: 'uppercase', color: getEntityThemeColor(theme, 'media'), opacity: 0.85 }}>
+                        Media Gallery
+                      </Text>
                     </Group>
-                    <Button
-                      component={Link}
-                      href={`/media?ownerType=organization&ownerId=${initialOrganization.id}`}
-                      variant="outline"
-                      c={entityColors.media}
-                      size="sm"
-                      radius="xl"
-                    >
+                    <Button component={Link} href={`/media?ownerType=organization&ownerId=${initialOrganization.id}`} variant="outline" c={getEntityThemeColor(theme, 'media')} size="sm" radius="xl">
                       View All
                     </Button>
                   </Group>
@@ -275,7 +254,7 @@ export default function OrganizationPageClient({
                     showFilters
                     allowMultipleTypes
                   />
-                </Stack>
+                </Box>
               </Card>
             </Stack>
           </Tabs.Panel>
