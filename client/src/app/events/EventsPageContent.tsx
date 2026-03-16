@@ -17,7 +17,7 @@ import {
 } from '@mantine/core'
 import { getEntityThemeColor, backgroundStyles } from '../../lib/mantine-theme'
 import { ActiveFilterBadge, ActiveFilterBadgeRow } from '../../components/layouts/ActiveFilterBadge'
-import { CalendarSearch, AlertCircle } from 'lucide-react'
+import { CalendarSearch } from 'lucide-react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'motion/react'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -25,10 +25,10 @@ import { useProgress } from '../../providers/ProgressProvider'
 import { useSpoilerSettings } from '../../hooks/useSpoilerSettings'
 import { api } from '../../lib/api'
 import { usePaged } from '../../hooks/usePagedCache'
-import { ScrollToTop } from '../../components/ScrollToTop'
 import type { Arc, Event } from '../../types'
 import { EventStatus } from '../../types'
 import { ListPageLayout } from '../../components/layouts/ListPageLayout'
+import TimelineSpoilerWrapper from '../../components/TimelineSpoilerWrapper'
 
 const eventTypeOptions = [
   { value: '', label: 'All Types' },
@@ -60,81 +60,6 @@ interface EventsPageContentProps {
 
 type EventGroup = { arc: Arc | null; events: Event[] }
 
-function EventSpoilerWrapper({
-  event,
-  children,
-  onSpoilerRevealed
-}: {
-  event: Event
-  children: React.ReactNode
-  onSpoilerRevealed?: () => void
-}) {
-  const [isRevealed, setIsRevealed] = useState(false)
-  const [isHovered, setIsHovered] = useState(false)
-  const { userProgress } = useProgress()
-  const { settings } = useSpoilerSettings()
-  const theme = useMantineTheme()
-
-  const chapterNumber = event.spoilerChapter || event.chapterNumber
-
-  const effectiveProgress = settings.chapterTolerance > 0
-    ? settings.chapterTolerance
-    : userProgress
-
-  const shouldHideSpoiler = () => {
-    if (settings.showAllSpoilers) return false
-    if (chapterNumber) return chapterNumber > effectiveProgress
-    return false
-  }
-
-  const clientSideShouldHide = shouldHideSpoiler()
-
-  if (!clientSideShouldHide || isRevealed) {
-    return <>{children}</>
-  }
-
-  const handleReveal = (e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    setIsRevealed(true)
-    onSpoilerRevealed?.()
-  }
-
-  const accentColor = theme.other?.usogui?.event ?? theme.colors.orange?.[6] ?? '#ea580c'
-  const overlayBase = `${accentColor}15`
-  const overlayHover = `${accentColor}25`
-
-  return (
-    <Box style={{ position: 'relative', height: '100%' }}>
-      <Box style={{ opacity: 0.3, filter: 'blur(2px)', pointerEvents: 'none', height: '100%' }}>
-        {children}
-      </Box>
-      <Box
-        onClick={handleReveal}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-        style={{
-          position: 'absolute',
-          top: 0, left: 0, right: 0, bottom: 0,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: isHovered ? overlayHover : overlayBase,
-          borderRadius: theme.radius.lg,
-          cursor: 'pointer',
-          border: `1px solid ${accentColor}`,
-          zIndex: 100,
-          transition: 'background-color 200ms cubic-bezier(0.4, 0, 0.2, 1)'
-        }}
-      >
-        <Text size="xs" fw={600} c={accentColor} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: rem(4) }}>
-          <AlertCircle size={14} />
-          {chapterNumber ? `Chapter ${chapterNumber} Spoiler` : 'Spoiler'}
-        </Text>
-      </Box>
-    </Box>
-  )
-}
 
 export default function EventsPageContent({
   initialGroupedEvents,
@@ -176,11 +101,10 @@ export default function EventsPageContent({
   const shouldHideEventSpoiler = (event: Event) => {
     if (settings.showAllSpoilers) return false
     const chapterNumber = event.spoilerChapter || event.chapterNumber
-    if (chapterNumber) {
-      const effectiveProgress = settings.chapterTolerance > 0 ? settings.chapterTolerance : userProgress
-      return chapterNumber > effectiveProgress
-    }
-    return false
+    if (!chapterNumber) return false
+    const effectiveProgress = settings.chapterTolerance > 0 ? settings.chapterTolerance : userProgress
+    if (effectiveProgress === 0) return false
+    return chapterNumber > effectiveProgress
   }
 
   const updateUrl = useCallback(
@@ -383,10 +307,14 @@ export default function EventsPageContent({
         component={Link}
         href={`/events/${event.id}`}
       >
-        <EventSpoilerWrapper event={event} onSpoilerRevealed={() => {
-          revealedEventsRef.current = new Set(revealedEventsRef.current).add(event.id)
-          setRevealedEvents(new Set(revealedEventsRef.current))
-        }}>
+        <TimelineSpoilerWrapper
+          chapterNumber={event.spoilerChapter || event.chapterNumber}
+          onReveal={() => {
+            revealedEventsRef.current = new Set(revealedEventsRef.current).add(event.id)
+            setRevealedEvents(new Set(revealedEventsRef.current))
+          }}
+          style={{ height: '100%' }}
+        >
           <Stack gap={6} h="100%" justify="center" align="center">
             <Title order={3} lineClamp={1} size="lg" c={accentEvent} style={{ lineHeight: 1.2, textAlign: 'center', width: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {event.title}
@@ -400,7 +328,7 @@ export default function EventsPageContent({
               </Badge>
             </Group>
           </Stack>
-        </EventSpoilerWrapper>
+        </TimelineSpoilerWrapper>
       </Card>
     </motion.div>
   )
@@ -623,7 +551,7 @@ export default function EventsPageContent({
           )}
         </AnimatePresence>
       }
-      afterContent={<ScrollToTop accentColor={accentEvent} />}
+
     />
   )
 }
