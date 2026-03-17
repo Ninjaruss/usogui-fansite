@@ -42,6 +42,8 @@ interface PublicUser {
     guidesWritten: number
     mediaSubmitted: number
     likesReceived: number
+    annotationsSubmitted: number
+    eventsSubmitted?: number
   }
   favoriteQuote?: any
   favoriteGamble?: any

@@ -67,6 +67,8 @@ interface PublicUser {
     guidesWritten: number
     mediaSubmitted: number
     likesReceived: number
+    annotationsSubmitted: number
+    eventsSubmitted?: number
   }
   favoriteQuote?: any
   favoriteGamble?: any
@@ -104,6 +106,8 @@ export default function UserProfileClient({ initialUser }: UserProfileClientProp
     guidesWritten: number
     mediaSubmitted: number
     likesReceived: number
+    annotationsSubmitted: number
+    eventsSubmitted?: number
   } | null>(null)
   const [dataLoading, setDataLoading] = useState(true)
   const [contributionsVisible, setContributionsVisible] = useState(10)
@@ -119,7 +123,8 @@ export default function UserProfileClient({ initialUser }: UserProfileClientProp
       const baseStats = {
         guidesWritten: user.userStats?.guidesWritten ?? 0,
         mediaSubmitted: user.userStats?.mediaSubmitted ?? 0,
-        likesReceived: user.userStats?.likesReceived ?? 0
+        likesReceived: user.userStats?.likesReceived ?? 0,
+        annotationsSubmitted: user.userStats?.annotationsSubmitted ?? 0,
       }
 
       try {
@@ -144,7 +149,8 @@ export default function UserProfileClient({ initialUser }: UserProfileClientProp
         setUserStats({
           guidesWritten: Math.max(totalGuides, baseStats.guidesWritten),
           mediaSubmitted: baseStats.mediaSubmitted,
-          likesReceived: Math.max(aggregateLikes, baseStats.likesReceived)
+          likesReceived: Math.max(aggregateLikes, baseStats.likesReceived),
+          annotationsSubmitted: baseStats.annotationsSubmitted,
         })
       } catch (guidesError) {
         console.log('Could not fetch user guides:', guidesError)
