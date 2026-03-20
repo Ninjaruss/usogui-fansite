@@ -242,7 +242,34 @@ const EntityCard: React.FC<EntityCardProps> = ({
 
   // --- Popover content for hover card ---
   const renderPopoverContent = () => {
-    if (loading) return renderLoading()
+    if (loading) {
+      return (
+        <Box style={{ display: 'flex', alignItems: 'stretch', minHeight: rem(80) }}>
+          {/* Left image skeleton */}
+          <Box style={{
+            width: rem(70),
+            background: 'rgba(255,255,255,0.04)',
+            flexShrink: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            <Skeleton height={rem(44)} width={rem(44)} radius="sm" />
+          </Box>
+          {/* Right content skeleton */}
+          <Box style={{ padding: `${rem(12)} ${rem(14)}`, flex: 1 }}>
+            <Skeleton height={rem(10)} width="40%" mb={rem(6)} radius="sm" />
+            <Skeleton height={rem(14)} width="70%" mb={rem(8)} radius="sm" />
+            <Skeleton height={rem(10)} width="90%" mb={rem(4)} radius="sm" />
+            <Skeleton height={rem(10)} width="75%" mb={rem(10)} radius="sm" />
+            <Group gap={rem(6)}>
+              <Skeleton height={rem(18)} width={rem(50)} radius="xl" />
+              <Skeleton height={rem(18)} width={rem(40)} radius="xl" />
+            </Group>
+          </Box>
+        </Box>
+      )
+    }
     if (error || !data) return renderError()
 
     const finalDisplayText = displayText || getDefaultDisplayText(type, data)
