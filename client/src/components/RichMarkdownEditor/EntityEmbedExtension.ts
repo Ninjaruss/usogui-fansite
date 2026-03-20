@@ -1,5 +1,4 @@
 import { Node, mergeAttributes } from '@tiptap/core'
-import type { NodeViewRendererProps } from '@tiptap/core'
 
 export type EntityType =
   | 'character'

@@ -312,7 +312,7 @@ export default function InsertEntityModal({
 
             <TextInput
               label="Display text (optional)"
-              description="Leave blank to use the entity ID as the embed token"
+              description="Leave blank to use the entity name as display text"
               value={displayText}
               onChange={(e) => setDisplayText(e.currentTarget.value)}
               placeholder="Custom display text..."
