@@ -4,9 +4,11 @@ import React, { useState, useEffect } from 'react'
 import styles from './SubmitAnnotationPageContent.module.css'
 import {
   Alert,
+  Badge,
   Box,
   Button,
   Card,
+  Center,
   Checkbox,
   Container,
   Group,
@@ -48,9 +50,15 @@ export default function SubmitAnnotationPageContent() {
   const { user, loading: authLoading } = useAuth()
   const searchParams = useSearchParams()
 
+  const editAnnotationId = searchParams.get('edit')
+    ? Number(searchParams.get('edit'))
+    : null
+  const [editingAnnotation, setEditingAnnotation] = useState<any>(null)
+  const [loadingEdit, setLoadingEdit] = useState(false)
+
   const [formData, setFormData] = useState({
-    ownerType: searchParams.get('type') as AnnotationOwnerType | '' || '',
-    ownerId: searchParams.get('id') ? parseInt(searchParams.get('id')!) : null as number | null,
+    ownerType: editAnnotationId ? ('' as AnnotationOwnerType | '') : (searchParams.get('type') as AnnotationOwnerType | '' || ''),
+    ownerId: editAnnotationId ? null as number | null : (searchParams.get('id') ? parseInt(searchParams.get('id')!) : null as number | null),
     title: '',
     content: '',
     sourceUrl: '',
@@ -76,8 +84,8 @@ export default function SubmitAnnotationPageContent() {
   }
 
   const validateForm = () => {
-    if (!formData.ownerType) return 'Owner type is required'
-    if (!formData.ownerId) return 'Please select an entity to annotate'
+    if (!editAnnotationId && !formData.ownerType) return 'Owner type is required'
+    if (!editAnnotationId && !formData.ownerId) return 'Please select an entity to annotate'
     if (!formData.title.trim()) return 'Title is required'
     if (formData.title.trim().length < MIN_TITLE_LENGTH) return `Title must be at least ${MIN_TITLE_LENGTH} characters long`
     if (!formData.content.trim()) return 'Content is required'
@@ -95,16 +103,27 @@ export default function SubmitAnnotationPageContent() {
 
     setLoading(true)
     try {
-      await api.createAnnotation({
-        ownerType: formData.ownerType as AnnotationOwnerType,
-        ownerId: formData.ownerId as number,
-        title: formData.title.trim(),
-        content: formData.content.trim(),
-        sourceUrl: formData.sourceUrl.trim() || undefined,
-        chapterReference: formData.chapterReference || undefined,
-        isSpoiler: formData.isSpoiler,
-        spoilerChapter: formData.isSpoiler ? formData.spoilerChapter as number : undefined
-      })
+      if (editAnnotationId) {
+        await api.updateAnnotation(editAnnotationId, {
+          title: formData.title.trim(),
+          content: formData.content.trim(),
+          sourceUrl: formData.sourceUrl.trim() || undefined,
+          chapterReference: formData.chapterReference || undefined,
+          isSpoiler: formData.isSpoiler,
+          spoilerChapter: formData.isSpoiler ? formData.spoilerChapter as number : undefined
+        })
+      } else {
+        await api.createAnnotation({
+          ownerType: formData.ownerType as AnnotationOwnerType,
+          ownerId: formData.ownerId as number,
+          title: formData.title.trim(),
+          content: formData.content.trim(),
+          sourceUrl: formData.sourceUrl.trim() || undefined,
+          chapterReference: formData.chapterReference || undefined,
+          isSpoiler: formData.isSpoiler,
+          spoilerChapter: formData.isSpoiler ? formData.spoilerChapter as number : undefined
+        })
+      }
       setShowSuccess(true)
     } catch (submissionError: unknown) {
       setError(submissionError instanceof Error ? submissionError.message : 'Failed to submit annotation. Please try again.')
@@ -150,6 +169,30 @@ export default function SubmitAnnotationPageContent() {
     loadData()
   }, [])
 
+  useEffect(() => {
+    if (!editAnnotationId) return
+    setLoadingEdit(true)
+    api.getMyAnnotationSubmission(editAnnotationId)
+      .then((annotation) => {
+        setEditingAnnotation(annotation)
+        setFormData((prev) => ({
+          ...prev,
+          ownerType: annotation.ownerType ?? '',
+          ownerId: annotation.ownerId ?? null,
+          title: annotation.title ?? '',
+          content: annotation.content ?? '',
+          sourceUrl: annotation.sourceUrl ?? '',
+          chapterReference: annotation.chapterReference ?? '',
+          isSpoiler: annotation.isSpoiler ?? false,
+          spoilerChapter: annotation.spoilerChapter ?? ''
+        }))
+      })
+      .catch(() => {
+        // If the fetch fails (not found / not owner), stay in create mode
+      })
+      .finally(() => setLoadingEdit(false))
+  }, [editAnnotationId])
+
   if (authLoading || loadingData) {
     return (
       <Container size="md" py="xl">
@@ -159,6 +202,14 @@ export default function SubmitAnnotationPageContent() {
           <Text size="sm" c="dimmed">Loading…</Text>
         </Stack>
       </Container>
+    )
+  }
+
+  if (editAnnotationId && loadingEdit) {
+    return (
+      <Center p="xl">
+        <Loader color={accentColor} />
+      </Center>
     )
   }
 
@@ -216,13 +267,25 @@ export default function SubmitAnnotationPageContent() {
 
   return (
     <Container size="md" py="xl">
-      <SubmitPageHeader
-        label="Annotation Submission"
-        title="Submit an Annotation"
-        description="Share your insights, analysis, and commentary on characters, gambles, and story arcs"
-        icon={<MessageSquare size={22} />}
-        accentColor={accentColor}
-      />
+      <Group align="center" mb="xs">
+        <SubmitPageHeader
+          label="Annotation Submission"
+          title={editAnnotationId ? 'Edit Annotation' : 'Submit an Annotation'}
+          description="Share your insights, analysis, and commentary on characters, gambles, and story arcs"
+          icon={<MessageSquare size={22} />}
+          accentColor={accentColor}
+        />
+        {editAnnotationId && (
+          <Badge color="blue" variant="light">Editing</Badge>
+        )}
+      </Group>
+
+      {editingAnnotation?.status === 'rejected' && editingAnnotation?.rejectionReason && (
+        <Alert color="red" title="Submission Rejected" mb="md">
+          {editingAnnotation.rejectionReason}
+          <Text size="sm" mt={4}>Edit and resubmit your annotation below.</Text>
+        </Alert>
+      )}
 
       <SubmissionGuidelines type="annotation" accentColor={accentColor} />
 
@@ -418,7 +481,7 @@ export default function SubmitAnnotationPageContent() {
                       color: isFormValid ? '#fff' : undefined
                     }}
                   >
-                    Submit Annotation for Review
+                    {editAnnotationId ? 'Update Annotation' : 'Submit Annotation for Review'}
                   </Button>
                   <Text size="xs" c="dimmed">
                     Reviewed by a moderator before publishing
