@@ -25,6 +25,8 @@ import { UpdateOwnMediaDto } from './dto/update-own-media.dto';
 import { UrlNormalizerService } from './services/url-normalizer.service';
 import { EmailService } from '../email/email.service';
 import { FileValidationService } from './validators/file-validation.service';
+import { EditLogService } from '../edit-log/edit-log.service';
+import { EditLogEntityType } from '../../entities/edit-log.entity';
 import { UserRole } from '../../entities/user.entity';
 import { CloudflareR2Service } from '../../services/cloudflare-r2.service';
 
@@ -112,6 +114,7 @@ export class MediaService {
     private readonly urlNormalizer: UrlNormalizerService,
     private readonly emailService: EmailService,
     private readonly fileValidationService: FileValidationService,
+    private readonly editLogService: EditLogService,
   ) {}
 
   async create(data: CreateMediaDto, user: User): Promise<Media> {
@@ -615,11 +618,31 @@ export class MediaService {
       }
     }
 
-    // Reset status to pending and clear rejection reason when resubmitting
-    media.status = MediaStatus.PENDING;
-    media.rejectionReason = null;
+    const priorStatus = media.status;
 
-    return this.mediaRepo.save(media);
+    // Only reset to PENDING when the submission was REJECTED (matches guide behavior)
+    if (media.status === MediaStatus.REJECTED) {
+      media.status = MediaStatus.PENDING;
+      media.rejectionReason = null;
+    }
+
+    const saved = await this.mediaRepo.save(media);
+
+    const changedFieldNames: string[] = [];
+    if (updateData.description !== undefined) changedFieldNames.push('description');
+    if (updateData.ownerType !== undefined) changedFieldNames.push('ownerType');
+    if (updateData.ownerId !== undefined) changedFieldNames.push('ownerId');
+    if (updateData.chapterNumber !== undefined) changedFieldNames.push('chapterNumber');
+    if (file) changedFieldNames.push('file');
+
+    await this.editLogService.logUpdate(
+      EditLogEntityType.MEDIA,
+      media.id,
+      user.id,
+      [...changedFieldNames, `priorStatus:${priorStatus}`],
+    );
+
+    return saved;
   }
 
   async update(
