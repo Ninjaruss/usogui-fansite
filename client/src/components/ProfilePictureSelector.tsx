@@ -18,7 +18,6 @@ import {
   Alert,
 } from '@mantine/core';
 import { api, API_BASE_URL } from '../lib/api';
-import { getEntityThemeColor, outlineStyles } from '../lib/mantine-theme';
 import { UserBadge, BadgeType } from '../types';
 import TimelineSpoilerWrapper from './TimelineSpoilerWrapper';
 import type { User } from '../providers/AuthProvider';
@@ -50,7 +49,6 @@ export default function ProfilePictureSelector({
   const [characterMedia, setCharacterMedia] = useState<any[]>([]);
   const [mediaLoading, setMediaLoading] = useState(false);
   const [userBadges, setUserBadges] = useState<UserBadge[]>([]);
-  const [badgesLoading, setBadgesLoading] = useState(false);
 
   // Reset state when modal opens
   useEffect(() => {
@@ -65,12 +63,10 @@ export default function ProfilePictureSelector({
   // Fetch badges on open
   useEffect(() => {
     if (!opened || !currentUserId) return;
-    setBadgesLoading(true);
     fetch(`${API_BASE_URL}/users/${currentUserId}/badges`)
       .then(r => r.ok ? r.json() : [])
       .then(data => setUserBadges(Array.isArray(data) ? data : data?.data ?? []))
-      .catch(() => setUserBadges([]))
-      .finally(() => setBadgesLoading(false));
+      .catch(() => setUserBadges([]));
   }, [opened, currentUserId]);
 
   const fetchCharacterMedia = useCallback(async () => {
