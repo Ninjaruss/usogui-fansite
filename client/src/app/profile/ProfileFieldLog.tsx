@@ -1,7 +1,7 @@
 'use client'
 
-import React, { useMemo } from 'react'
-import { Box, Text, Group } from '@mantine/core'
+import { useMemo, useState } from 'react'
+import { Box, Text, Group, Button } from '@mantine/core'
 
 type EventType = 'guide' | 'media' | 'annotation' | 'event' | 'progress'
 
@@ -12,12 +12,20 @@ interface FeedEvent {
   date: Date
 }
 
-const TYPE_STYLES: Record<EventType, { bg: string; color: string; label: string }> = {
-  guide:      { bg: 'rgba(34,197,94,0.08)',   color: '#3a7a4a', label: 'guide' },
-  media:      { bg: 'rgba(59,130,246,0.08)',  color: '#3a4a6a', label: 'media' },
-  annotation: { bg: 'rgba(124,58,237,0.08)',  color: '#5a4a7a', label: 'annotation' },
-  event:      { bg: 'rgba(245,158,11,0.08)',  color: '#7a6020', label: 'event' },
-  progress:   { bg: 'rgba(249,115,22,0.08)',  color: '#7a5030', label: 'progress' },
+const TYPE_BORDER: Record<EventType, string> = {
+  guide:      '#3a7a4a',
+  media:      '#3a4a6a',
+  annotation: '#5a4a7a',
+  event:      '#7a6020',
+  progress:   '#7a5030',
+}
+
+const TYPE_BG: Record<EventType, string> = {
+  guide:      'rgba(34,197,94,0.04)',
+  media:      'rgba(59,130,246,0.04)',
+  annotation: 'rgba(124,58,237,0.04)',
+  event:      'rgba(245,158,11,0.04)',
+  progress:   'rgba(249,115,22,0.04)',
 }
 
 function timeAgo(date: Date): string {
@@ -69,6 +77,8 @@ interface ProfileFieldLogProps {
 }
 
 export default function ProfileFieldLog({ guides, submissions, user, submissionEdits }: ProfileFieldLogProps) {
+  const [visibleCount, setVisibleCount] = useState(8)
+
   const events = useMemo<FeedEvent[]>(() => {
     const items: FeedEvent[] = []
 
@@ -90,7 +100,7 @@ export default function ProfileFieldLog({ guides, submissions, user, submissionE
     // Submissions (media, events, annotations)
     for (const sub of submissions) {
       const type = sub.type as EventType
-      if (!TYPE_STYLES[type]) continue
+      if (!TYPE_BORDER[type]) continue
 
       const titleMap: Record<string, Record<string, string>> = {
         media:      { pending: 'Media submitted', approved: 'Media approved', rejected: 'Media rejected' },
@@ -123,7 +133,7 @@ export default function ProfileFieldLog({ guides, submissions, user, submissionE
       )
       const priorStatus = priorStatusField?.split(':')[1]
       const action = priorStatus === 'REJECTED' ? 'resubmitted' : 'edited'
-      const resolvedType: EventType = TYPE_STYLES[type] ? type : 'event'
+      const resolvedType: EventType = TYPE_BORDER[type] ? type : 'event'
       items.push({
         type: resolvedType,
         title: `${edit.entityType.charAt(0).toUpperCase() + edit.entityType.slice(1)} ${action}`,
@@ -132,9 +142,11 @@ export default function ProfileFieldLog({ guides, submissions, user, submissionE
       })
     }
 
-    // Sort descending, cap at 5
-    return items.sort((a, b) => b.date.getTime() - a.date.getTime()).slice(0, 5)
+    // Sort descending — no slice here; visibleCount controls rendering
+    return items.sort((a, b) => b.date.getTime() - a.date.getTime())
   }, [guides, submissions, user, submissionEdits])
+
+  const visible = events.slice(0, visibleCount)
 
   return (
     <Box style={{ background: '#0d0d0d', border: '1px solid #1a1a1a', borderRadius: '4px', padding: '12px' }}>
@@ -144,44 +156,58 @@ export default function ProfileFieldLog({ guides, submissions, user, submissionE
         <Text style={{ fontSize: '15px', color: '#666', fontStyle: 'italic' }}>No activity yet.</Text>
       ) : (
         <Box>
-          {events.map((ev, i) => {
-            const style = TYPE_STYLES[ev.type]
-            return (
-              <Group
-                key={i}
-                gap={10}
-                align="flex-start"
+          {visible.map((ev, i) => (
+            <Group
+              key={i}
+              gap={10}
+              align="stretch"
+              style={{ marginBottom: i < visible.length - 1 ? '6px' : 0 }}
+            >
+              {/* Colored left border */}
+              <Box style={{ width: '2px', background: TYPE_BORDER[ev.type], borderRadius: '1px', flexShrink: 0 }} />
+
+              {/* Card body */}
+              <Box
                 style={{
-                  padding: '7px 0',
-                  borderBottom: i < events.length - 1 ? '1px solid #0f0f0f' : 'none',
+                  flex: 1,
+                  padding: '7px 10px',
+                  background: TYPE_BG[ev.type],
+                  borderRadius: '3px',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'flex-start',
+                  gap: '8px',
                 }}
               >
-                <Text style={{ fontSize: '14px', color: '#888', whiteSpace: 'nowrap', paddingTop: '1px', minWidth: '36px', fontFamily: 'monospace' }}>
-                  {timeAgo(ev.date)}
-                </Text>
-                <Box style={{ flex: 1 }}>
-                  <Text style={{ fontSize: '16px', color: i === 0 ? '#ddd' : '#bbb' }}>{ev.title}</Text>
+                <Box style={{ flex: 1, minWidth: 0 }}>
+                  <Text style={{ fontSize: '13px', color: '#e5e5e5', fontWeight: 600, lineHeight: 1.3 }}>
+                    {ev.title}
+                  </Text>
                   {ev.detail && (
-                    <Text style={{ fontSize: '14px', color: '#999', marginTop: '3px' }}>{ev.detail}</Text>
+                    <Text style={{ fontSize: '11px', color: '#888', marginTop: '2px' }} lineClamp={1}>
+                      {ev.detail}
+                    </Text>
                   )}
                 </Box>
-                <Box
-                  style={{
-                    fontSize: '13px',
-                    padding: '1px 5px',
-                    background: style.bg,
-                    color: style.color,
-                    border: `1px solid ${style.bg.replace('0.08', '0.15')}`,
-                    borderRadius: '2px',
-                    whiteSpace: 'nowrap',
-                    flexShrink: 0,
-                  }}
-                >
-                  {style.label}
-                </Box>
-              </Group>
-            )
-          })}
+                <Text style={{ fontSize: '10px', color: '#555', fontFamily: 'monospace', flexShrink: 0, paddingTop: '1px' }}>
+                  {timeAgo(ev.date)}
+                </Text>
+              </Box>
+            </Group>
+          ))}
+
+          {events.length > visibleCount && (
+            <Button
+              variant="subtle"
+              size="xs"
+              fullWidth
+              mt={8}
+              onClick={() => setVisibleCount((v) => v + 8)}
+              styles={{ root: { color: '#666', fontSize: '12px' } }}
+            >
+              Show more ({events.length - visibleCount} remaining)
+            </Button>
+          )}
         </Box>
       )}
     </Box>
