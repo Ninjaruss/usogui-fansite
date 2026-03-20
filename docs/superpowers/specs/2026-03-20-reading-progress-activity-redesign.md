@@ -40,28 +40,29 @@
 ```ts
 interface ReadingProgressBarProps {
   userProgress: number
-  markerLabel?: string // defaults to "you"; can be omitted on public views
+  markerLabel?: string // "you" on profile page; omit on public user detail page
 }
 ```
 
 **Visual:**
 - Header row: "Chapter X of 539" (left) · "XX%" in rose (right)
 - 6px gradient bar (rose → purple) with a glowing rose dot at the user's exact percentage position
+- The glowing dot is **always rendered** regardless of `markerLabel`. When `markerLabel` is provided, a small text label (e.g. "you") appears above the dot. When omitted, the dot renders without any label.
 - Arc pills row below the bar, derived from `PROFILE_ARC_MILESTONES`:
   - Completed arcs (before user's chapter): rose-tinted background, `✓` suffix
   - Current arc (user is within its range): purple highlight, `← now` suffix
-  - Upcoming arcs: dim grey (`#333` text on `#111` bg)
+  - Upcoming arcs: intentionally dim grey (`#333` text on `#111` bg) to de-emphasise unread content
 - Below pills: "Currently in: [Arc Name]" in a subtle muted color
 
 **Replaces:**
-- `ProfileProgressReport.tsx` — updated to use `ReadingProgressBar` internally (or merged into it)
+- `ProfileProgressReport.tsx` — merged into `ReadingProgressBar` (the file is deleted, not merely updated; `ProfilePageClient.tsx` imports `ReadingProgressBar` directly)
 - Inline reading progress block in `UserProfileClient.tsx` (lines 371–399)
 
 ---
 
 ### 2. Restyled: `ProfileFieldLog` (profile page activity)
 
-**File:** `client/src/app/profile/ProfileFieldLog.tsx` — restyle only, no data or prop changes.
+**File:** `client/src/app/profile/ProfileFieldLog.tsx` — restyle only, no prop changes.
 
 **Visual changes:**
 - Remove dark type badges
@@ -78,8 +79,9 @@ interface ReadingProgressBarProps {
 - "Reading progress — Chapter X reached"
 
 **Behaviour changes:**
-- Cap raised from 5 → 8 items visible by default
-- "Show more" button to reveal remaining events (already in props, no extra fetch)
+- The existing hard `.slice(0, 5)` inside `useMemo` is replaced by a `visibleCount` state (starts at 8) inside the component. The full sorted events array is computed; only `events.slice(0, visibleCount)` is rendered.
+- A "Show more" button below the list increments `visibleCount` by 8. The button is hidden when all events are visible.
+- No prop changes, no extra data fetches — all event data is already derived from the existing props.
 
 ---
 
@@ -89,11 +91,12 @@ interface ReadingProgressBarProps {
 
 **Purpose:** Shows a public-facing activity timeline for any user's profile. Approved content only — no pending or rejected statuses surfaced.
 
+**Data source:** `api.getPublicUserSubmissions(userId)` already returns all approved submission types including guides, media, events, and annotations in a single array. No separate guide fetch is needed.
+
 **Props:**
 ```ts
 interface PublicActivityTimelineProps {
-  submissions: SubmissionItem[]  // from api.getPublicUserSubmissions — already approved-only
-  guides: UserGuide[]            // from api.getGuides with status: 'approved', authorId
+  submissions: any[]  // from api.getPublicUserSubmissions — approved-only, all types including guides
 }
 ```
 
@@ -110,26 +113,31 @@ Detail text: title, filename, or chapter context if available. No reading progre
 **Visual:** Same left-border timeline design as the restyled `ProfileFieldLog`. Identical colors per type.
 
 **Behaviour:**
-- Shows 5 items by default
-- "Show more" button to load the rest (data already available in props)
+- `visibleCount` state starts at 8 (aligned with `ProfileFieldLog`)
+- "Show more" button increments by 8
 - Empty state: "No public contributions yet."
+- Loading/error: when `submissions` is `[]` due to a fetch error (caught upstream in `UserProfileClient`), the empty state is displayed — this is acceptable behaviour
 
 ---
 
 ## Layout Changes — `UserProfileClient.tsx`
 
-**Current 2-column grid:**
+**Current right column** (lines 371–399): a `<Box style={{ background: '#0d0d0d', border: '1px solid #1a1a1a', ... }}>` containing the inline reading progress block.
+
+**New right column:** Replace that outer `<Box>` entirely with a bare `<Stack gap="md">`. Each child component (`ReadingProgressBar`, `PublicActivityTimeline`) carries its own card styling — do **not** wrap them in an outer card box.
+
 ```
-[ Favorites ]  [ Reading Progress ]
+[ Favorites ]  [ ReadingProgressBar  ]  ← each has own card styling
+               [ PublicActivityTimeline ]
 ```
 
-**New 2-column grid:**
+**Specific change:** Lines 371–399 (the right column `<Box>`) replaced by:
+```tsx
+<Stack gap="md">
+  <ReadingProgressBar userProgress={user.userProgress} />
+  <PublicActivityTimeline submissions={submissions} />
+</Stack>
 ```
-[ Favorites ]  [ Reading Progress    ]
-               [ Activity Timeline   ]
-```
-
-The right column becomes a `<Stack gap="md">` containing `ReadingProgressBar` then `PublicActivityTimeline`.
 
 **No changes to:**
 - Header block, stat strip, dossier metadata
@@ -145,9 +153,10 @@ The right column becomes a `<Stack gap="md">` containing `ReadingProgressBar` th
 |---|---|
 | `client/src/components/ReadingProgressBar.tsx` | **New** — shared visual component |
 | `client/src/components/PublicActivityTimeline.tsx` | **New** — public activity feed |
-| `client/src/app/profile/ProfileProgressReport.tsx` | **Update** — use `ReadingProgressBar` internally |
-| `client/src/app/profile/ProfileFieldLog.tsx` | **Restyle** — left-border timeline, 8-item cap, show more |
-| `client/src/app/users/[id]/UserProfileClient.tsx` | **Update** — use `ReadingProgressBar`, add `PublicActivityTimeline` |
+| `client/src/app/profile/ProfileProgressReport.tsx` | **Delete** — merged into `ReadingProgressBar` |
+| `client/src/app/profile/ProfileFieldLog.tsx` | **Restyle** — left-border timeline, `visibleCount` state, show more |
+| `client/src/app/users/[id]/UserProfileClient.tsx` | **Update** — use `ReadingProgressBar`, add `PublicActivityTimeline`, replace right column `<Box>` with `<Stack>` |
+| `client/src/app/profile/ProfilePageClient.tsx` | **Update** — import `ReadingProgressBar` instead of `ProfileProgressReport` |
 
 ---
 
