@@ -78,6 +78,30 @@ export class EditLogService {
       groups.has(EditLogEntityType.EVENT)
         ? fetch(this.eventRepository as any, EditLogEntityType.EVENT, groups.get(EditLogEntityType.EVENT)!, 'title')
         : Promise.resolve(),
+      groups.has(EditLogEntityType.GUIDE)
+        ? fetch(this.guideRepository as any, EditLogEntityType.GUIDE, groups.get(EditLogEntityType.GUIDE)!, 'title')
+        : Promise.resolve(),
+      groups.has(EditLogEntityType.MEDIA)
+        ? fetch(this.mediaRepository as any, EditLogEntityType.MEDIA, groups.get(EditLogEntityType.MEDIA)!, 'title')
+        : Promise.resolve(),
+      groups.has(EditLogEntityType.ANNOTATION)
+        ? (async () => {
+            const ids = groups.get(EditLogEntityType.ANNOTATION)!;
+            const rows = await this.annotationRepository.find({
+              where: { id: In(ids) } as any,
+              select: ['id', 'title', 'ownerType'] as any,
+            });
+            for (const row of rows) {
+              const ownerLabel = row.ownerType
+                ? row.ownerType.charAt(0).toUpperCase() + row.ownerType.slice(1)
+                : 'Annotation';
+              nameMap.set(
+                `${EditLogEntityType.ANNOTATION}:${row.id}`,
+                `${ownerLabel}: ${row.title}`,
+              );
+            }
+          })()
+        : Promise.resolve(),
     ]);
 
     return nameMap;
@@ -167,6 +191,25 @@ export class EditLogService {
     });
   }
 
+  async getSubmissionEditsByUser(userId: number): Promise<Array<EditLog & { entityName?: string }>> {
+    const data = await this.editLogRepository.find({
+      where: {
+        userId,
+        entityType: In([
+          EditLogEntityType.GUIDE,
+          EditLogEntityType.MEDIA,
+          EditLogEntityType.ANNOTATION,
+        ]),
+      },
+      order: { createdAt: 'DESC' },
+    });
+    const nameMap = await this.resolveEntityNames(data);
+    return data.map((e) => ({
+      ...e,
+      entityName: nameMap.get(`${e.entityType}:${e.entityId}`),
+    }));
+  }
+
   async getEditsByEntity(
     entityType: EditLogEntityType,
     entityId: number,
@@ -201,6 +244,9 @@ export class EditLogService {
       [EditLogEntityType.ARC]: 0,
       [EditLogEntityType.ORGANIZATION]: 0,
       [EditLogEntityType.EVENT]: 0,
+      [EditLogEntityType.GUIDE]: 0,
+      [EditLogEntityType.MEDIA]: 0,
+      [EditLogEntityType.ANNOTATION]: 0,
     };
 
     for (const result of results) {
