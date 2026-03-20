@@ -1,7 +1,6 @@
 // client/src/components/ReadingProgressBar.tsx
 'use client'
 
-import React from 'react'
 import { Box, Text, Group } from '@mantine/core'
 import { MAX_CHAPTER, PROFILE_ARC_MILESTONES } from '../lib/constants'
 
@@ -18,7 +17,7 @@ export default function ReadingProgressBar({ userProgress, markerLabel }: Readin
   const currentArcIndex = PROFILE_ARC_MILESTONES.reduce((acc, arc, i) => {
     if (userProgress >= arc.startChapter) return i
     return acc
-  }, 0)
+  }, -1)
 
   return (
     <Box style={{ background: '#0d0d0d', border: '1px solid #1a1a1a', borderRadius: '4px', padding: '16px' }}>
@@ -81,8 +80,8 @@ export default function ReadingProgressBar({ userProgress, markerLabel }: Readin
       {/* Arc pills */}
       <Box style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginBottom: '8px' }}>
         {PROFILE_ARC_MILESTONES.map((arc, i) => {
-          const isCompleted = i < currentArcIndex
-          const isCurrent = i === currentArcIndex
+          const isCompleted = currentArcIndex >= 0 && i < currentArcIndex
+          const isCurrent = currentArcIndex >= 0 && i === currentArcIndex
 
           const bg = isCurrent
             ? 'rgba(124,58,237,0.15)'
@@ -103,7 +102,7 @@ export default function ReadingProgressBar({ userProgress, markerLabel }: Readin
 
           return (
             <Box
-              key={arc.name}
+              key={i}
               style={{
                 fontSize: '9px',
                 padding: '2px 6px',
@@ -122,8 +121,11 @@ export default function ReadingProgressBar({ userProgress, markerLabel }: Readin
       </Box>
 
       <Text style={{ fontSize: '10px', color: '#555' }}>
-        Currently in:{' '}
-        <span style={{ color: '#888' }}>{PROFILE_ARC_MILESTONES[currentArcIndex]?.name}</span>
+        {currentArcIndex >= 0 ? (
+          <>Currently in: <span style={{ color: '#888' }}>{PROFILE_ARC_MILESTONES[currentArcIndex]?.name}</span></>
+        ) : (
+          <span style={{ color: '#555' }}>Not started</span>
+        )}
       </Text>
     </Box>
   )
