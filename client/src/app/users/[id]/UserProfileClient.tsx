@@ -411,45 +411,18 @@ export default function UserProfileClient({ initialUser }: UserProfileClientProp
 
         {/* User Contributions Section */}
         {submissions.length > 0 && (
-          <Card
-            className="gambling-card"
-            withBorder
-            radius="md"
-            shadow="lg"
-            p="xl"
-            style={{
-              background: `linear-gradient(135deg, ${getAlphaColor(accentColor, 0.14)}, ${getAlphaColor(accentColor, 0.04)}), ${cardBaseBackground}`,
-              border: `1px solid ${getAlphaColor(accentColor, 0.35)}`,
-              boxShadow: `0 16px 36px ${getAlphaColor(accentColor, 0.1)}`
-            }}
-          >
+          <Box style={{ background: '#0d0d0d', border: '1px solid #1a1a1a', borderRadius: '4px', padding: '20px' }}>
             <Stack gap="lg">
-              <Group justify="flex-start" gap="sm" style={{ marginBottom: 12, marginTop: 8 }}>
-                <Box style={{ height: 1, width: 40, background: `linear-gradient(to right, transparent, ${guideColor}40)` }} />
-                <Text className="eyebrow-label" style={{ color: 'rgba(255,255,255,0.55)', fontSize: '0.68rem' }}>
-                  CONTRIBUTIONS BY {user.username.toUpperCase()}
-                </Text>
-                <Badge
-                  variant="light"
-                  size="sm"
-                  style={{
-                    background: getAlphaColor(guideColor, 0.2),
-                    border: `1px solid ${getAlphaColor(guideColor, 0.4)}`,
-                    color: guideColor
-                  }}
-                >
-                  {submissions.length}
-                </Badge>
-                <Box style={{ height: 1, flex: 1, maxWidth: 120, background: `linear-gradient(to left, transparent, ${guideColor}20)` }} />
+              {/* Heading */}
+              <Group gap="sm">
+                <Text fw={700}>Contributions</Text>
+                <Badge variant="light" size="sm">{submissions.length}</Badge>
               </Group>
 
-              {/* Filter Controls */}
+              {/* Filter */}
               <SegmentedControl
                 value={contributionFilter}
-                onChange={(value) => {
-                  setContributionFilter(value)
-                  setContributionsVisible(10) // Reset visible count when filter changes
-                }}
+                onChange={(value) => { setContributionFilter(value); setContributionsVisible(10) }}
                 data={[
                   { label: 'All', value: 'all' },
                   { label: 'Guides', value: 'guide' },
@@ -457,51 +430,31 @@ export default function UserProfileClient({ initialUser }: UserProfileClientProp
                   { label: 'Events', value: 'event' },
                   { label: 'Annotations', value: 'annotation' },
                 ]}
-                color={guideColor}
-                styles={{
-                  root: {
-                    backgroundColor: getAlphaColor(accentColor, 0.15),
-                    border: `1px solid ${accentBorderColor}`,
-                  },
-                  indicator: {
-                    backgroundColor: guideColor,
-                  },
-                  label: {
-                    color: textColors.secondary,
-                  },
-                }}
+                styles={{ indicator: { backgroundColor: guideColor } }}
               />
 
+              {/* List */}
               <Stack gap="sm">
                 {(() => {
-                  const filteredSubmissions = contributionFilter === 'all'
+                  const filtered = contributionFilter === 'all'
                     ? submissions
                     : submissions.filter((s: any) => s.type === contributionFilter)
-
                   return (
                     <>
-                      {filteredSubmissions.slice(0, contributionsVisible).map((submission: any) => (
+                      {filtered.slice(0, contributionsVisible).map((submission: any) => (
                         <SubmissionCard
                           key={`${submission.type}-${submission.id}`}
                           submission={submission as SubmissionItem}
-                          cardStyle={{
-                            background: getAlphaColor(guideColor, 0.12),
-                            border: `1px solid ${getAlphaColor(guideColor, 0.35)}`
-                          }}
                         />
                       ))}
-                      {filteredSubmissions.length === 0 && (
-                        <Text c={textColors.tertiary} ta="center" py="xl">
+                      {filtered.length === 0 && (
+                        <Text c="dimmed" ta="center" py="xl">
                           No {contributionFilter === 'all' ? 'contributions' : `${contributionFilter}s`} found.
                         </Text>
                       )}
-                      {filteredSubmissions.length > contributionsVisible && (
-                        <Button
-                          variant="subtle"
-                          fullWidth
-                          onClick={() => setContributionsVisible(v => v + 10)}
-                        >
-                          Show more ({filteredSubmissions.length - contributionsVisible} remaining)
+                      {filtered.length > contributionsVisible && (
+                        <Button variant="subtle" fullWidth onClick={() => setContributionsVisible(v => v + 10)}>
+                          Show more ({filtered.length - contributionsVisible} remaining)
                         </Button>
                       )}
                     </>
@@ -509,134 +462,68 @@ export default function UserProfileClient({ initialUser }: UserProfileClientProp
                 })()}
               </Stack>
             </Stack>
-          </Card>
+          </Box>
         )}
 
         {/* User Guides Section */}
         {guides.length > 0 && (
-          <Card
-            className="gambling-card"
-            withBorder
-            radius="md"
-            shadow="lg"
-            p="xl"
-            style={{
-              background: `linear-gradient(135deg, ${getAlphaColor(accentColor, 0.14)}, ${getAlphaColor(accentColor, 0.04)}), ${cardBaseBackground}`,
-              border: `1px solid ${getAlphaColor(accentColor, 0.35)}`,
-              boxShadow: `0 16px 36px ${getAlphaColor(accentColor, 0.1)}`
-            }}
-          >
+          <Box style={{ background: '#0d0d0d', border: '1px solid #1a1a1a', borderRadius: '4px', padding: '20px' }}>
             <Stack gap="lg">
+              {/* Heading */}
               <Group justify="space-between" align="center" wrap="wrap">
-                <Group justify="flex-start" gap="sm" style={{ marginBottom: 4 }}>
-                  <Box style={{ height: 1, width: 40, background: `linear-gradient(to right, transparent, ${guideColor}40)` }} />
-                  <Text className="eyebrow-label" style={{ color: 'rgba(255,255,255,0.55)', fontSize: '0.68rem' }}>
-                    GUIDES BY {user.username.toUpperCase()}
-                  </Text>
-                  <Badge
-                    variant="light"
-                    size="sm"
-                    style={{
-                      background: getAlphaColor(guideColor, 0.2),
-                      border: `1px solid ${getAlphaColor(guideColor, 0.4)}`,
-                      color: guideColor
-                    }}
-                  >
-                    {guides.length}
-                  </Badge>
-                  <Box style={{ height: 1, flex: 1, maxWidth: 120, background: `linear-gradient(to left, transparent, ${guideColor}20)` }} />
+                <Group gap="sm">
+                  <Text fw={700}>Guides</Text>
+                  <Badge variant="light" size="sm">{userStats?.guidesWritten ?? guides.length}</Badge>
                 </Group>
-
                 <Button
                   component={Link}
                   href={`/guides?author=${user.id}&authorName=${encodeURIComponent(user.username)}`}
                   variant="outline"
-                  radius="md"
-                  styles={{
-                    root: {
-                      borderColor: accentBorderColor,
-                      color: accentTextColor,
-                      backgroundColor: getAlphaColor(accentColor, 0.1),
-                      _hover: {
-                        backgroundColor: accentHoverColor
-                      }
-                    }
-                  }}
                   size="sm"
+                  radius="md"
                   leftSection={<FileText size={16} />}
+                  styles={{ root: { borderColor: '#2a2a2a', color: '#bbb', backgroundColor: 'transparent' } }}
                 >
                   View All Guides
                 </Button>
               </Group>
 
+              {/* Grid */}
               <SimpleGrid cols={{ base: 1, md: 2 }} spacing="md">
                 {guides.slice(0, guidesVisible).map((guide) => (
-                  <Card
-                    key={guide.id}
-                    withBorder
-                    radius="md"
-                    padding="lg"
-                    shadow="sm"
-                    style={{
-                      background: getAlphaColor(guideColor, 0.12),
-                      border: `1px solid ${getAlphaColor(guideColor, 0.35)}`
-                    }}
-                  >
+                  <Box key={guide.id} style={{ background: '#111', border: '1px solid #1a1a1a', borderRadius: '4px', padding: '16px' }}>
                     <Stack gap="sm">
-                      <Anchor
-                        component={Link}
-                        href={`/guides/${guide.id}`}
-                        fw={600}
-                        size="lg"
-                        c={guideColor}
-                        style={{ textDecoration: 'none' }}
-                      >
+                      <Anchor component={Link} href={`/guides/${guide.id}`} fw={600} c="gray.2" style={{ textDecoration: 'none' }}>
                         {guide.title}
                       </Anchor>
-
-                      <Text size="sm" c={textColors.tertiary} lineClamp={2}>
-                        {guide.description}
-                      </Text>
-
-                      <Group justify="space-between" align="center" mt="xs">
+                      <Text size="sm" c="dimmed" lineClamp={2}>{guide.description}</Text>
+                      <Group justify="space-between" align="center">
                         <Group gap="md">
                           <Group gap={4} align="center">
-                            <Eye size={12} color={textColors.tertiary as string} />
-                            <Text size="xs" c={textColors.tertiary}>
-                              {guide.viewCount}
-                            </Text>
+                            <Eye size={12} color="#666" />
+                            <Text size="xs" c="dimmed">{guide.viewCount}</Text>
                           </Group>
                           <Group gap={4} align="center">
-                            <Heart size={12} color={textColors.tertiary as string} />
-                            <Text size="xs" c={textColors.tertiary}>
-                              {guide.likeCount}
-                            </Text>
+                            <Heart size={12} color="#666" />
+                            <Text size="xs" c="dimmed">{guide.likeCount}</Text>
                           </Group>
                         </Group>
-
-                        <Text size="xs" c={textColors.tertiary}>
-                          {new Date(guide.createdAt).toLocaleDateString('en-US', {
-                            month: 'short',
-                            day: 'numeric',
-                            year: 'numeric'
-                          })}
+                        <Text size="xs" c="dimmed">
+                          {new Date(guide.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                         </Text>
                       </Group>
                     </Stack>
-                  </Card>
+                  </Box>
                 ))}
               </SimpleGrid>
+
               {guides.length > guidesVisible && (
-                <Button
-                  variant="subtle"
-                  fullWidth
-                  onClick={() => setGuidesVisible(v => v + 6)}
-                >
+                <Button variant="subtle" fullWidth onClick={() => setGuidesVisible(v => v + 6)}>
                   Show more ({guides.length - guidesVisible} remaining)
                 </Button>
               )}
             </Stack>
-          </Card>
+          </Box>
         )}
           </Stack>
       </Container>
