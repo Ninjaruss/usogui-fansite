@@ -21,7 +21,7 @@ import Link from 'next/link'
 import { api } from '../../lib/api'
 import { textColors } from '../../lib/mantine-theme'
 
-type FilterType = 'all' | 'edits' | 'submissions'
+type FilterType = 'all' | 'submissions'
 type EntityFilter = 'all' | 'character' | 'gamble' | 'arc' | 'organization' | 'event' | 'guide' | 'media' | 'annotation'
 
 interface EditEntry {
@@ -79,7 +79,7 @@ function entityColor(entityType: string): string {
     event: textColors.event,
     guide: textColors.guide,
     media: textColors.media,
-    annotation: textColors.secondary,
+    annotation: textColors.annotation,
   }
   return map[entityType.toLowerCase()] ?? textColors.secondary
 }
@@ -96,18 +96,40 @@ function relativeTime(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString()
 }
 
-const ENTITY_FILTER_OPTIONS = [
+function getActionLabel(entry: EditEntry): string {
+  const isSubmissionType = ['guide', 'media', 'annotation'].includes(entry.entityType)
+  if (isSubmissionType && entry.action === 'update') {
+    const priorStatusField = ((entry as any).changedFields ?? []).find(
+      (f: string) => f.startsWith('priorStatus:')
+    )
+    const priorStatus = priorStatusField?.split(':')[1]
+    if (priorStatus === 'REJECTED') return 'resubmitted'
+    return 'edited'
+  }
+  return entry.action
+}
+
+const ALL_ENTITY_OPTIONS = [
   { label: 'All', value: 'all' },
   { label: 'Characters', value: 'character' },
   { label: 'Gambles', value: 'gamble' },
   { label: 'Arcs', value: 'arc' },
   { label: 'Orgs', value: 'organization' },
   { label: 'Events', value: 'event' },
+  { label: 'Guides', value: 'guide' },
+  { label: 'Media', value: 'media' },
+  { label: 'Annotations', value: 'annotation' },
+]
+
+const SUBMISSION_ENTITY_OPTIONS = [
+  { label: 'All', value: 'all' },
+  { label: 'Guides', value: 'guide' },
+  { label: 'Media', value: 'media' },
+  { label: 'Annotations', value: 'annotation' },
 ]
 
 const TYPE_FILTER_OPTIONS: { label: string; value: FilterType }[] = [
   { label: 'All Activity', value: 'all' },
-  { label: 'Wiki Edits', value: 'edits' },
   { label: 'Submissions', value: 'submissions' },
 ]
 
@@ -126,36 +148,20 @@ export function ChangelogPageContent() {
     try {
       const entityTypeParam = entityFilter !== 'all' ? entityFilter : undefined
 
-      if (filterType === 'edits' || filterType === 'all') {
-        const edits = await api.getRecentEdits({ page, limit: PAGE_LIMIT, entityType: entityTypeParam })
-        if (filterType === 'edits') {
-          const editEntries: EditEntry[] = (edits?.data ?? []).map((e) => ({
-            id: e.id, kind: 'edit' as const,
-            action: e.action, entityType: e.entityType, entityId: e.entityId,
-            entityName: e.entityName,
-            createdAt: e.createdAt, user: e.user,
-          }))
-          setEntries(editEntries)
-          setTotalPages(edits?.totalPages ?? 1)
-          return
-        }
-      }
-
-      if (filterType === 'submissions' || filterType === 'all') {
+      if (filterType === 'submissions') {
         const submissions = await api.getRecentSubmissions({ page, limit: PAGE_LIMIT })
-        if (filterType === 'submissions') {
-          const submissionEntries: SubmissionEntry[] = (submissions?.data ?? []).map((s) => ({
-            id: s.id, kind: 'submission' as const,
-            type: s.type, title: s.title, entityType: s.entityType, entityId: s.entityId,
-            entityName: s.entityName,
-            createdAt: s.createdAt, submittedBy: s.submittedBy,
-          }))
-          setEntries(submissionEntries)
-          setTotalPages(submissions?.totalPages ?? 1)
-          return
-        }
+        const submissionEntries: SubmissionEntry[] = (submissions?.data ?? []).map((s) => ({
+          id: s.id, kind: 'submission' as const,
+          type: s.type, title: s.title, entityType: s.entityType, entityId: s.entityId,
+          entityName: s.entityName,
+          createdAt: s.createdAt, submittedBy: s.submittedBy,
+        }))
+        setEntries(submissionEntries)
+        setTotalPages(submissions?.totalPages ?? 1)
+        return
       }
 
+      // filterType === 'all': combine edits and submissions
       const [edits, submissions] = await Promise.all([
         api.getRecentEdits({ page: 1, limit: page * PAGE_LIMIT, entityType: entityTypeParam }),
         api.getRecentSubmissions({ page: 1, limit: page * PAGE_LIMIT }),
@@ -284,32 +290,35 @@ export function ChangelogPageContent() {
         </Group>
 
         {/* Entity filter pills (colored) */}
-        {filterType !== 'submissions' && (
-          <Group gap="xs">
-            {ENTITY_FILTER_OPTIONS.map(opt => {
-              const color = opt.value === 'all' ? 'rgba(255,255,255,0.5)' : entityColor(opt.value)
-              const isActive = entityFilter === opt.value
-              return (
-                <Button
-                  key={opt.value}
-                  size="xs"
-                  onClick={() => handleEntityFilter(opt.value as EntityFilter)}
-                  style={{
-                    backgroundColor: isActive ? `${color}22` : 'transparent',
-                    border: `1px solid ${isActive ? color : 'rgba(255,255,255,0.06)'}`,
-                    color: isActive ? color : 'rgba(255,255,255,0.35)',
-                    borderRadius: rem(4),
-                    fontSize: rem(11),
-                    height: rem(24),
-                    padding: `0 ${rem(8)}`
-                  }}
-                >
-                  {opt.label}
-                </Button>
-              )
-            })}
-          </Group>
-        )}
+        {(() => {
+          const entityOptions = filterType === 'submissions' ? SUBMISSION_ENTITY_OPTIONS : ALL_ENTITY_OPTIONS
+          return (
+            <Group gap="xs">
+              {entityOptions.map(opt => {
+                const color = opt.value === 'all' ? 'rgba(255,255,255,0.5)' : entityColor(opt.value)
+                const isActive = entityFilter === opt.value
+                return (
+                  <Button
+                    key={opt.value}
+                    size="xs"
+                    onClick={() => handleEntityFilter(opt.value as EntityFilter)}
+                    style={{
+                      backgroundColor: isActive ? `${color}22` : 'transparent',
+                      border: `1px solid ${isActive ? color : 'rgba(255,255,255,0.06)'}`,
+                      color: isActive ? color : 'rgba(255,255,255,0.35)',
+                      borderRadius: rem(4),
+                      fontSize: rem(11),
+                      height: rem(24),
+                      padding: `0 ${rem(8)}`
+                    }}
+                  >
+                    {opt.label}
+                  </Button>
+                )
+              })}
+            </Group>
+          )
+        })()}
       </Stack>
 
       {/* Feed */}
@@ -373,7 +382,7 @@ export function ChangelogPageContent() {
                         color={entry.action === 'create' ? 'green' : entry.action === 'delete' ? 'red' : 'blue'}
                         style={{ textTransform: 'capitalize', flexShrink: 0 }}
                       >
-                        {entry.action}
+                        {getActionLabel(entry)}
                       </Badge>
                       <Anchor
                         component={Link}
