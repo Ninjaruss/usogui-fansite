@@ -52,13 +52,23 @@ interface FieldLogUser {
   updatedAt?: string
 }
 
+interface SubmissionEditItem {
+  id: number
+  entityType: string
+  entityId: number
+  entityName?: string
+  changedFields: string[] | null
+  createdAt: string | Date
+}
+
 interface ProfileFieldLogProps {
   guides: UserGuide[]
   submissions: SubmissionItem[]
   user: FieldLogUser
+  submissionEdits?: SubmissionEditItem[]
 }
 
-export default function ProfileFieldLog({ guides, submissions, user }: ProfileFieldLogProps) {
+export default function ProfileFieldLog({ guides, submissions, user, submissionEdits }: ProfileFieldLogProps) {
   const events = useMemo<FeedEvent[]>(() => {
     const items: FeedEvent[] = []
 
@@ -105,9 +115,26 @@ export default function ProfileFieldLog({ guides, submissions, user }: ProfileFi
       })
     }
 
+    // Submission edits
+    for (const edit of (submissionEdits ?? [])) {
+      const type = edit.entityType as EventType
+      const priorStatusField = (edit.changedFields ?? []).find(
+        (f) => f.startsWith('priorStatus:')
+      )
+      const priorStatus = priorStatusField?.split(':')[1]
+      const action = priorStatus === 'REJECTED' ? 'resubmitted' : 'edited'
+      const resolvedType: EventType = TYPE_STYLES[type] ? type : 'event'
+      items.push({
+        type: resolvedType,
+        title: `${edit.entityType.charAt(0).toUpperCase() + edit.entityType.slice(1)} ${action}`,
+        detail: edit.entityName ?? '',
+        date: new Date(edit.createdAt),
+      })
+    }
+
     // Sort descending, cap at 5
     return items.sort((a, b) => b.date.getTime() - a.date.getTime()).slice(0, 5)
-  }, [guides, submissions, user])
+  }, [guides, submissions, user, submissionEdits])
 
   return (
     <Box style={{ background: '#0d0d0d', border: '1px solid #1a1a1a', borderRadius: '4px', padding: '12px' }}>

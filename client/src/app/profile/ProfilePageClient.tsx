@@ -77,6 +77,7 @@ export default function ProfilePageClient() {
   const [gambles, setGambles] = useState<any[]>([])
   const [userBadges, setUserBadges] = useState<any[]>([])
   const [submissions, setSubmissions] = useState<any[]>([])
+  const [submissionEdits, setSubmissionEdits] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [savingCustomRole, setSavingCustomRole] = useState(false)
   const initialCustomRoleRef = useRef<string>('')
@@ -164,6 +165,17 @@ export default function ProfilePageClient() {
     if (isAuthenticated && user) loadProfileData()
     else if (!authLoading && !isAuthenticated) setLoading(false)
   }, [isAuthenticated, user, authLoading, loadProfileData])
+
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      api.getMySubmissionEdits()
+        .then((res: any) => {
+          const data = Array.isArray(res) ? res : res?.data || []
+          setSubmissionEdits(data)
+        })
+        .catch(() => {}) // Non-critical; activity feed degrades gracefully
+    }
+  }, [isAuthenticated, user])
 
   const handleSaveUsername = useCallback(async (username: string) => {
     await api.patch('/users/profile', { username })
@@ -331,6 +343,7 @@ export default function ProfilePageClient() {
                   guides={userGuides}
                   submissions={submissions}
                   user={user!}
+                  submissionEdits={submissionEdits}
                 />
                 <Box style={{ gridColumn: '1 / -1' }}>
                   <ProfileProgressReport userProgress={user?.userProgress ?? 0} />
