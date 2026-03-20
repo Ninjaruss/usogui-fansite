@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useCallback, useId, useState } from 'react'
+import React, { useCallback, useEffect, useId, useState } from 'react'
 import { useEditor, EditorContent, NodeViewWrapper, ReactNodeViewRenderer } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Link from '@tiptap/extension-link'
@@ -66,6 +66,7 @@ export default function RichMarkdownEditor({
   const uid = useId()
   const labelId = `${uid}-label`
   const [modalOpen, setModalOpen] = useState(false)
+  const [isEmpty, setIsEmpty] = useState(!value)
 
   const editor = useEditor(
     {
@@ -78,12 +79,24 @@ export default function RichMarkdownEditor({
       content: value,
       editable: !disabled,
       onUpdate({ editor }) {
-        const md: string = editor.storage.markdown.getMarkdown()
+        const md: string = (editor.storage as { markdown: { getMarkdown(): string } }).markdown.getMarkdown()
+        setIsEmpty(editor.isEmpty)
         onChange(md)
       },
     },
     [disabled],
   )
+
+  // Sync external value resets (e.g. form reset after submit) back into the editor.
+  // Using emitUpdate=false prevents triggering onChange, avoiding an infinite loop.
+  useEffect(() => {
+    if (!editor || editor.isDestroyed) return
+    const current = (editor.storage as { markdown: { getMarkdown(): string } }).markdown.getMarkdown()
+    if (current !== value) {
+      editor.commands.setContent(value, false)
+      setIsEmpty(editor.isEmpty)
+    }
+  }, [editor, value])
 
   const handleInsertEntity = useCallback(
     (attrs: { entityType: EntityType; entityId: number; displayText: string | null }) => {
@@ -130,13 +143,28 @@ export default function RichMarkdownEditor({
             maxHeight: maxHeight ?? undefined,
             overflowY: maxHeight ? 'auto' : undefined,
             padding: '8px 12px',
+            position: 'relative',
           }}
         >
+          {isEmpty && placeholder && (
+            <Box
+              style={{
+                position: 'absolute',
+                top: 8,
+                left: 12,
+                color: 'var(--mantine-color-placeholder)',
+                fontSize: 'var(--mantine-font-size-sm)',
+                pointerEvents: 'none',
+                userSelect: 'none',
+              }}
+            >
+              {placeholder}
+            </Box>
+          )}
           <EditorContent
             editor={editor}
             aria-labelledby={label ? labelId : undefined}
             aria-label={!label ? ariaLabel : undefined}
-            placeholder={placeholder}
             style={{ outline: 'none', minHeight }}
           />
         </Box>
