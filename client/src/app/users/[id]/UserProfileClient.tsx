@@ -6,7 +6,6 @@ import {
   Badge,
   Box,
   Button,
-  Card,
   Container,
   Divider,
   Group,
@@ -343,14 +342,11 @@ export default function UserProfileClient({ initialUser }: UserProfileClientProp
                       .slice()
                       .sort((a, b) => a.sortOrder - b.sortOrder)
                       .map((fav) => (
-                        <Card
+                        <Box
                           key={fav.characterId}
                           component={Link}
                           href={`/characters/${fav.characterId}`}
-                          withBorder
-                          radius="sm"
-                          padding="xs"
-                          style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid #2a2a2a', textDecoration: 'none' }}
+                          style={{ display: 'block', background: '#111', border: '1px solid #1a1a1a', borderRadius: '4px', padding: '8px 12px', textDecoration: 'none' }}
                         >
                           <Group gap="sm" align="center">
                             {fav.isPrimary && (
@@ -362,7 +358,7 @@ export default function UserProfileClient({ initialUser }: UserProfileClientProp
                               {fav.character.name}
                             </Text>
                           </Group>
-                        </Card>
+                        </Box>
                       ))}
                   </Stack>
                 ) : (
