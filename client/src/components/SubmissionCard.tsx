@@ -86,14 +86,8 @@ function getSubmissionLink(submission: SubmissionItem): string {
 function getEditLink(submission: SubmissionItem): string | null {
   if (submission.type === 'guide') return `/submit-guide?edit=${submission.id}`
   if (submission.type === 'event') return `/submit-event?edit=${submission.id}`
-  if (submission.type === 'annotation' && submission.ownerType && submission.ownerId) {
-    const entityPathMap: Record<string, string> = {
-      character: 'characters',
-      gamble: 'gambles',
-      arc: 'arcs',
-    }
-    const basePath = entityPathMap[submission.ownerType]
-    if (basePath) return `/${basePath}/${submission.ownerId}`
+  if (submission.type === 'annotation') {
+    return `/submit-annotation?edit=${submission.id}`
   }
   if (submission.type === 'media') {
     return `/submit-media?edit=${submission.id}`
