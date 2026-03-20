@@ -1,7 +1,10 @@
-import { Controller, Get, Query, ParseIntPipe, DefaultValuePipe } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
+import { Controller, Get, Query, ParseIntPipe, DefaultValuePipe, UseGuards } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiQuery, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { EditLogService } from './edit-log.service';
 import { EditLogEntityType } from '../../entities/edit-log.entity';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { User } from '../../entities/user.entity';
 
 @ApiTags('edit-log')
 @Controller('edit-log')
@@ -38,5 +41,14 @@ export class EditLogController {
   ) {
     const safeLimit = Math.min(limit, 50);
     return this.editLogService.getRecentApprovedSubmissions({ page, limit: safeLimit });
+  }
+
+  @Get('my-submissions')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get current user submission edits (requires auth)' })
+  @ApiResponse({ status: 200, description: 'User submission edit log entries' })
+  async getMySubmissions(@CurrentUser() user: User) {
+    return this.editLogService.getSubmissionEditsByUser(user.id);
   }
 }
