@@ -249,9 +249,158 @@ export default function ProfilePictureSelector({
 
 // ─── Sub-components defined below ────────────────────────────────────────────
 
-// Placeholder — filled in subsequent tasks
-function CharactersTab(props: any) {
-  return <Box p="md"><Text c="dimmed" size="sm">Characters tab — coming soon</Text></Box>;
+interface CharactersTabProps {
+  characterGroups: Array<{ id: number; name: string; medias: any[] }>;
+  selectedCharacterId: number | null;
+  onSelectCharacter: (id: number) => void;
+  selectedGroup: { id: number; name: string; medias: any[] } | null;
+  pendingMediaId: number | undefined;
+  onImageSelect: (media: any) => void;
+  characterFilter: string;
+  onFilterChange: (v: string) => void;
+  mediaLoading: boolean;
+  user: User;
+  pendingMedia: any | null;
+  pendingType: string | null;
+}
+
+function CharactersTab({
+  characterGroups,
+  selectedCharacterId,
+  onSelectCharacter,
+  selectedGroup,
+  pendingMediaId,
+  onImageSelect,
+  characterFilter,
+  onFilterChange,
+  mediaLoading,
+  user,
+  pendingMedia,
+  pendingType,
+}: CharactersTabProps) {
+  return (
+    <Box style={{ display: 'flex', height: 420, overflow: 'hidden' }}>
+      {/* ── LEFT: Character list ── */}
+      <Box
+        style={{
+          width: 180,
+          flexShrink: 0,
+          borderRight: '1px solid #1e1e1e',
+          background: '#0d0d0d',
+          display: 'flex',
+          flexDirection: 'column',
+        }}
+      >
+        <Box style={{ padding: '10px 10px 8px', borderBottom: '1px solid #1e1e1e', flexShrink: 0 }}>
+          <TextInput
+            placeholder="Search characters…"
+            value={characterFilter}
+            onChange={e => onFilterChange(e.currentTarget.value)}
+            size="xs"
+            styles={{
+              input: { background: '#1a1a1a', border: '1px solid #2a2a2a', color: '#aaa', fontSize: '11px' },
+            }}
+          />
+        </Box>
+        <ScrollArea style={{ flex: 1 }}>
+          <Stack gap={2} p="xs">
+            {mediaLoading
+              ? Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} height={40} radius="sm" />)
+              : characterGroups.map(group => (
+                  <CharacterListItem
+                    key={group.id}
+                    group={group}
+                    isActive={selectedCharacterId === group.id}
+                    onSelect={() => onSelectCharacter(group.id)}
+                  />
+                ))}
+            {!mediaLoading && characterGroups.length === 0 && (
+              <Text size="xs" c="dimmed" ta="center" p="md">No characters found</Text>
+            )}
+          </Stack>
+        </ScrollArea>
+      </Box>
+
+      {/* ── CENTER + RIGHT: image grid + preview ── */}
+      <Box style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+        <ImageGridPanel
+          group={selectedGroup}
+          pendingMediaId={pendingMediaId}
+          onImageSelect={onImageSelect}
+          mediaLoading={mediaLoading}
+        />
+        <PreviewPanel
+          user={user}
+          pendingMedia={pendingMedia}
+          pendingType={pendingType}
+        />
+      </Box>
+    </Box>
+  );
+}
+
+function CharacterListItem({
+  group,
+  isActive,
+  onSelect,
+}: {
+  group: { id: number; name: string; medias: any[] };
+  isActive: boolean;
+  onSelect: () => void;
+}) {
+  const firstMedia = group.medias[0];
+  return (
+    <Box
+      onClick={onSelect}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 8,
+        padding: isActive ? '6px 8px 6px 6px' : '6px 8px',
+        borderRadius: 5,
+        cursor: 'pointer',
+        background: isActive ? 'rgba(225,29,72,0.08)' : 'transparent',
+        borderLeft: isActive ? '2px solid #e11d48' : '2px solid transparent',
+        transition: 'all .12s ease',
+      }}
+    >
+      <Avatar
+        src={firstMedia?.url}
+        size={28}
+        radius="sm"
+        styles={{ root: { background: '#222', flexShrink: 0 } }}
+      />
+      <Text
+        size="xs"
+        fw={500}
+        style={{
+          flex: 1,
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+          color: isActive ? '#e11d48' : '#ccc',
+        }}
+      >
+        {group.name}
+      </Text>
+      <Text size="xs" c="dimmed" style={{ flexShrink: 0 }}>
+        {group.medias.length}
+      </Text>
+    </Box>
+  );
+}
+
+// Placeholders for next tasks
+function ImageGridPanel(props: any) {
+  return <Box style={{ flex: 1, padding: 12 }}><Text c="dimmed" size="sm">Image grid — coming soon</Text></Box>;
+}
+
+function PreviewPanel(props: any) {
+  return (
+    <Box style={{ width: 200, flexShrink: 0, borderLeft: '1px solid #1e1e1e', background: '#0d0d0d', padding: 12 }}>
+      <Text size="xs" c="dimmed">Preview — coming soon</Text>
+    </Box>
+  );
 }
 
 function FluxerTab(props: any) {
