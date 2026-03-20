@@ -34,6 +34,9 @@ import {
 } from '../lib/entityEmbedParser'
 import { getEntityAccent, EntityAccentKey } from '../lib/mantine-theme'
 import MediaThumbnail from './MediaThumbnail'
+import { useProgress } from '../providers/ProgressProvider'
+import { useSpoilerSettings } from '../hooks/useSpoilerSettings'
+import { shouldHideSpoiler } from '../lib/spoiler-utils'
 
 interface EntityCardProps {
   type: 'character' | 'arc' | 'gamble' | 'guide' | 'organization' | 'chapter' | 'volume' | 'quote'
@@ -90,6 +93,8 @@ const EntityCard: React.FC<EntityCardProps> = ({
   inline = false
 }) => {
   const theme = useMantineTheme()
+  const { userProgress } = useProgress()
+  const { settings: spoilerSettings } = useSpoilerSettings()
   // fetchEntityData returns the raw entity object (not wrapped in EntityEmbedData)
   const [data, setData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
@@ -293,8 +298,18 @@ const EntityCard: React.FC<EntityCardProps> = ({
         ? (displayText || 'Not found')
         : (displayText || (data ? getDefaultDisplayText(type, data) : `${getEntityTypeLabel(type)} #${id}`))
 
+    const entityChapterNumber: number | undefined = !loading && data
+      ? type === 'arc' ? data.startChapter
+        : type === 'gamble' ? data.chapterNumber
+        : type === 'chapter' ? data.number
+        : type === 'volume' ? data.startChapter
+        : undefined
+      : undefined
+
+    const isHoverSpoilered = shouldHideSpoiler(entityChapterNumber, userProgress, spoilerSettings)
+
     return (
-      <HoverCard width={340} shadow="lg" openDelay={200} closeDelay={100} position="top" withinPortal>
+      <HoverCard width={340} shadow="lg" openDelay={200} closeDelay={100} position="top" withinPortal disabled={isHoverSpoilered}>
         <HoverCard.Target>
           <span style={{ display: 'inline' }}>
             <Link
@@ -302,35 +317,48 @@ const EntityCard: React.FC<EntityCardProps> = ({
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: rem(4),
-                padding: `${rem(2)} ${rem(8)}`,
-                borderRadius: rem(12),
-                backgroundColor: rgba(accentColor, 0.12),
+                gap: rem(7),
+                padding: `${rem(3)} ${rem(10)} ${rem(3)} ${rem(4)}`,
+                borderRadius: rem(6),
+                backgroundColor: '#1a2535',
+                border: `1px solid ${rgba(accentColor, 0.3)}`,
                 color: accentColor,
                 textDecoration: 'none',
                 fontSize: rem(13),
-                fontWeight: 600,
+                fontWeight: 500,
                 lineHeight: 1.4,
                 verticalAlign: 'middle',
                 cursor: 'pointer',
-                transition: 'background-color 120ms ease',
+                transition: 'filter 120ms ease',
                 whiteSpace: 'nowrap',
                 maxWidth: rem(240)
               }}
               onMouseEnter={(event) => {
-                event.currentTarget.style.backgroundColor = rgba(accentColor, 0.22)
+                event.currentTarget.style.filter = 'brightness(1.1)'
               }}
               onMouseLeave={(event) => {
-                event.currentTarget.style.backgroundColor = rgba(accentColor, 0.12)
+                event.currentTarget.style.filter = 'brightness(1)'
               }}
             >
-              <span style={{ display: 'inline-flex', flexShrink: 0, color: accentColor }}>
+              {/* 20×20 avatar square: type icon */}
+              <span style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: rem(20),
+                height: rem(20),
+                borderRadius: rem(3),
+                backgroundColor: rgba(accentColor, 0.2),
+                color: accentColor,
+                flexShrink: 0,
+                fontSize: rem(11)
+              }}>
                 {ICON_MAP_SM[type]}
               </span>
               <Text
                 component="span"
                 size="sm"
-                fw={600}
+                fw={500}
                 lineClamp={1}
                 style={{ color: 'inherit', overflow: 'hidden', textOverflow: 'ellipsis' }}
               >
