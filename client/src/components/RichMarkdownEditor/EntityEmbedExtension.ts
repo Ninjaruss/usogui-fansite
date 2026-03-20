@@ -180,9 +180,6 @@ export const EntityEmbedExtension = Node.create({
                     newChildren.push(after)
                   }
 
-                  if (newChildren.length === 0 || (newChildren.length === 1 && newChildren[0] === child)) {
-                    // No change, keep original
-                  }
                 }
 
                 // Only replace if we actually changed something

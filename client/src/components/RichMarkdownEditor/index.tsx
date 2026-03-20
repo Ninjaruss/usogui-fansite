@@ -95,7 +95,11 @@ export default function RichMarkdownEditor({
 
   if (disabled) {
     return (
-      <InputWrapper label={label} aria-label={ariaLabel}>
+      <InputWrapper
+        label={label}
+        aria-label={ariaLabel}
+        labelProps={label ? { id: labelId } : undefined}
+      >
         <EnhancedSpoilerMarkdown
           content={value}
           enableEntityEmbeds
