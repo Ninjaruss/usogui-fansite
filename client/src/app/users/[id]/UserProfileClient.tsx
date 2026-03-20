@@ -17,7 +17,7 @@ import {
   Text,
   useMantineTheme
 } from '@mantine/core'
-import { getAlphaColor, getEntityThemeColor, outlineStyles, textColors } from '../../../lib/mantine-theme'
+import { getAlphaColor, getEntityThemeColor } from '../../../lib/mantine-theme'
 import { Eye, FileText, Heart, Star } from 'lucide-react'
 import Link from 'next/link'
 import { motion } from 'motion/react'
@@ -167,12 +167,6 @@ export default function UserProfileClient({ initialUser }: UserProfileClientProp
   const quoteColor = getEntityThemeColor(theme, 'quote')
   const arcColor = getEntityThemeColor(theme, 'arc')
   const guideColor = getEntityThemeColor(theme, 'guide')
-  const accentColor = outlineStyles.accentColor
-  const accentBorderColor = getAlphaColor(accentColor, 0.4)
-  const accentHoverColor = getAlphaColor(accentColor, 0.18)
-  const accentTextColor = theme.colors.gray?.[0] ?? '#ffffff'
-  const cardBaseBackground = theme.colors.dark?.[7] ?? '#070707'
-
   const readPercent = Math.min(Math.round((user.userProgress / MAX_CHAPTER) * 100), 100)
   const caseRef = String(user.id).padStart(4, '0')
   const memberSince = user.createdAt
