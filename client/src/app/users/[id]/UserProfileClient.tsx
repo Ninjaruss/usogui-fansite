@@ -8,7 +8,9 @@ import {
   Button,
   Card,
   Container,
+  Divider,
   Group,
+  Progress,
   SegmentedControl,
   SimpleGrid,
   Stack,
@@ -16,7 +18,7 @@ import {
   useMantineTheme
 } from '@mantine/core'
 import { getAlphaColor, getEntityThemeColor, outlineStyles, textColors } from '../../../lib/mantine-theme'
-import { Eye, FileText, Heart } from 'lucide-react'
+import { Eye, FileText, Heart, Star } from 'lucide-react'
 import Link from 'next/link'
 import { motion } from 'motion/react'
 import { api } from '../../../lib/api'
@@ -160,6 +162,10 @@ export default function UserProfileClient({ initialUser }: UserProfileClientProp
     fetchUserData()
   }, [user.id, user.userStats, user.favoriteQuote, user.favoriteGamble])
 
+  const characterColor = getEntityThemeColor(theme, 'character')
+  const gambleColor = getEntityThemeColor(theme, 'gamble')
+  const quoteColor = getEntityThemeColor(theme, 'quote')
+  const arcColor = getEntityThemeColor(theme, 'arc')
   const guideColor = getEntityThemeColor(theme, 'guide')
   const accentColor = outlineStyles.accentColor
   const accentBorderColor = getAlphaColor(accentColor, 0.4)
