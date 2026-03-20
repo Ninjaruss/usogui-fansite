@@ -21,7 +21,7 @@ import ProfilePictureSelector from '../../components/ProfilePictureSelector'
 import ProfileHeader from './ProfileHeader'
 import ProfileIntelPanel from './ProfileIntelPanel'
 import ProfileFieldLog from './ProfileFieldLog'
-import ProfileProgressReport from './ProfileProgressReport'
+import ReadingProgressBar from '../../components/ReadingProgressBar'
 import ProfileContentTabs from './ProfileContentTabs'
 import ProfileSettingsPanel from './ProfileSettingsPanel'
 
@@ -328,7 +328,7 @@ export default function ProfilePageClient() {
                   submissionEdits={submissionEdits}
                 />
                 <Box style={{ gridColumn: '1 / -1' }}>
-                  <ProfileProgressReport userProgress={user?.userProgress ?? 0} />
+                  <ReadingProgressBar userProgress={user?.userProgress ?? 0} markerLabel="you" />
                 </Box>
                 <Box style={{ gridColumn: '1 / -1' }}>
                   <ProfileContentTabs
