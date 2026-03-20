@@ -390,9 +390,145 @@ function CharacterListItem({
   );
 }
 
-// Placeholders for next tasks
-function ImageGridPanel(props: any) {
-  return <Box style={{ flex: 1, padding: 12 }}><Text c="dimmed" size="sm">Image grid — coming soon</Text></Box>;
+function ImageGridPanel({
+  group,
+  pendingMediaId,
+  onImageSelect,
+  mediaLoading,
+}: {
+  group: { id: number; name: string; medias: any[] } | null;
+  pendingMediaId: number | undefined;
+  onImageSelect: (media: any) => void;
+  mediaLoading: boolean;
+}) {
+  if (mediaLoading) {
+    return (
+      <Box style={{ flex: 1, padding: 12, overflow: 'auto' }}>
+        <SimpleGrid cols={3} spacing="sm">
+          {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} height={120} radius="sm" />)}
+        </SimpleGrid>
+      </Box>
+    );
+  }
+
+  if (!group) {
+    return (
+      <Box style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Text size="sm" c="dimmed">Select a character</Text>
+      </Box>
+    );
+  }
+
+  return (
+    <Box style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      {/* Header */}
+      <Box style={{ padding: '10px 14px 8px', borderBottom: '1px solid #1e1e1e', flexShrink: 0 }}>
+        <Group justify="space-between">
+          <Text size="sm" fw={700}>{group.name}</Text>
+          <Text size="xs" c="dimmed">{group.medias.length} image{group.medias.length !== 1 ? 's' : ''}</Text>
+        </Group>
+      </Box>
+
+      <ScrollArea style={{ flex: 1 }}>
+        <SimpleGrid cols={3} spacing="sm" p="sm">
+          {group.medias.map(media => (
+            <ImageCard
+              key={media.id}
+              media={media}
+              isSelected={pendingMediaId === media.id}
+              onSelect={() => onImageSelect(media)}
+            />
+          ))}
+        </SimpleGrid>
+      </ScrollArea>
+    </Box>
+  );
+}
+
+function ImageCard({
+  media,
+  isSelected,
+  onSelect,
+}: {
+  media: any;
+  isSelected: boolean;
+  onSelect: () => void;
+}) {
+  const spoilerChapter = media.chapterNumber || media.character?.firstAppearanceChapter;
+
+  return (
+    <Box
+      onClick={onSelect}
+      style={{
+        position: 'relative',
+        borderRadius: 8,
+        cursor: 'pointer',
+        border: `2px solid ${isSelected ? '#e11d48' : 'transparent'}`,
+        transition: 'border-color .15s ease',
+        aspectRatio: '3/4',
+        overflow: 'hidden',
+        background: '#1a1a1a',
+      }}
+    >
+      <TimelineSpoilerWrapper chapterNumber={spoilerChapter}>
+        <Box
+          style={{
+            width: '100%',
+            height: '100%',
+            backgroundImage: `url(${media.url})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+          }}
+        />
+      </TimelineSpoilerWrapper>
+
+      {/* Chapter badge */}
+      {media.chapterNumber && (
+        <Badge
+          size="xs"
+          variant="filled"
+          style={{
+            position: 'absolute',
+            top: 6, right: 6,
+            background: 'rgba(225,29,72,0.85)',
+            color: '#fff',
+            fontSize: '9px',
+            fontWeight: 700,
+            pointerEvents: 'none',
+          }}
+        >
+          Ch.{media.chapterNumber}
+        </Badge>
+      )}
+
+      {/* Selected overlay */}
+      {isSelected && (
+        <Box
+          style={{
+            position: 'absolute',
+            inset: 0,
+            background: 'rgba(225,29,72,0.15)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderRadius: 6,
+          }}
+        >
+          <Box
+            style={{
+              width: 24, height: 24,
+              background: '#e11d48',
+              borderRadius: '50%',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: '#fff', fontSize: 13, fontWeight: 900,
+            }}
+          >
+            ✓
+          </Box>
+        </Box>
+      )}
+    </Box>
+  );
 }
 
 function PreviewPanel(props: any) {
