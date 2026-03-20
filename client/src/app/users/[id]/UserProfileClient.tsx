@@ -9,12 +9,11 @@ import {
   Container,
   Divider,
   Group,
-  Progress,
   SegmentedControl,
   SimpleGrid,
   Stack,
   Text,
-  useMantineTheme
+  useMantineTheme,
 } from '@mantine/core'
 import { getAlphaColor, getEntityThemeColor } from '../../../lib/mantine-theme'
 import { Eye, FileText, Heart, Star } from 'lucide-react'
@@ -28,6 +27,8 @@ import { UserRoleDisplay } from '../../../components/BadgeDisplay'
 import SubmissionCard from '../../../components/SubmissionCard'
 import type { SubmissionItem } from '../../../components/SubmissionCard'
 import { MAX_CHAPTER } from '../../../lib/constants'
+import ReadingProgressBar from '../../../components/ReadingProgressBar'
+import PublicActivityTimeline from '../../../components/PublicActivityTimeline'
 
 interface PublicUser {
   id: number
@@ -164,7 +165,6 @@ export default function UserProfileClient({ initialUser }: UserProfileClientProp
   const characterColor = getEntityThemeColor(theme, 'character')
   const gambleColor = getEntityThemeColor(theme, 'gamble')
   const quoteColor = getEntityThemeColor(theme, 'quote')
-  const arcColor = getEntityThemeColor(theme, 'arc')
   const guideColor = getEntityThemeColor(theme, 'guide')
   const readPercent = Math.min(Math.round((user.userProgress / MAX_CHAPTER) * 100), 100)
   const caseRef = String(user.id).padStart(4, '0')
@@ -368,35 +368,11 @@ export default function UserProfileClient({ initialUser }: UserProfileClientProp
             </Stack>
           </Box>
 
-          {/* Right column: Reading Progress */}
-          <Box style={{ background: '#0d0d0d', border: '1px solid #1a1a1a', borderRadius: '4px', padding: '16px' }}>
-            <Stack gap="md">
-              <Text fw={700}>Reading Progress</Text>
-
-              <Group justify="space-between" align="flex-end">
-                <Stack gap={2}>
-                  <Text size="xs" c="dimmed">Chapter</Text>
-                  <Text style={{ fontFamily: 'var(--font-opti-goudy-text)', fontSize: '1.5rem', color: arcColor, lineHeight: 1 }}>
-                    {user.userProgress}
-                  </Text>
-                </Stack>
-                <Stack gap={2} style={{ textAlign: 'right' }}>
-                  <Text size="xs" c="dimmed">Total</Text>
-                  <Text style={{ fontFamily: 'var(--font-opti-goudy-text)', fontSize: '1.5rem', color: 'rgba(255,255,255,0.5)', lineHeight: 1 }}>
-                    {MAX_CHAPTER}
-                  </Text>
-                </Stack>
-              </Group>
-
-              <Progress value={readPercent} color={arcColor} size="lg" radius="md" striped animated />
-
-              <Group justify="space-between">
-                <Text size="xs" c="dimmed">0%</Text>
-                <Text size="sm" fw={600} c={arcColor}>{readPercent}%</Text>
-                <Text size="xs" c="dimmed">100%</Text>
-              </Group>
-            </Stack>
-          </Box>
+          {/* Right column: Reading Progress + Activity */}
+          <Stack gap="md">
+            <ReadingProgressBar userProgress={user.userProgress} />
+            <PublicActivityTimeline submissions={submissions} />
+          </Stack>
         </Box>
 
         {/* User Contributions Section */}
