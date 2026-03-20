@@ -16,6 +16,9 @@ export enum EditLogEntityType {
   ARC = 'arc',
   ORGANIZATION = 'organization',
   EVENT = 'event',
+  GUIDE = 'guide',
+  MEDIA = 'media',
+  ANNOTATION = 'annotation',
 }
 
 export enum EditLogAction {
