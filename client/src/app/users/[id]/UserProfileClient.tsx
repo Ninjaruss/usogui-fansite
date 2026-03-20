@@ -269,6 +269,146 @@ export default function UserProfileClient({ initialUser }: UserProfileClientProp
           </Group>
         </Box>
 
+        {/* ── 2-column grid ── */}
+        <Box
+          className="profile-section-grid"
+          style={{ padding: '16px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}
+        >
+          {/* Left: Favorites */}
+          <Box style={{ background: '#0d0d0d', border: '1px solid #1a1a1a', borderRadius: '4px', padding: '16px' }}>
+            <Stack gap="md">
+              <Text fw={700}>Favorites</Text>
+
+              {/* Favorite Quote */}
+              <div>
+                <Text fw={600} size="sm" mb="xs">Favorite Quote</Text>
+                {favoriteQuote ? (
+                  <Stack gap="sm">
+                    <Box style={{ backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: '8px', borderLeft: `4px solid ${quoteColor}`, padding: '12px' }}>
+                      <Text fs="italic" size="sm" style={{ lineHeight: 1.6 }} lineClamp={4}>
+                        &ldquo;{favoriteQuote.text}&rdquo;
+                      </Text>
+                    </Box>
+                    <Group gap="xs" wrap="wrap">
+                      <Badge size="sm" style={{ background: getAlphaColor(quoteColor, 0.2), border: `1px solid ${getAlphaColor(quoteColor, 0.4)}`, color: quoteColor }}>
+                        {favoriteQuote.character?.name || 'Unknown'}
+                      </Badge>
+                      {favoriteQuote.chapterNumber && (
+                        <Badge size="sm" style={{ background: getAlphaColor(characterColor, 0.2), border: `1px solid ${getAlphaColor(characterColor, 0.4)}`, color: characterColor }}>
+                          Chapter {favoriteQuote.chapterNumber}
+                        </Badge>
+                      )}
+                    </Group>
+                    <Anchor component={Link} href={`/quotes/${favoriteQuote.id}`} size="xs" c={quoteColor}>
+                      View Quote
+                    </Anchor>
+                  </Stack>
+                ) : (
+                  <Text size="sm" c="dimmed">No favorite quote set.</Text>
+                )}
+              </div>
+
+              <Divider color="rgba(255,255,255,0.06)" />
+
+              {/* Favorite Gamble */}
+              <div>
+                <Text fw={600} size="sm" mb="xs">Favorite Gamble</Text>
+                {favoriteGamble ? (
+                  <Stack gap="sm" align="center">
+                    <Badge
+                      radius="lg"
+                      size="xl"
+                      variant="gradient"
+                      gradient={{ from: getAlphaColor(gambleColor, 0.8), to: gambleColor }}
+                      style={{ fontWeight: 700 }}
+                    >
+                      {favoriteGamble.name}
+                    </Badge>
+                    {favoriteGamble.rules && (
+                      <Text size="xs" c="dimmed" ta="center">
+                        {favoriteGamble.rules.length > 100 ? `${favoriteGamble.rules.substring(0, 100)}...` : favoriteGamble.rules}
+                      </Text>
+                    )}
+                    <Anchor component={Link} href={`/gambles/${favoriteGamble.id}`} size="xs" c={gambleColor}>
+                      View Gamble
+                    </Anchor>
+                  </Stack>
+                ) : (
+                  <Text size="sm" c="dimmed">No favorite gamble set.</Text>
+                )}
+              </div>
+
+              <Divider color="rgba(255,255,255,0.06)" />
+
+              {/* Favorite Characters */}
+              <div>
+                <Text fw={600} size="sm" mb="xs">Favorite Characters</Text>
+                {user.favoriteCharacters && user.favoriteCharacters.length > 0 ? (
+                  <Stack gap="xs">
+                    {user.favoriteCharacters
+                      .slice()
+                      .sort((a, b) => a.sortOrder - b.sortOrder)
+                      .map((fav) => (
+                        <Card
+                          key={fav.characterId}
+                          component={Link}
+                          href={`/characters/${fav.characterId}`}
+                          withBorder
+                          radius="sm"
+                          padding="xs"
+                          style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid #2a2a2a', textDecoration: 'none' }}
+                        >
+                          <Group gap="sm" align="center">
+                            {fav.isPrimary && (
+                              <Badge size="xs" color="yellow" variant="filled" leftSection={<Star size={10} fill="currentColor" />}>
+                                #1
+                              </Badge>
+                            )}
+                            <Text size="sm" fw={fav.isPrimary ? 700 : 400} c={characterColor}>
+                              {fav.character.name}
+                            </Text>
+                          </Group>
+                        </Card>
+                      ))}
+                  </Stack>
+                ) : (
+                  <Text size="sm" c="dimmed">No favorite characters set.</Text>
+                )}
+              </div>
+            </Stack>
+          </Box>
+
+          {/* Right: Reading Progress */}
+          <Box style={{ background: '#0d0d0d', border: '1px solid #1a1a1a', borderRadius: '4px', padding: '16px' }}>
+            <Stack gap="md">
+              <Text fw={700}>Reading Progress</Text>
+
+              <Group justify="space-between" align="flex-end">
+                <Stack gap={2}>
+                  <Text size="xs" c="dimmed">Chapter</Text>
+                  <Text style={{ fontFamily: 'var(--font-opti-goudy-text)', fontSize: '1.5rem', color: arcColor, lineHeight: 1 }}>
+                    {user.userProgress}
+                  </Text>
+                </Stack>
+                <Stack gap={2} style={{ textAlign: 'right' }}>
+                  <Text size="xs" c="dimmed">Total</Text>
+                  <Text style={{ fontFamily: 'var(--font-opti-goudy-text)', fontSize: '1.5rem', color: 'rgba(255,255,255,0.5)', lineHeight: 1 }}>
+                    {MAX_CHAPTER}
+                  </Text>
+                </Stack>
+              </Group>
+
+              <Progress value={readPercent} color={arcColor} size="lg" radius="md" striped animated />
+
+              <Group justify="space-between">
+                <Text size="xs" c="dimmed">0%</Text>
+                <Text size="sm" fw={600} c={arcColor}>{readPercent}%</Text>
+                <Text size="xs" c="dimmed">100%</Text>
+              </Group>
+            </Stack>
+          </Box>
+        </Box>
+
         {/* User Contributions Section */}
         {submissions.length > 0 && (
           <Card
