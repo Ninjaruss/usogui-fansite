@@ -1207,4 +1207,18 @@ export class MediaService {
       order: { createdAt: 'DESC' },
     });
   }
+
+  /**
+   * Find all approved media records for a given owner type and usage type.
+   * Used for bulk operations like showcase-ready volume fetching.
+   */
+  async findAllApprovedByUsageType(
+    ownerType: MediaOwnerType,
+    usageType: MediaUsageType,
+  ): Promise<Media[]> {
+    return this.mediaRepo.find({
+      where: { ownerType, usageType, status: MediaStatus.APPROVED },
+      order: { createdAt: 'DESC' },
+    });
+  }
 }
