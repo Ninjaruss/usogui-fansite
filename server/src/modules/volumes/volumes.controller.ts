@@ -108,6 +108,28 @@ export class VolumesController {
     return result;
   }
 
+  @Get('showcase-ready')
+  @ApiOperation({ summary: 'Get all volumes with both approved showcase images' })
+  @ApiResponse({
+    status: 200,
+    description: 'Volumes ready for homepage showcase',
+    schema: {
+      type: 'array',
+      items: {
+        properties: {
+          volumeId: { type: 'number' },
+          volumeNumber: { type: 'number' },
+          backgroundUrl: { type: 'string' },
+          popoutUrl: { type: 'string' },
+          title: { type: 'string' },
+        },
+      },
+    },
+  })
+  async getShowcaseReady() {
+    return this.service.getShowcaseReadyVolumes();
+  }
+
   @Get(':id')
   @ApiOperation({
     summary: 'Get volume by ID',
