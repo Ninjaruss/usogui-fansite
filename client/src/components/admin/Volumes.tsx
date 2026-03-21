@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import {
   List,
   Datagrid,
@@ -15,12 +15,37 @@ import {
   Tab,
   BulkDeleteButton,
   WithRecord,
+  useRecordContext,
+  useGetList,
 } from 'react-admin'
 import { Typography, Chip, Box, Card, CardContent, Grid } from '@mui/material'
 import { Edit3, Plus, BookOpen, Layers, Image as ImageIcon } from 'lucide-react'
 import { EntityDisplayMediaSection } from './EntityDisplayMediaSection'
 import { VolumeShowcaseStatusCard } from './VolumeShowcaseStatusCard'
 import { EditToolbar } from './EditToolbar'
+
+const VolumeNumberInput = ({ isEdit = false }: { isEdit?: boolean }) => {
+  const record = useRecordContext()
+  const [value, setValue] = useState<number | undefined>(record?.number)
+  const { data: existing = [] } = useGetList('volumes', {
+    pagination: { page: 1, perPage: 1 },
+    filter: value !== undefined ? { number: value } : {},
+  })
+
+  const isDuplicate = existing.length > 0 && (!isEdit || existing[0]?.id !== record?.id)
+
+  return (
+    <NumberInput
+      source="number"
+      label="Volume Number"
+      required
+      fullWidth
+      min={1}
+      onChange={(e: any) => setValue(Number(e.target.value))}
+      helperText={isDuplicate ? '⚠️ A volume with this number already exists' : 'The volume number (e.g. 1, 2, 3...)'}
+    />
+  )
+}
 
 const validateChapterRange = (values: any) => {
   const errors: any = {}
@@ -382,14 +407,7 @@ export const VolumeEdit = () => (
                     <Typography variant="h6" sx={{ color: '#6366f1', mb: 2, fontWeight: 'bold' }}>
                       Basic Information
                     </Typography>
-                    <NumberInput
-                      source="number"
-                      required
-                      fullWidth
-                      min={1}
-                      label="Volume Number"
-                      helperText="The volume number (e.g. 1, 2, 3...)"
-                    />
+                    <VolumeNumberInput isEdit={true} />
                     <TextInput
                       source="description"
                       multiline
@@ -543,14 +561,7 @@ export const VolumeCreate = () => (
                     <Typography variant="h6" sx={{ color: '#16a34a', mb: 2, fontWeight: 'bold' }}>
                       Basic Information
                     </Typography>
-                    <NumberInput
-                      source="number"
-                      required
-                      fullWidth
-                      min={1}
-                      label="Volume Number"
-                      helperText="The volume number (e.g. 1, 2, 3...)"
-                    />
+                    <VolumeNumberInput />
                     <TextInput
                       source="description"
                       multiline

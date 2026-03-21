@@ -538,7 +538,8 @@ export const QuoteEdit = () => (
                       fullWidth
                       label="Page Number"
                       min={1}
-                      helperText="Page number (optional)"
+                      max={200}
+                      helperText="Page number within the chapter (1–200)"
                     />
                   </Box>
                 </Grid>
@@ -706,7 +707,8 @@ export const QuoteCreate = () => (
                       fullWidth
                       label="Page Number"
                       min={1}
-                      helperText="Page number (optional)"
+                      max={200}
+                      helperText="Page number within the chapter (1–200)"
                     />
                   </Box>
                 </Grid>

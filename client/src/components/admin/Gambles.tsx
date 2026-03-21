@@ -11,6 +11,8 @@ import {
   Show,
   TextInput,
   NumberInput,
+  ReferenceInput,
+  AutocompleteInput,
   ReferenceArrayInput,
   AutocompleteArrayInput,
   TabbedForm,
@@ -809,15 +811,13 @@ const GambleEditForm = () => {
 
           <RichMarkdownAdminInput source="description" label="Description" minHeight={120} />
 
-          <NumberInput
-            source="chapterId"
-            label="Chapter Number"
-            required
-            min={1}
-            max={539}
-            helperText="Chapter where this gamble occurs (1-539)"
-            sx={{ width: '200px' }}
-          />
+          <ReferenceInput source="chapterId" reference="chapters" perPage={539}>
+            <AutocompleteInput
+              optionText={(record: any) => `Chapter ${record.number}${record.title ? ` — ${record.title}` : ''}`}
+              label="Chapter"
+              helperText="Select the chapter this gamble takes place in"
+            />
+          </ReferenceInput>
         </Box>
       </FormTab>
 
@@ -982,15 +982,13 @@ export const GambleCreate = () => {
 
               <RichMarkdownAdminInput source="description" label="Description" minHeight={120} />
 
-              <NumberInput
-                source="chapterId"
-                label="Chapter Number"
-                required
-                min={1}
-                max={539}
-                helperText="Chapter where this gamble occurs (1-539)"
-                sx={{ width: '200px' }}
-              />
+              <ReferenceInput source="chapterId" reference="chapters" perPage={539}>
+                <AutocompleteInput
+                  optionText={(record: any) => `Chapter ${record.number}${record.title ? ` — ${record.title}` : ''}`}
+                  label="Chapter"
+                  helperText="Select the chapter this gamble takes place in"
+                />
+              </ReferenceInput>
             </Box>
           </FormTab>
 

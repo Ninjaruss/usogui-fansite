@@ -42,7 +42,7 @@ import { EditToolbar } from './EditToolbar'
 import { RelationshipType } from '../../types'
 import { api } from '../../lib/api'
 import { RichMarkdownAdminInput } from '../RichMarkdownEditor/RichMarkdownAdminInput'
-import { RELATIONSHIP_TYPE_VALUES } from '../../lib/constants'
+import { RELATIONSHIP_TYPE_VALUES, MAX_CHAPTER } from '../../lib/constants'
 
 const RelationshipModalTrigger = () => {
   const record = useRecordContext()
@@ -332,8 +332,8 @@ const characterFilters = [
   <ReferenceInput key="organizationId" source="organizationId" reference="organizations" label="Organization" alwaysOn>
     <AutocompleteInput optionText="name" />
   </ReferenceInput>,
-  <NumberInput key="firstAppearanceFrom" source="firstAppearanceChapter_gte" label="First appearance from" min={1} max={539} />,
-  <NumberInput key="firstAppearanceTo" source="firstAppearanceChapter_lte" label="First appearance to" min={1} max={539} />
+  <NumberInput key="firstAppearanceFrom" source="firstAppearanceChapter_gte" label="First appearance from" min={1} max={MAX_CHAPTER} />,
+  <NumberInput key="firstAppearanceTo" source="firstAppearanceChapter_lte" label="First appearance to" min={1} max={MAX_CHAPTER} />
 ]
 
 const CharacterBulkActionButtons = () => (
@@ -700,7 +700,7 @@ export const CharacterEdit = () => (
                   <TextInput source="name" required fullWidth />
                   <RichMarkdownAdminInput source="description" label="Description" minHeight={150} />
                   <RichMarkdownAdminInput source="backstory" label="Backstory" minHeight={200} />
-                  <NumberInput source="firstAppearanceChapter" max={539} min={1} fullWidth helperText="Chapter number when this character first appears (1-539)" />
+                  <NumberInput source="firstAppearanceChapter" max={MAX_CHAPTER} min={1} fullWidth helperText={`Chapter number when this character first appears (1–${MAX_CHAPTER})`} />
                 </Box>
               </Grid>
 
@@ -1090,7 +1090,7 @@ export const CharacterCreate = () => (
                   <TextInput source="name" required fullWidth />
                   <RichMarkdownAdminInput source="description" label="Description" minHeight={150} />
                   <RichMarkdownAdminInput source="backstory" label="Backstory" minHeight={200} />
-                  <NumberInput source="firstAppearanceChapter" max={539} min={1} fullWidth helperText="Chapter number when this character first appears (1-539)" />
+                  <NumberInput source="firstAppearanceChapter" max={MAX_CHAPTER} min={1} fullWidth helperText={`Chapter number when this character first appears (1–${MAX_CHAPTER})`} />
                 </Box>
               </Grid>
 

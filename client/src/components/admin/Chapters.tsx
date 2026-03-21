@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import {
   List,
   Datagrid,
@@ -14,10 +14,36 @@ import {
   TabbedShowLayout,
   Tab,
   BulkDeleteButton,
+  useRecordContext,
+  useGetList,
 } from 'react-admin'
 import { Typography, Box, Card, CardContent } from '@mui/material'
 import { Edit3, Plus, Hash } from 'lucide-react'
 import { EditToolbar } from './EditToolbar'
+
+const ChapterNumberInput = ({ isEdit = false }: { isEdit?: boolean }) => {
+  const record = useRecordContext()
+  const [value, setValue] = useState<number | undefined>(record?.number)
+  const { data: existing = [] } = useGetList('chapters', {
+    pagination: { page: 1, perPage: 1 },
+    filter: value !== undefined ? { number: value } : {},
+  })
+
+  const isDuplicate = existing.length > 0 && (!isEdit || existing[0]?.id !== record?.id)
+
+  return (
+    <NumberInput
+      source="number"
+      label="Chapter Number"
+      required
+      fullWidth
+      min={1}
+      max={539}
+      onChange={(e: any) => setValue(Number(e.target.value))}
+      helperText={isDuplicate ? '⚠️ A chapter with this number already exists' : 'Chapter number (1–539)'}
+    />
+  )
+}
 
 const ChapterBulkActionButtons = () => (
   <>
@@ -245,15 +271,7 @@ export const ChapterEdit = () => (
                 <Typography variant="h6" sx={{ color: '#6366f1', mb: 2, fontWeight: 'bold' }}>
                   Basic Information
                 </Typography>
-                <NumberInput
-                  source="number"
-                  required
-                  fullWidth
-                  min={1}
-                  max={539}
-                  label="Chapter Number"
-                  helperText="The chapter number (1-539)"
-                />
+                <ChapterNumberInput isEdit={true} />
                 <TextInput
                   source="title"
                   fullWidth
@@ -340,15 +358,7 @@ export const ChapterCreate = () => (
                 <Typography variant="h6" sx={{ color: '#16a34a', mb: 2, fontWeight: 'bold' }}>
                   Basic Information
                 </Typography>
-                <NumberInput
-                  source="number"
-                  required
-                  fullWidth
-                  min={1}
-                  max={539}
-                  label="Chapter Number"
-                  helperText="The chapter number (1-539)"
-                />
+                <ChapterNumberInput />
                 <TextInput
                   source="title"
                   fullWidth
