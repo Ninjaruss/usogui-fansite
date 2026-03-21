@@ -1,12 +1,20 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import { Volume } from '../../entities/volume.entity';
 import { CreateVolumeDto } from './dto/create-volume.dto';
 import { UpdateVolumeDto } from './dto/update-volume.dto';
 
 import { MediaService } from '../media/media.service';
 import { MediaOwnerType, MediaUsageType } from '../../entities/media.entity';
+
+export interface ShowcaseReadyVolume {
+  volumeId: number;
+  volumeNumber: number;
+  backgroundUrl: string;
+  popoutUrl: string;
+  title: string;
+}
 
 @Injectable()
 export class VolumesService {
@@ -146,5 +154,45 @@ export class VolumesService {
     }
 
     return result;
+  }
+
+  async getShowcaseReadyVolumes(): Promise<ShowcaseReadyVolume[]> {
+    const [bgMedia, popMedia] = await Promise.all([
+      this.mediaService.findAllApprovedByUsageType(
+        MediaOwnerType.VOLUME,
+        MediaUsageType.VOLUME_SHOWCASE_BACKGROUND,
+      ),
+      this.mediaService.findAllApprovedByUsageType(
+        MediaOwnerType.VOLUME,
+        MediaUsageType.VOLUME_SHOWCASE_POPOUT,
+      ),
+    ]);
+
+    // Keep only the latest approved record per volume for each type
+    const latestBg = new Map(bgMedia.map((m) => [m.ownerId, m]));
+    const latestPop = new Map(popMedia.map((m) => [m.ownerId, m]));
+    const sharedVolumeIds = [...latestBg.keys()].filter((id) =>
+      latestPop.has(id),
+    );
+
+    if (sharedVolumeIds.length === 0) return [];
+
+    const volumes = await this.repo.find({
+      where: { id: In(sharedVolumeIds) },
+    });
+    const volumeMap = new Map(volumes.map((v) => [v.id, v]));
+
+    return sharedVolumeIds
+      .filter((id) => volumeMap.has(id))
+      .map((volumeId) => {
+        const vol = volumeMap.get(volumeId)!;
+        return {
+          volumeId,
+          volumeNumber: vol.number,
+          backgroundUrl: latestBg.get(volumeId)!.url,
+          popoutUrl: latestPop.get(volumeId)!.url,
+          title: `Volume ${vol.number}`,
+        };
+      });
   }
 }
