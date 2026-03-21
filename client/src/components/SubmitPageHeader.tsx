@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { Badge, Box, Group, Text, Title, rem } from '@mantine/core'
+import { Box, Group, Text, Title, rem } from '@mantine/core'
 import { motion } from 'motion/react'
 
 interface SubmitPageHeaderProps {
@@ -10,7 +10,6 @@ interface SubmitPageHeaderProps {
   description: string
   icon: React.ReactNode
   accentColor: string
-  editMode?: boolean
 }
 
 export function SubmitPageHeader({
@@ -18,8 +17,7 @@ export function SubmitPageHeader({
   title,
   description,
   icon,
-  accentColor,
-  editMode = false
+  accentColor
 }: SubmitPageHeaderProps) {
   return (
     <motion.div
@@ -89,15 +87,6 @@ export function SubmitPageHeader({
               >
                 {label}
               </Text>
-              {editMode && (
-                <Badge
-                  size="xs"
-                  variant="light"
-                  style={{ backgroundColor: `${accentColor}20`, color: accentColor, borderColor: `${accentColor}40` }}
-                >
-                  Editing
-                </Badge>
-              )}
             </Group>
 
             <Title
