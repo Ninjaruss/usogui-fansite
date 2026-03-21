@@ -12,7 +12,6 @@ import {
   useMantineTheme
 } from '@mantine/core'
 import {
-  X,
   ChevronLeft,
   ChevronRight,
   Play,
@@ -108,12 +107,16 @@ export default function MediaLightbox({
       }}
     >
       <Box
-        style={{ position: 'relative', width: '100%', height: '100dvh', background: '#000', overflow: 'hidden' }}
+        style={{ position: 'relative', width: '100%', height: '100dvh', background: '#000', overflow: 'hidden', cursor: 'pointer' }}
+        onClick={onClose}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
-        {/* ── Media content ── */}
-        <Box style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        {/* ── Media content — stop propagation so clicking image doesn't close ── */}
+        <Box
+          style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          onClick={(e) => e.stopPropagation()}
+        >
           {selectedMedia.type === 'image' ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -158,15 +161,19 @@ export default function MediaLightbox({
           )}
         </Box>
 
-        {/* ── Close button ── */}
+        {/* ── External link (top-right) ── */}
         <ActionIcon
           variant="transparent"
+          component="a"
+          href={selectedMedia.url}
+          target="_blank"
+          rel="noopener noreferrer"
           size="lg"
-          onClick={onClose}
           style={{ position: 'absolute', top: rem(14), right: rem(14), zIndex: 10, borderRadius: '50%', ...controlStyle }}
-          aria-label="Close viewer"
+          aria-label="Open original"
+          onClick={(e) => e.stopPropagation()}
         >
-          <X size={18} />
+          <ExternalLink size={16} />
         </ActionIcon>
 
         {/* ── Counter pill ── */}
@@ -177,6 +184,7 @@ export default function MediaLightbox({
             borderRadius: rem(12), padding: `${rem(3)} ${rem(10)}`,
             fontSize: rem(11), color: 'rgba(255,255,255,0.65)'
           }}
+          onClick={(e) => e.stopPropagation()}
         >
           {currentIndex + 1} / {media.length}
         </Box>
@@ -186,7 +194,7 @@ export default function MediaLightbox({
           <ActionIcon
             variant="transparent"
             size="lg"
-            onClick={onPrevious}
+            onClick={(e) => { e.stopPropagation(); onPrevious() }}
             style={{
               position: 'absolute', top: '50%', left: rem(14),
               transform: 'translateY(-50%)', zIndex: 10, borderRadius: '50%', ...controlStyle
@@ -202,7 +210,7 @@ export default function MediaLightbox({
           <ActionIcon
             variant="transparent"
             size="lg"
-            onClick={onNext}
+            onClick={(e) => { e.stopPropagation(); onNext() }}
             style={{
               position: 'absolute', top: '50%', right: rem(14),
               transform: 'translateY(-50%)', zIndex: 10, borderRadius: '50%', ...controlStyle
@@ -213,13 +221,14 @@ export default function MediaLightbox({
           </ActionIcon>
         )}
 
-        {/* ── Bottom overlay bar ── */}
+        {/* ── Bottom overlay bar — stop propagation so clicking metadata doesn't close ── */}
         <Box
           style={{
             position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 10,
             background: 'linear-gradient(transparent, rgba(0,0,0,0.6) 30%, rgba(0,0,0,0.92) 100%)',
             padding: `${rem(48)} ${rem(18)} ${rem(16)}`
           }}
+          onClick={(e) => e.stopPropagation()}
         >
           {/* Description */}
           {selectedMedia.description && (
@@ -235,57 +244,37 @@ export default function MediaLightbox({
           )}
 
           {/* Badges + submitter row */}
-          <Box style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: rem(8) }}>
-            <Box style={{ display: 'flex', gap: rem(6), alignItems: 'center', flexWrap: 'wrap', minWidth: 0 }}>
-              <Badge
-                variant="filled"
-                size="sm"
-                style={{ backgroundColor: palette.accent, color: '#fff', textTransform: 'capitalize' }}
-              >
-                {selectedMedia.ownerType}
-              </Badge>
+          <Box style={{ display: 'flex', gap: rem(6), alignItems: 'center', flexWrap: 'wrap' }}>
+            <Badge
+              variant="filled"
+              size="sm"
+              style={{ backgroundColor: palette.accent, color: '#fff', textTransform: 'capitalize' }}
+            >
+              {selectedMedia.ownerType}
+            </Badge>
+            <Badge
+              variant="outline"
+              size="sm"
+              style={{ borderColor: palette.accent, color: palette.accent, textTransform: 'capitalize' }}
+            >
+              {selectedMedia.type}
+            </Badge>
+            {selectedMedia.chapterNumber && (
               <Badge
                 variant="outline"
                 size="sm"
-                style={{ borderColor: palette.accent, color: palette.accent, textTransform: 'capitalize' }}
+                style={{ borderColor: palette.secondaryAccent, color: palette.secondaryAccent }}
               >
-                {selectedMedia.type}
+                Ch. {selectedMedia.chapterNumber}
               </Badge>
-              {selectedMedia.chapterNumber && (
-                <Badge
-                  variant="outline"
-                  size="sm"
-                  style={{ borderColor: palette.secondaryAccent, color: palette.secondaryAccent }}
-                >
-                  Ch. {selectedMedia.chapterNumber}
-                </Badge>
+            )}
+            <Text size="xs" style={{ color: 'rgba(255,255,255,0.45)', whiteSpace: 'nowrap' }}>
+              by{' '}
+              <span style={{ color: 'rgba(255,255,255,0.7)' }}>{selectedMedia.submittedBy.username}</span>
+              {selectedMedia.createdAt && (
+                <> · {new Date(selectedMedia.createdAt).toLocaleDateString()}</>
               )}
-              <Text size="xs" style={{ color: 'rgba(255,255,255,0.45)', whiteSpace: 'nowrap' }}>
-                by{' '}
-                <span style={{ color: 'rgba(255,255,255,0.7)' }}>{selectedMedia.submittedBy.username}</span>
-                {selectedMedia.createdAt && (
-                  <> · {new Date(selectedMedia.createdAt).toLocaleDateString()}</>
-                )}
-              </Text>
-            </Box>
-
-            {/* External link */}
-            <ActionIcon
-              variant="transparent"
-              component="a"
-              href={selectedMedia.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              size="sm"
-              style={{
-                ...controlStyle,
-                borderRadius: rem(6),
-                flexShrink: 0
-              }}
-              aria-label="Open original"
-            >
-              <ExternalLink size={14} />
-            </ActionIcon>
+            </Text>
           </Box>
         </Box>
       </Box>
