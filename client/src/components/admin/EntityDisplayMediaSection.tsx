@@ -42,6 +42,7 @@ interface MediaItem {
   chapterNumber?: number
   status: string
   purpose: string
+  usageType?: string
   createdAt: string
 }
 
@@ -78,14 +79,15 @@ export const EntityDisplayMediaSection: React.FC<EntityDisplayMediaSectionProps>
     try {
       setLoading(true)
       const response = await api.getEntityDisplayMedia(ownerType, numericOwnerId)
-      const data = Array.isArray(response) ? response : response?.data || []
-      setMediaItems(data)
+      const data: MediaItem[] = Array.isArray(response) ? response : response?.data || []
+      const filtered = usageType ? data.filter((item) => item.usageType === usageType) : data
+      setMediaItems(filtered)
     } catch {
       setMediaItems([])
     } finally {
       setLoading(false)
     }
-  }, [ownerType, numericOwnerId])
+  }, [ownerType, numericOwnerId, usageType])
 
   useEffect(() => {
     if (numericOwnerId) {

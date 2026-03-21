@@ -14,19 +14,21 @@ Multiple entity types in the Usogui fansite share the same color, making chips, 
 | Purple `#a855f7` | Volume, Media, Organization |
 | Green `#51cf66` | Guide, Quote |
 
-Additionally, the Mantine theme (`mantine-theme.ts`) and MUI admin theme (`theme.ts`) each define entity colors independently, creating a risk of drift.
+Additionally, entity colors are stored in three separate places — `theme.other.usogui` (Mantine), `textColors` (Mantine, read directly by components), and `palette.usogui` (MUI admin) — creating drift risk and making a single color update require touching multiple files.
 
 ## Goal
 
-Every entity type gets a unique, visually distinct color. A single source of truth file eliminates future theme divergence.
+Every entity type gets a unique, visually distinct color. A single source of truth file (`entityColors.ts`) eliminates future theme divergence across all three color stores.
 
 ## Entities in Scope
 
 11 entities (Tags and Badges excluded — they use utility/neutral styling):
 
-- Character, Arc, Volume, Chapter, Gamble, Event, Organization, Guide, Media, Quote, Annotation
+Character, Arc, Volume, Chapter, Gamble, Event, Organization, Guide, Media, Quote, Annotation
 
 ## Approved Color Map
+
+All 11 entities are changing to new hex values. The approved hex must sit at **palette index 5** (consistent with `primaryShade: { light: 5, dark: 5 }` in `mantine-theme.ts`).
 
 | Entity | Hex | Description | Hue |
 |---|---|---|---|
@@ -46,43 +48,85 @@ Colors are distributed around the hue wheel for maximum perceptual distinctness,
 
 ## Architecture
 
-### Approach: Single Source of Truth (Approach B)
+### Single Source of Truth (Approach B)
 
 **New file: `client/src/lib/entityColors.ts`**
 
 Exports:
-- `ENTITY_COLORS` — a const record mapping entity type keys to hex strings
+- `ENTITY_COLORS` — a const record mapping `EntityAccentKey` to hex strings (all 11 entities)
 - `getEntityColor(type: EntityAccentKey): string` — safe accessor with fallback
 
-Both theme files import from this file. Any future color change is one edit in one place.
+All three color stores in the Mantine and MUI theme files import from this file. Any future color change is one edit in one place.
 
-**Updated: `client/src/lib/mantine-theme.ts`**
+---
 
-- The `colors` object (10-step Mantine palettes) — regenerate palettes for the 6 entities that are changing: Annotation, Event, Organization, Quote, Character, Media
-- `theme.other.usogui` accent values — replace all 11 hex values with imports from `entityColors.ts`
-- Existing `getEntityAccent()` and `getEntityThemeColor()` helpers remain unchanged
+### `client/src/lib/mantine-theme.ts` — Five locations to update
 
-**Updated: `client/src/lib/theme.ts`** (MUI admin)
+**1. `EntityAccentKey` type**
 
-- `palette.usogui` entity color entries replaced to match, importing from `entityColors.ts`
+Verify `annotation` is present in the `EntityAccentKey` union type. Add it if missing.
 
-### No Component Changes Required
+**2. `colors` object (Mantine 10-step palettes)**
 
-All components already call `getEntityAccent()` or `getEntityThemeColor()` which read from the Mantine theme. Updating theme values propagates automatically to:
-- Detail page header color strips and gradients
-- Playing card borders and glows
-- Entity chips and badges
-- EntityCard inline mentions
-- List page badges
-- Admin dashboard (via MUI theme)
+Every entity needs a full 10-step array with its approved hex at index 5. Three entities currently have no registered palette and must be **created**:
+- `chapter` — missing, must be created
+- `organization` — missing, must be created
+- `annotation` — missing, must be created
+
+All other entity palettes must be **regenerated** around their new index-5 hex value.
+
+**3. `theme.other.usogui` accent values**
+
+Update all existing entity hex values to import from `entityColors.ts`. Additionally, `annotation` is not currently a key in `theme.other.usogui` — it must be **added** as a new key (not just updated).
+
+The non-entity brand keys (`red`, `purple`, `black`, `white`) that also live in `theme.other.usogui` are **out of scope and must not be changed or removed** — `getEntityThemeColor`'s default fallback depends on `theme.other.usogui.red` being present.
+
+**4. `textColors` export**
+
+`textColors` is a standalone export that some components import directly (e.g. `textColors.character`, `textColors.arc`). It does not read from `theme.other.usogui`. All entity keys in `textColors` must be updated to import from `entityColors.ts`. `textColors.annotation` already exists here and must be updated.
+
+**5. Helper function fixes (three functions)**
+
+- **`getEntityAccent()`** — The `organization` case currently returns `palette.purple` (brand purple `#7c3aed`) instead of `palette.organization`. Fix this to `palette.organization`.
+- **`getEntityThemeColor()`** — Has no `annotation` case; falls through to `default` which returns red. Add an `annotation` case returning the correct palette/accent value.
+- **`setTabAccentColors()`** — Builds a `Record<EntityAccentKey, string>` from `textColors`. Its `accentColorMap` does not include `annotation`. Adding `annotation` to `EntityAccentKey` will cause a TypeScript compile error here. Add `annotation: textColors.annotation` to the map.
+
+---
+
+### `client/src/lib/manga-decorations.ts`
+
+`entitySuit` is declared as `Record<EntityAccentKey, 'spade' | 'heart' | 'diamond' | 'club'>` with 10 entries and no `annotation`. Adding `annotation` to `EntityAccentKey` will cause a TypeScript compile error here. Add an `annotation` entry (suit value: `'spade'` or whichever fits the manga context best — use `'diamond'` as a neutral fallback if unsure).
+
+---
+
+### `client/src/lib/theme.ts` (MUI admin) — Three locations to update
+
+**1. TypeScript interface extensions**
+
+`Palette` and `PaletteOptions` interface declarations are missing `volume`, `chapter`, `organization`, and `annotation`. All four must be added.
+
+**2. Runtime `palette.usogui` object**
+
+`volume`, `chapter`, `organization`, and `annotation` are missing from the runtime object. All four must be added, importing from `entityColors.ts`.
+
+**3. All existing entity color entries**
+
+Replace all existing hex values with imports from `entityColors.ts`.
+
+---
+
+### Component changes
+
+No structural component changes are required. Components that call `getEntityAccent()` or `getEntityThemeColor()` will pick up new values automatically via the theme. Components that read `textColors` directly will pick up new values once `textColors` is updated — it is a module-level export, not a theme injection, so no component files need to be edited.
 
 ## Files Changed
 
 | File | Change |
 |---|---|
 | `client/src/lib/entityColors.ts` | **New** — canonical color map + accessor |
-| `client/src/lib/mantine-theme.ts` | Update `colors` palettes + `theme.other.usogui` values |
-| `client/src/lib/theme.ts` | Update `palette.usogui` entity color entries |
+| `client/src/lib/mantine-theme.ts` | Verify `EntityAccentKey` includes `annotation`; create 3 new palettes + regenerate 8; add `annotation` to `theme.other.usogui`; update all `textColors` entity values; fix `getEntityAccent` organization bug; add `annotation` to `getEntityThemeColor`; add `annotation` to `setTabAccentColors` accentColorMap |
+| `client/src/lib/manga-decorations.ts` | Add `annotation` to `entitySuit` record |
+| `client/src/lib/theme.ts` | Add `volume`/`chapter`/`organization`/`annotation` to TypeScript interfaces + runtime palette; update all entity hex values |
 
 ## Out of Scope
 

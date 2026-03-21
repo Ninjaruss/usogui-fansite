@@ -2,6 +2,7 @@
 
 ## TODO
 - Update media gallery modal to show full view of image in lightbox. Update the design to make it more clean.
+- Review the entire frontend and ensure that each entity has a specified unique color that's consistent throughout the entire application (list pages, detail pages, admin dashboard pages, chips). 
 
 - Add a proper data backup; update security for supabase data
 
