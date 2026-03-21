@@ -517,6 +517,34 @@ export const AdminDataProvider: DataProvider = {
       }
     }
 
+    // Special handling for edit-log resource
+    if (resource === 'edit-log') {
+      try {
+        const query: Record<string, string | number> = { page, limit: perPage }
+        const { entityType } = params.filter || {}
+        if (entityType) query.entityType = entityType
+
+        const response = await api.get<unknown>('/edit-log/recent', { params: query })
+        const responseData = response as Record<string, unknown>
+        const items = Array.isArray(response) ? response : responseData?.data ?? []
+        const total = (responseData?.total as number) ?? (items as any[]).length
+
+        return {
+          data: (items as any[]).map((item: any) => ({
+            ...item,
+            id: item.id ?? `${item.entityType}-${item.entityId}-${item.createdAt}`,
+          })),
+          total,
+        }
+      } catch (error: unknown) {
+        console.error('Error in getList for edit-log:', error)
+        const err = error as { status?: number; name?: string; message?: string }
+        const status = err.status || (err.name === 'TypeError' ? 500 : 400)
+        const message = err.message || 'Failed to fetch edit log'
+        throw new HttpError(message, status, error)
+      }
+    }
+
     // Base query parameters - filter out invalid values and client-side only filters
     const cleanFilter: Record<string, string> = {}
     if (params.filter) {

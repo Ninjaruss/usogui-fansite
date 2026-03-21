@@ -26,9 +26,10 @@ import { CharacterOrganizationList, CharacterOrganizationEdit, CharacterOrganiza
 import { AnnotationList, AnnotationEdit, AnnotationCreate, AnnotationShow } from '../../components/admin/Annotations'
 import { VolumeList, VolumeEdit, VolumeCreate, VolumeShow } from '../../components/admin/Volumes'
 import { ChapterList, ChapterEdit, ChapterCreate, ChapterShow } from '../../components/admin/Chapters'
+import { EditLogList } from '../../components/admin/EditLog'
 
 // Icons
-import { Users, User, BookOpen, Crown, Zap, FileText, Image, Quote, Tag, Shield, Link2, Building2, MessageSquare, Library, Award, Hash } from 'lucide-react'
+import { Users, User, BookOpen, Crown, Zap, FileText, Image, Quote, Tag, Shield, Link2, Building2, MessageSquare, Library, Award, Hash, ClipboardList } from 'lucide-react'
 
 // Convert icons to components
 const UsersIcon = () => <Users />
@@ -47,6 +48,7 @@ const MessageSquareIcon = () => <MessageSquare />
 const LibraryIcon = () => <Library />
 const AwardIcon = () => <Award />
 const HashIcon = () => <Hash />
+const ClipboardListIcon = () => <ClipboardList size={20} />
 
 export default function AdminApp() {
   return (
@@ -186,6 +188,12 @@ export default function AdminApp() {
         show={CharacterOrganizationShow}
         icon={Building2Icon}
         options={{ label: 'Org Memberships' }}
+      />
+      <Resource
+        name="edit-log"
+        list={EditLogList}
+        icon={ClipboardListIcon}
+        options={{ label: 'Edit Log' }}
       />
     </Admin>
     </ThemeProvider>
