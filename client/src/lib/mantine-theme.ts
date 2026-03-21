@@ -565,6 +565,7 @@ export type EntityAccentKey =
   | 'media'
   | 'quote'
   | 'gamble'
+  | 'annotation'
 
 export const getEntityAccent = (type: EntityAccentKey, theme?: MantineTheme): string => {
   const palette = theme?.other?.usogui ?? mantineTheme.other?.usogui
@@ -704,7 +705,8 @@ export const setTabAccentColors = (entityType: EntityAccentKey, element?: HTMLEl
     guide: textColors.guide,
     media: textColors.media,
     quote: textColors.quote,
-    gamble: textColors.gamble
+    gamble: textColors.gamble,
+    annotation: textColors.annotation
   }
   const accentColor = accentColorMap[entityType] ?? (mantineTheme.other?.usogui?.red ?? '#e11d48')
   

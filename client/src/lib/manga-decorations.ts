@@ -19,7 +19,8 @@ export const entitySuit: Record<EntityAccentKey, 'spade' | 'heart' | 'diamond' |
   guide: 'heart',
   media: 'club',
   quote: 'heart',
-  organization: 'club'
+  organization: 'club',
+  annotation: 'diamond'
 }
 
 /**
