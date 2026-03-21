@@ -2,9 +2,9 @@
 
 import React from 'react'
 import { Alert, Badge, Box, Group, Text, Title, rem } from '@mantine/core'
-import { AlertTriangle, ChevronLeft, Info, Pencil } from 'lucide-react'
-import Link from 'next/link'
+import { AlertTriangle, Info, Pencil } from 'lucide-react'
 import { motion } from 'motion/react'
+import { BreadcrumbNav } from './Breadcrumb'
 
 const AMBER = '#f59e0b'
 
@@ -40,9 +40,9 @@ export function EditPageShell({
   const statusInfo = STATUS_BADGE[status] ?? STATUS_BADGE.pending
   const typeLabel = type.charAt(0).toUpperCase() + type.slice(1)
 
-  const submittedDate = new Date(submittedAt).toLocaleDateString('en-US', {
-    year: 'numeric', month: 'short', day: 'numeric',
-  })
+  const submittedDate = submittedAt
+    ? new Date(submittedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+    : '—'
   const updatedDate = updatedAt
     ? new Date(updatedAt).toLocaleDateString('en-US', {
         year: 'numeric', month: 'short', day: 'numeric',
@@ -56,23 +56,14 @@ export function EditPageShell({
       transition={{ duration: 0.4, ease: 'easeOut' }}
     >
       {/* Breadcrumb */}
-      <Group gap="xs" mb="md" style={{ fontSize: rem(13), color: '#666' }}>
-        <Link
-          href="/profile"
-          style={{
-            color: '#888',
-            textDecoration: 'none',
-            display: 'flex',
-            alignItems: 'center',
-            gap: rem(4),
-          }}
-        >
-          <ChevronLeft size={14} />
-          My Submissions
-        </Link>
-        <Text c="dimmed" size="sm">/</Text>
-        <Text size="sm" c="dimmed">Edit {typeLabel}</Text>
-      </Group>
+      <BreadcrumbNav
+        showHome={false}
+        entityType={type === 'guide' ? 'guide' : type === 'event' ? 'event' : undefined}
+        items={[
+          { label: 'My Submissions', href: '/profile' },
+          { label: `Edit ${typeLabel}` },
+        ]}
+      />
 
       {/* Edit Identity Header */}
       <Box
@@ -129,7 +120,7 @@ export function EditPageShell({
                 size="xs"
                 style={{
                   letterSpacing: '0.16em',
-                  textTransform: 'uppercase',
+                  textTransform: 'uppercase' as const,
                   color: accentColor,
                   fontWeight: 600,
                 }}
@@ -145,7 +136,7 @@ export function EditPageShell({
                 }}
                 variant="outline"
               >
-                ✎ Editing
+                <Group gap={4} align="center"><Pencil size={10} />Editing</Group>
               </Badge>
               <Badge
                 size="xs"
@@ -185,7 +176,7 @@ export function EditPageShell({
       </Box>
 
       {/* Status Context Panel */}
-      {status === 'rejected' && rejectionReason && (
+      {status === 'rejected' && (
         <Alert
           mb="md"
           icon={<AlertTriangle size={16} />}
@@ -198,7 +189,9 @@ export function EditPageShell({
           <Text size="sm" c="#f87171" fw={700} mb={4} style={{ letterSpacing: '0.06em', textTransform: 'uppercase', fontSize: rem(10) }}>
             Moderator Feedback
           </Text>
-          <Text size="sm" c="rgba(248, 113, 113, 0.85)">{rejectionReason}</Text>
+          <Text size="sm" c="rgba(248, 113, 113, 0.85)">
+            {rejectionReason || 'No reason provided.'}
+          </Text>
         </Alert>
       )}
 
