@@ -49,7 +49,7 @@ import {
   canEmbedVideo as canEmbedVideoUtil
 } from '../lib/video-utils'
 
-interface MediaItem {
+export interface MediaItem {
   id: number
   url: string
   type: 'image' | 'video' | 'audio'
