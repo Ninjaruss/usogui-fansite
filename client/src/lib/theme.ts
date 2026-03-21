@@ -1,4 +1,5 @@
 import { createTheme } from '@mui/material/styles'
+import { ENTITY_COLORS } from './entityColors'
 
 declare module '@mui/material/styles' {
   interface Palette {
@@ -14,6 +15,10 @@ declare module '@mui/material/styles' {
       guide: string
       media: string
       quote: string
+      volume: string
+      chapter: string
+      organization: string
+      annotation: string
     }
   }
 
@@ -30,6 +35,10 @@ declare module '@mui/material/styles' {
       guide?: string
       media?: string
       quote?: string
+      volume?: string
+      chapter?: string
+      organization?: string
+      annotation?: string
     }
   }
 }
@@ -72,13 +81,17 @@ export const theme = createTheme({
       purple: '#7c3aed',
       black: '#0a0a0a',
       white: '#ffffff',
-      gamble: '#d32f2f', // Red variant for gambles
-      character: '#1976d2', // Blue for characters
-      arc: '#dc004e', // Pink for arcs
-      event: '#f57c00', // Orange for events
-      guide: '#388e3c', // Green for guides
-      media: '#7b1fa2', // Purple for media
-      quote: '#00796b' // Teal for quotes
+      gamble:       ENTITY_COLORS.gamble,
+      character:    ENTITY_COLORS.character,
+      arc:          ENTITY_COLORS.arc,
+      event:        ENTITY_COLORS.event,
+      guide:        ENTITY_COLORS.guide,
+      media:        ENTITY_COLORS.media,
+      quote:        ENTITY_COLORS.quote,
+      volume:       ENTITY_COLORS.volume,
+      chapter:      ENTITY_COLORS.chapter,
+      organization: ENTITY_COLORS.organization,
+      annotation:   ENTITY_COLORS.annotation,
     }
   },
   typography: {
