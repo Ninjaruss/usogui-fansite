@@ -42,10 +42,7 @@ import { EditToolbar } from './EditToolbar'
 import { RelationshipType } from '../../types'
 import { api } from '../../lib/api'
 import { RichMarkdownAdminInput } from '../RichMarkdownEditor/RichMarkdownAdminInput'
-
-const RELATIONSHIP_TYPES = [
-  'ally', 'rival', 'mentor', 'subordinate', 'family', 'partner', 'enemy', 'acquaintance'
-]
+import { RELATIONSHIP_TYPE_VALUES } from '../../lib/constants'
 
 const RelationshipModalTrigger = () => {
   const record = useRecordContext()
@@ -139,7 +136,7 @@ const RelationshipModalTrigger = () => {
             <InputLabel>Relationship Type</InputLabel>
             <Select value={form.relationshipType} label="Relationship Type"
               onChange={(e) => setForm(f => ({ ...f, relationshipType: e.target.value }))}>
-              {RELATIONSHIP_TYPES.map(t => <MenuItem key={t} value={t} sx={{ textTransform: 'capitalize' }}>{t}</MenuItem>)}
+              {RELATIONSHIP_TYPE_VALUES.map(t => <MenuItem key={t} value={t} sx={{ textTransform: 'capitalize' }}>{t}</MenuItem>)}
             </Select>
           </FormControl>
           <MuiTextField label="Description (optional)" multiline rows={2} fullWidth
@@ -150,7 +147,7 @@ const RelationshipModalTrigger = () => {
             <Select value={form.reverseRelationshipType} label="Reverse Relationship Type (optional)"
               onChange={(e) => setForm(f => ({ ...f, reverseRelationshipType: e.target.value }))}>
               <MenuItem value="">No reverse relationship</MenuItem>
-              {RELATIONSHIP_TYPES.map(t => <MenuItem key={t} value={t} sx={{ textTransform: 'capitalize' }}>{t}</MenuItem>)}
+              {RELATIONSHIP_TYPE_VALUES.map(t => <MenuItem key={t} value={t} sx={{ textTransform: 'capitalize' }}>{t}</MenuItem>)}
             </Select>
           </FormControl>
           {form.reverseRelationshipType && (

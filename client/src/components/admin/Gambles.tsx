@@ -41,8 +41,7 @@ import { Link } from 'react-router-dom'
 import { Image as ImageIcon, Edit3, Plus, X } from 'lucide-react'
 import { api } from '../../lib/api'
 import { RichMarkdownAdminInput } from '../RichMarkdownEditor/RichMarkdownAdminInput'
-
-const FACTION_MEMBER_ROLES = ['leader', 'member', 'supporter', 'observer']
+import { FACTION_ROLES } from '../../lib/constants'
 
 interface FactionMember {
   character: any
@@ -251,7 +250,7 @@ const FactionEditor = ({ gambleId, initialFactions }: { gambleId: number, initia
                     onChange={(e) => setFactionForm(f => ({
                       ...f, members: f.members.map((mem, i) => i === mi ? { ...mem, role: e.target.value } : mem)
                     }))}>
-                    {FACTION_MEMBER_ROLES.map(r => <MenuItem key={r} value={r} sx={{ textTransform: 'capitalize' }}>{r}</MenuItem>)}
+                    {FACTION_ROLES.map(r => <MenuItem key={r.id} value={r.id} sx={{ textTransform: 'capitalize' }}>{r.name}</MenuItem>)}
                   </Select>
                 </FormControl>
                 <IconButton size="small" onClick={() => handleRemoveMember(mi)}
@@ -278,7 +277,7 @@ const FactionEditor = ({ gambleId, initialFactions }: { gambleId: number, initia
                 <InputLabel>Role</InputLabel>
                 <Select value={pendingMember.role} label="Role"
                   onChange={(e) => setPendingMember(p => ({ ...p, role: e.target.value }))}>
-                  {FACTION_MEMBER_ROLES.map(r => <MenuItem key={r} value={r} sx={{ textTransform: 'capitalize' }}>{r}</MenuItem>)}
+                  {FACTION_ROLES.map(r => <MenuItem key={r.id} value={r.id} sx={{ textTransform: 'capitalize' }}>{r.name}</MenuItem>)}
                 </Select>
               </FormControl>
               <MuiButton variant="outlined" onClick={handleAddMember}

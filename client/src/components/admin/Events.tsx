@@ -78,14 +78,9 @@ import { api } from '../../lib/api'
 import EnhancedSpoilerMarkdown from '../EnhancedSpoilerMarkdown'
 import { EntityDisplayMediaSection } from './EntityDisplayMediaSection'
 // Note: Removed EntityEmbedHelperWithSearch import to avoid Mantine/MUI conflicts
+import { EVENT_TYPES } from '../../lib/constants'
 
-const EVENT_TYPE_CHOICES = [
-  { id: 'gamble', name: 'Gamble' },
-  { id: 'decision', name: 'Decision' },
-  { id: 'reveal', name: 'Reveal' },
-  { id: 'shift', name: 'Shift' },
-  { id: 'resolution', name: 'Resolution' },
-]
+const EVENT_TYPE_CHOICES = EVENT_TYPES
 
 const STATUS_CHOICES = [
   { id: EventStatus.PENDING, name: 'Pending' },

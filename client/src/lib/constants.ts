@@ -51,3 +51,47 @@ export const RETRY_CONFIG = {
   DELAYS: [1000, 2000, 4000], // Progressive backoff
 } as const
 
+// Admin dashboard constants
+export const EVENT_TYPES = [
+  { id: 'gamble', name: 'Gamble' },
+  { id: 'decision', name: 'Decision' },
+  { id: 'reveal', name: 'Reveal' },
+  { id: 'shift', name: 'Shift' },
+  { id: 'resolution', name: 'Resolution' },
+]
+
+export const FACTION_ROLES = [
+  { id: 'leader', name: 'Leader' },
+  { id: 'member', name: 'Member' },
+  { id: 'supporter', name: 'Supporter' },
+  { id: 'observer', name: 'Observer' },
+]
+
+// Source: Characters.tsx local constant + CharacterRelationships.tsx RelationshipType enum
+export const RELATIONSHIP_TYPE_VALUES = [
+  'ally', 'rival', 'mentor', 'subordinate', 'family', 'partner', 'enemy', 'acquaintance'
+]
+
+// Source: MediaUsageType entity enum
+export const MEDIA_USAGE_TYPES = [
+  { id: 'character_image', name: 'Character Image' },
+  { id: 'volume_image', name: 'Volume Image' },
+  { id: 'volume_showcase_background', name: 'Volume Showcase Background' },
+  { id: 'volume_showcase_popout', name: 'Volume Showcase Popout' },
+  { id: 'guide_image', name: 'Guide Image' },
+  { id: 'gallery_upload', name: 'Gallery Upload' },
+]
+
+// Source: ProfilePictureType entity enum
+export const PROFILE_PICTURE_TYPES = [
+  { id: 'fluxer', name: 'Fluxer Avatar' },
+  { id: 'character_media', name: 'Character Media' },
+  { id: 'exclusive_artwork', name: 'Exclusive Artwork' },
+]
+
+export const USER_ROLES = [
+  { id: 'user', name: 'User' },
+  { id: 'moderator', name: 'Moderator' },
+  { id: 'editor', name: 'Editor' },
+  { id: 'admin', name: 'Admin' },
+]

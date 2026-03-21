@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { API_BASE_URL } from '../../lib/api'
-import { MAX_CHAPTER } from '../../lib/constants'
+import { MAX_CHAPTER, USER_ROLES } from '../../lib/constants'
 import BadgeDisplay from '../BadgeDisplay'
 import {
   List,
@@ -392,12 +392,7 @@ const userFilters = [
     source="role"
     label="Role"
     alwaysOn
-    choices={[
-      { id: 'user', name: 'User' },
-      { id: 'moderator', name: 'Moderator' },
-      { id: 'editor', name: 'Editor' },
-      { id: 'admin', name: 'Admin' },
-    ]}
+    choices={USER_ROLES}
   />,
   <SelectInput
     key="isEmailVerified"
@@ -1031,17 +1026,8 @@ const RoleSelectInput = () => {
 
   // Moderators and Editors cannot promote to admin
   const availableChoices = isModerator || isEditor
-    ? [
-        { id: 'user', name: 'User' },
-        { id: 'moderator', name: 'Moderator' },
-        { id: 'editor', name: 'Editor' },
-      ]
-    : [
-        { id: 'user', name: 'User' },
-        { id: 'moderator', name: 'Moderator' },
-        { id: 'editor', name: 'Editor' },
-        { id: 'admin', name: 'Admin' },
-      ]
+    ? USER_ROLES.filter(r => r.id !== 'admin')
+    : USER_ROLES
 
   const handleRoleChange = (event: any) => {
     const newRole = event.target.value
