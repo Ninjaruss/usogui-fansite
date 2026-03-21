@@ -34,7 +34,6 @@ import {
   useUnselectAll,
   BulkDeleteButton
 } from 'react-admin'
-import { useFormContext, useWatch } from 'react-hook-form'
 import { GuideStatus } from '../../types'
 import {
   Box,
@@ -2231,116 +2230,6 @@ const ContentInputWithPreviewCreate = () => (
   <RichMarkdownAdminInput source="content" label="Guide content" minHeight={400} />
 )
 
-// Publication Status Input with rejection reason validation
-const PublicationStatusInput = () => {
-  const { setValue, setError, clearErrors, formState: { errors } } = useFormContext()
-  const status = useWatch({ name: 'status' })
-  const rejectionReason = useWatch({ name: 'rejectionReason' })
-  const notify = useNotify()
-  const [showReasonWarning, setShowReasonWarning] = useState(false)
-
-  useEffect(() => {
-    if (status === GuideStatus.REJECTED && (!rejectionReason || rejectionReason.trim() === '')) {
-      setShowReasonWarning(true)
-      setError('rejectionReason', {
-        type: 'required',
-        message: 'Rejection reason is required when status is rejected'
-      })
-    } else {
-      setShowReasonWarning(false)
-      clearErrors('rejectionReason')
-    }
-  }, [status, rejectionReason, setError, clearErrors])
-
-  const handleStatusChange = (event: any) => {
-    const newStatus = event.target.value
-    setValue('status', newStatus, { shouldDirty: true, shouldValidate: true })
-
-    if (newStatus === GuideStatus.REJECTED) {
-      notify('Please provide a rejection reason below', { type: 'warning' })
-    }
-  }
-
-  return (
-    <Box sx={{
-      p: 3,
-      backgroundColor: 'rgba(245, 124, 0, 0.05)',
-      borderRadius: 2,
-      border: showReasonWarning ? '2px solid #f44336' : '1px solid rgba(245, 124, 0, 0.2)'
-    }}>
-      <Typography variant="h6" sx={{ color: '#f57c00', mb: 2, fontWeight: 'bold' }}>
-        Publication Status
-      </Typography>
-
-      <SelectInput
-        source="status"
-        choices={[
-          { id: GuideStatus.PENDING, name: 'Pending Review' },
-          { id: GuideStatus.APPROVED, name: 'Approved' },
-          { id: GuideStatus.REJECTED, name: 'Rejected' }
-        ]}
-        fullWidth
-        onChange={handleStatusChange}
-        sx={{
-          '& .MuiSelect-select': {
-            backgroundColor: '#0f0f0f'
-          }
-        }}
-      />
-
-      <TextInput
-        source="rejectionReason"
-        multiline
-        rows={3}
-        label="Rejection Reason"
-        helperText={showReasonWarning
-          ? "REQUIRED: You must provide a reason when rejecting a guide"
-          : "Required when status is rejected"
-        }
-        fullWidth
-        sx={{
-          mt: 2,
-          '& .MuiOutlinedInput-root': {
-            borderColor: showReasonWarning ? '#f44336' : undefined,
-            '&:hover': {
-              borderColor: showReasonWarning ? '#f44336' : undefined
-            }
-          },
-          '& .MuiFormHelperText-root': {
-            color: showReasonWarning ? '#f44336' : undefined,
-            fontWeight: showReasonWarning ? 'bold' : undefined
-          }
-        }}
-        validate={(value: string) => {
-          if (status === GuideStatus.REJECTED && (!value || value.trim() === '')) {
-            return 'Rejection reason is required when status is rejected'
-          }
-          return undefined
-        }}
-      />
-
-      {showReasonWarning && (
-        <Box sx={{
-          mt: 2,
-          p: 2,
-          backgroundColor: 'rgba(244, 67, 54, 0.1)',
-          borderRadius: 1,
-          border: '1px solid #f44336'
-        }}>
-          <Typography variant="body2" sx={{
-            color: '#f44336',
-            fontWeight: 'bold',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 1
-          }}>
-            You must provide a rejection reason before saving
-          </Typography>
-        </Box>
-      )}
-    </Box>
-  )
-}
 
 export const GuideEdit = () => {
   const { permissions } = usePermissions()
@@ -2495,13 +2384,7 @@ export const GuideEdit = () => {
                     <Typography variant="h6" sx={{ color: '#f57c00', mb: 2, fontWeight: 'bold' }}>
                       Publication Status
                     </Typography>
-                    <FunctionField
-                      source="status"
-                      label="Status"
-                      render={(record: any) => (
-                        <GuideStatusField source="status" />
-                      )}
-                    />
+                    <GuideStatusField source="status" label="Status" />
                     <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.5)', mt: 1 }}>
                       Use the Approve / Reject buttons in the toolbar below to change status.
                     </Typography>

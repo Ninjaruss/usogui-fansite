@@ -57,6 +57,7 @@ import {
   Link as LinkIcon
 } from 'lucide-react'
 import { api } from '../../lib/api'
+import { GuideStatus } from '../../types'
 import { ApproveRejectToolbar } from './EditToolbar'
 
 const TruncatedUrlField = () => {
@@ -151,18 +152,18 @@ const MediaStatusField = ({ source }: { source: string }) => {
   const status = record[source]
   const getStatusColor = (status: string) => {
     switch(status) {
-      case 'approved': return 'success'
-      case 'rejected': return 'error'
-      case 'pending': return 'warning'
+      case GuideStatus.APPROVED: return 'success'
+      case GuideStatus.REJECTED: return 'error'
+      case GuideStatus.PENDING: return 'warning'
       default: return 'warning'
     }
   }
 
   const getStatusIcon = (status: string) => {
     switch(status) {
-      case 'approved': return '✅'
-      case 'rejected': return '❌'
-      case 'pending': return '⏳'
+      case GuideStatus.APPROVED: return '✅'
+      case GuideStatus.REJECTED: return '❌'
+      case GuideStatus.PENDING: return '⏳'
       default: return '❓'
     }
   }
