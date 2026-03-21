@@ -33,6 +33,16 @@ interface MediaLightboxProps {
   onNext: () => void
 }
 
+const getEntityName = (item: MediaItem): string | null => {
+  if (item.character) return item.character.name
+  if (item.arc) return item.arc.name
+  if (item.event) return item.event.title
+  if (item.gamble) return item.gamble.name
+  if (item.organization) return item.organization.name
+  // user-owned items: no entity badge — submitter username is already shown below
+  return null
+}
+
 export default function MediaLightbox({
   opened,
   media,
@@ -94,15 +104,7 @@ export default function MediaLightbox({
     color: 'rgba(255,255,255,0.9)'
   }
 
-  const getEntityName = (item: MediaItem): string | null => {
-    if (item.character) return item.character.name
-    if (item.arc) return item.arc.name
-    if (item.event) return item.event.title
-    if (item.gamble) return item.gamble.name
-    if (item.organization) return item.organization.name
-    // user-owned items: no entity badge — submitter username is already shown below
-    return null
-  }
+  const entityName = getEntityName(selectedMedia)
 
   return (
     <Modal
@@ -143,7 +145,7 @@ export default function MediaLightbox({
                   <Button
                     size="md"
                     leftSection={<Play size={18} />}
-                    onClick={() => setShouldLoadVideo(true)}
+                    onClick={(e) => { e.stopPropagation(); setShouldLoadVideo(true) }}
                   >
                     Load Video
                   </Button>
@@ -298,13 +300,13 @@ export default function MediaLightbox({
                 Ch. {selectedMedia.chapterNumber}
               </Badge>
             )}
-            {getEntityName(selectedMedia) && (
+            {entityName && (
               <Badge
                 variant="outline"
                 size="sm"
                 style={{ borderColor: 'rgba(255,255,255,0.3)', color: 'rgba(255,255,255,0.7)' }}
               >
-                {getEntityName(selectedMedia)}
+                {entityName}
               </Badge>
             )}
             <Text size="xs" style={{ color: 'rgba(255,255,255,0.45)', whiteSpace: 'nowrap' }}>
