@@ -31,7 +31,8 @@ import {
   useUnselectAll,
   FunctionField,
   TabbedForm,
-  FormTab
+  FormTab,
+  FormDataConsumer
 } from 'react-admin'
 import { useFormContext } from 'react-hook-form'
 import { EventStatus } from '../../types'
@@ -1331,6 +1332,20 @@ const EventShowContent = () => {
                   />
                 </Box>
               </Box>
+
+              <FunctionField
+                label="Rejection Reason"
+                render={(record: any) =>
+                  record?.rejectionReason ? (
+                    <Box sx={{ mt: 1 }}>
+                      <Typography variant="body2" color="text.secondary" gutterBottom>
+                        Rejection Reason
+                      </Typography>
+                      <Typography variant="body2" color="error.main">{record.rejectionReason}</Typography>
+                    </Box>
+                  ) : null
+                }
+              />
             </CardContent>
           </Card>
         </Grid>
@@ -1658,6 +1673,19 @@ export const EventEdit = () => {
                         }
                       }}
                     />
+                    <FormDataConsumer>
+                      {({ formData }) =>
+                        formData.status === 'rejected' && (
+                          <TextInput
+                            source="rejectionReason"
+                            label="Rejection Reason"
+                            multiline
+                            fullWidth
+                            helperText="Explain why this event was rejected"
+                          />
+                        )
+                      }
+                    </FormDataConsumer>
                   </Box>
                 </Grid>
 
@@ -1828,6 +1856,20 @@ export const EventCreate = () => (
                 helperText="Review status"
               />
             </Box>
+
+            <FormDataConsumer>
+              {({ formData }) =>
+                formData.status === 'rejected' && (
+                  <TextInput
+                    source="rejectionReason"
+                    label="Rejection Reason"
+                    multiline
+                    fullWidth
+                    helperText="Explain why this event was rejected"
+                  />
+                )
+              }
+            </FormDataConsumer>
 
             <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, mb: 3 }}>
               <NumberInput

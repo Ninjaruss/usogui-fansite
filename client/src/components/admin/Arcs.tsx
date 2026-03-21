@@ -718,6 +718,13 @@ export const ArcEdit = () => (
                       label="End Chapter"
                       helperText="Last chapter of this arc (1-539)"
                     />
+                    <NumberInput
+                      source="order"
+                      fullWidth
+                      label="Order"
+                      helperText="Display order within the same parent arc (lower = first)"
+                      min={0}
+                    />
                   </Box>
                 </Grid>
 
@@ -911,6 +918,15 @@ export const ArcCreate = () => (
                           max={539}
                           label="End Chapter"
                           helperText="Last chapter (1-539)"
+                        />
+                      </Grid>
+                      <Grid item xs={12}>
+                        <NumberInput
+                          source="order"
+                          fullWidth
+                          label="Order"
+                          helperText="Display order within the same parent arc (lower = first)"
+                          min={0}
                         />
                       </Grid>
                     </Grid>

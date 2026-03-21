@@ -2380,9 +2380,9 @@ const MediaShowContent = () => {
 
                 {/* Rejection Reason if exists */}
                 {record?.rejectionReason && (
-                  <Box sx={{ 
-                    p: 2, 
-                    backgroundColor: 'rgba(225, 29, 72, 0.1)', 
+                  <Box sx={{
+                    p: 2,
+                    backgroundColor: 'rgba(225, 29, 72, 0.1)',
                     borderRadius: 2,
                     border: '1px solid #e11d48'
                   }}>
@@ -2394,6 +2394,32 @@ const MediaShowContent = () => {
                     </Typography>
                   </Box>
                 )}
+              </CardContent>
+            </Card>
+
+            {/* File Metadata */}
+            <Card elevation={0} sx={{
+              mt: 3,
+              backgroundColor: '#0a0a0a',
+              border: '1px solid rgba(225, 29, 72, 0.3)'
+            }}>
+              <Box sx={{
+                background: 'linear-gradient(135deg, #374151 0%, #1f2937 100%)',
+                color: 'white',
+                p: 2
+              }}>
+                <Typography variant="h6" sx={{ fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 2 }}>
+                  File Metadata
+                </Typography>
+              </Box>
+              <CardContent sx={{ p: 3 }}>
+                <Typography variant="subtitle2" sx={{ mt: 2, mb: 1, opacity: 0.7 }}>File Metadata</Typography>
+                <TextField source="fileName" label="File Name" emptyText="—" />
+                <TextField source="mimeType" label="MIME Type" emptyText="—" />
+                <NumberField source="fileSize" label="File Size (bytes)" emptyText="—" />
+                <NumberField source="width" label="Width (px)" emptyText="—" />
+                <NumberField source="height" label="Height (px)" emptyText="—" />
+                <TextField source="b2FileId" label="B2 File ID" emptyText="—" />
               </CardContent>
             </Card>
           </Grid>

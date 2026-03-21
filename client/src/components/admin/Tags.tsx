@@ -184,6 +184,19 @@ export const TagShow = () => (
             }
           />
         </Box>
+
+        <Box sx={{ width: '100%', mt: 3 }}>
+          <Typography variant="h6" gutterBottom sx={{ color: '#ffffff', fontWeight: 'bold', mb: 2 }}>
+            Usage
+          </Typography>
+          <FunctionField
+            label="Usage Count"
+            render={(record: any) => {
+              const count = record?.guideCount ?? record?._count?.guides ?? '—'
+              return <Typography variant="body2">{count}</Typography>
+            }}
+          />
+        </Box>
       </SimpleShowLayout>
     </Box>
   </Show>
