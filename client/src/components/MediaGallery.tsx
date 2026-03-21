@@ -124,7 +124,6 @@ export default function MediaGallery({
   const [filteredMedia, setFilteredMedia] = useState<MediaItem[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [selectedMedia, setSelectedMedia] = useState<MediaItem | null>(null)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [hoveredMediaId, setHoveredMediaId] = useState<number | null>(null)
@@ -212,7 +211,6 @@ export default function MediaGallery({
     const index = filteredMedia.findIndex((m) => m.id === targetId)
     if (index !== -1) {
       setCurrentImageIndex(index)
-      setSelectedMedia(filteredMedia[index])
       setDialogOpen(true)
     }
   }, [initialMediaId, filteredMedia])
@@ -220,20 +218,17 @@ export default function MediaGallery({
   const handleMediaClick = (mediaItem: MediaItem) => {
     const mediaIndex = filteredMedia.findIndex((m) => m.id === mediaItem.id)
     setCurrentImageIndex(mediaIndex)
-    setSelectedMedia(mediaItem)
     setDialogOpen(true)
   }
 
   const handleCloseDialog = () => {
     setDialogOpen(false)
-    setSelectedMedia(null)
   }
 
   const handlePrevious = () => {
     if (currentImageIndex > 0) {
       const newIndex = currentImageIndex - 1
       setCurrentImageIndex(newIndex)
-      setSelectedMedia(filteredMedia[newIndex])
     }
   }
 
@@ -241,7 +236,6 @@ export default function MediaGallery({
     if (currentImageIndex < filteredMedia.length - 1) {
       const newIndex = currentImageIndex + 1
       setCurrentImageIndex(newIndex)
-      setSelectedMedia(filteredMedia[newIndex])
     }
   }
 
