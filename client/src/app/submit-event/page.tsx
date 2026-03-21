@@ -1,6 +1,7 @@
 import { Metadata } from 'next'
+import { redirect } from 'next/navigation'
 import { Suspense } from 'react'
-import { Container, Box, Loader } from '@mantine/core'
+import { Box, Container, Loader } from '@mantine/core'
 import SubmitEventPageContent from './SubmitEventPageContent'
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -30,7 +31,14 @@ function SubmitEventFallback() {
   )
 }
 
-export default function SubmitEventPage() {
+export default async function SubmitEventPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ edit?: string }>
+}) {
+  const { edit } = await searchParams
+  if (edit) redirect(`/events/${edit}/edit`)
+
   return (
     <Suspense fallback={<SubmitEventFallback />}>
       <SubmitEventPageContent />

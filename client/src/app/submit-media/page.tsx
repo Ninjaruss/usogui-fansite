@@ -1,6 +1,7 @@
 import { Metadata } from 'next'
+import { redirect } from 'next/navigation'
 import { Suspense } from 'react'
-import { Loader, Center } from '@mantine/core'
+import { Center, Loader } from '@mantine/core'
 import SubmitMediaPageContent from './SubmitMediaPageContent'
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -20,7 +21,14 @@ export async function generateMetadata(): Promise<Metadata> {
   }
 }
 
-export default function SubmitMediaPage() {
+export default async function SubmitMediaPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ edit?: string }>
+}) {
+  const { edit } = await searchParams
+  if (edit) redirect(`/media/${edit}/edit`)
+
   return (
     <Suspense fallback={<Center py="xl"><Loader size="lg" /></Center>}>
       <SubmitMediaPageContent />

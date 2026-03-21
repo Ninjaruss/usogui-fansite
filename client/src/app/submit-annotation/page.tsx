@@ -1,5 +1,7 @@
 import { Metadata } from 'next'
+import { redirect } from 'next/navigation'
 import { Suspense } from 'react'
+import { Center, Loader } from '@mantine/core'
 import SubmitAnnotationPageContent from './SubmitAnnotationPageContent'
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -19,9 +21,16 @@ export async function generateMetadata(): Promise<Metadata> {
   }
 }
 
-export default function SubmitAnnotationPage() {
+export default async function SubmitAnnotationPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ edit?: string }>
+}) {
+  const { edit } = await searchParams
+  if (edit) redirect(`/annotations/${edit}/edit`)
+
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<Center py="xl"><Loader size="lg" /></Center>}>
       <SubmitAnnotationPageContent />
     </Suspense>
   )
