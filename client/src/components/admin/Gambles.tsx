@@ -40,6 +40,9 @@ import {
 import { Link } from 'react-router-dom'
 import { Image as ImageIcon } from 'lucide-react'
 import { RichMarkdownAdminInput } from '../RichMarkdownEditor/RichMarkdownAdminInput'
+import EnhancedSpoilerMarkdown from '../EnhancedSpoilerMarkdown'
+import { EntityDisplayMediaSection } from './EntityDisplayMediaSection'
+import { EditToolbar } from './EditToolbar'
 import { FACTION_ROLES } from '../../lib/constants'
 
 const GambleFilters = [

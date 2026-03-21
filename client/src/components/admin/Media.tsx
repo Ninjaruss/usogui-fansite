@@ -22,6 +22,7 @@ import {
   useRefresh,
   useListContext,
   FunctionField,
+  NumberField,
   useUnselectAll
 } from 'react-admin'
 import { useWatch } from 'react-hook-form'
