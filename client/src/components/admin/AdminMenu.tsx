@@ -63,11 +63,6 @@ export const AdminMenu = () => {
         leftIcon={<BookOpen size={20} />}
       />
       <MenuItemLink
-        to="/volumes"
-        primaryText="Volumes"
-        leftIcon={<Library size={20} />}
-      />
-      <MenuItemLink
         to="/gambles"
         primaryText="Gambles"
         leftIcon={<Crown size={20} />}
@@ -176,6 +171,11 @@ export const AdminMenu = () => {
         to="/tags"
         primaryText="Tags"
         leftIcon={<Tag size={20} />}
+      />
+      <MenuItemLink
+        to="/volumes"
+        primaryText="Volumes"
+        leftIcon={<Library size={20} />}
       />
 
       <Divider sx={{ my: 1 }} />
