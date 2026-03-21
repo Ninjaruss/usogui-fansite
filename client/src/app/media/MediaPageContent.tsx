@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import {
-  Title,
   Text,
   Group,
   Select,
@@ -15,12 +14,8 @@ import {
   Alert,
   Box,
   Container,
-  Paper,
   useMantineTheme,
-  rem,
-  Modal,
-  Image,
-  Anchor
+  rem
 } from '@mantine/core'
 import { useDebouncedValue, useIntersection } from '@mantine/hooks'
 import {
@@ -28,18 +23,14 @@ import {
   Play,
   Volume2,
   ExternalLink,
-  User,
-  Calendar,
   X,
-  ChevronLeft,
-  ChevronRight,
   Upload,
   ImageOff
 } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { BackToTop } from '../../components/BackToTop'
-import { api, API_BASE_URL } from '../../lib/api'
+import { api } from '../../lib/api'
 import { getEntityThemeColor, backgroundStyles } from '../../lib/mantine-theme'
 import { ListPageHero } from '../../components/layouts/ListPageHero'
 import { useAuth } from '../../providers/AuthProvider'
@@ -51,29 +42,9 @@ import { motion } from 'motion/react'
 import { pageEnter } from '../../lib/motion-presets'
 import { extractYouTubeVideoId, getYouTubeThumbnail, isYouTubeUrl } from '../../lib/video-utils'
 import styles from './media.module.css'
+import { MediaItem } from '../../types/media'
+import MediaLightbox from '../../components/MediaLightbox'
 
-interface MediaItem {
-  id: number
-  url: string
-  type: 'image' | 'video' | 'audio'
-  description: string
-  fileName?: string
-  isUploaded?: boolean
-  ownerType: 'character' | 'arc' | 'event' | 'gamble' | 'organization' | 'user'
-  ownerId: number
-  chapterNumber?: number
-  purpose: 'gallery' | 'entity_display'
-  submittedBy: {
-    id: number
-    username: string
-  }
-  createdAt: string
-  character?: { id: number; name: string }
-  arc?: { id: number; name: string }
-  event?: { id: number; title: string }
-  gamble?: { id: number; name: string }
-  organization?: { id: number; name: string }
-}
 
 interface MediaPageContentProps {
   initialPage: number
@@ -103,16 +74,12 @@ export default function MediaPageContent({
   const [media, setMedia] = useState<MediaItem[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [selectedMedia, setSelectedMedia] = useState<MediaItem | null>(null)
   const [viewerOpen, setViewerOpen] = useState(false)
   const [currentIndex, setCurrentIndex] = useState(0)
-  const [imageDimensions, setImageDimensions] = useState<Record<number, { width: number; height: number }>>({})
-  const [loadedImages, setLoadedImages] = useState<Set<number>>(new Set())
   const [failedImages, setFailedImages] = useState<Set<number>>(new Set())
   const [hasMore, setHasMore] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
   const [hoveredMediaId, setHoveredMediaId] = useState<number | null>(null)
-  const [touchStart, setTouchStart] = useState<number | null>(null)
 
   // Intersection observer for infinite scroll
   const { ref: loadMoreRef, entry } = useIntersection({ threshold: 0.5 })
@@ -234,92 +201,25 @@ export default function MediaPageContent({
     }
   }
 
-  const handleMediaClick = (item: MediaItem, index: number) => {
-    setSelectedMedia(item)
+  const handleMediaClick = useCallback((_item: MediaItem, index: number) => {
     setCurrentIndex(index)
     setViewerOpen(true)
-  }
-
-  const handleCloseViewer = useCallback(() => {
-    setViewerOpen(false)
-    setSelectedMedia(null)
   }, [])
+
+  const handleCloseViewer = useCallback(() => setViewerOpen(false), [])
 
   const handlePrevious = useCallback(() => {
     if (currentIndex > 0) {
-      const newIndex = currentIndex - 1
-      setCurrentIndex(newIndex)
-      setSelectedMedia(media[newIndex])
+      setCurrentIndex(currentIndex - 1)
     }
-  }, [currentIndex, media])
+  }, [currentIndex])
 
   const handleNext = useCallback(() => {
     if (currentIndex < media.length - 1) {
-      const newIndex = currentIndex + 1
-      setCurrentIndex(newIndex)
-      setSelectedMedia(media[newIndex])
+      setCurrentIndex(currentIndex + 1)
     }
-  }, [currentIndex, media])
+  }, [currentIndex, media.length])
 
-  const handleTouchStart = (e: React.TouchEvent) => {
-    setTouchStart(e.touches[0].clientX)
-  }
-
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    if (touchStart === null) return
-    const touchEnd = e.changedTouches[0].clientX
-    const diff = touchStart - touchEnd
-    if (Math.abs(diff) > 50) {
-      if (diff > 0) {
-        handleNext()
-      } else {
-        handlePrevious()
-      }
-    }
-    setTouchStart(null)
-  }
-
-  // Keyboard navigation for lightbox
-  useEffect(() => {
-    if (!viewerOpen) return
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      switch (e.key) {
-        case 'ArrowLeft':
-          handlePrevious()
-          break
-        case 'ArrowRight':
-          handleNext()
-          break
-        case 'Escape':
-          handleCloseViewer()
-          break
-      }
-    }
-
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [viewerOpen, handlePrevious, handleNext, handleCloseViewer])
-
-  const handleImageLoad = (itemId: number, event: React.SyntheticEvent<HTMLImageElement>) => {
-    const img = event.currentTarget
-    setImageDimensions(prev => ({
-      ...prev,
-      [itemId]: { width: img.naturalWidth, height: img.naturalHeight }
-    }))
-    setLoadedImages(prev => new Set(prev).add(itemId))
-  }
-
-  const getOptimalAspectRatio = (itemId: number) => {
-    const dims = imageDimensions[itemId]
-    if (!dims) return 1
-
-    const ratio = dims.width / dims.height
-    if (ratio > 1.3) return 1.3
-    if (ratio < 0.8) return 0.8
-
-    return ratio
-  }
 
   const getMediaThumbnail = (mediaItem: MediaItem) => {
     if (mediaItem.type === 'image') {
@@ -338,12 +238,6 @@ export default function MediaPageContent({
     }
 
     return null
-  }
-
-  const getMediaDisplayUrl = (mediaItem: MediaItem) => {
-    // The url field always contains the correct URL for display
-    // (full B2 URL for uploads, external URL for submissions)
-    return mediaItem.url
   }
 
   const getMediaTypeIcon = (type: string) => {
@@ -376,26 +270,6 @@ export default function MediaPageContent({
       default:
         return accentMedia
     }
-  }
-
-  const getEntityName = (item: MediaItem) => {
-    if (item.character) return item.character.name
-    if (item.arc) return item.arc.name
-    if (item.event) return item.event.title
-    if (item.gamble) return item.gamble.name
-    if (item.organization) return item.organization.name
-    if (item.ownerType === 'user') return item.submittedBy.username
-    return 'Unknown'
-  }
-
-  const getEntityUrl = (item: MediaItem) => {
-    if (item.character) return `/characters/${item.character.id}`
-    if (item.arc) return `/arcs/${item.arc.id}`
-    if (item.event) return `/events/${item.event.id}`
-    if (item.gamble) return `/gambles/${item.gamble.id}`
-    if (item.organization) return `/organizations/${item.organization.id}`
-    if (item.ownerType === 'user') return `/users/${item.ownerId}`
-    return '#'
   }
 
   const mediaInsights = useMemo(() => {
@@ -714,7 +588,6 @@ export default function MediaPageContent({
                                       height: 'auto',
                                       display: 'block'
                                     }}
-                                    onLoad={(e) => handleImageLoad(item.id, e)}
                                     onError={() => {
                                       setFailedImages(prev => new Set(prev).add(item.id))
                                     }}
@@ -845,15 +718,40 @@ export default function MediaPageContent({
                             ) : (
                               <Box
                                 style={{
-                                  background: `${accentMedia}10`,
+                                  background: isHovered
+                                    ? `linear-gradient(135deg, ${accentMedia}1a, ${theme.colors.dark[6]})`
+                                    : theme.colors.dark[6],
                                   display: 'flex',
                                   alignItems: 'center',
                                   justifyContent: 'center',
                                   width: '100%',
-                                  height: rem(150)
+                                  minHeight: rem(120),
+                                  flexDirection: 'column',
+                                  gap: rem(8),
+                                  transition: 'background 0.2s ease',
                                 }}
                               >
-                                {getMediaTypeIcon(item.type)}
+                                <Stack align="center" gap="xs">
+                                  <Box
+                                    style={{
+                                      background: `${accentMedia}26`,
+                                      border: `1px solid ${accentMedia}59`,
+                                      borderRadius: '50%',
+                                      width: rem(44),
+                                      height: rem(44),
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      color: accentMedia,
+                                    }}
+                                  >
+                                    {getMediaTypeIcon(item.type)}
+                                  </Box>
+                                  <Text size="xs" c="white" style={{ opacity: 0.7 }} fw={500} tt="capitalize">
+                                    {item.type}
+                                  </Text>
+                                  <Text size="xs" style={{ color: 'rgba(255,255,255,0.3)' }}>Click to open</Text>
+                                </Stack>
                               </Box>
                             )}
                           </Card>
@@ -888,211 +786,14 @@ export default function MediaPageContent({
       </Box>
       </motion.div>
 
-      <Modal
+      <MediaLightbox
         opened={viewerOpen}
+        media={media}
+        currentIndex={currentIndex}
         onClose={handleCloseViewer}
-        size="90%"
-        centered
-        withCloseButton={false}
-        padding={0}
-        overlayProps={{ opacity: 0.9, color: '#000' }}
-      >
-        {selectedMedia && (
-          <Box style={{ position: 'relative' }} onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
-            <ActionIcon
-              variant="subtle"
-              size="lg"
-              color="white"
-              onClick={handleCloseViewer}
-              style={{
-                position: 'absolute',
-                top: rem(16),
-                right: rem(16),
-                zIndex: 1000,
-                backgroundColor: 'rgba(0,0,0,0.7)',
-                color: 'white'
-              }}
-              aria-label="Close viewer"
-            >
-              <X size={20} />
-            </ActionIcon>
-
-            {currentIndex > 0 && (
-              <ActionIcon
-                variant="subtle"
-                size="lg"
-                color="white"
-                onClick={handlePrevious}
-                style={{
-                  position: 'absolute',
-                  top: '50%',
-                  left: rem(16),
-                  transform: 'translateY(-50%)',
-                  zIndex: 1000,
-                  backgroundColor: 'rgba(0,0,0,0.7)',
-                  color: 'white'
-                }}
-                aria-label="Previous image"
-              >
-                <ChevronLeft size={24} />
-              </ActionIcon>
-            )}
-
-            {currentIndex < media.length - 1 && (
-              <ActionIcon
-                variant="subtle"
-                size="lg"
-                color="white"
-                onClick={handleNext}
-                style={{
-                  position: 'absolute',
-                  top: '50%',
-                  right: rem(16),
-                  transform: 'translateY(-50%)',
-                  zIndex: 1000,
-                  backgroundColor: 'rgba(0,0,0,0.7)',
-                  color: 'white'
-                }}
-                aria-label="Next image"
-              >
-                <ChevronRight size={24} />
-              </ActionIcon>
-            )}
-
-            <Stack gap={0}>
-              <Box style={{ maxHeight: '70vh', overflow: 'hidden' }}>
-                {selectedMedia.type === 'image' ? (
-                  <Image
-                    src={getMediaDisplayUrl(selectedMedia)}
-                    alt={selectedMedia.description || 'Media preview'}
-                    fit="contain"
-                    fallbackSrc="/images/placeholder-media.png"
-                  />
-                ) : selectedMedia.type === 'video' ? (
-                  selectedMedia.url.includes('youtube.com') || selectedMedia.url.includes('youtu.be') ? (
-                    <iframe
-                      src={selectedMedia.url.replace('watch?v=', 'embed/')}
-                      title={selectedMedia.description}
-                      allowFullScreen
-                      style={{ width: '100%', minHeight: '60vh', border: 'none' }}
-                    />
-                  ) : (
-                    <video controls style={{ width: '100%', maxHeight: '70vh' }}>
-                      <source src={selectedMedia.url} />
-                      Your browser does not support the video tag.
-                    </video>
-                  )
-                ) : (
-                  <Box
-                    p="xl"
-                    ta="center"
-                    style={{
-                      minHeight: '300px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      background: 'rgba(0,0,0,0.1)'
-                    }}
-                  >
-                    {getMediaTypeIcon(selectedMedia.type)}
-                    <Text ml="md">Media type not supported for preview</Text>
-                  </Box>
-                )}
-              </Box>
-
-              <Paper p="md" radius={0}>
-                <Stack gap="md">
-                  <Group justify="space-between" align="flex-start">
-                    <Stack gap="xs" style={{ flex: 1 }}>
-                      <Group gap="xs" align="center">
-                        <Badge
-                          variant="light"
-                          c={getOwnerTypeColor(selectedMedia.ownerType)}
-                          size="sm"
-                          style={{
-                            backgroundColor: `${getOwnerTypeColor(selectedMedia.ownerType)}20`,
-                            borderColor: getOwnerTypeColor(selectedMedia.ownerType)
-                          }}
-                        >
-                          {selectedMedia.ownerType}
-                        </Badge>
-                        <Badge
-                          variant="outline"
-                          size="sm"
-                          c={accentMedia}
-                          style={{ borderColor: accentMedia }}
-                        >
-                          {selectedMedia.type}
-                        </Badge>
-                        {selectedMedia.chapterNumber && (
-                          <Badge
-                            variant="outline"
-                            size="sm"
-                            c={getEntityThemeColor(theme, 'organization')}
-                            style={{ borderColor: getEntityThemeColor(theme, 'organization') }}
-                          >
-                            Chapter {selectedMedia.chapterNumber}
-                          </Badge>
-                        )}
-                      </Group>
-
-                      {selectedMedia.description && (
-                        <Text size="sm" fw={500}>
-                          {selectedMedia.description}
-                        </Text>
-                      )}
-
-                      <Group gap="md" align="center">
-                        <Group gap="xs" align="center">
-                          <User size={14} />
-                          <Text size="sm" style={{ color: theme.colors.gray[6] }}>
-                            Submitted by {selectedMedia.submittedBy.username}
-                          </Text>
-                        </Group>
-
-                        {selectedMedia.createdAt && (
-                          <Group gap="xs" align="center">
-                            <Calendar size={14} />
-                            <Text size="sm" style={{ color: theme.colors.gray[6] }}>
-                              {new Date(selectedMedia.createdAt).toLocaleDateString()}
-                            </Text>
-                          </Group>
-                        )}
-                      </Group>
-
-                      {(selectedMedia.character || selectedMedia.arc || selectedMedia.event || selectedMedia.gamble || selectedMedia.organization) && (
-                        <Group gap="xs" align="center">
-                          <Text size="sm" style={{ color: theme.colors.gray[6] }}>Related to:</Text>
-                          <Anchor
-                            href={getEntityUrl(selectedMedia)}
-                            size="sm"
-                            style={{ color: getOwnerTypeColor(selectedMedia.ownerType) }}
-                          >
-                            {getEntityName(selectedMedia)}
-                          </Anchor>
-                        </Group>
-                      )}
-                    </Stack>
-
-                    <Group gap="xs">
-                      <ActionIcon
-                        variant="light"
-                        component="a"
-                        href={selectedMedia.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        aria-label="Open original"
-                      >
-                        <ExternalLink size={16} />
-                      </ActionIcon>
-                    </Group>
-                  </Group>
-                </Stack>
-              </Paper>
-            </Stack>
-          </Box>
-        )}
-      </Modal>
+        onPrevious={handlePrevious}
+        onNext={handleNext}
+      />
 
       <BackToTop />
     </Box>
