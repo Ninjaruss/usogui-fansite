@@ -58,19 +58,31 @@ export const EVENT_TYPES = [
   { id: 'reveal', name: 'Reveal' },
   { id: 'shift', name: 'Shift' },
   { id: 'resolution', name: 'Resolution' },
-]
+] as const
 
 export const FACTION_ROLES = [
   { id: 'leader', name: 'Leader' },
   { id: 'member', name: 'Member' },
   { id: 'supporter', name: 'Supporter' },
   { id: 'observer', name: 'Observer' },
-]
+] as const
 
 // Source: Characters.tsx local constant + CharacterRelationships.tsx RelationshipType enum
 export const RELATIONSHIP_TYPE_VALUES = [
   'ally', 'rival', 'mentor', 'subordinate', 'family', 'partner', 'enemy', 'acquaintance'
-]
+] as const
+
+// Source: CharacterRelationships.tsx RelationshipType enum — { id, name } shape for SelectInput choices
+export const RELATIONSHIP_TYPE_CHOICES = [
+  { id: 'ally', name: 'Ally' },
+  { id: 'rival', name: 'Rival' },
+  { id: 'mentor', name: 'Mentor' },
+  { id: 'subordinate', name: 'Subordinate' },
+  { id: 'family', name: 'Family' },
+  { id: 'partner', name: 'Partner' },
+  { id: 'enemy', name: 'Enemy' },
+  { id: 'acquaintance', name: 'Acquaintance' },
+] as const
 
 // Source: MediaUsageType entity enum
 export const MEDIA_USAGE_TYPES = [
@@ -80,18 +92,18 @@ export const MEDIA_USAGE_TYPES = [
   { id: 'volume_showcase_popout', name: 'Volume Showcase Popout' },
   { id: 'guide_image', name: 'Guide Image' },
   { id: 'gallery_upload', name: 'Gallery Upload' },
-]
+] as const
 
 // Source: ProfilePictureType entity enum
 export const PROFILE_PICTURE_TYPES = [
   { id: 'fluxer', name: 'Fluxer Avatar' },
   { id: 'character_media', name: 'Character Media' },
   { id: 'exclusive_artwork', name: 'Exclusive Artwork' },
-]
+] as const
 
 export const USER_ROLES = [
   { id: 'user', name: 'User' },
   { id: 'moderator', name: 'Moderator' },
   { id: 'editor', name: 'Editor' },
   { id: 'admin', name: 'Admin' },
-]
+] as const

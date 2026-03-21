@@ -25,6 +25,7 @@ import {
 import { Box, Chip, Typography, Divider } from '@mui/material'
 import { ArrowRight } from 'lucide-react'
 import { RelationshipType } from '../../types'
+import { RELATIONSHIP_TYPE_CHOICES } from '../../lib/constants'
 
 // Validation function for chapter range
 const validateChapterRange = (values: any) => {
@@ -35,29 +36,10 @@ const validateChapterRange = (values: any) => {
   return errors
 }
 
-// Relationship type choices for the select input
-const RELATIONSHIP_TYPE_CHOICES = [
-  { id: RelationshipType.ALLY, name: 'Ally' },
-  { id: RelationshipType.RIVAL, name: 'Rival' },
-  { id: RelationshipType.MENTOR, name: 'Mentor' },
-  { id: RelationshipType.SUBORDINATE, name: 'Subordinate' },
-  { id: RelationshipType.FAMILY, name: 'Family' },
-  { id: RelationshipType.PARTNER, name: 'Partner' },
-  { id: RelationshipType.ENEMY, name: 'Enemy' },
-  { id: RelationshipType.ACQUAINTANCE, name: 'Acquaintance' },
-]
-
-// Choices for reverse relationship (includes "none" option)
+// Choices for reverse relationship (includes "none" option prepended to shared constant)
 const REVERSE_RELATIONSHIP_CHOICES = [
   { id: '', name: '— No reverse relationship —' },
-  { id: RelationshipType.ALLY, name: 'Ally' },
-  { id: RelationshipType.RIVAL, name: 'Rival' },
-  { id: RelationshipType.MENTOR, name: 'Mentor' },
-  { id: RelationshipType.SUBORDINATE, name: 'Subordinate' },
-  { id: RelationshipType.FAMILY, name: 'Family' },
-  { id: RelationshipType.PARTNER, name: 'Partner' },
-  { id: RelationshipType.ENEMY, name: 'Enemy' },
-  { id: RelationshipType.ACQUAINTANCE, name: 'Acquaintance' },
+  ...RELATIONSHIP_TYPE_CHOICES,
 ]
 
 // Color mapping for relationship types

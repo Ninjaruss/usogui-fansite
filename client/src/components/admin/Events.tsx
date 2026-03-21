@@ -80,8 +80,6 @@ import { EntityDisplayMediaSection } from './EntityDisplayMediaSection'
 // Note: Removed EntityEmbedHelperWithSearch import to avoid Mantine/MUI conflicts
 import { EVENT_TYPES } from '../../lib/constants'
 
-const EVENT_TYPE_CHOICES = EVENT_TYPES
-
 const STATUS_CHOICES = [
   { id: EventStatus.PENDING, name: 'Pending' },
   { id: EventStatus.APPROVED, name: 'Approved' },
@@ -1608,7 +1606,7 @@ export const EventEdit = () => {
                     <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 2, mt: 2 }}>
                       <SelectInput
                         source="type"
-                        choices={EVENT_TYPE_CHOICES}
+                        choices={EVENT_TYPES}
                         required
                         label="Event Type"
                         helperText="Category of event"
@@ -1817,7 +1815,7 @@ export const EventCreate = () => (
             <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, mb: 3 }}>
               <SelectInput
                 source="type"
-                choices={EVENT_TYPE_CHOICES}
+                choices={EVENT_TYPES}
                 required
                 defaultValue="decision"
                 helperText="Event category"
