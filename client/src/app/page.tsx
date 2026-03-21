@@ -19,11 +19,26 @@ import { FAQ } from '@/components/FAQ'
 import { DiagonalStripes, SuitWatermark } from '../components/decorative/MangaPatterns'
 import { useState, useEffect } from 'react'
 
+const SHOWCASE_FALLBACK: VolumeShowcaseItem[] = [
+  {
+    id: 37,
+    backgroundImage: '/assets/showcase/Usogui_Volume_37_background.webp',
+    popoutImage: '/assets/showcase/Usogui_Volume_37_popout.webp',
+    title: 'Volume 37',
+  },
+  {
+    id: 38,
+    backgroundImage: '/assets/showcase/Usogui_Volume_38_background.webp',
+    popoutImage: '/assets/showcase/Usogui_Volume_38_popout.webp',
+    title: 'Volume 38',
+  },
+]
+
 export default function HomePage() {
   const theme = useMantineTheme()
   const { data: landingData, loading: landingLoading, error: landingError } = useLandingData()
 
-  // Fetch showcase images from R2 via API
+  // Fetch showcase images from R2 via API, fall back to static images
   const [showcaseVolumes, setShowcaseVolumes] = useState<VolumeShowcaseItem[] | null>(null)
 
   useEffect(() => {
@@ -39,9 +54,11 @@ export default function HomePage() {
               title: v.title,
             }))
           )
+        } else {
+          setShowcaseVolumes(SHOWCASE_FALLBACK)
         }
       } catch {
-        // showcase stays null; component renders nothing
+        setShowcaseVolumes(SHOWCASE_FALLBACK)
       }
     }
     loadShowcase()

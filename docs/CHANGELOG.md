@@ -1,9 +1,6 @@
 # Changelog and notes
 
 ## TODO
-- Update media gallery modal to show full view of image in lightbox. Update the design to make it more clean.
-- Review the entire frontend and ensure that each entity has a specified unique color that's consistent throughout the entire application (list pages, detail pages, admin dashboard pages, chips). 
-
 - Add a proper data backup; update security for supabase data
 
 ## 2026-03-20
@@ -11,6 +8,7 @@
 - Profile image selector design updated to use modal
 - Reading progress bar clarity update
 - Entity embed system now used with an editor for all markdown pages
+- Entity color system for consistent colors used throughout the website
 
 ## 2026-03-14
 - Detail page header redesigned with superpowers + frontend design skill
