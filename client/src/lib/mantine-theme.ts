@@ -15,9 +15,9 @@ export const colors = {
     '#e5531d', '#c43e10', '#9e2f08', '#601a02'
   ] as const,
   annotation: [
-    '#faf5ff', '#f3e8ff', '#e9d5ff', '#d8b4fe', '#c084fc',
+    '#fdf4ff', '#fae8ff', '#f5d0fe', '#f0abfc', '#e879f9',
     '#d946ef', // index 5 — approved accent
-    '#be185d', '#9d174d', '#831843', '#500724'
+    '#a21caf', '#86198f', '#701a75', '#4a044e'
   ] as const,
   event: [
     '#fef9e8', '#fcefc2', '#f9e08a', '#f4cc4e', '#e0ab18',
