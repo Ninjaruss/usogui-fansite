@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import {
   List,
   Datagrid,
@@ -107,7 +107,7 @@ const ArcTypeWithTooltip = ({ record }: { record: any }) => {
   )
 }
 
-// Component for parent arc input in edit mode
+// Component for parent arc input in edit and create mode
 const ArcParentInput = () => {
   const record = useRecordContext()
   const { data: allArcs = [] } = useGetList('arcs', {
@@ -115,9 +115,9 @@ const ArcParentInput = () => {
     sort: { field: 'name', order: 'ASC' },
   })
 
-  const getDescendantIds = (arcId: number): Set<number> => {
-    const result = new Set<number>()
-    const queue = [arcId]
+  const getDescendantIds = (arcId: string | number): Set<string | number> => {
+    const result = new Set<string | number>()
+    const queue: (string | number)[] = [arcId]
     while (queue.length > 0) {
       const current = queue.shift()!
       allArcs
@@ -132,18 +132,21 @@ const ArcParentInput = () => {
     return result
   }
 
-  const forbiddenIds = record?.id
-    ? new Set([record.id, ...getDescendantIds(record.id)])
-    : new Set<number>()
+  const forbiddenIds = useMemo(() => {
+    if (!record?.id) return new Set<string | number>()
+    return new Set<string | number>([record.id, ...getDescendantIds(record.id)])
+  }, [record?.id, allArcs])
 
-  const parentChoices = allArcs.filter((a: any) => !forbiddenIds.has(a.id))
+  const parentChoices = useMemo(
+    () => allArcs.filter((a: any) => !forbiddenIds.has(a.id)),
+    [allArcs, forbiddenIds]
+  )
 
   return (
     <SelectInput
       source="parentId"
       label="Parent Arc"
       choices={parentChoices.map((a: any) => ({ id: a.id, name: a.name }))}
-      allowEmpty
       emptyText="None (top-level arc)"
       helperText="Cannot select this arc or its descendants as parent"
     />
