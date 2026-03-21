@@ -36,16 +36,20 @@ This component is rendered at the top of the "Showcase Images" tab, above the tw
 
 ```ts
 interface VolumeShowcaseStatusCardProps {
-  volumeId: number | string
+  volumeNumber: number  // record.number, NOT record.id
 }
 ```
 
+**Important:** The `GET /volumes/:id/showcase/:type` route passes `:id` directly to `getVolumeShowcaseMedia(volumeNumber, ...)` in the service, which queries by `volume.number`. Despite the param name, the endpoint expects the **volume number**. In `VolumeShow`, use `record.number` not `record.id` when rendering `VolumeShowcaseStatusCard`.
+
 ### Behaviour
 
-On mount, fetch both showcase image types in parallel using the existing endpoints:
+On mount (and every 5 seconds via polling — `setInterval` in `useEffect` with cleanup), fetch both showcase image types in parallel using the existing endpoints:
 
-- `GET /volumes/:id/showcase/background` → `null` or a media record
-- `GET /volumes/:id/showcase/popout` → `null` or a media record
+- `GET /volumes/{volumeNumber}/showcase/background` → `null` or a media record
+- `GET /volumes/{volumeNumber}/showcase/popout` → `null` or a media record
+
+Both endpoints call `findOneByUsageType` which already filters by `status = APPROVED`, so the status card shows "Showcase Ready" only when approved images exist — consistent with what the homepage renders.
 
 Derive state:
 
@@ -68,13 +72,9 @@ Checklist items show a small `CheckCircle` (green) when the image is present or 
 
 ### Re-fetch after upload
 
-The status card must re-fetch after the user uploads or deletes an image in either section below it. **Do not modify `EntityDisplayMediaSection`'s interface.** Instead:
+The status card must reflect the current image state. **Do not modify `EntityDisplayMediaSection`'s interface.**
 
-1. Add a `refreshCounter: number` state to `VolumeShow`.
-2. Pass `refreshCounter` as the `key` prop on `VolumeShowcaseStatusCard` — React will remount and re-fetch whenever the counter increments.
-3. Wrap each showcase `EntityDisplayMediaSection` in a thin `<Box>` that renders an `onRefresh` callback via a `useEffect` or a custom `MediaSectionWrapper` that calls `setRefreshCounter(c => c + 1)` on any mutation event — or simply, trigger the increment from a button/manual action pattern if `EntityDisplayMediaSection` fires a mutation notification (check its internal API first). If it fires no such event, use a polling alternative: a `useInterval` inside `VolumeShowcaseStatusCard` that re-checks every 5s while the tab is visible.
-
-The simplest approach that avoids touching `EntityDisplayMediaSection` at all: make `VolumeShowcaseStatusCard` poll the two showcase endpoints on a 5-second interval while mounted. This trades a small amount of network overhead for zero cross-component coupling.
+`VolumeShowcaseStatusCard` polls the two showcase endpoints on a **5-second interval** while mounted (use `setInterval` in a `useEffect` with cleanup). This avoids all cross-component coupling and requires no changes to `VolumeShow` or `EntityDisplayMediaSection`.
 
 ### Section labels
 
@@ -116,15 +116,53 @@ interface ShowcaseReadyVolume {
 }
 ```
 
-**Service implementation sketch:**
+**Service implementation:**
+
+Query the `media` table twice (once per usage type) filtering by `status = 'approved'`, then find volume IDs present in both result sets. The `Media` entity defaults to `status = PENDING`, so the approved filter is essential — without it, unapproved images would appear on the homepage.
+
+Add a new method `findAllApprovedByUsageType(ownerType, usageType)` to `MediaService` (it currently has no public method for cross-owner bulk fetches). Then call it via `this.mediaService` in `VolumesService`:
 
 ```ts
+// MediaService — new method
+async findAllApprovedByUsageType(
+  ownerType: MediaOwnerType,
+  usageType: MediaUsageType,
+): Promise<Media[]> {
+  return this.mediaRepo.find({
+    where: { ownerType, usageType, status: MediaStatus.APPROVED },
+    order: { createdAt: 'DESC' },
+  })
+}
+
+// VolumesService — new method
 async getShowcaseReadyVolumes(): Promise<ShowcaseReadyVolume[]> {
-  // Find volumes that have at least one approved background AND at least one approved popout
-  // Join media twice (or use subqueries) filtering by usageType and status='approved'
-  // Return the URL of the first/latest approved image of each type per volume
+  const [bgMedia, popMedia] = await Promise.all([
+    this.mediaService.findAllApprovedByUsageType(MediaOwnerType.VOLUME, MediaUsageType.VOLUME_SHOWCASE_BACKGROUND),
+    this.mediaService.findAllApprovedByUsageType(MediaOwnerType.VOLUME, MediaUsageType.VOLUME_SHOWCASE_POPOUT),
+  ])
+  // Keep only the latest approved record per volume for each type
+  const latestBg = new Map(bgMedia.map(m => [m.ownerId, m]))
+  const latestPop = new Map(popMedia.map(m => [m.ownerId, m]))
+  const sharedVolumeIds = [...latestBg.keys()].filter(id => latestPop.has(id))
+
+  // Load Volume entities — use In() not findByIds (deprecated in TypeORM)
+  const volumes = await this.repo.find({ where: { id: In(sharedVolumeIds) } })
+  const volumeMap = new Map(volumes.map(v => [v.id, v]))
+
+  return sharedVolumeIds.map(volumeId => {
+    const vol = volumeMap.get(volumeId)!
+    return {
+      volumeId,
+      volumeNumber: vol.number,
+      backgroundUrl: latestBg.get(volumeId)!.url,
+      popoutUrl: latestPop.get(volumeId)!.url,
+      title: `Volume ${vol.number}`,
+    }
+  })
 }
 ```
+
+The `Volume` entity has no `title` column — the `title` field in the response is the formatted string `"Volume {number}"` constructed in the service.
 
 No new migration needed — uses existing `MediaUsageType` enum values.
 
@@ -197,6 +235,7 @@ If the endpoint returns an empty array, the showcase section is hidden (same beh
 | `client/src/app/page.tsx` | Replace hardcoded showcase fetch |
 | `server/src/modules/volumes/volumes.controller.ts` | Add `GET /volumes/showcase-ready` route |
 | `server/src/modules/volumes/volumes.service.ts` | Add `getShowcaseReadyVolumes()` service method |
+| `server/src/modules/media/media.service.ts` | Add `findAllApprovedByUsageType()` method |
 
 ---
 
