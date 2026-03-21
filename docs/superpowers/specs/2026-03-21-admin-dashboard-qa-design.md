@@ -47,8 +47,14 @@ Audit every Edit/Create/Show/List view against its DB entity and add all genuine
 // Add to client/src/lib/constants.ts
 export const EVENT_TYPES = ['gamble', 'decision', 'reveal', 'shift', 'resolution']
 export const FACTION_ROLES = ['leader', 'member', 'supporter', 'observer']
-export const RELATIONSHIP_TYPES = [...] // extract from CharacterRelationships.tsx
-export const ARC_TYPES = ['major', 'sub'] // extract from Arcs.tsx
+// RELATIONSHIP_TYPES — extract the hardcoded array from Characters.tsx (line ~46).
+// Note: CharacterRelationships.tsx already imports RelationshipType from src/types/index.ts;
+// align both components to this single source rather than duplicating in constants.ts.
+export const RELATIONSHIP_TYPES = [
+  'ally', 'rival', 'mentor', 'subordinate', 'family', 'partner', 'enemy', 'acquaintance'
+]
+// Arc type is computed from parentId (null = major, non-null = sub-arc).
+// There is no type column on the Arc entity — no ARC_TYPES constant is needed.
 // MEDIA_USAGE_TYPES — source from the MediaUsageType entity enum:
 // character_image | volume_image | volume_showcase_background |
 // volume_showcase_popout | guide_image | gallery_upload
@@ -108,7 +114,7 @@ Convert modal-based sub-editors embedded within resource forms to React Admin's 
 **After:** Replace modal trigger with an inline `ArrayInput` using `SimpleFormIterator` containing a character reference + relationship type select.
 
 ### Character Organization Inline Trigger
-**Target:** Same pattern — the inline organization membership modal trigger inside `Characters.tsx`.
+**Target:** The `OrgMembershipModalTrigger` component inside `Characters.tsx` — the inline button that opens a modal to add an organization membership from within the Character edit form.
 
 **After:** Inline `ArrayInput` with `SimpleFormIterator` containing organization reference + role + optional date range fields.
 
