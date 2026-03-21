@@ -32,26 +32,7 @@ import {
   isYouTubeUrl,
 } from '../lib/video-utils'
 import MediaLightbox from './MediaLightbox'
-
-export interface MediaItem {
-  id: number
-  url: string
-  type: 'image' | 'video' | 'audio'
-  description: string
-  fileName?: string
-  isUploaded?: boolean
-  ownerType: 'character' | 'arc' | 'event' | 'gamble' | 'organization' | 'user'
-  ownerId: number
-  chapterNumber?: number
-  purpose: 'gallery' | 'entity_display'
-  submittedBy: {
-    id: number
-    username: string
-  }
-  createdAt: string
-  status?: string
-  isApproved?: boolean
-}
+import { MediaItem } from '../types/media'
 
 interface MediaGalleryProps {
   ownerType?: 'character' | 'arc' | 'event' | 'gamble' | 'organization' | 'user' | 'volume' | 'chapter' | 'guide' | 'quote'
@@ -534,25 +515,57 @@ export default function MediaGallery({
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        color: theme.colors.gray[5],
                         width: '100%',
-                        minHeight: rem(150),
-                        backgroundColor: theme.colors.dark[6],
-                        borderRadius: 8,
+                        minHeight: rem(120),
                         flexDirection: 'column',
-                        gap: rem(8)
+                        gap: rem(8),
+                        transition: 'background 0.2s ease',
+                        background: isHovered
+                          ? `linear-gradient(135deg, ${rgba(palette.accent, 0.12)}, ${theme.colors.dark[6]})`
+                          : theme.colors.dark[6],
                       }}
                     >
                       <Stack align="center" gap="xs">
                         {failedImageIds.has(mediaItem.id) ? (
                           <>
-                            <ImageOff size={32} color={theme.colors.dark[3]} />
+                            <Box
+                              style={{
+                                background: rgba(theme.colors.dark[3], 0.2),
+                                border: `1px solid ${rgba(theme.colors.dark[3], 0.4)}`,
+                                borderRadius: '50%',
+                                width: rem(44),
+                                height: rem(44),
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                              }}
+                            >
+                              <ImageOff size={22} color={theme.colors.dark[3]} />
+                            </Box>
                             <Text size="xs" c="dimmed">Image unavailable</Text>
+                            <Text size="xs" style={{ color: 'rgba(255,255,255,0.3)' }}>Click to open</Text>
                           </>
                         ) : (
                           <>
-                            {getMediaTypeIcon(mediaItem.type)}
-                            <Text size="xs" c="dimmed" ta="center">Click to view</Text>
+                            <Box
+                              style={{
+                                background: rgba(palette.accent, 0.15),
+                                border: `1px solid ${rgba(palette.accent, 0.35)}`,
+                                borderRadius: '50%',
+                                width: rem(44),
+                                height: rem(44),
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: palette.accent,
+                              }}
+                            >
+                              {getMediaTypeIcon(mediaItem.type)}
+                            </Box>
+                            <Text size="xs" c="white" style={{ opacity: 0.7 }} fw={500} tt="capitalize">
+                              {mediaItem.type}
+                            </Text>
+                            <Text size="xs" style={{ color: 'rgba(255,255,255,0.3)' }}>Click to open</Text>
                           </>
                         )}
                       </Stack>
