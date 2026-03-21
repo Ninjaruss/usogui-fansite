@@ -2,7 +2,7 @@ import { MantineThemeOverride, createTheme, rem, MantineTheme } from '@mantine/c
 import selectClasses from './mantine-select.module.css'
 import { ENTITY_COLORS } from './entityColors'
 
-// Entity-specific colors - Vibrant yet WCAG AA compliant for dark backgrounds
+// Entity-specific Mantine color palettes — 10-step ramps with approved accent at index 5
 export const colors = {
   gamble: [
     '#fff5f5', '#ffe3e3', '#ffc9c9', '#ffa8a8', '#ff8787',
