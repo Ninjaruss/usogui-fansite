@@ -20,11 +20,7 @@ import {
   Image as ImageIcon
 } from 'lucide-react'
 import {
-  canEmbedVideo,
-  extractYouTubeVideoId,
-  extractVimeoVideoId,
-  getYouTubeEmbedUrlEnhanced,
-  getVimeoEmbedUrlEnhanced
+  getEnhancedEmbedUrl
 } from '../lib/video-utils'
 import { MediaItem } from './MediaGallery'
 
@@ -35,14 +31,6 @@ interface MediaLightboxProps {
   onClose: () => void
   onPrevious: () => void
   onNext: () => void
-}
-
-function getEmbedUrl(url: string): string | null {
-  const youtubeId = extractYouTubeVideoId(url)
-  if (youtubeId) return getYouTubeEmbedUrlEnhanced(youtubeId)
-  const vimeoId = extractVimeoVideoId(url)
-  if (vimeoId) return getVimeoEmbedUrlEnhanced(vimeoId)
-  return null
 }
 
 export default function MediaLightbox({
@@ -56,9 +44,6 @@ export default function MediaLightbox({
   const theme = useMantineTheme()
   const [shouldLoadVideo, setShouldLoadVideo] = useState(false)
   const [touchStart, setTouchStart] = useState<number | null>(null)
-  // Kept for future zoom feature — not wired to UI yet
-  const [imageZoomed, setImageZoomed] = useState(false)
-
   const selectedMedia = media[currentIndex] ?? null
 
   const palette = useMemo(() => {
@@ -137,39 +122,34 @@ export default function MediaLightbox({
               style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', display: 'block' }}
             />
           ) : selectedMedia.type === 'video' ? (
-            // YouTube: immediate embed (same as original behavior), using getEmbedUrl for proper URL handling
-            (selectedMedia.url.includes('youtube.com') || selectedMedia.url.includes('youtu.be')) ? (
-              <iframe
-                src={getEmbedUrl(selectedMedia.url) ?? selectedMedia.url.replace('watch?v=', 'embed/')}
-                title={selectedMedia.description}
-                allowFullScreen
-                style={{ width: '100%', height: '80dvh', border: 'none' }}
-              />
-            // Vimeo + other embeddable: lazy-load gate
-            ) : canEmbedVideo(selectedMedia.url) ? (
-              !shouldLoadVideo ? (
-                <Button
-                  size="md"
-                  leftSection={<Play size={18} />}
-                  onClick={() => setShouldLoadVideo(true)}
-                >
-                  Load Video
-                </Button>
-              ) : (
-                <iframe
-                  src={getEmbedUrl(selectedMedia.url)!}
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
-                  allowFullScreen
-                  title={selectedMedia.description}
-                  style={{ width: '100%', height: '80dvh', border: 'none' }}
-                />
+            (() => {
+              const embedUrl = getEnhancedEmbedUrl(selectedMedia.url)
+              if (embedUrl) {
+                return !shouldLoadVideo ? (
+                  <Button
+                    size="md"
+                    leftSection={<Play size={18} />}
+                    onClick={() => setShouldLoadVideo(true)}
+                  >
+                    Load Video
+                  </Button>
+                ) : (
+                  <iframe
+                    src={embedUrl}
+                    title={selectedMedia.description || 'Video'}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+                    allowFullScreen
+                    style={{ width: '100%', height: '80dvh', border: 'none' }}
+                  />
+                )
+              }
+              return (
+                <video controls style={{ maxWidth: '100%', maxHeight: '100dvh' }}>
+                  <source src={selectedMedia.url} />
+                  Your browser does not support the video tag.
+                </video>
               )
-            ) : (
-              <video controls style={{ maxWidth: '100%', maxHeight: '100dvh' }}>
-                <source src={selectedMedia.url} />
-                Your browser does not support the video tag.
-              </video>
-            )
+            })()
           ) : (
             <Box style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: rem(12), color: 'rgba(255,255,255,0.5)' }}>
               <ImageIcon size={40} />
