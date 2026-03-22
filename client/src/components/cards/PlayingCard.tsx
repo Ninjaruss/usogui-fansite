@@ -215,6 +215,7 @@ export function PlayingCard({
         ta="center"
         style={{
           position: 'relative',
+          zIndex: 3,
           minHeight: rem(40),
           display: 'flex',
           flexDirection: 'column',

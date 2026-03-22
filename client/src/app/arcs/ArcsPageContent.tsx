@@ -10,7 +10,6 @@ import {
   Stack,
   Text,
   Title,
-  Tooltip,
   rem,
   useMantineTheme
 } from '@mantine/core'
@@ -317,11 +316,9 @@ export default function ArcsPageContent({
                   }}
                 >
                   <Group gap="xs" justify="space-between" wrap="nowrap">
-                    <Tooltip label={child.name} position="top" withArrow multiline maw={300}>
-                      <Text size="xs" fw={600} c={accentArc} lineClamp={1} style={{ flex: 1 }}>
-                        {child.name}
-                      </Text>
-                    </Tooltip>
+                    <Text size="xs" fw={600} c={accentArc} lineClamp={1} style={{ flex: 1 }}>
+                      {child.name}
+                    </Text>
                     {formatChapterRange(child) && (
                       <Badge size="xs" variant="light" c={accentArc} style={{ flexShrink: 0 }}>
                         {formatChapterRange(child)}
