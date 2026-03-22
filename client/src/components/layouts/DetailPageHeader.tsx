@@ -78,8 +78,14 @@ export function DetailPageHeader({
       return
     }
     try {
+      const validMediaOwnerTypes = [
+        'character', 'arc', 'event', 'gamble', 'organization', 'user',
+        'volume', 'chapter', 'guide', 'quote', 'media',
+      ] as const
+      type ValidMediaOwnerType = typeof validMediaOwnerTypes[number]
+      if (!(validMediaOwnerTypes as readonly string[]).includes(entityType)) return
       const response = await api.getEntityDisplayMediaForCycling(
-        entityType as any,
+        entityType as ValidMediaOwnerType,
         entityId,
         userProgress
       )
@@ -87,7 +93,7 @@ export function DetailPageHeader({
       setAllMedia(mediaArray)
       if (mediaArray.length > 0) {
         const available = mediaArray.filter(
-          m => !m.chapterNumber || m.chapterNumber <= userProgress
+          m => !m.isSpoiler && (!m.chapterNumber || m.chapterNumber <= userProgress)
         )
         const selected =
           available.length > 0
