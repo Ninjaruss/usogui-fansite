@@ -109,7 +109,7 @@ export function DetailPageHeader({
             right: 0,
             top: 0,
             bottom: 0,
-            width: '42%',
+            width: '60%',
             overflow: 'hidden',
           }}
         >
