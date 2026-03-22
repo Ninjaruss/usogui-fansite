@@ -97,7 +97,7 @@ export default function ProfilePictureSelector({
 
   const isSupporter = hasActiveBadge(BadgeType.SUPPORTER) || hasActiveBadge(BadgeType.ACTIVE_SUPPORTER) || hasActiveBadge(BadgeType.SPONSOR);
 
-  // Group media by character id, sorted by character name
+  // Group media by character id, sorted by earliest chapter number
   const characterGroups = React.useMemo(() => {
     const filtered = characterFilter
       ? characterMedia.filter(m => m.character?.name?.toLowerCase().includes(characterFilter.toLowerCase()))
@@ -111,7 +111,15 @@ export default function ProfilePictureSelector({
       }
       groups[m.character.id].medias.push(m);
     }
-    return Object.values(groups).sort((a, b) => a.name.localeCompare(b.name));
+    for (const group of Object.values(groups)) {
+      group.medias.sort((a: any, b: any) => (a.chapterNumber ?? Infinity) - (b.chapterNumber ?? Infinity));
+    }
+    return Object.values(groups).sort((a, b) => {
+      const aChapter = Math.min(...a.medias.map((m: any) => m.chapterNumber ?? Infinity));
+      const bChapter = Math.min(...b.medias.map((m: any) => m.chapterNumber ?? Infinity));
+      if (aChapter !== bChapter) return aChapter - bChapter;
+      return a.name.localeCompare(b.name);
+    });
   }, [characterMedia, characterFilter]);
 
   // Auto-select first character when groups load
