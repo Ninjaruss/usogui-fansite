@@ -18,6 +18,7 @@ export class UpdateOwnMediaDto {
     example: 'https://www.pixiv.net/en/artworks/12345',
   })
   @IsOptional()
+  @Transform(({ value }) => (value === '' ? undefined : value))
   @IsUrl({}, { message: 'url must be a valid URL' })
   url?: string;
 
