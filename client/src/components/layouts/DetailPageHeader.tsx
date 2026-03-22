@@ -1,12 +1,19 @@
 'use client'
 
-import React from 'react'
-import { Box, Title, Text, useMantineTheme } from '@mantine/core'
+import React, { useState, useEffect, useCallback } from 'react'
+import { Box, Title, Text, Modal, ActionIcon, Loader, rem, useMantineTheme } from '@mantine/core'
+import { useMediaQuery } from '@mantine/hooks'
+import { ChevronLeft, ChevronRight, X } from 'lucide-react'
+import { motion, AnimatePresence } from 'motion/react'
+import Image from 'next/image'
 import {
   getEntityThemeColor,
   type EntityAccentKey,
 } from '../../lib/mantine-theme'
-import MediaThumbnail from '../MediaThumbnail'
+import { analyzeMediaUrl, isExternalUrl } from '../../lib/media-utils'
+import { api } from '../../lib/api'
+import { useProgress } from '../../providers/ProgressProvider'
+import MediaThumbnail, { type MediaItem } from '../MediaThumbnail'
 
 interface StatItem {
   value: string | number
@@ -37,6 +44,8 @@ interface DetailPageHeaderProps {
   onSpoilerRevealed?: () => void
   /** Any per-page additions rendered at the bottom of the content column */
   children?: React.ReactNode
+  /** Optional pre-fetched media list; skips the internal API call if provided. */
+  initialMedia?: MediaItem[]
 }
 
 export function DetailPageHeader({
@@ -49,9 +58,93 @@ export function DetailPageHeader({
   spoilerChapter,
   onSpoilerRevealed,
   children,
+  initialMedia,
 }: DetailPageHeaderProps) {
   const theme = useMantineTheme()
   const accentColor = getEntityThemeColor(theme, entityType)
+
+  const { userProgress } = useProgress()
+  const isMobile = useMediaQuery('(max-width: 768px)')
+
+  const [allMedia, setAllMedia]           = useState<MediaItem[]>(initialMedia ?? [])
+  const [currentIndex, setCurrentIndex]   = useState(0)
+  const [isPortraitHovered, setIsPortraitHovered] = useState(false)
+  const [isModalOpen, setIsModalOpen]     = useState(false)
+
+  const loadMedia = useCallback(async () => {
+    // Skip API call if caller provided pre-fetched media
+    if (initialMedia && initialMedia.length > 0) {
+      setAllMedia(initialMedia)
+      return
+    }
+    try {
+      const response = await api.getEntityDisplayMediaForCycling(
+        entityType as any,
+        entityId,
+        userProgress
+      )
+      const mediaArray: MediaItem[] = response?.data ?? []
+      setAllMedia(mediaArray)
+      if (mediaArray.length > 0) {
+        const available = mediaArray.filter(
+          m => !m.chapterNumber || m.chapterNumber <= userProgress
+        )
+        const selected =
+          available.length > 0
+            ? available.reduce((best, curr) =>
+                (curr.chapterNumber ?? 0) > (best.chapterNumber ?? 0) ? curr : best
+              )
+            : mediaArray[0]
+        setCurrentIndex(mediaArray.indexOf(selected))
+      }
+    } catch {
+      // Silently fail — header renders without portrait
+    }
+  }, [entityType, entityId, userProgress, initialMedia])
+
+  useEffect(() => {
+    if (showImage !== false) loadMedia()
+  }, [loadMedia, showImage])
+
+  const currentMedia = allMedia[currentIndex] ?? null
+
+  const handlePrev = useCallback(() => {
+    setCurrentIndex(i => (i > 0 ? i - 1 : allMedia.length - 1))
+  }, [allMedia.length])
+
+  const handleNext = useCallback(() => {
+    setCurrentIndex(i => (i < allMedia.length - 1 ? i + 1 : 0))
+  }, [allMedia.length])
+
+  const renderLightboxImage = (media: MediaItem) => {
+    const mediaInfo = analyzeMediaUrl(media.url)
+    if (media.type === 'image' && mediaInfo.isDirectImage) {
+      const url = mediaInfo.directImageUrl || media.url
+      if (isExternalUrl(url)) {
+        // eslint-disable-next-line @next/next/no-img-element
+        return (
+          <img
+            src={url}
+            alt={media.description || entityName}
+            style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', display: 'block' }}
+          />
+        )
+      }
+      return (
+        <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+          <Image
+            src={url}
+            alt={media.description || entityName}
+            fill
+            style={{ objectFit: 'contain' }}
+            sizes="90vw"
+            priority
+          />
+        </div>
+      )
+    }
+    return <Text c="dimmed" size="sm">{media.description || 'Media'}</Text>
+  }
 
   return (
     <Box
