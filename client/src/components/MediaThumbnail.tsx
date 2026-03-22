@@ -1153,78 +1153,136 @@ export default function MediaThumbnail({
         </MediaSpoilerWrapper>
 
         {showControls && (
-          <>
-            <ActionIcon
-              variant="light"
-              size="sm"
-              radius="xl"
-              onClick={(e) => { e.stopPropagation(); handlePrevious() }}
-              aria-label="Previous image"
-              style={{
-                position: 'absolute',
-                left: rem(8),
-                top: '50%',
-                transform: 'translateY(-50%)',
-                backgroundColor: `${theme.colors.dark?.[7] ?? theme.colors.gray?.[0]}CC`,
-                color: '#ffffff',
-                zIndex: 30
-              }}
-            >
-              <ChevronLeft size={20} />
-            </ActionIcon>
+          isMobile ? (
+            <>
+              {/* Mobile: single › arrow on right edge */}
+              <ActionIcon
+                variant="light"
+                size="md"
+                radius="xl"
+                onClick={(e) => { e.stopPropagation(); handleNext() }}
+                aria-label="Next image"
+                style={{
+                  position: 'absolute',
+                  right: rem(8),
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  backgroundColor: 'rgba(0,0,0,0.58)',
+                  border: '1px solid rgba(255,255,255,0.15)',
+                  color: '#ffffff',
+                  zIndex: 30,
+                }}
+              >
+                <ChevronRight size={18} />
+              </ActionIcon>
 
-            <ActionIcon
-              variant="light"
-              size="sm"
-              radius="xl"
-              onClick={(e) => { e.stopPropagation(); handleNext() }}
-              aria-label="Next image"
-              style={{
-                position: 'absolute',
-                right: rem(8),
-                top: '50%',
-                transform: 'translateY(-50%)',
-                backgroundColor: `${theme.colors.dark?.[7] ?? theme.colors.gray?.[0]}CC`,
-                color: '#ffffff',
-                zIndex: 30
-              }}
-            >
-              <ChevronRight size={20} />
-            </ActionIcon>
+              {/* Mobile: full-width dot strip pinned at bottom */}
+              <Box
+                style={{
+                  position: 'absolute',
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  height: rem(18),
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: rem(5),
+                  backgroundColor: 'rgba(0,0,0,0.72)',
+                  zIndex: 30,
+                  pointerEvents: 'none',
+                }}
+              >
+                {allEntityMedia.map((_, idx) => (
+                  <Box
+                    key={idx}
+                    style={{
+                      width: idx === currentIndex ? rem(6) : rem(5),
+                      height: idx === currentIndex ? rem(6) : rem(5),
+                      borderRadius: '50%',
+                      backgroundColor: idx === currentIndex ? '#ffffff' : 'rgba(255,255,255,0.35)',
+                      transition: 'all 0.22s ease',
+                      flexShrink: 0,
+                    }}
+                  />
+                ))}
+              </Box>
+            </>
+          ) : (
+            <>
+              {/* Desktop: both ‹ › arrows */}
+              <ActionIcon
+                variant="light"
+                size="sm"
+                radius="xl"
+                onClick={(e) => { e.stopPropagation(); handlePrevious() }}
+                aria-label="Previous image"
+                style={{
+                  position: 'absolute',
+                  left: rem(8),
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  backgroundColor: `${theme.colors.dark?.[7] ?? theme.colors.gray?.[0]}CC`,
+                  color: '#ffffff',
+                  zIndex: 30
+                }}
+              >
+                <ChevronLeft size={20} />
+              </ActionIcon>
 
-            {/* Dot indicators — bottom center */}
-            <Box
-              style={{
-                position: 'absolute',
-                bottom: rem(10),
-                left: '50%',
-                transform: 'translateX(-50%)',
-                display: 'flex',
-                gap: rem(5),
-                alignItems: 'center',
-                backgroundColor: 'rgba(0,0,0,0.52)',
-                borderRadius: rem(12),
-                paddingInline: rem(8),
-                paddingBlock: rem(5),
-                zIndex: 30,
-                pointerEvents: 'none',
-              }}
-            >
-              {allEntityMedia.map((_, idx) => (
-                <Box
-                  key={idx}
-                  style={{
-                    width: idx === currentIndex ? rem(8) : rem(5),
-                    height: idx === currentIndex ? rem(8) : rem(5),
-                    borderRadius: '50%',
-                    backgroundColor: idx === currentIndex ? '#ffffff' : 'rgba(255,255,255,0.35)',
-                    transition: 'all 0.22s ease',
-                    flexShrink: 0,
-                  }}
-                />
-              ))}
-            </Box>
-          </>
+              <ActionIcon
+                variant="light"
+                size="sm"
+                radius="xl"
+                onClick={(e) => { e.stopPropagation(); handleNext() }}
+                aria-label="Next image"
+                style={{
+                  position: 'absolute',
+                  right: rem(8),
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  backgroundColor: `${theme.colors.dark?.[7] ?? theme.colors.gray?.[0]}CC`,
+                  color: '#ffffff',
+                  zIndex: 30
+                }}
+              >
+                <ChevronRight size={20} />
+              </ActionIcon>
+
+              {/* Desktop: frosted-pill dot indicator — bottom center */}
+              <Box
+                style={{
+                  position: 'absolute',
+                  bottom: rem(10),
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  display: 'flex',
+                  gap: rem(5),
+                  alignItems: 'center',
+                  backgroundColor: 'rgba(0,0,0,0.52)',
+                  borderRadius: rem(12),
+                  paddingInline: rem(8),
+                  paddingBlock: rem(5),
+                  zIndex: 30,
+                  pointerEvents: 'none',
+                }}
+              >
+                {allEntityMedia.map((_, idx) => (
+                  <Box
+                    key={idx}
+                    style={{
+                      width: idx === currentIndex ? rem(8) : rem(5),
+                      height: idx === currentIndex ? rem(8) : rem(5),
+                      borderRadius: '50%',
+                      backgroundColor: idx === currentIndex ? '#ffffff' : 'rgba(255,255,255,0.35)',
+                      transition: 'all 0.22s ease',
+                      flexShrink: 0,
+                    }}
+                  />
+                ))}
+              </Box>
+            </>
+          )
         )}
 
       </Box>
