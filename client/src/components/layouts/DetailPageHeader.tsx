@@ -153,15 +153,16 @@ export function DetailPageHeader({
   }
 
   return (
-    <Box
-      style={{
-        position: 'relative',
-        height: 280,
-        overflow: 'hidden',
-        borderRadius: 10,
-        background: '#080c14',
-      }}
-    >
+    <>
+      <Box
+        style={{
+          position: 'relative',
+          height: 280,
+          overflow: 'hidden',
+          borderRadius: 10,
+          background: '#080c14',
+        }}
+      >
       {/* Atmospheric background */}
       <Box
         aria-hidden
@@ -597,7 +598,9 @@ export function DetailPageHeader({
         </Box>
       </Box>
 
-      {/* Lightbox modal */}
+      </Box>
+
+      {/* Lightbox modal — outside the overflow:hidden header */}
       {isModalOpen && currentMedia && (
         <Modal
           opened={isModalOpen}
@@ -788,7 +791,7 @@ export function DetailPageHeader({
           </Box>
         </Modal>
       )}
-    </Box>
+    </>
   )
 }
 
