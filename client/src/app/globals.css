@@ -1126,21 +1126,25 @@ textarea:focus-visible {
   .stamp-reveal   { animation: none; }
 }
 
+/* Detail page portrait — full-bleed background, dimmed so text stays readable */
+.detail-hero-portrait {
+  opacity: 0.6;
+}
+
 /* Detail page editorial grid — mobile collapse */
 @media (max-width: 768px) {
   .detail-editorial-grid {
     grid-template-columns: 1fr !important;
   }
   .detail-hero-portrait {
-    width: 100% !important;
-    opacity: 0.4;
+    opacity: 0.35;
   }
   .detail-hero-content {
     width: 100% !important;
   }
   .detail-hero-portrait-fade {
-    width: 80% !important;
-    background: linear-gradient(90deg, #080c14 0%, rgba(8,12,20,0.8) 60%, transparent 100%) !important;
+    width: 85% !important;
+    background: linear-gradient(90deg, #080c14 0%, rgba(8,12,20,0.85) 60%, transparent 100%) !important;
   }
 }
 

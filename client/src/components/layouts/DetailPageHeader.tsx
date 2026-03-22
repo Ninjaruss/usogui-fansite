@@ -100,16 +100,13 @@ export function DetailPageHeader({
         }}
       />
 
-      {/* Portrait area — right 42% */}
+      {/* Portrait area — full bleed background */}
       {showImage ? (
         <Box
           className="detail-hero-portrait"
           style={{
             position: 'absolute',
-            right: 0,
-            top: 0,
-            bottom: 0,
-            width: '42%',
+            inset: 0,
             overflow: 'hidden',
           }}
         >
@@ -133,8 +130,8 @@ export function DetailPageHeader({
               left: 0,
               top: 0,
               bottom: 0,
-              width: '55%',
-              background: 'linear-gradient(90deg, #080c14 0%, rgba(8,12,20,0.6) 50%, transparent 100%)',
+              width: '70%',
+              background: 'linear-gradient(90deg, #080c14 0%, rgba(8,12,20,0.75) 55%, transparent 100%)',
               zIndex: 2,
               pointerEvents: 'none',
             }}
@@ -170,6 +167,7 @@ export function DetailPageHeader({
       )}
 
       {/* Content column — left 65% desktop, full width mobile, bottom-anchored */}
+      {/* pointerEvents: none so cycling arrows in the portrait beneath remain clickable */}
       <Box
         className="detail-hero-content"
         style={{
@@ -183,8 +181,10 @@ export function DetailPageHeader({
           justifyContent: 'flex-end',
           padding: '28px 32px',
           zIndex: 3,
+          pointerEvents: 'none',
         }}
       >
+        <Box style={{ pointerEvents: 'auto' }}>
         {/* Eyebrow label */}
         <Box style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
           <Box
@@ -298,6 +298,7 @@ export function DetailPageHeader({
         )}
 
         {children}
+        </Box>
       </Box>
     </Box>
   )

@@ -1213,7 +1213,7 @@ export default function MediaThumbnail({
               {/* Desktop: both ‹ › arrows */}
               <ActionIcon
                 variant="light"
-                size="sm"
+                size="md"
                 radius="xl"
                 onClick={(e) => { e.stopPropagation(); handlePrevious() }}
                 aria-label="Previous image"
@@ -1222,17 +1222,18 @@ export default function MediaThumbnail({
                   left: rem(8),
                   top: '50%',
                   transform: 'translateY(-50%)',
-                  backgroundColor: `${theme.colors.dark?.[7] ?? theme.colors.gray?.[0]}CC`,
+                  backgroundColor: 'rgba(0,0,0,0.58)',
+                  border: '1px solid rgba(255,255,255,0.15)',
                   color: '#ffffff',
-                  zIndex: 30
+                  zIndex: 30,
                 }}
               >
-                <ChevronLeft size={20} />
+                <ChevronLeft size={18} />
               </ActionIcon>
 
               <ActionIcon
                 variant="light"
-                size="sm"
+                size="md"
                 radius="xl"
                 onClick={(e) => { e.stopPropagation(); handleNext() }}
                 aria-label="Next image"
@@ -1241,12 +1242,13 @@ export default function MediaThumbnail({
                   right: rem(8),
                   top: '50%',
                   transform: 'translateY(-50%)',
-                  backgroundColor: `${theme.colors.dark?.[7] ?? theme.colors.gray?.[0]}CC`,
+                  backgroundColor: 'rgba(0,0,0,0.58)',
+                  border: '1px solid rgba(255,255,255,0.15)',
                   color: '#ffffff',
-                  zIndex: 30
+                  zIndex: 30,
                 }}
               >
-                <ChevronRight size={20} />
+                <ChevronRight size={18} />
               </ActionIcon>
 
               {/* Desktop: frosted-pill dot indicator — bottom center */}
