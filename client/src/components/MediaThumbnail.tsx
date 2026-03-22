@@ -12,6 +12,7 @@ import {
   rem,
   useMantineTheme,
 } from '@mantine/core'
+import { useMediaQuery } from '@mantine/hooks'
 import { getEntityThemeColor, semanticColors, textColors } from '../lib/mantine-theme'
 import { ChevronLeft, ChevronRight, Image as ImageIcon, AlertTriangle, X } from 'lucide-react'
 import { motion, AnimatePresence } from 'motion/react'
@@ -283,6 +284,7 @@ export default function MediaThumbnail({
 
   const { userProgress } = useProgress()
   const theme = useMantineTheme()
+  const isMobile = useMediaQuery('(max-width: 768px)')
 
   const containerComponent = inline ? 'span' : 'div'
   const numericMaxWidth = typeof maxWidth === 'number' ? maxWidth : Number(maxWidth)
