@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useCallback } from 'react'
-import { Box, Title, Text, Modal, ActionIcon, Loader, rem, useMantineTheme } from '@mantine/core'
+import { Box, Title, Text, Modal, ActionIcon, rem, useMantineTheme } from '@mantine/core'
 import { useMediaQuery } from '@mantine/hooks'
 import { ChevronLeft, ChevronRight, X } from 'lucide-react'
 import { motion, AnimatePresence } from 'motion/react'
@@ -277,7 +277,7 @@ export function DetailPageHeader({
                   display: 'flex',
                   alignItems: 'center',
                   paddingLeft: rem(10),
-                  opacity: isMobile || isPortraitHovered ? 1 : 0,
+                  opacity: (isMobile ?? false) || isPortraitHovered ? 1 : 0,
                   transition: 'opacity 0.18s ease',
                 }}
                 onClick={(e) => { e.stopPropagation(); handlePrev() }}
@@ -315,7 +315,7 @@ export function DetailPageHeader({
                   alignItems: 'center',
                   justifyContent: 'flex-end',
                   paddingRight: rem(10),
-                  opacity: isMobile || isPortraitHovered ? 1 : 0,
+                  opacity: (isMobile ?? false) || isPortraitHovered ? 1 : 0,
                   transition: 'opacity 0.18s ease',
                 }}
                 onClick={(e) => { e.stopPropagation(); handleNext() }}
@@ -457,7 +457,7 @@ export function DetailPageHeader({
           right: 0,
           height: 60,
           background: 'linear-gradient(0deg, #080c14, transparent)',
-          zIndex: 3,
+          zIndex: 1,
           pointerEvents: 'none',
         }}
       />
@@ -598,30 +598,193 @@ export function DetailPageHeader({
       </Box>
 
       {/* Lightbox modal */}
-      {currentMedia && (
+      {isModalOpen && currentMedia && (
         <Modal
           opened={isModalOpen}
           onClose={() => setIsModalOpen(false)}
-          size="xl"
-          padding={0}
-          withCloseButton={false}
+          size="auto"
           centered
+          withCloseButton={false}
+          padding={0}
+          overlayProps={{ blur: 10, backgroundOpacity: 0.94, color: '#000' }}
           styles={{
-            body: { background: '#000', padding: 0 },
-            content: { background: '#000' },
+            content: {
+              background: '#080c14',
+              borderRadius: rem(12),
+              border: '1px solid rgba(255,255,255,0.07)',
+              overflow: 'hidden',
+              maxWidth: '92vw',
+              width: 'auto',
+            },
+            body: { padding: 0 },
           }}
         >
-          <Box style={{ position: 'relative', width: '100%', minHeight: 400, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          {/* Top bar */}
+          <Box
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: `${rem(12)} ${rem(16)}`,
+              borderBottom: '1px solid rgba(255,255,255,0.06)',
+              background: 'rgba(0,0,0,0.4)',
+            }}
+          >
+            <Text
+              size="xs"
+              style={{
+                color: 'rgba(255,255,255,0.5)',
+                letterSpacing: '0.08em',
+                textTransform: 'uppercase',
+                fontWeight: 600,
+              }}
+            >
+              {entityName || 'Image'}
+              {allMedia.length > 1 && (
+                <span style={{ marginLeft: rem(10), color: 'rgba(255,255,255,0.28)' }}>
+                  {currentIndex + 1} of {allMedia.length}
+                </span>
+              )}
+            </Text>
             <ActionIcon
               variant="subtle"
-              color="gray"
-              size="lg"
-              style={{ position: 'absolute', top: 8, right: 8, zIndex: 10, color: '#fff' }}
+              size="sm"
               onClick={() => setIsModalOpen(false)}
+              aria-label="Close"
+              style={{ color: 'rgba(255,255,255,0.6)' }}
             >
-              <X size={18} />
+              <X size={16} />
             </ActionIcon>
-            {renderLightboxImage(currentMedia)}
+          </Box>
+
+          {/* Image area */}
+          <Box
+            style={{
+              position: 'relative',
+              width: 'min(88vw, 860px)',
+              height: 'min(76vh, 640px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: '#050810',
+            }}
+          >
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentMedia.id}
+                initial={{ opacity: 0, scale: 0.97 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.97 }}
+                transition={{ duration: 0.2, ease: 'easeOut' }}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                {renderLightboxImage(currentMedia)}
+              </motion.div>
+            </AnimatePresence>
+
+            {allMedia.length > 1 && (
+              <>
+                <ActionIcon
+                  variant="light"
+                  size="lg"
+                  radius="xl"
+                  onClick={handlePrev}
+                  aria-label="Previous image"
+                  style={{
+                    position: 'absolute',
+                    left: rem(12),
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'rgba(0,0,0,0.6)',
+                    color: '#fff',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    zIndex: 10,
+                  }}
+                >
+                  <ChevronLeft size={22} />
+                </ActionIcon>
+                <ActionIcon
+                  variant="light"
+                  size="lg"
+                  radius="xl"
+                  onClick={handleNext}
+                  aria-label="Next image"
+                  style={{
+                    position: 'absolute',
+                    right: rem(12),
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'rgba(0,0,0,0.6)',
+                    color: '#fff',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    zIndex: 10,
+                  }}
+                >
+                  <ChevronRight size={22} />
+                </ActionIcon>
+              </>
+            )}
+          </Box>
+
+          {/* Bottom bar: dots + description + chapter */}
+          <Box
+            style={{
+              padding: `${rem(12)} ${rem(20)}`,
+              borderTop: '1px solid rgba(255,255,255,0.06)',
+              background: 'rgba(0,0,0,0.3)',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: rem(8),
+            }}
+          >
+            {allMedia.length > 1 && (
+              <Box style={{ display: 'flex', gap: rem(6), alignItems: 'center' }}>
+                {allMedia.map((_, idx) => (
+                  <Box
+                    key={idx}
+                    onClick={() => setCurrentIndex(idx)}
+                    style={{
+                      width: idx === currentIndex ? rem(10) : rem(6),
+                      height: idx === currentIndex ? rem(10) : rem(6),
+                      borderRadius: '50%',
+                      background: idx === currentIndex ? '#fff' : 'rgba(255,255,255,0.28)',
+                      transition: 'all 0.22s ease',
+                      cursor: 'pointer',
+                      flexShrink: 0,
+                    }}
+                  />
+                ))}
+              </Box>
+            )}
+            {currentMedia.description && (
+              <Text
+                size="xs"
+                ta="center"
+                style={{ color: 'rgba(255,255,255,0.45)', maxWidth: 520 }}
+              >
+                {currentMedia.description}
+              </Text>
+            )}
+            {currentMedia.chapterNumber && (
+              <Text
+                size="xs"
+                style={{
+                  color: 'rgba(255,255,255,0.3)',
+                  letterSpacing: '0.06em',
+                  textTransform: 'uppercase',
+                  fontSize: rem(10),
+                }}
+              >
+                Chapter {currentMedia.chapterNumber}
+              </Text>
+            )}
           </Box>
         </Modal>
       )}
