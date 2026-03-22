@@ -812,7 +812,7 @@ export default function MediaThumbnail({
             width: '100%',
             height: '100%',
             objectFit: 'cover',
-            objectPosition: 'center'
+            objectPosition: objectPosition
           }}
           onError={() => {
             console.error('Video failed to load:', media.url)
