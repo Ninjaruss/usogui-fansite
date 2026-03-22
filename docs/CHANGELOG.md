@@ -2,6 +2,11 @@
 
 ## TODO
 - Add a proper data backup; update security for supabase data
+- QA passthrough of specific detail pages like gambles
+
+## 2026-03-21
+- QA passthrough of admin dashboard with superpowers
+- Updated lightbox use for all media gallery images
 
 ## 2026-03-20
 - Debugs of spoiler system, volume showcase, volumes list, and edit submissions
