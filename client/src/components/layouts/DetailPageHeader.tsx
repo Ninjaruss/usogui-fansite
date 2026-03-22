@@ -70,16 +70,28 @@ export function DetailPageHeader({
   const [currentIndex, setCurrentIndex]   = useState(0)
   const [isPortraitHovered, setIsPortraitHovered] = useState(false)
   const [isModalOpen, setIsModalOpen]     = useState(false)
+  const [isSpoilerRevealed, setIsSpoilerRevealed] = useState(false)
 
   const loadMedia = useCallback(async () => {
     // Skip API call if caller provided pre-fetched media
     if (initialMedia && initialMedia.length > 0) {
       setAllMedia(initialMedia)
+      // Apply the same progress-aware index selection as the API path
+      const available = initialMedia.filter(
+        m => !m.isSpoiler && (!m.chapterNumber || m.chapterNumber <= userProgress)
+      )
+      const selected =
+        available.length > 0
+          ? available.reduce((best, curr) =>
+              (curr.chapterNumber ?? 0) > (best.chapterNumber ?? 0) ? curr : best
+            )
+          : initialMedia[0]
+      setCurrentIndex(initialMedia.indexOf(selected))
       return
     }
     try {
       const validMediaOwnerTypes = [
-        'character', 'arc', 'event', 'gamble', 'organization', 'user',
+        'character', 'arc', 'event', 'gamble', 'organization',
         'volume', 'chapter', 'guide', 'quote', 'media',
       ] as const
       type ValidMediaOwnerType = typeof validMediaOwnerTypes[number]
@@ -121,6 +133,10 @@ export function DetailPageHeader({
   const handleNext = useCallback(() => {
     setCurrentIndex(i => (i < allMedia.length - 1 ? i + 1 : 0))
   }, [allMedia.length])
+
+  useEffect(() => {
+    setIsSpoilerRevealed(false)
+  }, [currentIndex])
 
   const renderLightboxImage = (media: MediaItem) => {
     const mediaInfo = analyzeMediaUrl(media.url)
@@ -243,7 +259,12 @@ export function DetailPageHeader({
           }}
           onMouseEnter={() => setIsPortraitHovered(true)}
           onMouseLeave={() => setIsPortraitHovered(false)}
-          onClick={() => setIsModalOpen(true)}
+          onClick={() => {
+            const isProtectedSpoiler = currentMedia.isSpoiler && !isSpoilerRevealed
+            if (!isProtectedSpoiler) {
+              setIsModalOpen(true)
+            }
+          }}
         >
           {/* Main image */}
           <MediaThumbnail
@@ -258,7 +279,10 @@ export function DetailPageHeader({
             maxWidth="100%"
             maxHeight="100%"
             spoilerChapter={spoilerChapter ?? undefined}
-            onSpoilerRevealed={onSpoilerRevealed}
+            onSpoilerRevealed={() => {
+              setIsSpoilerRevealed(true)
+              onSpoilerRevealed?.()
+            }}
             priority
           />
 
@@ -748,21 +772,30 @@ export function DetailPageHeader({
             }}
           >
             {allMedia.length > 1 && (
-              <Box style={{ display: 'flex', gap: rem(6), alignItems: 'center' }}>
+              <Box style={{ display: 'flex', gap: rem(2), alignItems: 'center' }}>
                 {allMedia.map((_, idx) => (
                   <Box
                     key={idx}
                     onClick={() => setCurrentIndex(idx)}
                     style={{
-                      width: idx === currentIndex ? rem(10) : rem(6),
-                      height: idx === currentIndex ? rem(10) : rem(6),
-                      borderRadius: '50%',
-                      background: idx === currentIndex ? '#fff' : 'rgba(255,255,255,0.28)',
-                      transition: 'all 0.22s ease',
+                      padding: rem(5),
                       cursor: 'pointer',
-                      flexShrink: 0,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
                     }}
-                  />
+                  >
+                    <Box
+                      style={{
+                        width: idx === currentIndex ? rem(10) : rem(6),
+                        height: idx === currentIndex ? rem(10) : rem(6),
+                        borderRadius: '50%',
+                        background: idx === currentIndex ? '#fff' : 'rgba(255,255,255,0.28)',
+                        transition: 'all 0.22s ease',
+                        flexShrink: 0,
+                      }}
+                    />
+                  </Box>
                 ))}
               </Box>
             )}
