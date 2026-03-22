@@ -1179,6 +1179,9 @@ export default function MediaThumbnail({
         </MediaSpoilerWrapper>
 
         {showControls && (
+          // TODO: controlsPosition='right' hero path is no longer used by DetailPageHeader
+          // (hero controls are now rendered directly in DetailPageHeader).
+          // Can be removed once confirmed no other callers use it.
           controlsPosition === 'right' ? (
             /* Hero mode: clickable dot strip + count badge, no arrows */
             <Box
