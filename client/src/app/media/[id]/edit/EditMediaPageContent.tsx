@@ -33,6 +33,9 @@ import { setTabAccentColors } from '@/lib/mantine-theme'
 
 const AMBER = '#f59e0b'
 
+const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'] as const
+const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5 MB
+
 type MediaOwnerType = 'character' | 'arc' | 'event' | 'gamble' | 'organization' | 'user'
 
 interface ExistingMedia {
@@ -94,6 +97,17 @@ export default function EditMediaPageContent({ id }: EditMediaPageContentProps) 
   const [dragActive, setDragActive] = useState(false)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
 
+  const previewUrl = useMemo(
+    () => (stagedFile ? URL.createObjectURL(stagedFile) : null),
+    [stagedFile]
+  )
+
+  useEffect(() => {
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl)
+    }
+  }, [previewUrl])
+
   const isPrivilegedUser = !!user && (user.role === 'moderator' || user.role === 'admin')
 
   const [characters, setCharacters] = useState<Array<{ id: number; name: string }>>([])
@@ -106,12 +120,9 @@ export default function EditMediaPageContent({ id }: EditMediaPageContentProps) 
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
-  const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
-  const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5 MB
-
   const handleFileSelect = (file: File) => {
     setDropError(null)
-    if (!ALLOWED_TYPES.includes(file.type)) {
+    if (!(ALLOWED_TYPES as readonly string[]).includes(file.type)) {
       setDropError('Only JPEG, PNG, WebP, and GIF files are allowed.')
       return
     }
@@ -167,7 +178,7 @@ export default function EditMediaPageContent({ id }: EditMediaPageContentProps) 
   }
 
   const validateForm = () => {
-    if (activeTab === 'upload') {
+    if (activeTab === 'upload' && isPrivilegedUser) {
       if (!stagedFile) return 'Please select a file to upload'
     } else {
       if (!formData.url.trim()) return 'Media URL is required'
@@ -222,7 +233,7 @@ export default function EditMediaPageContent({ id }: EditMediaPageContentProps) 
     setLoading(true)
     try {
       const fd = new FormData()
-      if (activeTab === 'upload' && stagedFile) {
+      if (activeTab === 'upload' && isPrivilegedUser && stagedFile) {
         fd.append('file', stagedFile)
       } else {
         fd.append('url', formData.url.trim())
@@ -460,7 +471,7 @@ export default function EditMediaPageContent({ id }: EditMediaPageContentProps) 
                             }}
                           >
                             <img
-                              src={URL.createObjectURL(stagedFile)}
+                              src={previewUrl ?? undefined}
                               alt="Preview"
                               style={{ width: rem(56), height: rem(56), objectFit: 'cover', borderRadius: rem(4), flexShrink: 0 }}
                             />
