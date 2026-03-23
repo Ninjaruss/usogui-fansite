@@ -420,7 +420,7 @@ export class UsersController {
   // --- Profile customization endpoints ---
   @Get('profile')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.USER, UserRole.MODERATOR, UserRole.ADMIN)
+  @Roles(UserRole.USER, UserRole.MODERATOR, UserRole.EDITOR, UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Get current user profile',
@@ -439,7 +439,7 @@ export class UsersController {
 
   @Get('my-submissions')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.USER, UserRole.MODERATOR, UserRole.ADMIN)
+  @Roles(UserRole.USER, UserRole.MODERATOR, UserRole.EDITOR, UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Get current user submissions',
@@ -457,7 +457,7 @@ export class UsersController {
 
   @Patch('profile')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.USER, UserRole.MODERATOR, UserRole.ADMIN)
+  @Roles(UserRole.USER, UserRole.MODERATOR, UserRole.EDITOR, UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Update user profile',
@@ -482,7 +482,7 @@ export class UsersController {
 
   @Patch('profile/email')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.USER, UserRole.MODERATOR, UserRole.ADMIN)
+  @Roles(UserRole.USER, UserRole.MODERATOR, UserRole.EDITOR, UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Change account email',
@@ -507,7 +507,7 @@ export class UsersController {
 
   @Patch('profile/password')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.USER, UserRole.MODERATOR, UserRole.ADMIN)
+  @Roles(UserRole.USER, UserRole.MODERATOR, UserRole.EDITOR, UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Change account password',
@@ -538,7 +538,7 @@ export class UsersController {
 
   @Get('profile/progress')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.USER, UserRole.MODERATOR, UserRole.ADMIN)
+  @Roles(UserRole.USER, UserRole.MODERATOR, UserRole.EDITOR, UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Get current user reading progress',
@@ -568,7 +568,7 @@ export class UsersController {
 
   @Put('profile/progress')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.USER, UserRole.MODERATOR, UserRole.ADMIN)
+  @Roles(UserRole.USER, UserRole.MODERATOR, UserRole.EDITOR, UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Update user reading progress',
@@ -623,7 +623,7 @@ export class UsersController {
 
   @Get('profile/stats')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.USER, UserRole.MODERATOR, UserRole.ADMIN)
+  @Roles(UserRole.USER, UserRole.MODERATOR, UserRole.EDITOR, UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Get current user profile statistics',
@@ -677,7 +677,7 @@ export class UsersController {
 
   @Patch('profile/custom-role')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.USER, UserRole.MODERATOR, UserRole.ADMIN)
+  @Roles(UserRole.USER, UserRole.MODERATOR, UserRole.EDITOR, UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Update custom cosmetic role',
@@ -711,7 +711,7 @@ export class UsersController {
 
   @Delete('profile/custom-role')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.USER, UserRole.MODERATOR, UserRole.ADMIN)
+  @Roles(UserRole.USER, UserRole.MODERATOR, UserRole.EDITOR, UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Remove custom cosmetic role',

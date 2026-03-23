@@ -108,7 +108,7 @@ export default function EditMediaPageContent({ id }: EditMediaPageContentProps) 
     }
   }, [previewUrl])
 
-  const isPrivilegedUser = !!user && (user.role === 'moderator' || user.role === 'admin')
+  const isPrivilegedUser = !!user && (user.role === 'moderator' || user.role === 'editor' || user.role === 'admin')
 
   const [characters, setCharacters] = useState<Array<{ id: number; name: string }>>([])
   const [arcs, setArcs] = useState<Array<{ id: number; name: string }>>([])

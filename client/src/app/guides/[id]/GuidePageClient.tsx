@@ -329,8 +329,8 @@ export default function GuidePageClient({ initialGuide, guideId }: GuidePageClie
   }
 
 
-  // Only the guide owner or admins can edit. Moderators cannot edit guides.
-  const canEdit = user?.id === guide.author.id || user?.role === 'admin'
+  // The guide owner, moderators, or admins can edit.
+  const canEdit = user?.id === guide.author.id || user?.role === 'admin' || user?.role === 'moderator'
 
   const handleLikeToggle = async () => {
     if (!user) {

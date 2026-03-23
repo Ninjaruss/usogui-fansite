@@ -317,7 +317,7 @@ export class EventsController {
 
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.MODERATOR, UserRole.USER)
+  @Roles(UserRole.ADMIN, UserRole.MODERATOR, UserRole.EDITOR, UserRole.USER)
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Create a new event',

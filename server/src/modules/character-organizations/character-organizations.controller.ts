@@ -25,6 +25,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CharacterOrganization } from '../../entities/character-organization.entity';
+import { UserRole } from '../../entities/user.entity';
 
 @ApiTags('character-organizations')
 @Controller('character-organizations')
@@ -172,7 +173,7 @@ export class CharacterOrganizationsController {
    */
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin', 'moderator')
+  @Roles(UserRole.ADMIN, UserRole.MODERATOR)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create a new character-organization membership' })
   @ApiResponse({
@@ -189,7 +190,7 @@ export class CharacterOrganizationsController {
    */
   @Put(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin', 'moderator')
+  @Roles(UserRole.ADMIN, UserRole.MODERATOR)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update an existing membership' })
   @ApiParam({ name: 'id', type: Number })
@@ -210,7 +211,7 @@ export class CharacterOrganizationsController {
    */
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin', 'moderator')
+  @Roles(UserRole.ADMIN, UserRole.MODERATOR)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete a membership' })
   @ApiParam({ name: 'id', type: Number })

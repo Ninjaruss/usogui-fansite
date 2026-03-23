@@ -22,7 +22,7 @@ export default function AdminPage() {
       if (!user) {
         // Not logged in, redirect to login
         router.replace('/login')
-      } else if (user.role !== 'admin' && user.role !== 'moderator') {
+      } else if (user.role !== 'admin' && user.role !== 'moderator' && user.role !== 'editor') {
         // Not authorized, redirect to home
         router.replace('/')
       } else {
@@ -50,7 +50,7 @@ export default function AdminPage() {
   }
 
   // Show nothing while redirecting unauthorized users
-  if (!user || (user.role !== 'admin' && user.role !== 'moderator')) {
+  if (!user || (user.role !== 'admin' && user.role !== 'moderator' && user.role !== 'editor')) {
     return null
   }
 

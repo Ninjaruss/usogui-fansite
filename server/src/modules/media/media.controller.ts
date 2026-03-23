@@ -1599,7 +1599,7 @@ export class MediaController {
   })
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin', 'curator')
+  @Roles(UserRole.ADMIN)
   @ApiParam({
     name: 'id',
     description: 'Media ID',

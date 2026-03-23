@@ -884,7 +884,7 @@ const Navigation: React.FC = () => {
           {user ? (
             <>
               {/* Admin Button - Desktop */}
-              {(user.role === 'admin' || user.role === 'moderator') && (
+              {(user.role === 'admin' || user.role === 'moderator' || user.role === 'editor') && (
                 <Button
                   component={Link}
                   href="/admin"
@@ -1273,7 +1273,7 @@ const Navigation: React.FC = () => {
                 >
                   About
                 </Menu.Item>
-                {(user.role === 'admin' || user.role === 'moderator') && (
+                {(user.role === 'admin' || user.role === 'moderator' || user.role === 'editor') && (
                   <Menu.Item
                     component={Link}
                     href="/admin"

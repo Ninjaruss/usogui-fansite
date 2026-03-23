@@ -252,7 +252,7 @@ export default function SubmitMediaPageContent() {
     )
   }
 
-  const isPrivilegedUser = user.role === 'moderator' || user.role === 'admin'
+  const isPrivilegedUser = user.role === 'moderator' || user.role === 'editor' || user.role === 'admin'
   const urlError = formData.url.length > 0 && !isValidUrl(formData.url) ? 'Please enter a valid URL' : null
   const isFormValid = !validateForm()
 

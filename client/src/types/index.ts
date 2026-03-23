@@ -8,7 +8,7 @@ export interface User {
   id: number;
   username: string;
   email: string;
-  role: 'user' | 'moderator' | 'admin';
+  role: 'user' | 'moderator' | 'editor' | 'admin';
   createdAt: string;
   updatedAt: string;
 }
