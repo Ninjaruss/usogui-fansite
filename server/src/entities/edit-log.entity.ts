@@ -19,6 +19,7 @@ export enum EditLogEntityType {
   GUIDE = 'guide',
   MEDIA = 'media',
   ANNOTATION = 'annotation',
+  CHAPTER = 'chapter',
 }
 
 export enum EditLogAction {

@@ -9,6 +9,7 @@ import { Gamble } from '../../entities/gamble.entity';
 import { Arc } from '../../entities/arc.entity';
 import { Organization } from '../../entities/organization.entity';
 import { Event } from '../../entities/event.entity';
+import { Chapter } from '../../entities/chapter.entity';
 import { EditLogService } from './edit-log.service';
 import { EditLogController } from './edit-log.controller';
 
@@ -24,6 +25,7 @@ import { EditLogController } from './edit-log.controller';
       Arc,
       Organization,
       Event,
+      Chapter,
     ]),
   ],
   controllers: [EditLogController],

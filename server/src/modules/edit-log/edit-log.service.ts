@@ -14,6 +14,7 @@ import { Gamble } from '../../entities/gamble.entity';
 import { Arc } from '../../entities/arc.entity';
 import { Organization } from '../../entities/organization.entity';
 import { Event } from '../../entities/event.entity';
+import { Chapter } from '../../entities/chapter.entity';
 
 @Injectable()
 export class EditLogService {
@@ -36,6 +37,8 @@ export class EditLogService {
     private organizationRepository: Repository<Organization>,
     @InjectRepository(Event)
     private eventRepository: Repository<Event>,
+    @InjectRepository(Chapter)
+    private chapterRepository: Repository<Chapter>,
   ) {}
 
   private async resolveEntityNames(
@@ -151,6 +154,21 @@ export class EditLogService {
             }
           })()
         : Promise.resolve(),
+      groups.has(EditLogEntityType.CHAPTER)
+        ? (async () => {
+            const ids = groups.get(EditLogEntityType.CHAPTER)!;
+            const rows = await this.chapterRepository.find({
+              where: { id: In(ids) } as any,
+              select: ['id', 'number', 'title'] as any,
+            });
+            for (const row of rows) {
+              const label = row.number != null
+                ? `Ch. ${row.number}${row.title ? ` — ${row.title}` : ''}`
+                : (row.title ?? `Chapter ${row.id}`);
+              nameMap.set(`${EditLogEntityType.CHAPTER}:${row.id}`, label);
+            }
+          })()
+        : Promise.resolve(),
     ]);
 
     return nameMap;
@@ -192,6 +210,20 @@ export class EditLogService {
         break;
       case 'event':
         await fetch(this.eventRepository as any, 'title');
+        break;
+      case 'chapter':
+        await (async () => {
+          const rows = await this.chapterRepository.find({
+            where: { id: In(ids) } as any,
+            select: ['id', 'number', 'title'] as any,
+          });
+          for (const row of rows) {
+            const label = row.number != null
+              ? `Ch. ${row.number}${row.title ? ` — ${row.title}` : ''}`
+              : (row.title ?? `Chapter ${row.id}`);
+            nameMap.set(row.id, label);
+          }
+        })();
         break;
     }
 
@@ -311,6 +343,7 @@ export class EditLogService {
       [EditLogEntityType.GUIDE]: 0,
       [EditLogEntityType.MEDIA]: 0,
       [EditLogEntityType.ANNOTATION]: 0,
+      [EditLogEntityType.CHAPTER]: 0,
     };
 
     for (const result of results) {
