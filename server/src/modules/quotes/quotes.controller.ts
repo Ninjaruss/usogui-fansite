@@ -10,6 +10,7 @@ import {
   UseGuards,
   ParseIntPipe,
   ValidationPipe,
+  BadRequestException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -23,8 +24,9 @@ import {
 import { QuotesService } from './quotes.service';
 import { CreateQuoteDto } from './dto/create-quote.dto';
 import { UpdateQuoteDto } from './dto/update-quote.dto';
-import { Quote } from '../../entities/quote.entity';
+import { Quote, QuoteStatus } from '../../entities/quote.entity';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
@@ -70,6 +72,7 @@ export class QuotesController {
   }
 
   @Get()
+  @UseGuards(OptionalJwtAuthGuard)
   @ApiOperation({
     summary: 'Get all quotes with optional filtering',
     description:
@@ -146,6 +149,8 @@ export class QuotesController {
     submittedById?: number,
     @Query('page', new ParseIntPipe({ optional: true })) page?: number,
     @Query('limit', new ParseIntPipe({ optional: true })) limit?: number,
+    @Query('status') status?: string,
+    @CurrentUser() user?: User,
   ): Promise<{
     data: Quote[];
     total: number;
@@ -158,6 +163,9 @@ export class QuotesController {
         ? { start: chapterStart, end: chapterEnd }
         : undefined;
 
+    const includeAll =
+      user?.role === UserRole.ADMIN || user?.role === UserRole.MODERATOR;
+
     return this.quotesService.findAll({
       characterId,
       chapterNumber,
@@ -166,6 +174,8 @@ export class QuotesController {
       submittedById,
       page,
       limit,
+      status: status as QuoteStatus | undefined,
+      includeAll,
     });
   }
 
@@ -307,7 +317,50 @@ export class QuotesController {
     return this.quotesService.getQuotesByChapter(chapterNumber);
   }
 
+  @Get('pending')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.MODERATOR)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get all pending quotes (Moderator/Admin)' })
+  @ApiResponse({ status: 200, description: 'Pending quotes retrieved', type: [Quote] })
+  getPendingQuotes(): Promise<Quote[]> {
+    return this.quotesService.getPendingQuotes();
+  }
+
+  @Post(':id/approve')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.MODERATOR)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Approve a pending quote (Moderator/Admin)' })
+  @ApiParam({ name: 'id', description: 'Quote ID' })
+  @ApiResponse({ status: 200, description: 'Quote approved', type: Quote })
+  @ApiResponse({ status: 400, description: 'Quote is not pending' })
+  @ApiResponse({ status: 404, description: 'Quote not found' })
+  approveQuote(@Param('id', ParseIntPipe) id: number): Promise<Quote> {
+    return this.quotesService.approve(id);
+  }
+
+  @Post(':id/reject')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.MODERATOR)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Reject a pending quote (Moderator/Admin)' })
+  @ApiParam({ name: 'id', description: 'Quote ID' })
+  @ApiResponse({ status: 200, description: 'Quote rejected', type: Quote })
+  @ApiResponse({ status: 400, description: 'Quote is not pending' })
+  @ApiResponse({ status: 404, description: 'Quote not found' })
+  rejectQuote(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('rejectionReason') rejectionReason: string,
+  ): Promise<Quote> {
+    if (!rejectionReason || rejectionReason.trim().length === 0) {
+      throw new BadRequestException('Rejection reason is required');
+    }
+    return this.quotesService.reject(id, rejectionReason.trim());
+  }
+
   @Get(':id')
+  @UseGuards(OptionalJwtAuthGuard)
   @ApiOperation({
     summary: 'Get a quote by ID',
     description:
@@ -323,8 +376,13 @@ export class QuotesController {
     status: 404,
     description: 'Quote not found',
   })
-  findOne(@Param('id', ParseIntPipe) id: number): Promise<Quote> {
-    return this.quotesService.findOne(id);
+  findOne(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user?: User,
+  ): Promise<Quote> {
+    const includeAll =
+      user?.role === UserRole.ADMIN || user?.role === UserRole.MODERATOR;
+    return this.quotesService.findOne(id, includeAll);
   }
 
   @Patch(':id')
@@ -404,7 +462,7 @@ export class QuotesController {
 
   @Delete('bulk/character/:characterId')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.MODERATOR, UserRole.ADMIN)
+  @Roles(UserRole.MODERATOR, UserRole.ADMIN, UserRole.EDITOR)
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Bulk delete quotes by character (Moderator/Admin only)',
