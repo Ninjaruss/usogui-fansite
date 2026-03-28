@@ -16,6 +16,11 @@ export interface ShowcaseReadyVolume {
   title: string;
 }
 
+export interface ShowcaseSlot {
+  primary: ShowcaseReadyVolume;
+  secondary?: ShowcaseReadyVolume;
+}
+
 @Injectable()
 export class VolumesService {
   constructor(
@@ -125,6 +130,31 @@ export class VolumesService {
     );
   }
 
+  /**
+   * Get showcase status for background and popout images
+   */
+  async getVolumeShowcaseStatus(volumeId: number): Promise<{
+    background: string | null;
+    popout: string | null;
+  }> {
+    const [bg, pop] = await Promise.all([
+      this.mediaService.findLatestByUsageTypeAny(
+        MediaOwnerType.VOLUME,
+        volumeId,
+        MediaUsageType.VOLUME_SHOWCASE_BACKGROUND,
+      ),
+      this.mediaService.findLatestByUsageTypeAny(
+        MediaOwnerType.VOLUME,
+        volumeId,
+        MediaUsageType.VOLUME_SHOWCASE_POPOUT,
+      ),
+    ]);
+    return {
+      background: bg ? bg.status : null,
+      popout: pop ? pop.status : null,
+    };
+  }
+
   async getVolumeEntityDisplayMedia(
     volumeId: number,
     userProgress?: number,
@@ -156,7 +186,7 @@ export class VolumesService {
     return result;
   }
 
-  async getShowcaseReadyVolumes(): Promise<ShowcaseReadyVolume[]> {
+  async getShowcaseReadyVolumes(): Promise<ShowcaseSlot[]> {
     const [bgMedia, popMedia] = await Promise.all([
       this.mediaService.findAllApprovedByUsageType(
         MediaOwnerType.VOLUME,
@@ -186,20 +216,42 @@ export class VolumesService {
 
     const volumes = await this.repo.find({
       where: { id: In(sharedVolumeIds) },
+      order: { number: 'ASC' },
     });
     const volumeMap = new Map(volumes.map((v) => [v.id, v]));
 
-    return sharedVolumeIds
-      .filter((id) => volumeMap.has(id))
-      .map((volumeId) => {
-        const vol = volumeMap.get(volumeId)!;
-        return {
-          volumeId,
-          volumeNumber: vol.number,
-          backgroundUrl: latestBg.get(volumeId)!.url,
-          popoutUrl: latestPop.get(volumeId)!.url,
-          title: `Volume ${vol.number}`,
-        };
-      });
+    const toShowcaseVolume = (id: number): ShowcaseReadyVolume => {
+      const vol = volumeMap.get(id)!;
+      return {
+        volumeId: id,
+        volumeNumber: vol.number,
+        backgroundUrl: latestBg.get(id)!.url,
+        popoutUrl: latestPop.get(id)!.url,
+        title: `Volume ${vol.number}`,
+      };
+    };
+
+    // Collect volume IDs that are designated as secondaries by another volume.
+    const secondaryIds = new Set<number>();
+    for (const vol of volumes) {
+      if (vol.pairedVolumeId && volumeMap.has(vol.pairedVolumeId)) {
+        secondaryIds.add(vol.pairedVolumeId);
+      }
+    }
+
+    const slots: ShowcaseSlot[] = [];
+    for (const vol of volumes) {
+      if (secondaryIds.has(vol.id)) continue; // rendered as someone else's secondary
+
+      const slot: ShowcaseSlot = { primary: toShowcaseVolume(vol.id) };
+
+      if (vol.pairedVolumeId && volumeMap.has(vol.pairedVolumeId)) {
+        slot.secondary = toShowcaseVolume(vol.pairedVolumeId);
+      }
+
+      slots.push(slot);
+    }
+
+    return slots;
   }
 }
