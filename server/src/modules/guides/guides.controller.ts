@@ -868,7 +868,7 @@ export class GuidesController {
 
   @Get('pending')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.MODERATOR)
+  @Roles(UserRole.ADMIN, UserRole.MODERATOR, UserRole.EDITOR)
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Get pending guides for moderation',

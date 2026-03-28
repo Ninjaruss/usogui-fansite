@@ -563,7 +563,7 @@ export class MediaController {
   @Get()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiBearerAuth()
-  @Roles(UserRole.MODERATOR, UserRole.ADMIN)
+  @Roles(UserRole.MODERATOR, UserRole.ADMIN, UserRole.EDITOR)
   @ApiOperation({
     summary: 'Get all media (admin)',
     description:
@@ -725,7 +725,7 @@ export class MediaController {
   @Get('pending')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiBearerAuth()
-  @Roles(UserRole.MODERATOR, UserRole.ADMIN)
+  @Roles(UserRole.MODERATOR, UserRole.ADMIN, UserRole.EDITOR)
   @ApiOperation({
     summary: 'Get pending media submissions',
     description:
@@ -828,7 +828,7 @@ export class MediaController {
   @Put(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiBearerAuth()
-  @Roles(UserRole.MODERATOR, UserRole.ADMIN)
+  @Roles(UserRole.MODERATOR, UserRole.ADMIN, UserRole.EDITOR)
   @ApiOperation({
     summary: 'Update media',
     description: 'Update a media item (requires moderator or admin role)',
@@ -907,7 +907,7 @@ export class MediaController {
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiBearerAuth()
-  @Roles(UserRole.MODERATOR, UserRole.ADMIN)
+  @Roles(UserRole.MODERATOR, UserRole.ADMIN, UserRole.EDITOR)
   @ApiOperation({
     summary: 'Partially update media',
     description:
@@ -1636,7 +1636,7 @@ export class MediaController {
   @Put(':id/relations')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiBearerAuth()
-  @Roles(UserRole.MODERATOR, UserRole.ADMIN)
+  @Roles(UserRole.MODERATOR, UserRole.ADMIN, UserRole.EDITOR)
   @ApiOperation({
     summary: 'Update media relations',
     description:

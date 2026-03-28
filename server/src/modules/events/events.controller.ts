@@ -385,7 +385,10 @@ export class EventsController {
     description: 'Delete an event (requires admin role)',
   })
   @ApiParam({ name: 'id', description: 'Event ID', type: 'number' })
-  async remove(@Param('id', ParseIntPipe) id: number, @CurrentUser() user: User) {
+  async remove(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user: User,
+  ) {
     return await this.service.remove(id, user.id);
   }
 
@@ -435,11 +438,11 @@ export class EventsController {
 
   @Put(':id/approve')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.MODERATOR, UserRole.EDITOR)
+  @Roles(UserRole.ADMIN, UserRole.MODERATOR)
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Approve an event',
-    description: 'Approve an event (requires admin/moderator/editor role)',
+    description: 'Approve an event (requires admin/moderator role)',
   })
   @ApiParam({ name: 'id', description: 'Event ID', type: 'number' })
   async approve(@Param('id', ParseIntPipe) id: number) {
@@ -449,12 +452,12 @@ export class EventsController {
 
   @Put(':id/reject')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.MODERATOR, UserRole.EDITOR)
+  @Roles(UserRole.ADMIN, UserRole.MODERATOR)
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Reject an event',
     description:
-      'Reject an event with a reason (requires admin/moderator/editor role)',
+      'Reject an event with a reason (requires admin/moderator role)',
   })
   @ApiParam({ name: 'id', description: 'Event ID', type: 'number' })
   @ApiBody({

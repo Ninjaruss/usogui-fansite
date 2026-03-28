@@ -215,7 +215,7 @@ export class AnnotationsController {
   // Admin/mod endpoints
   @Get()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.MODERATOR)
+  @Roles(UserRole.ADMIN, UserRole.MODERATOR, UserRole.EDITOR)
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Get all annotations (admin)',
@@ -231,7 +231,7 @@ export class AnnotationsController {
 
   @Get('pending')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.MODERATOR)
+  @Roles(UserRole.ADMIN, UserRole.MODERATOR, UserRole.EDITOR)
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Get pending annotations',
@@ -247,7 +247,7 @@ export class AnnotationsController {
 
   @Get('pending/count')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.MODERATOR)
+  @Roles(UserRole.ADMIN, UserRole.MODERATOR, UserRole.EDITOR)
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Get pending annotations count',
