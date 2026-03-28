@@ -247,6 +247,26 @@ export class VolumesController {
     });
   }
 
+  @Get(':id/showcase-status')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.MODERATOR, UserRole.EDITOR)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get showcase image upload status for a volume (admin)' })
+  @ApiParam({ name: 'id', type: 'number', description: 'Volume database ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Upload status of each showcase image type',
+    schema: {
+      properties: {
+        background: { type: 'string', nullable: true, enum: ['approved', 'pending', 'rejected', null] },
+        popout: { type: 'string', nullable: true, enum: ['approved', 'pending', 'rejected', null] },
+      },
+    },
+  })
+  async getShowcaseStatus(@Param('id', ParseIntPipe) id: number) {
+    return this.service.getVolumeShowcaseStatus(id);
+  }
+
   @Get(':id/showcase/:type')
   @ApiOperation({ summary: 'Get showcase media for a volume' })
   @ApiParam({ name: 'id', type: 'string' })
