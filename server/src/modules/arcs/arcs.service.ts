@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between, In } from 'typeorm';
 import { Arc } from '../../entities/arc.entity';
@@ -109,17 +109,50 @@ export class ArcsService {
       parentId: data.parentId,
     });
     const saved = await this.repo.save(arc);
-    await this.editLogService.logCreate(EditLogEntityType.ARC, saved.id, userId);
+    await this.editLogService.logCreate(
+      EditLogEntityType.ARC,
+      saved.id,
+      userId,
+    );
     return saved;
   }
 
-  async update(id: number, data: Partial<Arc>, userId: number) {
-    const result = await this.repo.update(id, data);
-    if (result.affected && result.affected > 0) {
-      const changedFields = Object.keys(data).filter(k => data[k as keyof typeof data] !== undefined);
-      await this.editLogService.logUpdate(EditLogEntityType.ARC, id, userId, changedFields);
+  async update(id: number, data: Partial<Arc>, userId: number, isMinorEdit = false) {
+    const entity = await this.repo.findOne({ where: { id } });
+    if (!entity) throw new NotFoundException(`Arc with id ${id} not found`);
+    Object.assign(entity, data);
+    if (!isMinorEdit) {
+      entity.isVerified = false;
+      entity.verifiedById = null;
+      entity.verifiedAt = null;
     }
-    return result;
+    const saved = await this.repo.save(entity);
+    const changedFields = Object.keys(data).filter(
+      (k) => data[k as keyof typeof data] !== undefined,
+    );
+    await this.editLogService.logUpdate(
+      EditLogEntityType.ARC,
+      id,
+      userId,
+      changedFields,
+      isMinorEdit,
+    );
+    return saved;
+  }
+
+  async verify(id: number, verifierId: number, isAdmin: boolean): Promise<Arc> {
+    const arc = await this.repo.findOne({ where: { id } });
+    if (!arc) throw new NotFoundException(`Arc with id ${id} not found`);
+    if (!isAdmin) {
+      const lastEdit = await this.editLogService.findLastMajorEdit(EditLogEntityType.ARC, id);
+      if (lastEdit && lastEdit.userId === verifierId) {
+        throw new ForbiddenException('You cannot verify your own edit');
+      }
+    }
+    arc.isVerified = true;
+    arc.verifiedById = verifierId;
+    arc.verifiedAt = new Date();
+    return this.repo.save(arc);
   }
 
   async remove(id: number, userId: number) {

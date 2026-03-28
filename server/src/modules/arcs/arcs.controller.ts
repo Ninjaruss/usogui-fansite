@@ -11,6 +11,7 @@ import {
   UseGuards,
   ValidationPipe,
   UsePipes,
+  ParseIntPipe,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -326,12 +327,29 @@ export class ArcsController {
   @ApiResponse({ status: 404, description: 'Arc not found' })
   @Roles(UserRole.MODERATOR, UserRole.ADMIN, UserRole.EDITOR)
   @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
-  async update(@Param('id') id: number, @Body() data: UpdateArcDto, @CurrentUser() user: User) {
-    const result = await this.service.update(id, data, user.id);
-    if (result.affected === 0) {
-      throw new NotFoundException(`Arc with id ${id} not found`);
-    }
-    return { message: 'Updated successfully' };
+  async update(
+    @Param('id') id: number,
+    @Body() data: UpdateArcDto,
+    @Body('isMinorEdit') isMinorEdit: boolean,
+    @CurrentUser() user: User,
+  ) {
+    return this.service.update(id, data, user.id, isMinorEdit ?? false);
+  }
+
+  @Post(':id/verify')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.MODERATOR, UserRole.ADMIN)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Verify an arc page (Moderator/Admin)' })
+  @ApiParam({ name: 'id', description: 'Arc ID' })
+  @ApiResponse({ status: 200, description: 'Arc verified successfully' })
+  @ApiResponse({ status: 403, description: 'Cannot verify your own edit' })
+  @ApiResponse({ status: 404, description: 'Arc not found' })
+  async verify(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user: User,
+  ): Promise<Arc> {
+    return this.service.verify(id, user.id, user.role === UserRole.ADMIN);
   }
 
   @Delete(':id')

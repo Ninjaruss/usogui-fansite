@@ -8,6 +8,7 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { User } from './user.entity';
 
 @Entity()
 @Index(['name'])
@@ -79,4 +80,20 @@ export class Arc {
 
   // Media relationships are now handled polymorphically through the Media entity
   // with ownerType='arc' and ownerId=arc.id
+
+  @ApiProperty({ description: 'Whether this arc page has been verified by a moderator' })
+  @Column({ default: false })
+  isVerified: boolean;
+
+  @ApiPropertyOptional({ description: 'ID of the moderator who last verified this page' })
+  @Column({ nullable: true })
+  verifiedById: number;
+
+  @ManyToOne(() => User, { nullable: true, eager: false })
+  @JoinColumn({ name: 'verifiedById' })
+  verifiedBy: User;
+
+  @ApiPropertyOptional({ description: 'When this page was last verified' })
+  @Column({ type: 'timestamp', nullable: true })
+  verifiedAt: Date;
 }
