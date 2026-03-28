@@ -9,6 +9,8 @@ import { CreateGambleDto, CreateFactionDto } from './dto/create-gamble.dto';
 import { UpdateGambleDto } from './dto/update-gamble.dto';
 import { MediaService } from '../media/media.service';
 import { MediaOwnerType } from '../../entities/media.entity';
+import { EditLogService } from '../edit-log/edit-log.service';
+import { EditLogEntityType } from '../../entities/edit-log.entity';
 
 @Injectable()
 export class GamblesService {
@@ -22,9 +24,10 @@ export class GamblesService {
     @InjectRepository(GambleFactionMember)
     private factionMemberRepository: Repository<GambleFactionMember>,
     private readonly mediaService: MediaService,
+    private readonly editLogService: EditLogService,
   ) {}
 
-  async create(createGambleDto: CreateGambleDto): Promise<Gamble> {
+  async create(createGambleDto: CreateGambleDto, userId: number): Promise<Gamble> {
     const gamble = new Gamble();
     gamble.name = createGambleDto.name;
     gamble.description = createGambleDto.description;
@@ -52,7 +55,9 @@ export class GamblesService {
     }
 
     // Return the gamble with all relations loaded
-    return this.findOne(savedGamble.id);
+    const result = await this.findOne(savedGamble.id);
+    await this.editLogService.logCreate(EditLogEntityType.GAMBLE, savedGamble.id, userId);
+    return result;
   }
 
   /**
@@ -170,7 +175,7 @@ export class GamblesService {
     });
   }
 
-  async update(id: number, updateGambleDto: UpdateGambleDto): Promise<Gamble> {
+  async update(id: number, updateGambleDto: UpdateGambleDto, userId: number): Promise<Gamble> {
     const gamble = await this.findOne(id); // Validates existence and loads relations
 
     // Update basic fields
@@ -207,11 +212,17 @@ export class GamblesService {
     }
 
     // Return the updated gamble with all relations
-    return this.findOne(id);
+    const result = await this.findOne(id);
+    const changedFields = Object.keys(updateGambleDto).filter(
+      k => updateGambleDto[k as keyof UpdateGambleDto] !== undefined
+    );
+    await this.editLogService.logUpdate(EditLogEntityType.GAMBLE, id, userId, changedFields);
+    return result;
   }
 
-  async remove(id: number): Promise<DeleteResult> {
+  async remove(id: number, userId: number): Promise<DeleteResult> {
     await this.findOne(id); // Validates existence
+    await this.editLogService.logDelete(EditLogEntityType.GAMBLE, id, userId);
     return await this.gamblesRepository.delete(id);
   }
 

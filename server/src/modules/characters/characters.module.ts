@@ -8,6 +8,7 @@ import { Organization } from '../../entities/organization.entity';
 import { ServicesModule } from '../../services/services.module';
 import { PageViewsModule } from '../page-views/page-views.module';
 import { MediaModule } from '../media/media.module';
+import { EditLogModule } from '../edit-log/edit-log.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { MediaModule } from '../media/media.module';
     ServicesModule,
     PageViewsModule,
     MediaModule,
+    EditLogModule,
   ],
   providers: [CharactersService],
   controllers: [CharactersController],

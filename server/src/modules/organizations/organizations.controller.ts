@@ -26,6 +26,8 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from '../../entities/user.entity';
 import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { UpdateOrganizationDto } from './dto/update-organization.dto';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { User } from '../../entities/user.entity';
 
 @ApiTags('organizations')
 @Controller('organizations')
@@ -165,8 +167,8 @@ export class OrganizationsController {
       },
     },
   })
-  create(@Body() data: CreateOrganizationDto): Promise<Organization> {
-    return this.service.create(data);
+  create(@Body() data: CreateOrganizationDto, @CurrentUser() user: User): Promise<Organization> {
+    return this.service.create(data, user.id);
   }
 
   @Put(':id')
@@ -207,13 +209,13 @@ export class OrganizationsController {
     },
   })
   @ApiResponse({ status: 404, description: 'Organization not found' })
-  update(@Param('id') id: number, @Body() data: UpdateOrganizationDto) {
-    return this.service.update(id, data);
+  update(@Param('id') id: number, @Body() data: UpdateOrganizationDto, @CurrentUser() user: User) {
+    return this.service.update(id, data, user.id);
   }
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.MODERATOR, UserRole.ADMIN)
+  @Roles(UserRole.MODERATOR, UserRole.ADMIN, UserRole.EDITOR)
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Delete organization',
@@ -244,7 +246,7 @@ export class OrganizationsController {
     },
   })
   @ApiResponse({ status: 404, description: 'Organization not found' })
-  remove(@Param('id') id: number) {
-    return this.service.remove(id);
+  remove(@Param('id') id: number, @CurrentUser() user: User) {
+    return this.service.remove(id, user.id);
   }
 }

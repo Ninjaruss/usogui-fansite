@@ -5,12 +5,15 @@ import { Organization } from '../../entities/organization.entity';
 import { Character } from '../../entities/character.entity';
 import { MediaService } from '../media/media.service';
 import { MediaOwnerType } from '../../entities/media.entity';
+import { EditLogService } from '../edit-log/edit-log.service';
+import { EditLogEntityType } from '../../entities/edit-log.entity';
 
 @Injectable()
 export class OrganizationsService {
   constructor(
     @InjectRepository(Organization) private repo: Repository<Organization>,
     private readonly mediaService: MediaService,
+    private readonly editLogService: EditLogService,
   ) {}
 
   /**
@@ -83,19 +86,24 @@ export class OrganizationsService {
     };
   }
 
-  create(data: Partial<Organization>): Promise<Organization> {
+  async create(data: Partial<Organization>, userId: number): Promise<Organization> {
     const organization = this.repo.create(data);
-    return this.repo.save(organization);
+    const saved = await this.repo.save(organization);
+    await this.editLogService.logCreate(EditLogEntityType.ORGANIZATION, saved.id, userId);
+    return saved;
   }
 
-  async update(id: number, data: Partial<Organization>) {
+  async update(id: number, data: Partial<Organization>, userId: number) {
     const result = await this.repo.update(id, data);
     if (result.affected === 0)
       throw new NotFoundException(`Organization with ID ${id} not found`);
+    const changedFields = Object.keys(data).filter(k => data[k as keyof typeof data] !== undefined);
+    await this.editLogService.logUpdate(EditLogEntityType.ORGANIZATION, id, userId, changedFields);
     return this.findOne(id);
   }
 
-  async remove(id: number) {
+  async remove(id: number, userId: number) {
+    await this.editLogService.logDelete(EditLogEntityType.ORGANIZATION, id, userId);
     const result = await this.repo.delete(id);
     if (result.affected === 0)
       throw new NotFoundException(`Organization with ID ${id} not found`);

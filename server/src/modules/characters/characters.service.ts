@@ -10,6 +10,8 @@ import { PageViewsService } from '../page-views/page-views.service';
 import { PageType } from '../../entities/page-view.entity';
 import { MediaService } from '../media/media.service';
 import { MediaOwnerType } from '../../entities/media.entity';
+import { EditLogService } from '../edit-log/edit-log.service';
+import { EditLogEntityType } from '../../entities/edit-log.entity';
 
 @Injectable()
 export class CharactersService {
@@ -20,6 +22,7 @@ export class CharactersService {
     private organizationRepository: Repository<Organization>,
     private readonly pageViewsService: PageViewsService,
     private readonly mediaService: MediaService,
+    private readonly editLogService: EditLogService,
   ) {}
 
   /**
@@ -148,34 +151,33 @@ export class CharactersService {
     };
   }
 
-  async create(createCharacterDto: CreateCharacterDto): Promise<Character> {
-    // organizationIds is now ignored - organizations are managed through CharacterOrganizations
+  async create(createCharacterDto: CreateCharacterDto, userId: number): Promise<Character> {
     const { organizationIds: _ignored, ...characterData } = createCharacterDto;
-
     const character = this.repo.create(characterData);
-    return this.repo.save(character);
+    const saved = await this.repo.save(character);
+    await this.editLogService.logCreate(EditLogEntityType.CHARACTER, saved.id, userId);
+    return saved;
   }
 
   async update(
     id: number,
     updateCharacterDto: UpdateCharacterDto,
+    userId: number,
   ): Promise<Character> {
-    const character = await this.repo.findOne({
-      where: { id },
-    });
-
+    const character = await this.repo.findOne({ where: { id } });
     if (!character) {
       throw new NotFoundException(`Character with id ${id} not found`);
     }
-
-    // organizationIds is now ignored - organizations are managed through CharacterOrganizations
     const { organizationIds: _ignored, ...characterData } = updateCharacterDto;
-
     Object.assign(character, characterData);
-    return this.repo.save(character);
+    const saved = await this.repo.save(character);
+    const changedFields = Object.keys(characterData).filter(k => characterData[k as keyof typeof characterData] !== undefined);
+    await this.editLogService.logUpdate(EditLogEntityType.CHARACTER, id, userId, changedFields);
+    return saved;
   }
 
-  async remove(id: number): Promise<{ affected: number }> {
+  async remove(id: number, userId: number): Promise<{ affected: number }> {
+    await this.editLogService.logDelete(EditLogEntityType.CHARACTER, id, userId);
     const result = await this.repo.delete(id);
     if (!result.affected || result.affected === 0) {
       throw new NotFoundException(`Character with id ${id} not found`);

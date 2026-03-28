@@ -2,10 +2,15 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Chapter } from '../../entities/chapter.entity';
+import { EditLogService } from '../edit-log/edit-log.service';
+import { EditLogEntityType } from '../../entities/edit-log.entity';
 
 @Injectable()
 export class ChaptersService {
-  constructor(@InjectRepository(Chapter) private repo: Repository<Chapter>) {}
+  constructor(
+    @InjectRepository(Chapter) private repo: Repository<Chapter>,
+    private readonly editLogService: EditLogService,
+  ) {}
 
   /**
    * Pagination: page (default 1), limit (default 20)
@@ -64,16 +69,24 @@ export class ChaptersService {
     return this.repo.findOne({ where: { number } });
   }
 
-  create(data: Partial<Chapter>): Promise<Chapter> {
+  async create(data: Partial<Chapter>, userId: number): Promise<Chapter> {
     const chapter = this.repo.create(data);
-    return this.repo.save(chapter);
+    const saved = await this.repo.save(chapter);
+    await this.editLogService.logCreate(EditLogEntityType.CHAPTER, saved.id, userId);
+    return saved;
   }
 
-  update(id: number, data: Partial<Chapter>) {
-    return this.repo.update(id, data);
+  async update(id: number, data: Partial<Chapter>, userId: number) {
+    const result = await this.repo.update(id, data);
+    if (result.affected && result.affected > 0) {
+      const changedFields = Object.keys(data).filter(k => data[k as keyof typeof data] !== undefined);
+      await this.editLogService.logUpdate(EditLogEntityType.CHAPTER, id, userId, changedFields);
+    }
+    return result;
   }
 
-  remove(id: number) {
+  async remove(id: number, userId: number) {
+    await this.editLogService.logDelete(EditLogEntityType.CHAPTER, id, userId);
     return this.repo.delete(id);
   }
 }

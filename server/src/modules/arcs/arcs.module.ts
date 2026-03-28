@@ -7,12 +7,14 @@ import { Chapter } from '../../entities/chapter.entity';
 import { Gamble } from '../../entities/gamble.entity';
 import { ServicesModule } from '../../services/services.module';
 import { MediaModule } from '../media/media.module';
+import { EditLogModule } from '../edit-log/edit-log.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Arc, Chapter, Gamble]),
     ServicesModule,
     MediaModule,
+    EditLogModule,
   ],
   providers: [ArcsService],
   controllers: [ArcsController],

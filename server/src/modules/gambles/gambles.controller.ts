@@ -29,6 +29,8 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from '../../entities/user.entity';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { User } from '../../entities/user.entity';
 
 @ApiTags('gambles')
 @Controller('gambles')
@@ -89,8 +91,11 @@ export class GamblesController {
       },
     },
   })
-  create(@Body() createGambleDto: CreateGambleDto): Promise<Gamble> {
-    return this.gamblesService.create(createGambleDto);
+  async create(
+    @Body(ValidationPipe) createGambleDto: CreateGambleDto,
+    @CurrentUser() user: User,
+  ): Promise<Gamble> {
+    return this.gamblesService.create(createGambleDto, user.id);
   }
 
   @Get()
@@ -414,8 +419,9 @@ export class GamblesController {
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body(ValidationPipe) data: UpdateGambleDto,
+    @CurrentUser() user: User,
   ): Promise<Gamble> {
-    const result = await this.gamblesService.update(id, data);
+    const result = await this.gamblesService.update(id, data, user.id);
     if (!result) {
       throw new NotFoundException(`Gamble with id ${id} not found`);
     }
@@ -446,9 +452,9 @@ export class GamblesController {
     description: 'Forbidden - requires moderator or admin role',
   })
   @ApiResponse({ status: 404, description: 'Gamble not found' })
-  @Roles(UserRole.MODERATOR, UserRole.ADMIN)
-  async remove(@Param('id', ParseIntPipe) id: number) {
-    const result = await this.gamblesService.remove(id);
+  @Roles(UserRole.MODERATOR, UserRole.ADMIN, UserRole.EDITOR)
+  async remove(@Param('id', ParseIntPipe) id: number, @CurrentUser() user: User) {
+    const result = await this.gamblesService.remove(id, user.id);
     if (!result || result.affected === 0) {
       throw new NotFoundException(`Gamble with id ${id} not found`);
     }

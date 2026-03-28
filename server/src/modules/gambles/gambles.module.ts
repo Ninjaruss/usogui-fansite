@@ -8,6 +8,7 @@ import { Chapter } from '../../entities/chapter.entity';
 import { GambleFaction } from '../../entities/gamble-faction.entity';
 import { GambleFactionMember } from '../../entities/gamble-faction-member.entity';
 import { MediaModule } from '../media/media.module';
+import { EditLogModule } from '../edit-log/edit-log.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { MediaModule } from '../media/media.module';
       GambleFactionMember,
     ]),
     MediaModule,
+    EditLogModule,
   ],
   controllers: [GamblesController],
   providers: [GamblesService],

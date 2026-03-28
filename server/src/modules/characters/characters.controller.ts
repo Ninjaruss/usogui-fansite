@@ -238,8 +238,8 @@ export class CharactersController {
     description: 'Forbidden - requires moderator or admin role',
   })
   @Roles(UserRole.MODERATOR, UserRole.ADMIN, UserRole.EDITOR)
-  create(@Body() data: CreateCharacterDto) {
-    return this.service.create(data);
+  create(@Body() data: CreateCharacterDto, @CurrentUser() user: User) {
+    return this.service.create(data, user.id);
   }
 
   @Put(':id')
@@ -287,8 +287,8 @@ export class CharactersController {
   })
   @ApiResponse({ status: 404, description: 'Character not found' })
   @Roles(UserRole.MODERATOR, UserRole.ADMIN, UserRole.EDITOR)
-  async update(@Param('id') id: number, @Body() data: UpdateCharacterDto) {
-    const result = await this.service.update(id, data);
+  async update(@Param('id') id: number, @Body() data: UpdateCharacterDto, @CurrentUser() user: User) {
+    const result = await this.service.update(id, data, user.id);
     if (!result) {
       throw new NotFoundException(`Character with id ${id} not found`);
     }
@@ -319,9 +319,9 @@ export class CharactersController {
     description: 'Forbidden - requires moderator or admin role',
   })
   @ApiResponse({ status: 404, description: 'Character not found' })
-  @Roles(UserRole.MODERATOR, UserRole.ADMIN)
-  async remove(@Param('id') id: number) {
-    const result = await this.service.remove(id);
+  @Roles(UserRole.MODERATOR, UserRole.ADMIN, UserRole.EDITOR)
+  async remove(@Param('id') id: number, @CurrentUser() user: User) {
+    const result = await this.service.remove(id, user.id);
     if (result.affected === 0) {
       throw new NotFoundException(`Character with id ${id} not found`);
     }

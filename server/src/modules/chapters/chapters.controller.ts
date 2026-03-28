@@ -19,6 +19,8 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from '../../entities/user.entity';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { User } from '../../entities/user.entity';
 import {
   ApiTags,
   ApiOperation,
@@ -196,8 +198,8 @@ export class ChaptersController {
   @ApiForbiddenResponse({
     description: 'Forbidden - requires moderator or admin role',
   })
-  create(@Body() createChapterDto: CreateChapterDto) {
-    return this.service.create(createChapterDto);
+  create(@Body() createChapterDto: CreateChapterDto, @CurrentUser() user: User) {
+    return this.service.create(createChapterDto, user.id);
   }
 
   @Put(':id')
@@ -219,8 +221,9 @@ export class ChaptersController {
   async update(
     @Param('id') id: number,
     @Body() data: UpdateChapterDto,
+    @CurrentUser() user: User,
   ): Promise<Chapter> {
-    const result = await this.service.update(id, data);
+    const result = await this.service.update(id, data, user.id);
     if (result.affected === 0) {
       throw new NotFoundException(`Chapter with id ${id} not found`);
     }
@@ -236,7 +239,7 @@ export class ChaptersController {
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiBearerAuth()
-  @Roles(UserRole.MODERATOR, UserRole.ADMIN)
+  @Roles(UserRole.MODERATOR, UserRole.ADMIN, UserRole.EDITOR)
   @ApiOperation({
     summary: 'Delete chapter',
     description: 'Delete a chapter (requires moderator or admin role)',
@@ -247,8 +250,8 @@ export class ChaptersController {
     description: 'Forbidden - requires moderator or admin role',
   })
   @ApiParam({ name: 'id', description: 'Chapter ID', example: 1 })
-  async remove(@Param('id') id: number): Promise<{ id: number }> {
-    const result = await this.service.remove(id);
+  async remove(@Param('id') id: number, @CurrentUser() user: User): Promise<{ id: number }> {
+    const result = await this.service.remove(id, user.id);
     if (result.affected === 0) {
       throw new NotFoundException(`Chapter with id ${id} not found`);
     }

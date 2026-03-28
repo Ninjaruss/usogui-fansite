@@ -31,6 +31,8 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from '../../entities/user.entity';
 import { CloudflareR2Service } from '../../services/cloudflare-r2.service';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { User } from '../../entities/user.entity';
 
 @ApiTags('arcs')
 @Controller('arcs')
@@ -279,8 +281,8 @@ export class ArcsController {
   })
   @Roles(UserRole.MODERATOR, UserRole.ADMIN, UserRole.EDITOR)
   @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
-  create(@Body() createArcDto: CreateArcDto) {
-    return this.service.create(createArcDto);
+  create(@Body() createArcDto: CreateArcDto, @CurrentUser() user: User) {
+    return this.service.create(createArcDto, user.id);
   }
 
   @Put(':id')
@@ -324,8 +326,8 @@ export class ArcsController {
   @ApiResponse({ status: 404, description: 'Arc not found' })
   @Roles(UserRole.MODERATOR, UserRole.ADMIN, UserRole.EDITOR)
   @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
-  async update(@Param('id') id: number, @Body() data: UpdateArcDto) {
-    const result = await this.service.update(id, data);
+  async update(@Param('id') id: number, @Body() data: UpdateArcDto, @CurrentUser() user: User) {
+    const result = await this.service.update(id, data, user.id);
     if (result.affected === 0) {
       throw new NotFoundException(`Arc with id ${id} not found`);
     }
@@ -356,10 +358,10 @@ export class ArcsController {
     description: 'Forbidden - requires moderator or admin role',
   })
   @ApiResponse({ status: 404, description: 'Arc not found' })
-  @Roles(UserRole.MODERATOR, UserRole.ADMIN)
-  async remove(@Param('id') id: number) {
-    const result = await this.service.remove(id);
-    if (result.affected === 0) {
+  @Roles(UserRole.MODERATOR, UserRole.ADMIN, UserRole.EDITOR)
+  async remove(@Param('id') id: number, @CurrentUser() user: User) {
+    const result = await this.service.remove(id, user.id);
+    if ((result as any).affected === 0) {
       throw new NotFoundException(`Arc with id ${id} not found`);
     }
     return { message: 'Deleted successfully' };

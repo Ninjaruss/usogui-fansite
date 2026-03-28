@@ -360,7 +360,7 @@ export class EventsController {
 
   @Put(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.MODERATOR)
+  @Roles(UserRole.ADMIN, UserRole.MODERATOR, UserRole.EDITOR)
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Update an event',
@@ -371,8 +371,9 @@ export class EventsController {
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body(ValidationPipe) updateEventDto: UpdateEventDto,
+    @CurrentUser() user: User,
   ) {
-    return await this.service.update(id, updateEventDto);
+    return await this.service.update(id, updateEventDto, user.id);
   }
 
   @Delete(':id')
@@ -384,8 +385,8 @@ export class EventsController {
     description: 'Delete an event (requires admin role)',
   })
   @ApiParam({ name: 'id', description: 'Event ID', type: 'number' })
-  async remove(@Param('id', ParseIntPipe) id: number) {
-    return await this.service.remove(id);
+  async remove(@Param('id', ParseIntPipe) id: number, @CurrentUser() user: User) {
+    return await this.service.remove(id, user.id);
   }
 
   @Get('grouped/by-arc')

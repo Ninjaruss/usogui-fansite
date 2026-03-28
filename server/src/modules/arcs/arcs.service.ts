@@ -7,6 +7,8 @@ import { Gamble } from '../../entities/gamble.entity';
 import { CreateArcDto } from './dto/create-arc.dto';
 import { MediaService } from '../media/media.service';
 import { MediaOwnerType } from '../../entities/media.entity';
+import { EditLogService } from '../edit-log/edit-log.service';
+import { EditLogEntityType } from '../../entities/edit-log.entity';
 
 @Injectable()
 export class ArcsService {
@@ -15,6 +17,7 @@ export class ArcsService {
     @InjectRepository(Chapter) private chapterRepo: Repository<Chapter>,
     @InjectRepository(Gamble) private gambleRepo: Repository<Gamble>,
     private readonly mediaService: MediaService,
+    private readonly editLogService: EditLogService,
   ) {}
 
   /**
@@ -96,7 +99,7 @@ export class ArcsService {
     });
   }
 
-  async create(data: CreateArcDto) {
+  async create(data: CreateArcDto, userId: number) {
     const arc = this.repo.create({
       name: data.name,
       order: data.order,
@@ -105,14 +108,22 @@ export class ArcsService {
       endChapter: data.endChapter,
       parentId: data.parentId,
     });
-    return this.repo.save(arc);
+    const saved = await this.repo.save(arc);
+    await this.editLogService.logCreate(EditLogEntityType.ARC, saved.id, userId);
+    return saved;
   }
 
-  update(id: number, data: Partial<Arc>) {
-    return this.repo.update(id, data);
+  async update(id: number, data: Partial<Arc>, userId: number) {
+    const result = await this.repo.update(id, data);
+    if (result.affected && result.affected > 0) {
+      const changedFields = Object.keys(data).filter(k => data[k as keyof typeof data] !== undefined);
+      await this.editLogService.logUpdate(EditLogEntityType.ARC, id, userId, changedFields);
+    }
+    return result;
   }
 
-  remove(id: number) {
+  async remove(id: number, userId: number) {
+    await this.editLogService.logDelete(EditLogEntityType.ARC, id, userId);
     return this.repo.delete(id);
   }
 
