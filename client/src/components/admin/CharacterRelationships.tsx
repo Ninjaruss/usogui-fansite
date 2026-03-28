@@ -26,6 +26,7 @@ import {
   usePermissions,
   Button as RAButton,
   BooleanField,
+  EditButton,
 } from 'react-admin'
 import { Box, Chip, Typography, Divider } from '@mui/material'
 import { ArrowRight, CheckCircle, Clock } from 'lucide-react'
@@ -181,6 +182,7 @@ const VerifyButton = ({ apiMethod }: { apiMethod: (id: number) => Promise<any> }
 
 const CharacterRelationshipShowActions = () => (
   <TopToolbar>
+    <EditButton />
     <VerifyButton apiMethod={api.verifyCharacterRelationship.bind(api)} />
   </TopToolbar>
 )

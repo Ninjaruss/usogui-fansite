@@ -24,6 +24,7 @@ import {
   Button as RAButton,
   TopToolbar,
   BooleanField,
+  EditButton,
 } from 'react-admin'
 import { Typography, Box, Card, CardContent, Grid } from '@mui/material'
 import { Edit3, Plus, Users, Building2, CheckCircle, Clock } from 'lucide-react'
@@ -75,6 +76,7 @@ const VerifyButton = ({ apiMethod }: { apiMethod: (id: number) => Promise<any> }
 
 const OrganizationShowActions = () => (
   <TopToolbar>
+    <EditButton />
     <VerifyButton apiMethod={api.verifyOrganization.bind(api)} />
   </TopToolbar>
 )

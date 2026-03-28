@@ -320,7 +320,7 @@ export default function UsersPageContent() {
                               />
 
                               {/* Role chip */}
-                              {(user.role === 'admin' || user.role === 'moderator') && (
+                              {(user.role === 'admin' || user.role === 'moderator' || user.role === 'editor') && (
                                 <Badge
                                   size="xs"
                                   style={{
@@ -330,14 +330,18 @@ export default function UsersPageContent() {
                                     zIndex: 10,
                                     backgroundColor: user.role === 'admin'
                                       ? 'rgba(225,29,72,0.15)'
-                                      : 'rgba(77,171,247,0.12)',
+                                      : user.role === 'moderator'
+                                      ? 'rgba(77,171,247,0.12)'
+                                      : 'rgba(59,130,246,0.12)',
                                     border: user.role === 'admin'
                                       ? '1px solid rgba(225,29,72,0.4)'
-                                      : '1px solid rgba(77,171,247,0.35)',
-                                    color: user.role === 'admin' ? '#e11d48' : '#4dabf7',
+                                      : user.role === 'moderator'
+                                      ? '1px solid rgba(77,171,247,0.35)'
+                                      : '1px solid rgba(59,130,246,0.35)',
+                                    color: user.role === 'admin' ? '#e11d48' : user.role === 'moderator' ? '#4dabf7' : '#3b82f6',
                                   }}
                                 >
-                                  {user.role === 'admin' ? 'Admin' : 'Mod'}
+                                  {user.role === 'admin' ? 'Admin' : user.role === 'moderator' ? 'Mod' : 'Editor'}
                                 </Badge>
                               )}
 
@@ -365,7 +369,7 @@ export default function UsersPageContent() {
                                   </Text>
 
                                   <UserRoleDisplay
-                                    userRole={user.role as 'admin' | 'moderator' | 'user'}
+                                    userRole={user.role as 'admin' | 'moderator' | 'editor' | 'user'}
                                     customRole={user.customRole}
                                     size="small"
                                     spacing={0.5}

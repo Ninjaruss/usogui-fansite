@@ -36,13 +36,12 @@ export const usePendingCounts = () => {
         const idSort = { field: 'id', order: 'ASC' as const }
 
         const [guidesRes, mediaRes, eventsRes, annotationsRes, quotesRes,
-               charsRes, arcsRes, gamblesRes, chaptersRes, orgsRes] = await Promise.all([
+               arcsRes, gamblesRes, chaptersRes, orgsRes] = await Promise.all([
           dataProvider.getList('guides', { filter: { status: 'pending' }, pagination: oneItem, sort: idSort }),
           dataProvider.getList('media', { filter: { status: 'pending' }, pagination: oneItem, sort: idSort }),
           dataProvider.getList('events', { filter: { status: 'pending' }, pagination: oneItem, sort: idSort }),
           dataProvider.getList('annotations', { filter: { status: 'pending' }, pagination: oneItem, sort: idSort }),
           dataProvider.getList('quotes', { filter: { status: 'pending' }, pagination: oneItem, sort: idSort }),
-          dataProvider.getList('characters', { filter: unverifiedFilter, pagination: oneItem, sort: idSort }),
           dataProvider.getList('arcs', { filter: unverifiedFilter, pagination: oneItem, sort: idSort }),
           dataProvider.getList('gambles', { filter: unverifiedFilter, pagination: oneItem, sort: idSort }),
           dataProvider.getList('chapters', { filter: unverifiedFilter, pagination: oneItem, sort: idSort }),
@@ -50,7 +49,7 @@ export const usePendingCounts = () => {
         ])
 
         const unverifiedEditorial =
-          (charsRes.total || 0) + (arcsRes.total || 0) + (gamblesRes.total || 0) +
+          (arcsRes.total || 0) + (gamblesRes.total || 0) +
           (chaptersRes.total || 0) + (orgsRes.total || 0)
 
         const newCounts: PendingCounts = {
@@ -63,7 +62,7 @@ export const usePendingCounts = () => {
           total: 0,
         }
         newCounts.total = newCounts.guides + newCounts.media + newCounts.events +
-                          newCounts.annotations + newCounts.quotes + newCounts.unverifiedEditorial
+                          newCounts.annotations + newCounts.quotes
 
         setCounts(newCounts)
       } catch (error) {

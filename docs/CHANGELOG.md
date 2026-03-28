@@ -6,10 +6,13 @@
 - Sync reading progress with other trackers? (i.e. myanimelist, anilist, etc.)
 - Editor role showing for frontend
 
+## 2026-03-28
+- Recent migration scripts fixed and ran
+- Volume showcase now can be handled via edit page to select single or paired volumes
+- Editor role bug fixes
 
 ## 2026-03-27
 - More descriptive changelog and activity display involving edits to the site
-- Editor role bug fixes
 
 ## 2026-03-22
 - Cleaned up entity display image usage on detail page headers

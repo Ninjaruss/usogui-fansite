@@ -30,7 +30,8 @@ import {
   usePermissions,
   Button as RAButton,
   TopToolbar,
-  BooleanField
+  BooleanField,
+  EditButton
 } from 'react-admin'
 import {
   Box, Card, CardContent, Typography, Grid, Chip, Button as MuiButton,
@@ -378,6 +379,7 @@ const VerifyButton = ({ apiMethod }: { apiMethod: (id: number) => Promise<any> }
 
 const CharacterShowActions = () => (
   <TopToolbar>
+    <EditButton />
     <VerifyButton apiMethod={api.verifyCharacter.bind(api)} />
   </TopToolbar>
 )

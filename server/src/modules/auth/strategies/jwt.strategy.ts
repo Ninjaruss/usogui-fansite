@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
@@ -25,7 +25,18 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     let user: User;
     try {
       user = await this.usersService.getUserProfile(userId);
-    } catch {
+    } catch (err) {
+      // Re-throw database/infrastructure errors as 500 so they don't appear as
+      // auth failures and don't trigger client-side refresh loops.
+      const message: string = err?.message ?? '';
+      const isDbError =
+        message.includes('column') ||
+        message.includes('relation') ||
+        message.includes('syntax') ||
+        message.includes('connection');
+      if (isDbError) {
+        throw new InternalServerErrorException('Database error during authentication');
+      }
       // User no longer exists or was deleted - invalidate the token
       throw new UnauthorizedException('User no longer exists');
     }

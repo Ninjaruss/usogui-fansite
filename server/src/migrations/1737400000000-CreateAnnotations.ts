@@ -2,28 +2,22 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class CreateAnnotations1737400000000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    // Create annotation_status_enum
     await queryRunner.query(`
-      CREATE TYPE annotation_status_enum AS ENUM (
-        'pending',
-        'approved',
-        'rejected'
-      );
+      DO $$ BEGIN
+        CREATE TYPE annotation_status_enum AS ENUM ('pending', 'approved', 'rejected');
+      EXCEPTION WHEN duplicate_object THEN null;
+      END $$;
     `);
 
-    // Create annotation_owner_type_enum
     await queryRunner.query(`
-      CREATE TYPE annotation_owner_type_enum AS ENUM (
-        'character',
-        'gamble',
-        'chapter',
-        'arc'
-      );
+      DO $$ BEGIN
+        CREATE TYPE annotation_owner_type_enum AS ENUM ('character', 'gamble', 'chapter', 'arc');
+      EXCEPTION WHEN duplicate_object THEN null;
+      END $$;
     `);
 
-    // Create annotation table
     await queryRunner.query(`
-      CREATE TABLE annotation (
+      CREATE TABLE IF NOT EXISTS annotation (
         id SERIAL PRIMARY KEY,
         "ownerType" annotation_owner_type_enum NOT NULL,
         "ownerId" INTEGER NOT NULL,
@@ -46,26 +40,10 @@ export class CreateAnnotations1737400000000 implements MigrationInterface {
       );
     `);
 
-    // Create indexes
-    await queryRunner.query(`
-      CREATE INDEX "IDX_annotation_status"
-      ON annotation (status);
-    `);
-
-    await queryRunner.query(`
-      CREATE INDEX "IDX_annotation_owner"
-      ON annotation ("ownerType", "ownerId");
-    `);
-
-    await queryRunner.query(`
-      CREATE INDEX "IDX_annotation_author"
-      ON annotation ("authorId");
-    `);
-
-    await queryRunner.query(`
-      CREATE INDEX "IDX_annotation_created"
-      ON annotation ("createdAt");
-    `);
+    await queryRunner.query(`CREATE INDEX IF NOT EXISTS "IDX_annotation_status" ON annotation (status)`);
+    await queryRunner.query(`CREATE INDEX IF NOT EXISTS "IDX_annotation_owner" ON annotation ("ownerType", "ownerId")`);
+    await queryRunner.query(`CREATE INDEX IF NOT EXISTS "IDX_annotation_author" ON annotation ("authorId")`);
+    await queryRunner.query(`CREATE INDEX IF NOT EXISTS "IDX_annotation_created" ON annotation ("createdAt")`);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {

@@ -2,29 +2,22 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class CreateEditLog1737400000001 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    // Create edit_log_entity_type_enum
     await queryRunner.query(`
-      CREATE TYPE edit_log_entity_type_enum AS ENUM (
-        'character',
-        'gamble',
-        'arc',
-        'organization',
-        'event'
-      );
+      DO $$ BEGIN
+        CREATE TYPE edit_log_entity_type_enum AS ENUM ('character', 'gamble', 'arc', 'organization', 'event');
+      EXCEPTION WHEN duplicate_object THEN null;
+      END $$;
     `);
 
-    // Create edit_log_action_enum
     await queryRunner.query(`
-      CREATE TYPE edit_log_action_enum AS ENUM (
-        'create',
-        'update',
-        'delete'
-      );
+      DO $$ BEGIN
+        CREATE TYPE edit_log_action_enum AS ENUM ('create', 'update', 'delete');
+      EXCEPTION WHEN duplicate_object THEN null;
+      END $$;
     `);
 
-    // Create edit_log table
     await queryRunner.query(`
-      CREATE TABLE edit_log (
+      CREATE TABLE IF NOT EXISTS edit_log (
         id SERIAL PRIMARY KEY,
         "entityType" edit_log_entity_type_enum NOT NULL,
         "entityId" INTEGER NOT NULL,
@@ -40,21 +33,9 @@ export class CreateEditLog1737400000001 implements MigrationInterface {
       );
     `);
 
-    // Create indexes
-    await queryRunner.query(`
-      CREATE INDEX "IDX_edit_log_user"
-      ON edit_log ("userId");
-    `);
-
-    await queryRunner.query(`
-      CREATE INDEX "IDX_edit_log_entity"
-      ON edit_log ("entityType", "entityId");
-    `);
-
-    await queryRunner.query(`
-      CREATE INDEX "IDX_edit_log_created"
-      ON edit_log ("createdAt");
-    `);
+    await queryRunner.query(`CREATE INDEX IF NOT EXISTS "IDX_edit_log_user" ON edit_log ("userId")`);
+    await queryRunner.query(`CREATE INDEX IF NOT EXISTS "IDX_edit_log_entity" ON edit_log ("entityType", "entityId")`);
+    await queryRunner.query(`CREATE INDEX IF NOT EXISTS "IDX_edit_log_created" ON edit_log ("createdAt")`);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {

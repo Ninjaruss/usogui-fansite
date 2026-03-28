@@ -22,6 +22,7 @@ import {
   Button as RAButton,
   TopToolbar,
   BooleanField,
+  EditButton,
 } from 'react-admin'
 import { Typography, Box, Card, CardContent } from '@mui/material'
 import { Edit3, Plus, Hash, CheckCircle, Clock } from 'lucide-react'
@@ -94,6 +95,7 @@ const VerifyButton = ({ apiMethod }: { apiMethod: (id: number) => Promise<any> }
 
 const ChapterShowActions = () => (
   <TopToolbar>
+    <EditButton />
     <VerifyButton apiMethod={api.verifyChapter.bind(api)} />
   </TopToolbar>
 )

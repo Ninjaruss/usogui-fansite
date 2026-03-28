@@ -806,7 +806,7 @@ export default function GuidesPageContent({
                       by {hoveredGuide.author.username}
                     </Text>
                     <UserRoleDisplay
-                      userRole={(hoveredGuide.author.role as 'admin' | 'moderator' | 'user') || 'user'}
+                      userRole={(hoveredGuide.author.role as 'admin' | 'moderator' | 'editor' | 'user') || 'user'}
                       customRole={hoveredGuide.author.customRole}
                       size="small"
                     />

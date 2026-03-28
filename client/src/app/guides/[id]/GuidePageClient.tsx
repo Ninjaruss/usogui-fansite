@@ -538,7 +538,7 @@ export default function GuidePageClient({ initialGuide, guideId }: GuidePageClie
                                   </Badge>
                                 )}
                                 <UserRoleDisplay
-                                  userRole={(guide.author.role === 'admin' || guide.author.role === 'moderator') ? guide.author.role : 'user'}
+                                  userRole={(guide.author.role === 'admin' || guide.author.role === 'moderator' || guide.author.role === 'editor') ? guide.author.role : 'user'}
                                   customRole={guide.author.customRole}
                                   size="small"
                                 />

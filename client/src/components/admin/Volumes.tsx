@@ -18,6 +18,8 @@ import {
   useRecordContext,
   useGetList,
   usePermissions,
+  ReferenceInput,
+  AutocompleteInput,
 } from 'react-admin'
 import { Typography, Chip, Box, Card, CardContent, Grid } from '@mui/material'
 import { Edit3, Plus, BookOpen, Layers, Image as ImageIcon } from 'lucide-react'
@@ -477,15 +479,23 @@ export const VolumeEdit = () => {
                       Showcase Pairing
                     </Typography>
                     <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.55)', mb: 2 }}>
-                      Enter the volume ID of a second volume to display alongside this one in the homepage showcase (dual layout). Leave blank for single layout.
+                      Select a second volume to display alongside this one in the homepage showcase (dual layout). Leave blank for single layout.
                     </Typography>
-                    <NumberInput
-                      source="pairedVolumeId"
-                      fullWidth
-                      min={1}
-                      label="Pair with Volume ID"
-                      helperText="Volume database ID to show alongside this one"
-                    />
+                    <ReferenceInput source="pairedVolumeId" reference="volumes" perPage={100}>
+                      <AutocompleteInput
+                        optionText={(record) => record ? `Vol. ${record.number}${record.title ? ` — ${record.title}` : ''}` : ''}
+                        label="Pair with Volume"
+                        helperText="Volume to show alongside this one"
+                        fullWidth
+                        isClearable
+                        sx={{
+                          '& .MuiInputBase-root': {
+                            backgroundColor: 'rgba(10, 10, 10, 0.8)',
+                            color: '#ffffff',
+                          },
+                        }}
+                      />
+                    </ReferenceInput>
                   </Box>
                 </Grid>
 

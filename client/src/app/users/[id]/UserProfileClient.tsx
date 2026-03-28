@@ -218,7 +218,7 @@ export default function UserProfileClient({ initialUser }: UserProfileClientProp
                 </Text>
                 <Group gap="xs" wrap="wrap">
                   <UserRoleDisplay
-                    userRole={user.role as 'admin' | 'moderator' | 'user'}
+                    userRole={user.role as 'admin' | 'moderator' | 'editor' | 'user'}
                     customRole={user.customRole ?? null}
                     size="medium"
                     spacing={2}

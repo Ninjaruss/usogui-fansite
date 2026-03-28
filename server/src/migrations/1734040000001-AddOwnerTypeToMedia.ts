@@ -32,11 +32,18 @@ export class AddOwnerTypeToMedia1734040000001 implements MigrationInterface {
       ADD COLUMN IF NOT EXISTS "ownerId" integer;
     `);
 
-    // Migrate existing characterId data to ownerType/ownerId
+    // Migrate existing characterId data to ownerType/ownerId (only if the column exists)
     await queryRunner.query(`
-      UPDATE media
-      SET "ownerType" = 'character', "ownerId" = "characterId"
-      WHERE "characterId" IS NOT NULL AND "ownerType" IS NULL;
+      DO $$ BEGIN
+        IF EXISTS (
+          SELECT 1 FROM information_schema.columns
+          WHERE table_name = 'media' AND column_name = 'characterId'
+        ) THEN
+          UPDATE media
+          SET "ownerType" = 'character', "ownerId" = "characterId"
+          WHERE "characterId" IS NOT NULL AND "ownerType" IS NULL;
+        END IF;
+      END $$;
     `);
 
     // Add indexes for the new columns

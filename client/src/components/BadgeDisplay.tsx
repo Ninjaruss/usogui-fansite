@@ -14,7 +14,7 @@ interface BadgeDisplayProps {
 }
 
 interface UserRoleDisplayProps {
-  userRole: 'admin' | 'moderator' | 'user'
+  userRole: 'admin' | 'moderator' | 'editor' | 'user'
   customRole?: string | null
   userBadges?: UserBadge[]
   size?: 'small' | 'medium'
@@ -35,7 +35,7 @@ export function UserRoleDisplay({
   spacing = 1
 }: UserRoleDisplayProps) {
   const theme = useMantineTheme()
-  const administrativeColor = userRole === 'admin' ? '#d32f2f' : '#f57c00'
+  const administrativeColor = userRole === 'admin' ? '#d32f2f' : userRole === 'moderator' ? '#f57c00' : '#3b82f6'
 
   return (
     <Group
@@ -47,7 +47,7 @@ export function UserRoleDisplay({
         alignItems: 'flex-start'
       }}
     >
-      {(userRole === 'admin' || userRole === 'moderator') && (
+      {(userRole === 'admin' || userRole === 'moderator' || userRole === 'editor') && (
         <Badge
           leftSection={<Crown size={size === 'small' ? 12 : 14} color="#ffffff" />}
           size={size === 'small' ? 'xs' : 'sm'}
@@ -60,7 +60,7 @@ export function UserRoleDisplay({
             }
           }}
         >
-          {userRole === 'admin' ? 'Admin' : 'Moderator'}
+          {userRole === 'admin' ? 'Admin' : userRole === 'moderator' ? 'Moderator' : 'Editor'}
         </Badge>
       )}
 

@@ -28,7 +28,8 @@ import {
   usePermissions,
   Button as RAButton,
   TopToolbar,
-  BooleanField
+  BooleanField,
+  EditButton
 } from 'react-admin'
 import { Typography, Chip, Box, Card, CardContent, Grid, Tooltip, IconButton } from '@mui/material'
 import { Edit3, Plus, BookOpen, Layers, GitBranch, Image as ImageIcon, CheckCircle, Clock } from 'lucide-react'
@@ -207,6 +208,7 @@ const VerifyButton = ({ apiMethod }: { apiMethod: (id: number) => Promise<any> }
 
 const ArcShowActions = () => (
   <TopToolbar>
+    <EditButton />
     <VerifyButton apiMethod={api.verifyArc.bind(api)} />
   </TopToolbar>
 )

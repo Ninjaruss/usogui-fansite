@@ -39,6 +39,7 @@ import {
   usePermissions,
   Button as RAButton,
   BooleanField,
+  EditButton,
 } from 'react-admin'
 import {
   Box, Typography, Tooltip, IconButton, Chip,
@@ -97,6 +98,7 @@ const VerifyButton = ({ apiMethod }: { apiMethod: (id: number) => Promise<any> }
 
 const GambleShowActions = () => (
   <TopToolbar>
+    <EditButton />
     <VerifyButton apiMethod={api.verifyGamble.bind(api)} />
   </TopToolbar>
 )

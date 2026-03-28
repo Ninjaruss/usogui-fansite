@@ -19,6 +19,7 @@ import {
   Button as RAButton,
   TopToolbar,
   BooleanField,
+  EditButton,
 } from 'react-admin'
 import { Typography, Box, Chip, Card, CardContent, Grid } from '@mui/material'
 import { Edit3, Plus, Tag, CheckCircle, Clock } from 'lucide-react'
@@ -68,6 +69,7 @@ const VerifyButton = ({ apiMethod }: { apiMethod: (id: number) => Promise<any> }
 
 const TagShowActions = () => (
   <TopToolbar>
+    <EditButton />
     <VerifyButton apiMethod={api.verifyTag.bind(api)} />
   </TopToolbar>
 )

@@ -56,22 +56,7 @@ export const AdminMenu = () => {
       <MenuItemLink
         to="/characters"
         primaryText="Characters"
-        leftIcon={
-          <Badge
-            badgeContent={counts.unverifiedEditorial}
-            color="warning"
-            sx={{
-              '& .MuiBadge-badge': {
-                fontSize: '0.65rem',
-                minWidth: '16px',
-                height: '16px',
-                padding: '0 4px'
-              }
-            }}
-          >
-            <User size={20} />
-          </Badge>
-        }
+        leftIcon={<User size={20} />}
       />
       <MenuItemLink
         to="/arcs"
