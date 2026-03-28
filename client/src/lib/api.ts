@@ -1885,6 +1885,40 @@ class ApiClient {
     return this.post<any>(`/annotations/${id}/reject`, { rejectionReason })
   }
 
+  // --- Editorial Verification ---
+  async verifyCharacter(id: number) {
+    return this.post<any>(`/characters/${id}/verify`, {})
+  }
+  async verifyArc(id: number) {
+    return this.post<any>(`/arcs/${id}/verify`, {})
+  }
+  async verifyGamble(id: number) {
+    return this.post<any>(`/gambles/${id}/verify`, {})
+  }
+  async verifyChapter(id: number) {
+    return this.post<any>(`/chapters/${id}/verify`, {})
+  }
+  async verifyOrganization(id: number) {
+    return this.post<any>(`/organizations/${id}/verify`, {})
+  }
+  async verifyTag(id: number) {
+    return this.post<any>(`/tags/${id}/verify`, {})
+  }
+  async verifyCharacterRelationship(id: number) {
+    return this.post<any>(`/character-relationships/${id}/verify`, {})
+  }
+  async verifyCharacterOrganization(id: number) {
+    return this.post<any>(`/character-organizations/${id}/verify`, {})
+  }
+
+  // --- Quote Approval ---
+  async approveQuote(id: number) {
+    return this.post<any>(`/quotes/${id}/approve`, {})
+  }
+  async rejectQuote(id: number, rejectionReason: string) {
+    return this.post<any>(`/quotes/${id}/reject`, { rejectionReason })
+  }
+
   // Contribution methods
   async getUserContributions(userId: number) {
     return this.get<{
