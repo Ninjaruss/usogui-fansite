@@ -1091,7 +1091,7 @@ class ApiClient {
   }
 
   async getShowcaseReadyVolumes() {
-    const response = await this.get<{ data: import('../types').ShowcaseReadyVolume[] }>('/volumes/showcase-ready')
+    const response = await this.get<{ data: import('../types').ShowcaseSlot[] }>('/volumes/showcase-ready')
     return response?.data ?? []
   }
 
@@ -1137,6 +1137,27 @@ class ApiClient {
       page: number
       totalPages: number
     }>(`/edit-log/submissions${qs ? `?${qs}` : ''}`)
+  }
+
+  async getWikiEditsByUser(userId: number, params?: { page?: number; limit?: number }) {
+    const query = new URLSearchParams()
+    if (params?.page) query.set('page', String(params.page))
+    if (params?.limit) query.set('limit', String(params.limit))
+    const qs = query.toString()
+    return this.get<{
+      data: Array<{
+        id: number
+        action: string
+        entityType: string
+        entityId: number
+        entityName?: string
+        createdAt: string
+        user?: { id: number; username: string; fluxerAvatar?: string; fluxerId?: string }
+      }>
+      total: number
+      page: number
+      totalPages: number
+    }>(`/edit-log/user/${userId}${qs ? `?${qs}` : ''}`)
   }
 
   async getMySubmissionEdits() {

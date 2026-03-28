@@ -22,7 +22,7 @@ import { api } from '../../lib/api'
 import { textColors } from '../../lib/mantine-theme'
 
 type FilterType = 'all' | 'submissions'
-type EntityFilter = 'all' | 'character' | 'gamble' | 'arc' | 'organization' | 'event' | 'guide' | 'media' | 'annotation'
+type EntityFilter = 'all' | 'character' | 'gamble' | 'arc' | 'organization' | 'event' | 'guide' | 'media' | 'annotation' | 'chapter'
 
 interface EditEntry {
   id: number
@@ -66,6 +66,7 @@ function entityLink(entityType: string, entityId: number): string {
     guide: '/guides',
     media: '/media',
     annotation: '#',
+    chapter: '/chapters',
   }
   return `${map[entityType.toLowerCase()] ?? '#'}/${entityId}`
 }
@@ -80,6 +81,7 @@ function entityColor(entityType: string): string {
     guide: textColors.guide,
     media: textColors.media,
     annotation: textColors.annotation,
+    chapter: textColors.chapter,
   }
   return map[entityType.toLowerCase()] ?? textColors.secondary
 }
@@ -116,6 +118,7 @@ const ALL_ENTITY_OPTIONS = [
   { label: 'Arcs', value: 'arc' },
   { label: 'Orgs', value: 'organization' },
   { label: 'Events', value: 'event' },
+  { label: 'Chapters', value: 'chapter' },
   { label: 'Guides', value: 'guide' },
   { label: 'Media', value: 'media' },
   { label: 'Annotations', value: 'annotation' },
