@@ -1237,6 +1237,21 @@ export class MediaService {
   }
 
   /**
+   * Find the most recent media for a specific owner + usageType, regardless of approval status.
+   * Used by admin endpoints that need to show actual upload state.
+   */
+  async findLatestByUsageTypeAny(
+    ownerType: MediaOwnerType,
+    ownerId: number,
+    usageType: MediaUsageType,
+  ): Promise<Media | null> {
+    return this.mediaRepo.findOne({
+      where: { ownerType, ownerId, usageType },
+      order: { createdAt: 'DESC' },
+    });
+  }
+
+  /**
    * Find all approved media records for a given owner type and usage type.
    * Used for bulk operations like showcase-ready volume fetching.
    */
