@@ -114,16 +114,32 @@ export class VolumesController {
   })
   @ApiResponse({
     status: 200,
-    description: 'Volumes ready for homepage showcase',
+    description: 'Volumes ready for homepage showcase, grouped into primary/secondary slots',
     schema: {
       type: 'array',
       items: {
         properties: {
-          volumeId: { type: 'number' },
-          volumeNumber: { type: 'number' },
-          backgroundUrl: { type: 'string' },
-          popoutUrl: { type: 'string' },
-          title: { type: 'string' },
+          primary: {
+            type: 'object',
+            properties: {
+              volumeId: { type: 'number' },
+              volumeNumber: { type: 'number' },
+              backgroundUrl: { type: 'string' },
+              popoutUrl: { type: 'string' },
+              title: { type: 'string' },
+            },
+          },
+          secondary: {
+            type: 'object',
+            nullable: true,
+            properties: {
+              volumeId: { type: 'number' },
+              volumeNumber: { type: 'number' },
+              backgroundUrl: { type: 'string' },
+              popoutUrl: { type: 'string' },
+              title: { type: 'string' },
+            },
+          },
         },
       },
     },
@@ -263,6 +279,8 @@ export class VolumesController {
       },
     },
   })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Admin/Moderator/Editor role required' })
   async getShowcaseStatus(@Param('id', ParseIntPipe) id: number) {
     return this.service.getVolumeShowcaseStatus(id);
   }

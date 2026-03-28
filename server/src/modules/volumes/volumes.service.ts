@@ -134,8 +134,8 @@ export class VolumesService {
    * Get showcase status for background and popout images
    */
   async getVolumeShowcaseStatus(volumeId: number): Promise<{
-    background: string | null;
-    popout: string | null;
+    background: 'approved' | 'pending' | 'rejected' | null;
+    popout: 'approved' | 'pending' | 'rejected' | null;
   }> {
     const [bg, pop] = await Promise.all([
       this.mediaService.findLatestByUsageTypeAny(
@@ -150,8 +150,8 @@ export class VolumesService {
       ),
     ]);
     return {
-      background: bg ? bg.status : null,
-      popout: pop ? pop.status : null,
+      background: bg ? (bg.status as 'approved' | 'pending' | 'rejected') : null,
+      popout: pop ? (pop.status as 'approved' | 'pending' | 'rejected') : null,
     };
   }
 
