@@ -1,152 +1,100 @@
-# Usogui Database - Frontend Client
+# Usogui Database — Frontend Client
 
-Next.js frontend application for the Usogui database with React Admin integration.
+Next.js 15 frontend for the Usogui database with React Admin integration.
 
-## Technology Stack
-
-- **Next.js 15** with App Router
-- **React 19**
-- **TypeScript** for type safety
-- **Tailwind CSS 4** for styling
-- **React Admin** for admin interface
-- **Zustand** for state management
-- **Motion** for animations
-- **Lucide React** for icons
-- **SWR** for data fetching
-
-## Quick Start
+## Commands
 
 ```bash
-# Install dependencies
-yarn install
-
-# Start development server
-yarn dev
-
-# Build for production
-yarn build
-
-# Start production server
-yarn start
-
-# Run linting
-yarn lint
+yarn dev        # Dev server with Turbopack (port 3000)
+yarn build      # Production build (runs next-sitemap postbuild automatically)
+yarn start      # Serve production build
+yarn lint       # ESLint
 ```
+
+Always use `yarn`, never `npm`.
 
 ## Project Structure
 
 ```
-client/
-├── src/
-│   ├── app/                    # Next.js App Router pages
-│   │   ├── admin/             # Admin panel (React Admin)
-│   │   ├── characters/        # Character pages
-│   │   ├── arcs/              # Story arc pages
-│   │   ├── guides/            # Community guides
-│   │   ├── media/             # Fan media gallery
-│   │   ├── gambles/           # Gamble mechanics
-│   │   ├── volumes/           # Volume information
-│   │   ├── chapters/          # Chapter details
-│   │   ├── events/            # Story events
-│   │   ├── organizations/          # Character organizations
-│   │   ├── quotes/            # Character quotes
-│   │   ├── users/             # User profiles
-│   │   ├── auth/              # Authentication pages
-│   │   ├── login/             # Login page
-│   │   ├── register/          # Registration page
-│   │   ├── profile/           # User profile
-│   │   ├── submit-guide/      # Guide submission
-│   │   ├── submit-media/      # Media submission
-│   │   ├── about/             # About page
-│   │   ├── disclaimer/        # Legal disclaimer
-│   │   ├── layout.tsx         # Root layout
-│   │   ├── page.tsx           # Home page
-│   │   └── globals.css        # Global styles
-│   ├── components/            # Reusable components
-│   │   ├── admin/            # Admin interface components
-│   │   ├── Navigation.tsx    # Main navigation
-│   │   ├── Footer.tsx        # Site footer
-│   │   ├── SearchBar.tsx     # Search functionality
-│   │   └── ... many more
-│   ├── providers/            # Context providers
-│   │   ├── AuthProvider.tsx  # Authentication context
-│   │   ├── ClientProviders.tsx # Client-side providers
-│   │   └── ProgressProvider.tsx # Progress tracking
-│   ├── hooks/               # Custom React hooks
-│   ├── lib/                 # Utility libraries
-│   │   ├── api.ts           # API integration
-│   │   ├── theme.ts         # Theme configuration
-│   │   └── utils.ts         # Utility functions
-│   └── types/               # TypeScript definitions
-└── public/                  # Static assets
+src/
+├── app/                    # Next.js App Router pages
+│   ├── admin/              # Admin panel entry (AdminApp.tsx + page.tsx)
+│   ├── annotations/        # User annotations
+│   ├── arcs/               # Story arcs
+│   ├── auth/               # OAuth callback (provider-agnostic)
+│   ├── changelog/          # Site changelog
+│   ├── chapters/           # Chapter details
+│   ├── characters/         # Character pages
+│   ├── events/             # Story events
+│   ├── gambles/            # Gamble mechanics
+│   ├── guides/             # Community guides
+│   ├── login/              # Login page
+│   ├── media/              # Fan media gallery
+│   ├── organizations/      # Character organizations
+│   ├── password-reset/     # Password reset flow
+│   ├── profile/            # User profile
+│   ├── quotes/             # Character quotes
+│   ├── register/           # Registration
+│   ├── search/             # Global search
+│   ├── submit-annotation/  # Annotation submission
+│   ├── submit-event/       # Event submission
+│   ├── submit-guide/       # Guide submission
+│   ├── submit-media/       # Media submission
+│   ├── users/              # User profiles
+│   ├── verify-email/       # Email verification
+│   └── volumes/            # Volume information
+├── components/
+│   ├── admin/              # All React Admin components (Characters.tsx, Guides.tsx, etc.)
+│   └── ...                 # Shared UI components
+├── hooks/                  # Custom hooks (useSpoilerSettings, usePageView, usePendingCounts, etc.)
+├── lib/
+│   ├── api.ts              # All API calls — singleton ApiClient class
+│   ├── theme.ts            # Mantine theme config
+│   └── utils.ts            # Utility functions
+├── providers/
+│   ├── AuthProvider.tsx    # Auth context + token management
+│   ├── ClientProviders.tsx # Root client-side providers
+│   └── ProgressProvider.tsx # Reading progress / spoiler tracking
+└── types/                  # TypeScript definitions
 ```
 
-## Key Features
+## Key Patterns
 
-### Public Features
-- Browse characters, arcs, volumes, chapters
-- View gamble information and mechanics
-- Read community guides and media
-- User registration and authentication
-- Submit guides and media content
-- Search functionality across content
+### API Client (`src/lib/api.ts`)
+- Singleton `ApiClient` handles all requests
+- **JWT access token stored in memory only** (not localStorage) — prevents XSS token theft
+- Refresh token lives in httpOnly cookie
+- Automatic token refresh on 401 with race condition guard (single shared refresh promise)
+- `X-Requested-With: Fetch` header on all requests for CSRF protection
 
-### Admin Features (React Admin)
-- Content management for all entities
-- User role management
-- Media approval/rejection
-- Guide moderation
-- Analytics and reporting
+### Admin Panel
+- Entry point: `src/app/admin/page.tsx` → `AdminApp.tsx`
+- All resource components live in `src/components/admin/` (not `src/app/admin/`)
+- Uses React Admin with custom `AdminDataProvider.ts` and `AdminAuthProvider.ts`
 
-## API Integration
+### Auth Flow
+- OAuth callback: `/auth/callback?token=...&refreshToken=...` (provider-agnostic)
+- After login, `AuthProvider` calls `api.silentRefresh()` to hydrate the in-memory token
 
-Communicates with NestJS backend at `http://localhost:3001/api`:
-
-- **Authentication**: Login, logout, registration, Fluxer OAuth2
-- **Content APIs**: Characters, arcs, guides, media, gambles, etc.
-- **User Management**: Profiles, preferences, submissions
-- **Admin APIs**: Full CRUD operations for all entities
-
-## User Roles & Permissions
-
-- **Public Users**: View content, create account, submit guides/media
-- **Moderators**: Edit existing content, approve submissions
-- **Admins**: Full access including user management
-
-## Development Guidelines
-
-### Commands to Remember
-```bash
-# Use yarn (not npm)
-yarn dev          # Development server with Turbopack
-yarn build        # Production build
-yarn lint         # ESLint checking
-```
-
-### Code Style
-- Use TypeScript for all new code
-- Follow Next.js App Router conventions
-- Use Tailwind CSS utility classes
-- Implement proper error handling
-- Use meaningful component names
-
-### State Management
-- Use Zustand for global state
-- Custom hooks for API calls
-- Handle loading and error states properly
-
-### Routing
-- Uses Next.js App Router (not Pages Router)
-- Dynamic routes with `[id]` folders
-- Server and client components appropriately
+### Reading Progress / Spoilers
+- `ProgressProvider` tracks per-user chapter progress via Zustand
+- Components use `useSpoilerSettings` hook to gate content display
 
 ## Environment Variables
 
-Create `.env.local`:
-```
+```bash
+# client/.env.local
 NEXT_PUBLIC_API_URL=http://localhost:3001/api
+AUTH_SECRET=your_nextauth_secret
+AUTH_RESEND_KEY=your_resend_api_key
 ```
 
-## Deployment
+## User Roles
 
-The client runs on port 3000 by default, while the backend API runs on port 3001.
+| Role | Permissions |
+|------|-------------|
+| Public | View content |
+| `user` | + Submit guides/media/annotations, favorites |
+| `moderator` | + Edit content, approve submissions |
+| `editor` | + Extended content editing |
+| `admin` | Full access including user management |

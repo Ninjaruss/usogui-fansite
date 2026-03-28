@@ -89,13 +89,25 @@ async function bootstrap() {
   });
 
   // Rate limiting
+  // Behind Cloudflare + Traefik (Dokploy), req.ip resolves to Cloudflare's IP rather than the
+  // real visitor IP because trust proxy 1 only accounts for one hop (Traefik). Using
+  // CF-Connecting-IP instead gives us the true client IP that Cloudflare guarantees and
+  // strips from any incoming requests (cannot be spoofed by visitors).
+  const getRealIp = (req: any): string => {
+    const cfIp = req.headers['cf-connecting-ip'];
+    if (cfIp && typeof cfIp === 'string') return cfIp;
+    return req.ip ?? req.connection?.remoteAddress ?? '0.0.0.0';
+  };
+
   // Allow overriding via environment variables. Defaults increased to support power users browsing multiple pages.
   const RATE_LIMIT_WINDOW_MS = process.env.RATE_LIMIT_WINDOW_MS
     ? Number(process.env.RATE_LIMIT_WINDOW_MS)
     : 15 * 60 * 1000; // default 15 minutes
   const RATE_LIMIT_MAX = process.env.RATE_LIMIT_MAX
     ? Number(process.env.RATE_LIMIT_MAX)
-    : 2000; // default 2000 requests per window (increased for power users)
+    : process.env.NODE_ENV === 'production'
+      ? 2000
+      : 10000; // relaxed in dev to avoid blocking during active development
   console.log(
     `Rate limiter: windowMs=${RATE_LIMIT_WINDOW_MS}, max=${RATE_LIMIT_MAX}`,
   );
@@ -104,11 +116,11 @@ async function bootstrap() {
     rateLimit({
       windowMs: RATE_LIMIT_WINDOW_MS,
       max: RATE_LIMIT_MAX,
+      keyGenerator: getRealIp,
       message: 'Too many requests from this IP, please try again later',
     }),
   );
 
-  // Special rate limit for auth routes
   // Special rate limit for auth routes (keep strict defaults to protect against brute force)
   const AUTH_RATE_LIMIT_WINDOW_MS = process.env.AUTH_RATE_LIMIT_WINDOW_MS
     ? Number(process.env.AUTH_RATE_LIMIT_WINDOW_MS)
@@ -127,6 +139,7 @@ async function bootstrap() {
     rateLimit({
       windowMs: AUTH_RATE_LIMIT_WINDOW_MS,
       max: AUTH_RATE_LIMIT_MAX,
+      keyGenerator: getRealIp,
       message: 'Too many login attempts, please try again later',
     }),
   );
@@ -141,6 +154,7 @@ async function bootstrap() {
     rateLimit({
       windowMs: WRITE_RATE_LIMIT_WINDOW_MS,
       max: WRITE_RATE_LIMIT_MAX,
+      keyGenerator: getRealIp,
       message: 'Too many uploads, please try again later',
     }),
   );
@@ -150,6 +164,7 @@ async function bootstrap() {
     rateLimit({
       windowMs: WRITE_RATE_LIMIT_WINDOW_MS,
       max: WRITE_RATE_LIMIT_MAX,
+      keyGenerator: getRealIp,
       message: 'Too many guide submissions, please try again later',
       // Skip rate limiting for GET requests (reading guides)
       skip: (req) => req.method === 'GET',
