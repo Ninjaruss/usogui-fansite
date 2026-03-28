@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Query,
+  Param,
   ParseIntPipe,
   DefaultValuePipe,
   UseGuards,
@@ -10,6 +11,7 @@ import {
   ApiTags,
   ApiOperation,
   ApiQuery,
+  ApiParam,
   ApiResponse,
   ApiBearerAuth,
 } from '@nestjs/swagger';
@@ -66,6 +68,21 @@ export class EditLogController {
       page,
       limit: safeLimit,
     });
+  }
+
+  @Get('user/:id')
+  @ApiOperation({ summary: 'Get wiki edits by a specific user (public)' })
+  @ApiParam({ name: 'id', type: Number })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  @ApiResponse({ status: 200, description: 'Paginated wiki edits for the user' })
+  async getWikiEditsByUser(
+    @Param('id', ParseIntPipe) userId: number,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
+  ) {
+    const safeLimit = Math.min(limit, 50);
+    return this.editLogService.getWikiEditsByUser(userId, { page, limit: safeLimit });
   }
 
   @Get('my-submissions')

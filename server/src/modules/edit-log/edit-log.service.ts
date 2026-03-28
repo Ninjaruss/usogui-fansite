@@ -387,6 +387,42 @@ export class EditLogService {
     };
   }
 
+  async getWikiEditsByUser(
+    userId: number,
+    options: { page?: number; limit?: number },
+  ): Promise<{
+    data: Array<EditLog & { entityName?: string }>;
+    total: number;
+    page: number;
+    totalPages: number;
+  }> {
+    const { page = 1, limit = 20 } = options;
+    const wikiTypes = [
+      EditLogEntityType.CHARACTER,
+      EditLogEntityType.ARC,
+      EditLogEntityType.GAMBLE,
+      EditLogEntityType.ORGANIZATION,
+      EditLogEntityType.EVENT,
+      EditLogEntityType.CHAPTER,
+    ];
+
+    const [data, total] = await this.editLogRepository.findAndCount({
+      where: { userId, entityType: In(wikiTypes) },
+      relations: ['user'],
+      order: { createdAt: 'DESC' },
+      skip: (page - 1) * limit,
+      take: limit,
+    });
+
+    const nameMap = await this.resolveEntityNames(data);
+    const enriched = data.map((e) => ({
+      ...e,
+      entityName: nameMap.get(`${e.entityType}:${e.entityId}`),
+    }));
+
+    return { data: enriched, total, page, totalPages: Math.ceil(total / limit) };
+  }
+
   async getRecentApprovedSubmissions(options: {
     limit?: number;
     page?: number;
