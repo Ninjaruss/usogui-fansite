@@ -9,6 +9,8 @@ import { textColors } from '../lib/mantine-theme'
 // ── Submission types (community contributions) ────────────────────────────────
 type SubmissionEventType = 'guide' | 'media' | 'annotation' | 'event'
 
+type FilterKind = 'all' | 'submissions' | 'edits'
+
 const SUBMISSION_BORDER: Record<SubmissionEventType, string> = {
   guide:      '#3a7a4a',
   media:      '#3a4a6a',
@@ -64,6 +66,7 @@ interface TimelineEntry {
   borderColor: string
   bgColor: string
   textColor: string
+  changedFields?: string[] | null
 }
 
 function submissionHref(type: string, id: number, entityType?: string, entityId?: number): string {
@@ -101,6 +104,15 @@ function timeAgo(date: Date): string {
   return `${Math.floor(days / 7)}w`
 }
 
+function formatChangedFields(fields: string[] | null | undefined): string {
+  if (!fields?.length) return ''
+  const filtered = fields.filter(f => !f.startsWith('priorStatus:'))
+  if (!filtered.length) return ''
+  const shown = filtered.slice(0, 4).map(f => f.charAt(0).toUpperCase() + f.slice(1))
+  const rest = filtered.length - 4
+  return rest > 0 ? `${shown.join(', ')} +${rest} more` : shown.join(', ')
+}
+
 interface PublicActivityTimelineProps {
   userId: number
   submissions: any[]
@@ -109,6 +121,7 @@ interface PublicActivityTimelineProps {
 export default function PublicActivityTimeline({ userId, submissions }: PublicActivityTimelineProps) {
   const [wikiEdits, setWikiEdits] = useState<any[]>([])
   const [visibleCount, setVisibleCount] = useState(8)
+  const [filter, setFilter] = useState<FilterKind>('all')
 
   useEffect(() => {
     if (!userId) return
@@ -146,6 +159,7 @@ export default function PublicActivityTimeline({ userId, submissions }: PublicAc
           title: e.entityName ?? `${eType} #${e.entityId}`,
           href: wikiHref(eType, e.entityId),
           date: new Date(e.createdAt),
+          changedFields: e.changedFields ?? null,
           borderColor: color,
           bgColor: `${color}0a`,
           textColor: color,
@@ -156,13 +170,42 @@ export default function PublicActivityTimeline({ userId, submissions }: PublicAc
       .sort((a, b) => b.date.getTime() - a.date.getTime())
   }, [submissions, wikiEdits])
 
-  const visible = events.slice(0, visibleCount)
+  const filtered = filter === 'edits'
+    ? events.filter(e => e.kind === 'wiki')
+    : filter === 'submissions'
+    ? events.filter(e => e.kind === 'submission')
+    : events
+
+  const visible = filtered.slice(0, visibleCount)
 
   return (
     <Box style={{ background: '#0d0d0d', border: '1px solid #1a1a1a', borderRadius: '4px', padding: '12px' }}>
-      <Text style={{ fontSize: '17px', fontWeight: 600, color: '#d4d4d4', marginBottom: 12 }}>Activity</Text>
+      <Group justify="space-between" align="center" mb={10}>
+        <Text style={{ fontSize: '17px', fontWeight: 600, color: '#d4d4d4' }}>Activity</Text>
+        <Group gap={4}>
+          {(['all', 'submissions', 'edits'] as FilterKind[]).map(f => (
+            <Button
+              key={f}
+              size="xs"
+              onClick={() => { setFilter(f); setVisibleCount(8) }}
+              style={{
+                backgroundColor: filter === f ? 'rgba(255,255,255,0.1)' : 'transparent',
+                border: `1px solid ${filter === f ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.07)'}`,
+                color: filter === f ? '#e5e5e5' : '#666',
+                borderRadius: '3px',
+                fontSize: '11px',
+                height: '22px',
+                padding: '0 8px',
+                textTransform: 'capitalize',
+              }}
+            >
+              {f}
+            </Button>
+          ))}
+        </Group>
+      </Group>
 
-      {events.length === 0 ? (
+      {filtered.length === 0 ? (
         <Text style={{ fontSize: '15px', color: '#666', fontStyle: 'italic' }}>No public activity yet.</Text>
       ) : (
         <Box>
@@ -211,9 +254,19 @@ export default function PublicActivityTimeline({ userId, submissions }: PublicAc
                     </Anchor>
                   </Group>
                   {ev.kind === 'wiki' && (
-                    <Text style={{ fontSize: '11px', color: ev.textColor, marginTop: '1px', opacity: 0.7 }}>
-                      {ev.type.charAt(0).toUpperCase() + ev.type.slice(1)}
-                    </Text>
+                    <>
+                      <Text style={{ fontSize: '11px', color: ev.textColor, marginTop: '1px', opacity: 0.7 }}>
+                        {ev.type.charAt(0).toUpperCase() + ev.type.slice(1)}
+                      </Text>
+                      {(() => {
+                        const fieldsLabel = formatChangedFields(ev.changedFields)
+                        return fieldsLabel ? (
+                          <Text style={{ fontSize: '11px', color: '#666', marginTop: '1px' }}>
+                            {fieldsLabel}
+                          </Text>
+                        ) : null
+                      })()}
+                    </>
                   )}
                   {ev.kind === 'submission' && ev.entityName && ev.entityType && (
                     <Text style={{ fontSize: '11px', color: '#888', marginTop: '1px' }} lineClamp={1}>
@@ -228,13 +281,13 @@ export default function PublicActivityTimeline({ userId, submissions }: PublicAc
             </Group>
           ))}
 
-          {events.length > visibleCount && (
+          {filtered.length > visibleCount && (
             <Button
               variant="subtle" size="xs" fullWidth mt={8}
               onClick={() => setVisibleCount((v) => v + 8)}
               styles={{ root: { color: '#666', fontSize: '12px' } }}
             >
-              Show more ({events.length - visibleCount} remaining)
+              Show more ({filtered.length - visibleCount} remaining)
             </Button>
           )}
         </Box>
