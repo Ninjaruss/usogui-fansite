@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Character } from '../../entities/character.entity';
@@ -151,11 +151,18 @@ export class CharactersService {
     };
   }
 
-  async create(createCharacterDto: CreateCharacterDto, userId: number): Promise<Character> {
+  async create(
+    createCharacterDto: CreateCharacterDto,
+    userId: number,
+  ): Promise<Character> {
     const { organizationIds: _ignored, ...characterData } = createCharacterDto;
     const character = this.repo.create(characterData);
     const saved = await this.repo.save(character);
-    await this.editLogService.logCreate(EditLogEntityType.CHARACTER, saved.id, userId);
+    await this.editLogService.logCreate(
+      EditLogEntityType.CHARACTER,
+      saved.id,
+      userId,
+    );
     return saved;
   }
 
@@ -163,6 +170,7 @@ export class CharactersService {
     id: number,
     updateCharacterDto: UpdateCharacterDto,
     userId: number,
+    isMinorEdit = false,
   ): Promise<Character> {
     const character = await this.repo.findOne({ where: { id } });
     if (!character) {
@@ -170,14 +178,51 @@ export class CharactersService {
     }
     const { organizationIds: _ignored, ...characterData } = updateCharacterDto;
     Object.assign(character, characterData);
+    if (!isMinorEdit) {
+      character.isVerified = false;
+      character.verifiedById = null;
+      character.verifiedAt = null;
+    }
     const saved = await this.repo.save(character);
-    const changedFields = Object.keys(characterData).filter(k => characterData[k as keyof typeof characterData] !== undefined);
-    await this.editLogService.logUpdate(EditLogEntityType.CHARACTER, id, userId, changedFields);
+    const changedFields = Object.keys(characterData).filter(
+      (k) => characterData[k as keyof typeof characterData] !== undefined,
+    );
+    await this.editLogService.logUpdate(
+      EditLogEntityType.CHARACTER,
+      id,
+      userId,
+      changedFields,
+      isMinorEdit,
+    );
     return saved;
   }
 
+  async verify(id: number, verifierId: number, isAdmin: boolean): Promise<Character> {
+    const character = await this.repo.findOne({ where: { id } });
+    if (!character) {
+      throw new NotFoundException(`Character with id ${id} not found`);
+    }
+    if (!isAdmin) {
+      const lastEdit = await this.editLogService.findLastMajorEdit(
+        EditLogEntityType.CHARACTER,
+        id,
+      );
+      if (lastEdit && lastEdit.userId === verifierId) {
+        throw new ForbiddenException('You cannot verify your own edit');
+      }
+    }
+    character.isVerified = true;
+    character.verifiedById = verifierId;
+    character.verifiedAt = new Date();
+    return this.repo.save(character);
+  }
+
   async remove(id: number, userId: number): Promise<{ affected: number }> {
-    await this.editLogService.logDelete(EditLogEntityType.CHARACTER, id, userId);
+    await this.editLogService.logDelete(
+      EditLogEntityType.CHARACTER,
+      id,
+      userId,
+    );
     const result = await this.repo.delete(id);
     if (!result.affected || result.affected === 0) {
       throw new NotFoundException(`Character with id ${id} not found`);

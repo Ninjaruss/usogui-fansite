@@ -287,12 +287,29 @@ export class CharactersController {
   })
   @ApiResponse({ status: 404, description: 'Character not found' })
   @Roles(UserRole.MODERATOR, UserRole.ADMIN, UserRole.EDITOR)
-  async update(@Param('id') id: number, @Body() data: UpdateCharacterDto, @CurrentUser() user: User) {
-    const result = await this.service.update(id, data, user.id);
-    if (!result) {
-      throw new NotFoundException(`Character with id ${id} not found`);
-    }
-    return { message: 'Updated successfully' };
+  async update(
+    @Param('id') id: number,
+    @Body() data: UpdateCharacterDto,
+    @Body('isMinorEdit') isMinorEdit: boolean,
+    @CurrentUser() user: User,
+  ) {
+    return this.service.update(+id, data, user.id, isMinorEdit ?? false);
+  }
+
+  @Post(':id/verify')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.MODERATOR, UserRole.ADMIN)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Verify a character page (Moderator/Admin)' })
+  @ApiParam({ name: 'id', description: 'Character ID' })
+  @ApiResponse({ status: 200, description: 'Character verified successfully' })
+  @ApiResponse({ status: 403, description: 'Cannot verify your own edit' })
+  @ApiResponse({ status: 404, description: 'Character not found' })
+  async verify(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user: User,
+  ): Promise<Character> {
+    return this.service.verify(id, user.id, user.role === UserRole.ADMIN);
   }
 
   @Delete(':id')
