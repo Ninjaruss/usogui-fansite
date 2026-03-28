@@ -8,6 +8,7 @@ import {
   Delete,
   Query,
   UseGuards,
+  ParseIntPipe,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -18,6 +19,7 @@ import {
   ApiBody,
   ApiBearerAuth,
 } from '@nestjs/swagger';
+
 import { OrganizationsService } from './organizations.service';
 import { Organization } from '../../entities/organization.entity';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -167,7 +169,10 @@ export class OrganizationsController {
       },
     },
   })
-  create(@Body() data: CreateOrganizationDto, @CurrentUser() user: User): Promise<Organization> {
+  create(
+    @Body() data: CreateOrganizationDto,
+    @CurrentUser() user: User,
+  ): Promise<Organization> {
     return this.service.create(data, user.id);
   }
 
@@ -209,8 +214,29 @@ export class OrganizationsController {
     },
   })
   @ApiResponse({ status: 404, description: 'Organization not found' })
-  update(@Param('id') id: number, @Body() data: UpdateOrganizationDto, @CurrentUser() user: User) {
-    return this.service.update(id, data, user.id);
+  update(
+    @Param('id') id: number,
+    @Body() data: UpdateOrganizationDto,
+    @Body('isMinorEdit') isMinorEdit: boolean,
+    @CurrentUser() user: User,
+  ) {
+    return this.service.update(id, data, user.id, isMinorEdit ?? false);
+  }
+
+  @Post(':id/verify')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.MODERATOR, UserRole.ADMIN)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Verify an organization page (Moderator/Admin)' })
+  @ApiParam({ name: 'id', description: 'Organization ID' })
+  @ApiResponse({ status: 200, description: 'Organization verified successfully' })
+  @ApiResponse({ status: 403, description: 'Cannot verify your own edit' })
+  @ApiResponse({ status: 404, description: 'Organization not found' })
+  async verify(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user: User,
+  ): Promise<Organization> {
+    return this.service.verify(id, user.id, user.role === UserRole.ADMIN);
   }
 
   @Delete(':id')

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Organization } from '../../entities/organization.entity';
@@ -86,24 +86,64 @@ export class OrganizationsService {
     };
   }
 
-  async create(data: Partial<Organization>, userId: number): Promise<Organization> {
+  async create(
+    data: Partial<Organization>,
+    userId: number,
+  ): Promise<Organization> {
     const organization = this.repo.create(data);
     const saved = await this.repo.save(organization);
-    await this.editLogService.logCreate(EditLogEntityType.ORGANIZATION, saved.id, userId);
+    await this.editLogService.logCreate(
+      EditLogEntityType.ORGANIZATION,
+      saved.id,
+      userId,
+    );
     return saved;
   }
 
-  async update(id: number, data: Partial<Organization>, userId: number) {
-    const result = await this.repo.update(id, data);
-    if (result.affected === 0)
-      throw new NotFoundException(`Organization with ID ${id} not found`);
-    const changedFields = Object.keys(data).filter(k => data[k as keyof typeof data] !== undefined);
-    await this.editLogService.logUpdate(EditLogEntityType.ORGANIZATION, id, userId, changedFields);
+  async update(id: number, data: Partial<Organization>, userId: number, isMinorEdit = false) {
+    const entity = await this.repo.findOne({ where: { id } });
+    if (!entity) throw new NotFoundException(`Organization with ID ${id} not found`);
+    Object.assign(entity, data);
+    if (!isMinorEdit) {
+      entity.isVerified = false;
+      entity.verifiedById = null;
+      entity.verifiedAt = null;
+    }
+    await this.repo.save(entity);
+    const changedFields = Object.keys(data).filter(
+      (k) => data[k as keyof typeof data] !== undefined,
+    );
+    await this.editLogService.logUpdate(
+      EditLogEntityType.ORGANIZATION,
+      id,
+      userId,
+      changedFields,
+      isMinorEdit,
+    );
     return this.findOne(id);
   }
 
+  async verify(id: number, verifierId: number, isAdmin: boolean): Promise<Organization> {
+    const organization = await this.repo.findOne({ where: { id } });
+    if (!organization) throw new NotFoundException(`Organization with id ${id} not found`);
+    if (!isAdmin) {
+      const lastEdit = await this.editLogService.findLastMajorEdit(EditLogEntityType.ORGANIZATION, id);
+      if (lastEdit && lastEdit.userId === verifierId) {
+        throw new ForbiddenException('You cannot verify your own edit');
+      }
+    }
+    organization.isVerified = true;
+    organization.verifiedById = verifierId;
+    organization.verifiedAt = new Date();
+    return this.repo.save(organization);
+  }
+
   async remove(id: number, userId: number) {
-    await this.editLogService.logDelete(EditLogEntityType.ORGANIZATION, id, userId);
+    await this.editLogService.logDelete(
+      EditLogEntityType.ORGANIZATION,
+      id,
+      userId,
+    );
     const result = await this.repo.delete(id);
     if (result.affected === 0)
       throw new NotFoundException(`Organization with ID ${id} not found`);
