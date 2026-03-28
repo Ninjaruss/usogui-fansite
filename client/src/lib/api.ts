@@ -1090,6 +1090,13 @@ class ApiClient {
     } | null>(`/volumes/${id}/showcase/${type}`)
   }
 
+  async getVolumeShowcaseStatus(volumeId: number) {
+    return this.get<{
+      background: 'approved' | 'pending' | 'rejected' | null
+      popout: 'approved' | 'pending' | 'rejected' | null
+    }>(`/volumes/${volumeId}/showcase-status`)
+  }
+
   async getShowcaseReadyVolumes() {
     const response = await this.get<{ data: import('../types').ShowcaseSlot[] }>('/volumes/showcase-ready')
     return response?.data ?? []
