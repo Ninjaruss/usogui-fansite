@@ -371,7 +371,7 @@ export default function UserProfileClient({ initialUser }: UserProfileClientProp
           {/* Right column: Reading Progress + Activity */}
           <Stack gap="md">
             <ReadingProgressBar userProgress={user.userProgress} />
-            <PublicActivityTimeline submissions={submissions} />
+            <PublicActivityTimeline userId={user.id} submissions={submissions} />
           </Stack>
         </Box>
 
