@@ -5,10 +5,12 @@ import { Character } from '../../entities/character.entity';
 import { Organization } from '../../entities/organization.entity';
 import { CharacterOrganizationsService } from './character-organizations.service';
 import { CharacterOrganizationsController } from './character-organizations.controller';
+import { EditLogModule } from '../edit-log/edit-log.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([CharacterOrganization, Character, Organization]),
+    EditLogModule,
   ],
   providers: [CharacterOrganizationsService],
   controllers: [CharacterOrganizationsController],

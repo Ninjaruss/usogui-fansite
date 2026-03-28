@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -10,6 +11,8 @@ import { Character } from '../../entities/character.entity';
 import { Organization } from '../../entities/organization.entity';
 import { CreateCharacterOrganizationDto } from './dto/create-character-organization.dto';
 import { UpdateCharacterOrganizationDto } from './dto/update-character-organization.dto';
+import { EditLogService } from '../edit-log/edit-log.service';
+import { EditLogEntityType } from '../../entities/edit-log.entity';
 
 @Injectable()
 export class CharacterOrganizationsService {
@@ -20,6 +23,7 @@ export class CharacterOrganizationsService {
     private readonly characterRepo: Repository<Character>,
     @InjectRepository(Organization)
     private readonly organizationRepo: Repository<Organization>,
+    private readonly editLogService: EditLogService,
   ) {}
 
   /**
@@ -121,6 +125,7 @@ export class CharacterOrganizationsService {
    */
   async create(
     dto: CreateCharacterOrganizationDto,
+    userId: number,
   ): Promise<CharacterOrganization> {
     // Validate character exists
     const character = await this.characterRepo.findOne({
@@ -155,7 +160,13 @@ export class CharacterOrganizationsService {
       notes: dto.notes,
     });
 
-    return this.repo.save(membership);
+    const saved = await this.repo.save(membership);
+    await this.editLogService.logCreate(
+      EditLogEntityType.CHARACTER_ORGANIZATION,
+      saved.id,
+      userId,
+    );
+    return saved;
   }
 
   /**
@@ -164,6 +175,8 @@ export class CharacterOrganizationsService {
   async update(
     id: number,
     dto: UpdateCharacterOrganizationDto,
+    userId: number,
+    isMinorEdit = false,
   ): Promise<CharacterOrganization> {
     const membership = await this.findOne(id);
 
@@ -194,18 +207,60 @@ export class CharacterOrganizationsService {
       }
     }
 
+    const changedFields = Object.keys(dto);
+
     // Update fields
     Object.assign(membership, dto);
 
-    return this.repo.save(membership);
+    if (!isMinorEdit) {
+      membership.isVerified = false;
+      membership.verifiedById = null;
+      membership.verifiedAt = null;
+    }
+
+    const saved = await this.repo.save(membership);
+    await this.editLogService.logUpdate(
+      EditLogEntityType.CHARACTER_ORGANIZATION,
+      id,
+      userId,
+      changedFields,
+      isMinorEdit,
+    );
+    return saved;
   }
 
   /**
    * Delete a membership
    */
-  async remove(id: number): Promise<void> {
+  async remove(id: number, userId: number): Promise<void> {
     const membership = await this.findOne(id);
+    await this.editLogService.logDelete(
+      EditLogEntityType.CHARACTER_ORGANIZATION,
+      id,
+      userId,
+    );
     await this.repo.remove(membership);
+  }
+
+  /**
+   * Verify a membership (Moderator/Admin)
+   */
+  async verify(id: number, verifierId: number, isAdmin: boolean): Promise<CharacterOrganization> {
+    const membership = await this.repo.findOne({ where: { id } });
+    if (!membership) throw new NotFoundException(`CharacterOrganization with id ${id} not found`);
+    if (!isAdmin) {
+      const lastEdit = await this.editLogService.findLastMajorEdit(
+        EditLogEntityType.CHARACTER_ORGANIZATION,
+        id,
+      );
+      if (lastEdit && lastEdit.userId === verifierId) {
+        throw new ForbiddenException('You cannot verify your own edit');
+      }
+    }
+    membership.isVerified = true;
+    membership.verifiedById = verifierId;
+    membership.verifiedAt = new Date();
+    return this.repo.save(membership);
   }
 
   /**

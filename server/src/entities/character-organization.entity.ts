@@ -17,6 +17,7 @@ import {
 // import type breaks character-organization <-> character/organization circular deps
 import type { Character } from './character.entity';
 import type { Organization } from './organization.entity';
+import { User } from './user.entity';
 
 /**
  * Represents a character's membership in an organization.
@@ -99,4 +100,17 @@ export class CharacterOrganization {
   @ApiProperty({ description: 'When this record was last updated' })
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @Column({ default: false })
+  isVerified: boolean;
+
+  @Column({ nullable: true })
+  verifiedById: number;
+
+  @ManyToOne(() => User, { nullable: true, eager: false })
+  @JoinColumn({ name: 'verifiedById' })
+  verifiedBy: User;
+
+  @Column({ type: 'timestamp', nullable: true })
+  verifiedAt: Date;
 }

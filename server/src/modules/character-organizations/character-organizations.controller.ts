@@ -25,7 +25,8 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CharacterOrganization } from '../../entities/character-organization.entity';
-import { UserRole } from '../../entities/user.entity';
+import { User, UserRole } from '../../entities/user.entity';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 
 @ApiTags('character-organizations')
 @Controller('character-organizations')
@@ -173,7 +174,7 @@ export class CharacterOrganizationsController {
    */
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.MODERATOR)
+  @Roles(UserRole.ADMIN, UserRole.MODERATOR, UserRole.EDITOR)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create a new character-organization membership' })
   @ApiResponse({
@@ -181,8 +182,11 @@ export class CharacterOrganizationsController {
     description: 'The created membership',
     type: CharacterOrganization,
   })
-  async create(@Body() dto: CreateCharacterOrganizationDto) {
-    return this.service.create(dto);
+  async create(
+    @Body() dto: CreateCharacterOrganizationDto,
+    @CurrentUser() user: User,
+  ) {
+    return this.service.create(dto, user.id);
   }
 
   /**
@@ -190,7 +194,7 @@ export class CharacterOrganizationsController {
    */
   @Put(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.MODERATOR)
+  @Roles(UserRole.ADMIN, UserRole.MODERATOR, UserRole.EDITOR)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update an existing membership' })
   @ApiParam({ name: 'id', type: Number })
@@ -202,8 +206,10 @@ export class CharacterOrganizationsController {
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateCharacterOrganizationDto,
+    @Body('isMinorEdit') isMinorEdit: boolean,
+    @CurrentUser() user: User,
   ) {
-    return this.service.update(id, dto);
+    return this.service.update(id, dto, user.id, isMinorEdit ?? false);
   }
 
   /**
@@ -211,13 +217,32 @@ export class CharacterOrganizationsController {
    */
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.MODERATOR)
+  @Roles(UserRole.ADMIN, UserRole.MODERATOR, UserRole.EDITOR)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete a membership' })
   @ApiParam({ name: 'id', type: Number })
   @ApiResponse({ status: 200, description: 'Membership deleted successfully' })
-  async remove(@Param('id', ParseIntPipe) id: number) {
-    await this.service.remove(id);
+  async remove(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user: User,
+  ) {
+    await this.service.remove(id, user.id);
     return { message: 'Membership deleted successfully' };
+  }
+
+  @Post(':id/verify')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.MODERATOR, UserRole.ADMIN)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Verify a character organization membership (Moderator/Admin)' })
+  @ApiParam({ name: 'id', description: 'Membership ID' })
+  @ApiResponse({ status: 200, description: 'Membership verified successfully' })
+  @ApiResponse({ status: 403, description: 'Cannot verify your own edit' })
+  @ApiResponse({ status: 404, description: 'Membership not found' })
+  async verify(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user: User,
+  ): Promise<CharacterOrganization> {
+    return this.service.verify(id, user.id, user.role === UserRole.ADMIN);
   }
 }
