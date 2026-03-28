@@ -130,6 +130,131 @@ function ImageWithRetry({
 
 const CYCLE_INTERVAL_MS = 8000
 
+function VolumeCard({
+  volume,
+  index,
+  totalVolumes,
+  layout,
+  animations,
+  scrollYProgress,
+  time,
+  onImageLoad,
+  onImageError,
+}: {
+  volume: VolumeShowcaseItem
+  index: number
+  totalVolumes: number
+  layout: 'single' | 'dual'
+  animations: ShowcaseAnimations
+  scrollYProgress: ReturnType<typeof useScroll>['scrollYProgress']
+  time: ReturnType<typeof useMotionValue<number>>
+  onImageLoad: (key: string) => void
+  onImageError: (key: string) => void
+}) {
+  const isFirst = index === 0
+  const animConfig = { ...defaultAnimations, ...animations }
+  const baseDelay = index * (animConfig.delayOffset || 0.2)
+
+  const animationSet = useShowcaseAnimationSet(
+    scrollYProgress,
+    time,
+    animConfig,
+    index,
+    totalVolumes,
+    !!volume.popoutImage
+  )
+
+  const entranceAnim = getEntranceAnimation('slideFromSides', layout, index, baseDelay)
+  const popoutRotation = volume.popoutImage ? getPopoutRotation('standard', isFirst, index) : null
+
+  return (
+    <motion.div
+      initial={entranceAnim.initial}
+      animate={entranceAnim.animate}
+      transition={entranceAnim.transition}
+      style={{
+        position: 'relative',
+        transformStyle: 'preserve-3d',
+        zIndex: 1,
+        flex: layout === 'single' ? '1' : '0 0 auto',
+        scale: animationSet.volume.scale,
+        x: animationSet.volume.x,
+        rotateY: animationSet.volume.rotateY,
+        z: animationSet.volume.z
+      }}
+    >
+      <Box
+        style={{
+          position: 'relative',
+          width: layout === 'single' ? 'clamp(220px, 30vw, 320px)' : 'clamp(200px, 28vw, 300px)',
+          height: layout === 'single' ? 'clamp(310px, 42vw, 450px)' : 'clamp(280px, 40vw, 420px)',
+          cursor: 'pointer',
+          transformStyle: 'preserve-3d',
+          transition: 'transform 0.3s ease-out',
+          margin: layout === 'single' ? '0 auto' : '0'
+        }}
+      >
+        <ImageWithRetry
+          src={volume.backgroundImage}
+          alt={volume.title || `Volume ${volume.id}`}
+          fill
+          onLoad={() => onImageLoad(`bg-${volume.id}`)}
+          onError={() => onImageError(`bg-${volume.id}`)}
+          style={{
+            objectFit: 'contain',
+            filter: 'drop-shadow(12px 12px 24px rgba(0, 0, 0, 0.4))',
+            zIndex: 1
+          }}
+        />
+
+        {volume.popoutImage && (
+          <motion.div
+            initial={{ opacity: 0, y: 0, z: 0, scale: 1, rotateX: 0 }}
+            animate={{ opacity: 0.9, y: 0, z: 0, scale: 1, rotateX: 0 }}
+            transition={{
+              duration: 1.5,
+              delay: baseDelay + 0.6,
+              ease: [0.175, 0.885, 0.32, 1.275]
+            }}
+            style={{
+              position: 'absolute',
+              inset: 0,
+              zIndex: 20,
+              pointerEvents: 'none',
+              transformStyle: 'preserve-3d'
+            }}
+          >
+            <motion.div
+              animate={popoutRotation?.animate || {}}
+              transition={popoutRotation?.transition || {}}
+              style={{
+                width: '100%',
+                height: '100%',
+                y: animationSet.popout?.y,
+                scale: animationSet.popout?.scale,
+                z: animationSet.popout?.z,
+                rotateX: animationSet.popout?.rotateX
+              }}
+            >
+              <ImageWithRetry
+                src={volume.popoutImage}
+                alt={`${volume.title || `Volume ${volume.id}`} Character`}
+                fill
+                onLoad={() => onImageLoad(`popout-${volume.id}`)}
+                onError={() => onImageError(`popout-${volume.id}`)}
+                style={{
+                  filter: 'drop-shadow(8px 12px 24px rgba(0, 0, 0, 0.7)) drop-shadow(4px 6px 12px rgba(0, 0, 0, 0.4))',
+                  objectFit: 'contain'
+                }}
+              />
+            </motion.div>
+          </motion.div>
+        )}
+      </Box>
+    </motion.div>
+  )
+}
+
 export function DynamicVolumeShowcase({
   slots,
   animations = defaultAnimations,
@@ -184,113 +309,6 @@ export function DynamicVolumeShowcase({
       }
     }))
   }, [])
-
-  const renderVolume = (volume: VolumeShowcaseItem, index: number, totalVolumes: number) => {
-    const isFirst = index === 0
-    const animConfig = { ...defaultAnimations, ...animations }
-    const baseDelay = index * (animConfig.delayOffset || 0.2)
-
-    // Create animation set using utility functions
-    const animationSet = useShowcaseAnimationSet(
-      scrollYProgress,
-      time,
-      animConfig,
-      index,
-      totalVolumes,
-      !!volume.popoutImage
-    )
-
-    const entranceAnim = getEntranceAnimation('slideFromSides', layout, index, baseDelay)
-    const popoutRotation = volume.popoutImage ? getPopoutRotation('standard', isFirst, index) : null
-
-    return (
-      <motion.div
-        key={volume.id}
-        initial={entranceAnim.initial}
-        animate={entranceAnim.animate}
-        transition={entranceAnim.transition}
-        style={{
-          position: 'relative',
-          transformStyle: 'preserve-3d',
-          zIndex: 1,
-          flex: layout === 'single' ? '1' : '0 0 auto',
-          scale: animationSet.volume.scale,
-          x: animationSet.volume.x,
-          rotateY: animationSet.volume.rotateY,
-          z: animationSet.volume.z
-        }}
-      >
-        <Box
-          style={{
-            position: 'relative',
-            width: layout === 'single' ? 'clamp(220px, 30vw, 320px)' : 'clamp(200px, 28vw, 300px)',
-            height: layout === 'single' ? 'clamp(310px, 42vw, 450px)' : 'clamp(280px, 40vw, 420px)',
-            cursor: 'pointer',
-            transformStyle: 'preserve-3d',
-            transition: 'transform 0.3s ease-out',
-            margin: layout === 'single' ? '0 auto' : '0'
-          }}
-        >
-          <ImageWithRetry
-            src={volume.backgroundImage}
-            alt={volume.title || `Volume ${volume.id}`}
-            fill
-            onLoad={() => handleImageLoad(`bg-${volume.id}`)}
-            onError={() => handleImageError(`bg-${volume.id}`)}
-            style={{
-              objectFit: 'contain',
-              filter: 'drop-shadow(12px 12px 24px rgba(0, 0, 0, 0.4))',
-              zIndex: 1
-            }}
-          />
-
-          {volume.popoutImage && (
-            <motion.div
-              initial={{ opacity: 0, y: 0, z: 0, scale: 1, rotateX: 0 }}
-              animate={{ opacity: 0.9, y: 0, z: 0, scale: 1, rotateX: 0 }}
-              transition={{
-                duration: 1.5,
-                delay: baseDelay + 0.6,
-                ease: [0.175, 0.885, 0.32, 1.275]
-              }}
-              style={{
-                position: 'absolute',
-                inset: 0,
-                zIndex: 20,
-                pointerEvents: 'none',
-                transformStyle: 'preserve-3d'
-              }}
-            >
-              <motion.div
-                animate={popoutRotation?.animate || {}}
-                transition={popoutRotation?.transition || {}}
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  y: animationSet.popout?.y,
-                  scale: animationSet.popout?.scale,
-                  z: animationSet.popout?.z,
-                  rotateX: animationSet.popout?.rotateX
-                }}
-              >
-                <ImageWithRetry
-                  src={volume.popoutImage}
-                  alt={`${volume.title || `Volume ${volume.id}`} Character`}
-                  fill
-                  onLoad={() => handleImageLoad(`popout-${volume.id}`)}
-                  onError={() => handleImageError(`popout-${volume.id}`)}
-                  style={{
-                    filter: 'drop-shadow(8px 12px 24px rgba(0, 0, 0, 0.7)) drop-shadow(4px 6px 12px rgba(0, 0, 0, 0.4))',
-                    objectFit: 'contain'
-                  }}
-                />
-              </motion.div>
-            </motion.div>
-          )}
-        </Box>
-      </motion.div>
-    )
-  }
 
   // Validation
   React.useEffect(() => {
@@ -357,9 +375,20 @@ export function DynamicVolumeShowcase({
           paddingInline: 'clamp(0.75rem, 2vw, 2rem)'
         }}
       >
-        {slotVolumes.map((volume, index) =>
-          renderVolume(volume, index, slotVolumes.length)
-        )}
+        {slotVolumes.map((volume, index) => (
+          <VolumeCard
+            key={volume.id}
+            volume={volume}
+            index={index}
+            totalVolumes={slotVolumes.length}
+            layout={layout}
+            animations={animations}
+            scrollYProgress={scrollYProgress}
+            time={time}
+            onImageLoad={handleImageLoad}
+            onImageError={handleImageError}
+          />
+        ))}
       </Box>
     </Box>
   )
