@@ -1108,6 +1108,7 @@ class ApiClient {
         entityType: string
         entityId: number
         entityName?: string
+        changedFields?: string[] | null
         createdAt: string
         user?: { id: number; username: string; fluxerAvatar?: string; fluxerId?: string }
       }>
@@ -1151,6 +1152,7 @@ class ApiClient {
         entityType: string
         entityId: number
         entityName?: string
+        changedFields?: string[] | null
         createdAt: string
         user?: { id: number; username: string; fluxerAvatar?: string; fluxerId?: string }
       }>
