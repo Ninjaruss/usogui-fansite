@@ -2,10 +2,11 @@ import {
   Injectable,
   NotFoundException,
   ForbiddenException,
+  BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Like, Between } from 'typeorm';
-import { Quote } from '../../entities/quote.entity';
+import { Quote, QuoteStatus } from '../../entities/quote.entity';
 import { CreateQuoteDto } from './dto/create-quote.dto';
 import { UpdateQuoteDto } from './dto/update-quote.dto';
 import { User, UserRole } from '../../entities/user.entity';
@@ -48,6 +49,8 @@ export class QuotesService {
     submittedById?: number;
     page?: number;
     limit?: number;
+    includeAll?: boolean;
+    status?: QuoteStatus;
   }): Promise<{
     data: Quote[];
     total: number;
@@ -93,6 +96,12 @@ export class QuotesService {
       });
     }
 
+    if (options?.status) {
+      queryBuilder.andWhere('quote.status = :status', { status: options.status });
+    } else if (!options?.includeAll) {
+      queryBuilder.andWhere('quote.status = :status', { status: QuoteStatus.APPROVED });
+    }
+
     const total = await queryBuilder.getCount();
 
     if (options?.page && options?.limit) {
@@ -108,9 +117,9 @@ export class QuotesService {
     return { data: quotes, total, page, perPage, totalPages };
   }
 
-  async findOne(id: number): Promise<Quote> {
+  async findOne(id: number, includeAll = false): Promise<Quote> {
     const quote = await this.quotesRepository.findOne({
-      where: { id },
+      where: includeAll ? { id } : { id, status: QuoteStatus.APPROVED },
       relations: ['character', 'submittedBy'],
     });
 
@@ -143,6 +152,8 @@ export class QuotesService {
         end: options.chapterRange.end,
       });
     }
+
+    queryBuilder.andWhere('quote.status = :approvedStatus', { approvedStatus: QuoteStatus.APPROVED });
 
     const quote = await queryBuilder.getOne();
 
@@ -235,7 +246,7 @@ export class QuotesService {
 
   async getQuotesByChapter(chapterNumber: number): Promise<Quote[]> {
     return this.quotesRepository.find({
-      where: { chapterNumber },
+      where: { chapterNumber, status: QuoteStatus.APPROVED },
       relations: ['character', 'submittedBy'],
       order: { pageNumber: 'ASC', createdAt: 'ASC' },
     });
@@ -263,6 +274,8 @@ export class QuotesService {
       });
     }
 
+    queryBuilder.andWhere('quote.status = :status', { status: QuoteStatus.APPROVED });
+
     if (options?.limit) {
       queryBuilder.limit(options.limit);
     }
@@ -280,5 +293,35 @@ export class QuotesService {
     }
 
     return quotes.length;
+  }
+
+  async approve(id: number): Promise<Quote> {
+    const quote = await this.quotesRepository.findOne({ where: { id } });
+    if (!quote) throw new NotFoundException(`Quote with ID ${id} not found`);
+    if (quote.status !== QuoteStatus.PENDING) {
+      throw new BadRequestException('Only pending quotes can be approved');
+    }
+    quote.status = QuoteStatus.APPROVED;
+    quote.rejectionReason = null;
+    return this.quotesRepository.save(quote);
+  }
+
+  async reject(id: number, rejectionReason: string): Promise<Quote> {
+    const quote = await this.quotesRepository.findOne({ where: { id } });
+    if (!quote) throw new NotFoundException(`Quote with ID ${id} not found`);
+    if (quote.status !== QuoteStatus.PENDING) {
+      throw new BadRequestException('Only pending quotes can be rejected');
+    }
+    quote.status = QuoteStatus.REJECTED;
+    quote.rejectionReason = rejectionReason;
+    return this.quotesRepository.save(quote);
+  }
+
+  async getPendingQuotes(): Promise<Quote[]> {
+    return this.quotesRepository.find({
+      where: { status: QuoteStatus.PENDING },
+      relations: ['character', 'submittedBy'],
+      order: { createdAt: 'ASC' },
+    });
   }
 }

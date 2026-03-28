@@ -17,6 +17,12 @@ import {
   ApiHideProperty,
 } from '@nestjs/swagger';
 
+export enum QuoteStatus {
+  PENDING = 'pending',
+  APPROVED = 'approved',
+  REJECTED = 'rejected',
+}
+
 @Entity()
 @Index(['character'])
 @Index(['chapterNumber'])
@@ -83,4 +89,12 @@ export class Quote {
   @ApiProperty({ description: 'When this quote was last updated' })
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @ApiProperty({ enum: QuoteStatus, default: QuoteStatus.PENDING })
+  @Column({ type: 'enum', enum: QuoteStatus, default: QuoteStatus.PENDING })
+  status: QuoteStatus;
+
+  @ApiPropertyOptional()
+  @Column({ type: 'varchar', length: 500, nullable: true })
+  rejectionReason: string | null;
 }
