@@ -22,6 +22,7 @@ import ProfileHeader from './ProfileHeader'
 import ProfileIntelPanel from './ProfileIntelPanel'
 import ProfileFieldLog from './ProfileFieldLog'
 import ReadingProgressBar from '../../components/ReadingProgressBar'
+import PublicActivityTimeline from '../../components/PublicActivityTimeline'
 import ProfileContentTabs from './ProfileContentTabs'
 import ProfileSettingsPanel from './ProfileSettingsPanel'
 
@@ -329,6 +330,14 @@ export default function ProfilePageClient() {
                     user={user!}
                     submissionEdits={submissionEdits}
                   />
+                  {user?.id && (
+                    <PublicActivityTimeline
+                      userId={user.id}
+                      submissions={submissions.filter((s: any) =>
+                        ['guide', 'media', 'annotation', 'event'].includes(s.type) && s.status === 'approved'
+                      )}
+                    />
+                  )}
                 </Stack>
                 <Box style={{ gridColumn: '1 / -1' }}>
                   <ProfileContentTabs
