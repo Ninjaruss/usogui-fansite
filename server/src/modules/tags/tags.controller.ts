@@ -192,7 +192,7 @@ export class TagsController {
     @Body('isMinorEdit') isMinorEdit: boolean,
     @CurrentUser() user: User,
   ) {
-    return this.service.update(id, data, user.id, isMinorEdit);
+    return this.service.update(id, data, user.id, isMinorEdit ?? false);
   }
 
   @Delete(':id')
