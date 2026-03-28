@@ -90,13 +90,90 @@ async function bootstrap() {
 
   // Rate limiting
   // Behind Cloudflare + Traefik (Dokploy), req.ip resolves to Cloudflare's IP rather than the
-  // real visitor IP because trust proxy 1 only accounts for one hop (Traefik). Using
-  // CF-Connecting-IP instead gives us the true client IP that Cloudflare guarantees and
-  // strips from any incoming requests (cannot be spoofed by visitors).
+  // real visitor IP because trust proxy 1 only accounts for one hop (Traefik).
+  //
+  // CF-Connecting-IP is set by Cloudflare to the real visitor IP. However, if someone
+  // bypasses Cloudflare and hits the origin directly, they could spoof this header.
+  // We guard against this by only trusting CF-Connecting-IP when the immediate connecting
+  // IP (from the socket, before any proxy headers) belongs to Cloudflare's published ranges.
+  //
+  // Cloudflare IP ranges: https://www.cloudflare.com/ips/
+  // These change rarely; update if Cloudflare publishes new ranges.
+  const CLOUDFLARE_CIDRS = [
+    '173.245.48.0/20', '103.21.244.0/22', '103.22.200.0/22', '103.31.4.0/22',
+    '141.101.64.0/18', '108.162.192.0/18', '190.93.240.0/20', '188.114.96.0/20',
+    '197.234.240.0/22', '198.41.128.0/17', '162.158.0.0/15', '104.16.0.0/13',
+    '104.24.0.0/14', '172.64.0.0/13', '131.0.72.0/22',
+    '2400:cb00::/32', '2606:4700::/32', '2803:f800::/32', '2405:b500::/32',
+    '2405:8100::/32', '2a06:98c0::/29', '2c0f:f248::/32',
+  ];
+
+  // Parse a CIDR into base address (as BigInt) and prefix length
+  const parseCidr = (cidr: string): { base: bigint; bits: number } | null => {
+    const [addr, prefix] = cidr.split('/');
+    const bits = parseInt(prefix, 10);
+    if (addr.includes(':')) {
+      // IPv6
+      try {
+        const groups = addr.split(':');
+        let expanded = '';
+        const emptyIdx = groups.indexOf('');
+        if (emptyIdx !== -1) {
+          const fill = 8 - groups.filter(Boolean).length;
+          groups.splice(emptyIdx, 1, ...Array(fill).fill('0'));
+        }
+        expanded = groups.map((g) => g.padStart(4, '0')).join('');
+        return { base: BigInt('0x' + expanded), bits };
+      } catch { return null; }
+    } else {
+      // IPv4
+      const parts = addr.split('.').map(Number);
+      if (parts.length !== 4) return null;
+      const base = BigInt((parts[0] << 24) | (parts[1] << 16) | (parts[2] << 8) | parts[3]) & BigInt('0xFFFFFFFF');
+      return { base, bits };
+    }
+  };
+
+  const ipToBigInt = (ip: string): bigint | null => {
+    if (ip.includes(':')) {
+      try {
+        const groups = ip.split(':');
+        const emptyIdx = groups.indexOf('');
+        if (emptyIdx !== -1) {
+          const fill = 8 - groups.filter(Boolean).length;
+          groups.splice(emptyIdx, 1, ...Array(fill).fill('0'));
+        }
+        return BigInt('0x' + groups.map((g) => g.padStart(4, '0')).join(''));
+      } catch { return null; }
+    } else {
+      const parts = ip.split('.').map(Number);
+      if (parts.length !== 4) return null;
+      return BigInt((parts[0] << 24) | (parts[1] << 16) | (parts[2] << 8) | parts[3]) & BigInt('0xFFFFFFFF');
+    }
+  };
+
+  const cfCidrs = CLOUDFLARE_CIDRS.map(parseCidr).filter(Boolean) as { base: bigint; bits: number }[];
+
+  const isCloudflareIp = (ip: string): boolean => {
+    const strippedIp = ip.startsWith('::ffff:') ? ip.slice(7) : ip;
+    const ipInt = ipToBigInt(strippedIp);
+    if (ipInt === null) return false;
+    return cfCidrs.some(({ base, bits }) => {
+      const isIpv6Cidr = bits > 32;
+      const shift = isIpv6Cidr ? BigInt(128 - bits) : BigInt(32 - bits);
+      return (ipInt >> shift) === (base >> shift);
+    });
+  };
+
   const getRealIp = (req: any): string => {
+    // Only trust CF-Connecting-IP if the request actually came from a Cloudflare IP.
+    // This prevents spoofing by anyone who bypasses Cloudflare and hits the origin directly.
+    const socketIp: string = req.socket?.remoteAddress ?? req.connection?.remoteAddress ?? '';
     const cfIp = req.headers['cf-connecting-ip'];
-    if (cfIp && typeof cfIp === 'string') return cfIp;
-    return req.ip ?? req.connection?.remoteAddress ?? '0.0.0.0';
+    if (cfIp && typeof cfIp === 'string' && isCloudflareIp(socketIp)) {
+      return cfIp;
+    }
+    return req.ip ?? socketIp ?? '0.0.0.0';
   };
 
   // Allow overriding via environment variables. Defaults increased to support power users browsing multiple pages.
