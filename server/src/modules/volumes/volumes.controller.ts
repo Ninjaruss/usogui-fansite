@@ -265,7 +265,7 @@ export class VolumesController {
 
   @Get(':id/showcase-status')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.MODERATOR, UserRole.EDITOR)
+  @Roles(UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get showcase image upload status for a volume (admin)' })
   @ApiParam({ name: 'id', type: 'number', description: 'Volume database ID' })
@@ -280,7 +280,7 @@ export class VolumesController {
     },
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 403, description: 'Forbidden - Admin/Moderator/Editor role required' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Admin role required' })
   async getShowcaseStatus(@Param('id', ParseIntPipe) id: number) {
     return this.service.getVolumeShowcaseStatus(id);
   }
@@ -303,12 +303,12 @@ export class VolumesController {
 
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.MODERATOR, UserRole.EDITOR)
+  @Roles(UserRole.ADMIN)
   @UsePipes(new ValidationPipe())
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Create volume',
-    description: 'Create a new volume (Admin/Moderator only)',
+    description: 'Create a new volume (Admin only)',
   })
   @ApiBody({ type: CreateVolumeDto })
   @ApiResponse({
@@ -326,7 +326,7 @@ export class VolumesController {
   })
   @ApiResponse({
     status: 403,
-    description: 'Forbidden - Admin/Moderator role required',
+    description: 'Forbidden - Admin role required',
   })
   create(@Body() data: CreateVolumeDto) {
     return this.service.create(data);
@@ -334,11 +334,11 @@ export class VolumesController {
 
   @Put(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.MODERATOR, UserRole.EDITOR)
+  @Roles(UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Update volume',
-    description: 'Update an existing volume (Admin/Moderator only)',
+    description: 'Update an existing volume (Admin only)',
   })
   @ApiParam({ name: 'id', description: 'Volume ID' })
   @ApiBody({ type: UpdateVolumeDto })
@@ -361,7 +361,7 @@ export class VolumesController {
   })
   @ApiResponse({
     status: 403,
-    description: 'Forbidden - Admin/Moderator role required',
+    description: 'Forbidden - Admin role required',
   })
   @UsePipes(new ValidationPipe({ whitelist: true }))
   async update(@Param('id') id: string, @Body() data: UpdateVolumeDto) {
