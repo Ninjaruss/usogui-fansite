@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class AddIsMinorEditAndEnumValues1743200000000 implements MigrationInterface {
-  name = 'AddIsMinorEditAndEnumValues1743200000000';
+export class AddIsMinorEditAndEnumValues1743210000000 implements MigrationInterface {
+  name = 'AddIsMinorEditAndEnumValues1743210000000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Add new enum values to edit_log_entitytype_enum
