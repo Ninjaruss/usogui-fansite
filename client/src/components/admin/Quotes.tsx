@@ -18,11 +18,97 @@ import {
   TabbedShowLayout,
   Tab,
   SearchInput,
-  BulkDeleteButton
+  BulkDeleteButton,
+  Button,
+  TopToolbar,
+  useNotify,
+  useRefresh,
+  usePermissions,
+  useRecordContext
 } from 'react-admin'
 import { Typography, Box, Chip, Card, CardContent, Grid } from '@mui/material'
-import { Edit3, Plus, MessageSquareQuote, User as UserIcon, BookOpen } from 'lucide-react'
+import { Edit3, Plus, MessageSquareQuote, User as UserIcon, BookOpen, Check, X } from 'lucide-react'
 import { EditToolbar } from './EditToolbar'
+import { api } from '../../lib/api'
+
+const ApproveQuoteButton = ({ record }: { record: any }) => {
+  const notify = useNotify()
+  const refresh = useRefresh()
+
+  if (record?.status !== 'pending') return null
+
+  const handleApprove = async () => {
+    try {
+      await api.approveQuote(Number(record.id))
+      notify('Quote approved successfully', { type: 'success' })
+      refresh()
+    } catch (error: any) {
+      notify(error?.message || 'Error approving quote', { type: 'error' })
+    }
+  }
+
+  return (
+    <Button label="Approve" onClick={handleApprove} color="primary" startIcon={<Check size={16} />} />
+  )
+}
+
+const RejectQuoteButton = ({ record }: { record: any }) => {
+  const notify = useNotify()
+  const refresh = useRefresh()
+  const [open, setOpen] = React.useState(false)
+  const [reason, setReason] = React.useState('')
+
+  if (record?.status !== 'pending') return null
+
+  const handleReject = async () => {
+    if (!reason.trim()) { notify('Rejection reason required', { type: 'warning' }); return }
+    try {
+      await api.rejectQuote(Number(record.id), reason.trim())
+      notify('Quote rejected', { type: 'success' })
+      refresh()
+      setOpen(false)
+      setReason('')
+    } catch (error: any) {
+      notify(error?.message || 'Error rejecting quote', { type: 'error' })
+    }
+  }
+
+  return (
+    <>
+      <Button label="Reject" onClick={() => setOpen(true)} color="error" startIcon={<X size={16} />} />
+      {open && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1300, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ background: 'white', padding: 24, borderRadius: 8, maxWidth: 400, width: '100%' }}>
+            <h3>Reject Quote</h3>
+            <textarea
+              value={reason}
+              onChange={e => setReason(e.target.value)}
+              rows={3}
+              style={{ width: '100%', marginBottom: 16 }}
+              placeholder="Enter rejection reason..."
+            />
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+              <button onClick={() => setOpen(false)}>Cancel</button>
+              <button onClick={handleReject}>Reject</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  )
+}
+
+const QuoteShowActions = () => {
+  const record = useRecordContext()
+  const { permissions } = usePermissions()
+  if (permissions !== 'admin' && permissions !== 'moderator') return null
+  return (
+    <TopToolbar>
+      <ApproveQuoteButton record={record} />
+      <RejectQuoteButton record={record} />
+    </TopToolbar>
+  )
+}
 
 const quoteFilters = [
   <SearchInput key="q" source="q" placeholder="Search quotes" alwaysOn />,
@@ -120,12 +206,13 @@ export const QuoteList = () => (
           </Box>
         )}
       />
+      <TextField source="status" />
     </Datagrid>
   </List>
 )
 
 export const QuoteShow = () => (
-  <Show>
+  <Show actions={<QuoteShowActions />}>
     <Box sx={{
       backgroundColor: '#0a0a0a',
       minHeight: '100vh',
