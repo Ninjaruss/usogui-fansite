@@ -5,10 +5,13 @@ import {
   ManyToMany,
   JoinTable,
   Index,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm';
 // import type removes runtime require() to break tag <-> event circular dep
 import type { Event } from './event.entity';
 import { ApiProperty } from '@nestjs/swagger';
+import { User } from './user.entity';
 
 @Entity()
 @Index(['name'], { unique: true }) // Tags should be unique
@@ -37,4 +40,17 @@ export class Tag {
   @ManyToMany(() => require('./event.entity').Event, (event) => event.tags)
   @JoinTable()
   events: Event[];
+
+  @Column({ default: false })
+  isVerified: boolean;
+
+  @Column({ nullable: true })
+  verifiedById: number;
+
+  @ManyToOne(() => User, { nullable: true, eager: false })
+  @JoinColumn({ name: 'verifiedById' })
+  verifiedBy: User;
+
+  @Column({ type: 'timestamp', nullable: true })
+  verifiedAt: Date;
 }
