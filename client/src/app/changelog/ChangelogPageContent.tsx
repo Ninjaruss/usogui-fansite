@@ -31,6 +31,7 @@ interface EditEntry {
   entityType: string
   entityId: number
   entityName?: string
+  changedFields?: string[] | null
   createdAt: string
   user?: { id: number; username: string; fluxerAvatar?: string; fluxerId?: string } | null
 }
@@ -138,6 +139,15 @@ const TYPE_FILTER_OPTIONS: { label: string; value: FilterType }[] = [
 
 const PAGE_LIMIT = 20
 
+function formatChangedFields(fields: string[] | null | undefined): string {
+  if (!fields?.length) return ''
+  const filtered = fields.filter(f => !f.startsWith('priorStatus:'))
+  if (!filtered.length) return ''
+  const shown = filtered.slice(0, 4).map(f => f.charAt(0).toUpperCase() + f.slice(1))
+  const rest = filtered.length - 4
+  return rest > 0 ? `${shown.join(', ')} +${rest} more` : shown.join(', ')
+}
+
 export function ChangelogPageContent() {
   const [filterType, setFilterType] = useState<FilterType>('all')
   const [entityFilter, setEntityFilter] = useState<EntityFilter>('all')
@@ -173,6 +183,7 @@ export function ChangelogPageContent() {
         id: e.id, kind: 'edit' as const,
         action: e.action, entityType: e.entityType, entityId: e.entityId,
         entityName: e.entityName,
+        changedFields: e.changedFields ?? null,
         createdAt: e.createdAt, user: e.user,
       }))
       const submissionEntries: SubmissionEntry[] = (submissions?.data ?? []).map((s) => ({
@@ -408,6 +419,14 @@ export function ChangelogPageContent() {
                       <Clock size={11} style={{ color: textColors.tertiary, opacity: 0.5 }} />
                       <Text size="xs" c="dimmed" style={{ opacity: 0.5 }}>{relativeTime(entry.createdAt)}</Text>
                     </Group>
+                    {(() => {
+                      const fieldsLabel = formatChangedFields(entry.changedFields)
+                      return fieldsLabel ? (
+                        <Text size="xs" style={{ color: '#666', marginTop: '2px' }}>
+                          {fieldsLabel}
+                        </Text>
+                      ) : null
+                    })()}
                   </Box>
                 </Box>
               )
