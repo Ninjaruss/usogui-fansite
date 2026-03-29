@@ -29,6 +29,7 @@ import { CharacterOrganizationsModule } from './modules/character-organizations/
 import { AnnotationsModule } from './modules/annotations/annotations.module';
 import { ContributionsModule } from './modules/contributions/contributions.module';
 import { EditLogModule } from './modules/edit-log/edit-log.module';
+import { FluxerChatModule } from './modules/fluxer-chat/fluxer-chat.module';
 import { AppController } from './app.controller';
 import { Guide } from './entities/guide.entity';
 import { Character } from './entities/character.entity';
@@ -114,6 +115,7 @@ import { Logger } from '@nestjs/common';
     AnnotationsModule,
     ContributionsModule,
     EditLogModule,
+    FluxerChatModule,
   ],
   controllers: [AppController],
 })
