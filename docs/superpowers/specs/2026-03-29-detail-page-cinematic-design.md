@@ -39,7 +39,7 @@ Every section card follows the same base treatment driven by its entity color. E
 | Description card | "Description" | character | Always shown |
 | Backstory card | "Backstory" | character | Conditional |
 | CharacterRelationships | renders own header | character | Component wrapper card gets cinematic treatment |
-| Organizations card | "Organizations" | organization | Conditional; uses CharacterOrganizationMemberships inside |
+| Organizations card | "Organizations" | organization | Conditional; uses CharacterOrganizationMemberships inside. Each org row shows entity display image as a 40×40 rounded thumbnail; falls back to initials in org color when no `imageFileName` |
 
 **Sidebar:**
 | Section | Color | Notes |
@@ -60,7 +60,7 @@ Every section card follows the same base treatment driven by its entity color. E
 | Rules | "Rules" | gamble | Always shown |
 | Win Condition | "Win Condition" | gamble | Conditional. Inner content box currently uses `manga-panel-border` + bg tint — keep that treatment but apply cinematic card to outer wrapper |
 | Explanation & Analysis | "Explanation & Analysis" | gamble | Conditional |
-| Participants / Factions | "Participants" | gamble | Conditional. Special VS layout (2 factions) or grid (3+). Faction header bands use entity-color tinting — keep that internal structure, apply cinematic card to outer wrapper only |
+| Participants / Factions | "Participants" | gamble | Conditional. Layout is data-driven by `supportedGambler` field: **2 factions with `supportedGambler`** → VS layout (side-by-side with VS divider); **3+ factions with `supportedGambler`** → equal-width column grid (1fr each); **factions without `supportedGambler`** → always rendered full-width below main sides as a muted grey "Third Party" block (neutral border `#282828`, grey dot, dark bg, no entity tinting). Faction header bands use entity-color tinting for main sides — keep that internal structure, apply cinematic card to outer wrapper only. |
 
 **Sidebar:**
 | Section | Color | Notes |
@@ -77,7 +77,7 @@ Every section card follows the same base treatment driven by its entity color. E
 | Section | Label | Color | Notes |
 |---------|-------|-------|-------|
 | About This Arc | "About This Arc" | arc | Always shown |
-| Chapter Navigation | "Chapter Navigation" | arc | Start/End chapter buttons. Keep button styles; apply cinematic card to wrapper |
+| Chapter Navigation | "Chapters" | arc | Replaces Start/End buttons with a navigable chapter list. Each row: chapter number (entity color) + optional Start/End badge on first/last + chapter title + `→` arrow. Long arcs collapse middle rows with a `··· N more chapters` placeholder row |
 
 **Sidebar:**
 | Section | Color | Notes |
@@ -147,7 +147,7 @@ Every section card follows the same base treatment driven by its entity color. E
 | Section | Label | Color | Notes |
 |---------|-------|-------|-------|
 | Volume Summary | "Volume Summary" | volume | Always shown |
-| Chapter Navigation | "Chapter Navigation" | volume | Start/End chapter buttons; same treatment as Arc |
+| Chapter Navigation | "Chapters" | volume | Same chapter list treatment as Arc — navigable rows with Start/End badges on first/last |
 
 **Sidebar:**
 | Section | Color | Notes |
