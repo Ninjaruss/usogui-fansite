@@ -1973,6 +1973,38 @@ class ApiClient {
       }>
     }>(`/contributions/user/${userId}/details`)
   }
+
+  // --- Fluxer Chat ---
+
+  async getFluxerMessages(): Promise<Array<{
+    id: string
+    content: string
+    timestamp: string
+    author: { id: string; username: string; avatar: string | null }
+  }>> {
+    return this.get('/fluxer-chat/messages')
+  }
+
+  async getFluxerAnnouncement(): Promise<{
+    id: number
+    messageId: string
+    content: string
+    authorUsername: string
+    authorId: string
+    timestamp: string
+    updatedAt: string
+  } | null> {
+    return this.get('/fluxer-chat/announcement')
+  }
+
+  async sendFluxerMessage(content: string): Promise<{
+    id: string
+    content: string
+    timestamp: string
+    author: { id: string; username: string; avatar: string | null }
+  }> {
+    return this.post('/fluxer-chat/messages', { content })
+  }
 }
 
 export const api = new ApiClient(API_BASE_URL)
