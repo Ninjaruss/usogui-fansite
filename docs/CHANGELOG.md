@@ -9,6 +9,7 @@
 - Recent migration scripts fixed and ran
 - Volume showcase now can be handled via edit page to select single or paired volumes
 - Editor role bug fixes
+- Fluxer chat widget connected to Fluxer server #usogui channel
 
 ## 2026-03-27
 - More descriptive changelog and activity display involving edits to the site

@@ -17,6 +17,7 @@ export class CreateFluxerAnnouncementTable1743210000004
         "updatedAt" timestamptz NOT NULL DEFAULT now()
       )
     `);
+    await queryRunner.query(`ALTER TABLE "fluxer_announcement" ENABLE ROW LEVEL SECURITY`);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
