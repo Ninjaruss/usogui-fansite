@@ -329,6 +329,7 @@ export class UsersService {
     username: string;
     email: string | null;
     role?: UserRole;
+    fluxerAccessToken?: string | null;
   }): Promise<User> {
     // Ensure unique username by appending number if needed
     let finalUsername = data.username;
@@ -349,6 +350,10 @@ export class UsersService {
       password: null, // No password for Fluxer users
       profilePictureType: ProfilePictureType.FLUXER,
     });
+
+    if (data.fluxerAccessToken !== undefined) {
+      user.fluxerAccessToken = data.fluxerAccessToken;
+    }
 
     return this.repo.save(user);
   }
@@ -425,12 +430,17 @@ export class UsersService {
     data: {
       fluxerUsername: string;
       fluxerAvatar: string | null;
+      fluxerAccessToken?: string | null;
     },
   ): Promise<void> {
-    await this.repo.update(userId, {
+    const updatePayload: Partial<User> = {
       fluxerUsername: data.fluxerUsername,
       fluxerAvatar: data.fluxerAvatar,
-    });
+    };
+    if (data.fluxerAccessToken !== undefined) {
+      updatePayload.fluxerAccessToken = data.fluxerAccessToken;
+    }
+    await this.repo.update(userId, updatePayload);
   }
 
   async linkFluxer(
@@ -439,13 +449,22 @@ export class UsersService {
       fluxerId: string;
       fluxerUsername: string;
       fluxerAvatar: string | null;
+      fluxerAccessToken?: string | null;
     },
   ): Promise<void> {
-    await this.repo.update(userId, {
+    const updatePayload: Partial<User> = {
       fluxerId: data.fluxerId,
       fluxerUsername: data.fluxerUsername,
       fluxerAvatar: data.fluxerAvatar,
-    });
+    };
+    if (data.fluxerAccessToken !== undefined) {
+      updatePayload.fluxerAccessToken = data.fluxerAccessToken;
+    }
+    await this.repo.update(userId, updatePayload);
+  }
+
+  async clearFluxerAccessToken(userId: number): Promise<void> {
+    await this.repo.update(userId, { fluxerAccessToken: null });
   }
 
   async unlinkFluxer(userId: number): Promise<void> {
