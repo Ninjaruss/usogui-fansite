@@ -64,6 +64,6 @@ export class FluxerStrategy extends PassportStrategy(Strategy, 'fluxer') {
       'id:',
       profile.id,
     );
-    return await this.authService.validateFluxerUser(profile);
+    return await this.authService.validateFluxerUser(profile, accessToken);
   }
 }
