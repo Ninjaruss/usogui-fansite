@@ -1982,7 +1982,8 @@ class ApiClient {
     timestamp: string
     author: { id: string; username: string; avatar: string | null }
   }>> {
-    return this.get('/fluxer-chat/messages')
+    const res = await this.get<{ data: Array<{ id: string; content: string; timestamp: string; author: { id: string; username: string; avatar: string | null } }> }>('/fluxer-chat/messages')
+    return res?.data ?? []
   }
 
   async getFluxerAnnouncement(): Promise<{

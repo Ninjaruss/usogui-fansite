@@ -11,6 +11,9 @@
 - Editor role bug fixes
 - Fluxer chat widget connected to Fluxer server #usogui channel
 
+### Notes
+- Fun fact, apparently it's not normal for visual code to freeze up and eat up all of my laptops application memory. I just found out that Claude Code's VSCode extension leaks a lot of memory supposedly; so I will proceed with using Claude via the terminal and see if I don't run into anymore issues. This issue constantly occurred with database migrations so I would try avoiding running the migrations on my machine and instead use queries to supabase.
+
 ## 2026-03-27
 - More descriptive changelog and activity display involving edits to the site
 
