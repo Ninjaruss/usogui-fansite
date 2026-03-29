@@ -85,6 +85,13 @@ class EnvironmentVariables {
   @IsOptional()
   ADMIN_FLUXER_ID?: string;
 
+  // --- Fluxer Chat Bot ---
+  @IsString()
+  FLUXER_BOT_TOKEN: string;
+
+  @IsString()
+  FLUXER_CHAT_CHANNEL_ID: string;
+
   // --- Cloudflare R2 Storage ---
   // SECURITY: Required for media uploads to work
   @IsString()
