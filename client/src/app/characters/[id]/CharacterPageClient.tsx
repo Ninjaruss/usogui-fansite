@@ -5,25 +5,22 @@ import { useSearchParams } from 'next/navigation'
 import {
   Badge,
   Box,
-  Button,
   Card,
   Container,
   Group,
   Stack,
   Tabs,
   Text,
-  Title,
   useMantineTheme
 } from '@mantine/core'
 import {
   getEntityThemeColor,
-  getAlphaColor,
   textColors,
   setTabAccentColors,
   backgroundStyles,
-  getCardStyles
 } from '../../../lib/mantine-theme'
-import { User, Scroll, Users, BookOpen, Crown, Building2, Bookmark, Calendar, Image as ImageIcon, MessageSquare } from 'lucide-react'
+import { CinematicCard, CinematicSectionHeader } from '../../../components/layouts/CinematicCard'
+import { User, Calendar, Image as ImageIcon, MessageSquare } from 'lucide-react'
 import Link from 'next/link'
 import { motion } from 'motion/react'
 import { pageEnter } from '../../../lib/motion-presets'
@@ -179,7 +176,7 @@ export default function CharacterPageClient({
       />
 
       <motion.div {...pageEnter}>
-        <Card withBorder radius="lg" className="gambling-card" shadow="xl" style={getCardStyles(theme)}>
+        <Card withBorder radius="lg" className="gambling-card" shadow="xl">
         <Tabs
           value={activeTab}
           onChange={(value) => value && setActiveTab(value)}
@@ -215,73 +212,39 @@ export default function CharacterPageClient({
               {/* ── Main column ── */}
               <Stack gap={theme.spacing.md}>
                 {/* Description */}
-                <Card
-                  withBorder
-                  radius="lg"
-                  shadow="lg"
-                  padding={0}
-                  style={getCardStyles(theme, entityColors.character)}
-                >
-                  <Box style={{ height: 3, borderRadius: '6px 6px 0 0', background: `linear-gradient(90deg, ${entityColors.character}, transparent 70%)` }} />
-                  <Box p="lg">
-                    <Group gap={10} mb={14} align="center">
-                      <Box style={{ width: 28, height: 28, borderRadius: 6, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: getAlphaColor(entityColors.character, 0.15), border: `1px solid ${getAlphaColor(entityColors.character, 0.30)}` }}>
-                        <User size={16} color={entityColors.character} />
+                <CinematicCard entityColor={entityColors.character}>
+                  <CinematicSectionHeader label="Description" entityColor={entityColors.character} />
+                  {character.description ? (
+                    <TimelineSpoilerWrapper chapterNumber={character.firstAppearanceChapter ?? undefined}>
+                      <Box style={{ lineHeight: 1.6, fontSize: 14 }}>
+                        <EnhancedSpoilerMarkdown
+                          content={character.description}
+                          enableEntityEmbeds
+                          compactEntityCards={false}
+                        />
                       </Box>
-                      <Text style={{ fontSize: '0.65rem', fontWeight: 800, letterSpacing: '0.18em', textTransform: 'uppercase', color: entityColors.character, opacity: 0.85 }}>
-                        Description
-                      </Text>
-                      <Box style={{ flex: 1, height: 1, background: `linear-gradient(to right, ${getAlphaColor(entityColors.character, 0.20)}, transparent)` }} />
-                    </Group>
-                    {character.description ? (
-                      <TimelineSpoilerWrapper chapterNumber={character.firstAppearanceChapter ?? undefined}>
-                        <Box style={{ lineHeight: 1.6, fontSize: 14 }}>
-                          <EnhancedSpoilerMarkdown
-                            content={character.description}
-                            enableEntityEmbeds
-                            compactEntityCards={false}
-                          />
-                        </Box>
-                      </TimelineSpoilerWrapper>
-                    ) : (
-                      <Text size="sm" c={textColors.tertiary} style={{ fontStyle: 'italic' }}>
-                        No description available yet.
-                      </Text>
-                    )}
-                  </Box>
-                </Card>
+                    </TimelineSpoilerWrapper>
+                  ) : (
+                    <Text size="sm" style={{ fontStyle: 'italic', color: `${entityColors.character}55` }}>
+                      No description available yet.
+                    </Text>
+                  )}
+                </CinematicCard>
 
                 {/* Backstory */}
                 {character.backstory && (
-                  <Card
-                    withBorder
-                    radius="lg"
-                    shadow="lg"
-                    padding={0}
-                    style={getCardStyles(theme, entityColors.character)}
-                  >
-                    <Box style={{ height: 3, borderRadius: '6px 6px 0 0', background: `linear-gradient(90deg, ${entityColors.character}, transparent 70%)` }} />
-                    <Box p="lg">
-                      <Group gap={10} mb={14} align="center">
-                        <Box style={{ width: 28, height: 28, borderRadius: 6, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: getAlphaColor(entityColors.character, 0.15), border: `1px solid ${getAlphaColor(entityColors.character, 0.30)}` }}>
-                          <Scroll size={16} color={entityColors.character} />
-                        </Box>
-                        <Text style={{ fontSize: '0.65rem', fontWeight: 800, letterSpacing: '0.18em', textTransform: 'uppercase', color: entityColors.character, opacity: 0.85 }}>
-                          Backstory
-                        </Text>
-                        <Box style={{ flex: 1, height: 1, background: `linear-gradient(to right, ${getAlphaColor(entityColors.character, 0.20)}, transparent)` }} />
-                      </Group>
-                      <TimelineSpoilerWrapper chapterNumber={character.firstAppearanceChapter ?? undefined}>
-                        <Box style={{ lineHeight: 1.6, fontSize: 14 }}>
-                          <EnhancedSpoilerMarkdown
-                            content={character.backstory}
-                            enableEntityEmbeds
-                            compactEntityCards={false}
-                          />
-                        </Box>
-                      </TimelineSpoilerWrapper>
-                    </Box>
-                  </Card>
+                  <CinematicCard entityColor={entityColors.character}>
+                    <CinematicSectionHeader label="Backstory" entityColor={entityColors.character} />
+                    <TimelineSpoilerWrapper chapterNumber={character.firstAppearanceChapter ?? undefined}>
+                      <Box style={{ lineHeight: 1.6, fontSize: 14 }}>
+                        <EnhancedSpoilerMarkdown
+                          content={character.backstory}
+                          enableEntityEmbeds
+                          compactEntityCards={false}
+                        />
+                      </Box>
+                    </TimelineSpoilerWrapper>
+                  </CinematicCard>
                 )}
 
                 {/* Relationships */}
@@ -289,162 +252,99 @@ export default function CharacterPageClient({
 
                 {/* Organization memberships */}
                 {character.organizations && character.organizations.length > 0 && (
-                  <Card
-                    withBorder
-                    radius="lg"
-                    shadow="lg"
-                    padding={0}
-                    style={getCardStyles(theme, entityColors.organization)}
-                  >
-                    <Box style={{ height: 3, borderRadius: '6px 6px 0 0', background: `linear-gradient(90deg, ${entityColors.organization}, transparent 70%)` }} />
-                    <Box p="md">
-                      <Group gap={10} mb={14} align="center">
-                        <Box style={{ width: 28, height: 28, borderRadius: 6, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: getAlphaColor(entityColors.organization, 0.15), border: `1px solid ${getAlphaColor(entityColors.organization, 0.30)}` }}>
-                          <Users size={16} color={entityColors.organization} />
-                        </Box>
-                        <Text style={{ fontSize: '0.65rem', fontWeight: 800, letterSpacing: '0.18em', textTransform: 'uppercase', color: entityColors.organization, opacity: 0.85 }}>
-                          Organizations
-                        </Text>
-                        <Box style={{ flex: 1, height: 1, background: `linear-gradient(to right, ${getAlphaColor(entityColors.organization, 0.20)}, transparent)` }} />
-                      </Group>
-                      <CharacterOrganizationMemberships
-                        characterId={character.id}
-                        characterName={character.name}
-                      />
-                    </Box>
-                  </Card>
+                  <CinematicCard entityColor={entityColors.organization} padding="md">
+                    <CinematicSectionHeader label="Organizations" entityColor={entityColors.organization} />
+                    <CharacterOrganizationMemberships
+                      characterId={character.id}
+                      characterName={character.name}
+                    />
+                  </CinematicCard>
                 )}
               </Stack>
 
               {/* ── Aside column ── */}
               <Stack gap={theme.spacing.sm}>
                 {/* Details card */}
-                <Card
-                  withBorder
-                  radius="lg"
-                  shadow="md"
-                  padding={0}
-                  style={getCardStyles(theme, entityColors.character)}
-                >
-                  <Box style={{ height: 3, borderRadius: '6px 6px 0 0', background: `linear-gradient(90deg, ${entityColors.character}, transparent 70%)` }} />
-                  <Box p="md">
-                    <Group gap={10} mb={14} align="center">
-                      <Text style={{ fontSize: '0.65rem', fontWeight: 800, letterSpacing: '0.18em', textTransform: 'uppercase', color: entityColors.character, opacity: 0.85 }}>
-                        Details
+                <CinematicCard entityColor={entityColors.character} padding="md">
+                  <CinematicSectionHeader label="Details" entityColor={entityColors.character} />
+                  {character.firstAppearanceChapter != null && (
+                    <Box style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: `1px solid ${entityColors.character}14` }}>
+                      <Box style={{ width: 5, height: 5, borderRadius: '50%', background: entityColors.character, flexShrink: 0 }} />
+                      <Text style={{ fontSize: 11, color: `${entityColors.character}66`, flex: 1 }}>Debut</Text>
+                      <Text style={{ fontSize: 12, fontWeight: 700, color: entityColors.character }}>Ch. {character.firstAppearanceChapter}</Text>
+                    </Box>
+                  )}
+                  {character.organizations && character.organizations.length > 0 && (
+                    <Box style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: `1px solid ${entityColors.character}14` }}>
+                      <Box style={{ width: 5, height: 5, borderRadius: '50%', background: entityColors.character, flexShrink: 0 }} />
+                      <Text style={{ fontSize: 11, color: `${entityColors.character}66`, flex: 1 }}>Organization</Text>
+                      <Text
+                        component={Link}
+                        href={`/organizations/${character.organizations[0].id}`}
+                        style={{ fontSize: 12, fontWeight: 700, color: entityColors.organization, textDecoration: 'none' }}
+                      >
+                        {character.organizations[0].name}
                       </Text>
-                      <Box style={{ flex: 1, height: 1, background: `linear-gradient(to right, ${getAlphaColor(entityColors.character, 0.20)}, transparent)` }} />
-                    </Group>
-                    {character.firstAppearanceChapter != null && (
-                      <Box style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: '1px solid #161616' }}>
-                        <Box style={{ width: 24, height: 24, borderRadius: 5, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: getAlphaColor(entityColors.character, 0.10), border: `1px solid ${getAlphaColor(entityColors.character, 0.20)}` }}>
-                          <BookOpen size={14} color={entityColors.character} />
-                        </Box>
-                        <Text style={{ fontSize: 11, color: '#555', flex: 1 }}>Debut</Text>
-                        <Text style={{ fontSize: 12, fontWeight: 700, color: entityColors.character }}>Ch. {character.firstAppearanceChapter}</Text>
-                      </Box>
-                    )}
-                    {character.organizations && character.organizations.length > 0 && (
-                      <Box style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: '1px solid #161616' }}>
-                        <Box style={{ width: 24, height: 24, borderRadius: 5, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: getAlphaColor(entityColors.character, 0.10), border: `1px solid ${getAlphaColor(entityColors.character, 0.20)}` }}>
-                          <Building2 size={14} color={entityColors.character} />
-                        </Box>
-                        <Text style={{ fontSize: 11, color: '#555', flex: 1 }}>Organization</Text>
-                        <Text
-                          component={Link}
-                          href={`/organizations/${character.organizations[0].id}`}
-                          style={{ fontSize: 12, fontWeight: 700, color: entityColors.organization, textDecoration: 'none' }}
-                        >
-                          {character.organizations[0].name}
-                        </Text>
-                      </Box>
-                    )}
-                    <Box style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: '1px solid #161616' }}>
-                      <Box style={{ width: 24, height: 24, borderRadius: 5, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: getAlphaColor(entityColors.character, 0.10), border: `1px solid ${getAlphaColor(entityColors.character, 0.20)}` }}>
-                        <Crown size={14} color={entityColors.character} />
-                      </Box>
-                      <Text style={{ fontSize: 11, color: '#555', flex: 1 }}>Gambles</Text>
-                      <Text style={{ fontSize: 12, fontWeight: 700, color: entityColors.character }}>{gambles.length}</Text>
                     </Box>
-                    <Box style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0' }}>
-                      <Box style={{ width: 24, height: 24, borderRadius: 5, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: getAlphaColor(entityColors.character, 0.10), border: `1px solid ${getAlphaColor(entityColors.character, 0.20)}` }}>
-                        <Bookmark size={14} color={entityColors.character} />
-                      </Box>
-                      <Text style={{ fontSize: 11, color: '#555', flex: 1 }}>Arcs</Text>
-                      <Text style={{ fontSize: 12, fontWeight: 700, color: entityColors.character }}>{arcs.length}</Text>
-                    </Box>
+                  )}
+                  <Box style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: `1px solid ${entityColors.character}14` }}>
+                    <Box style={{ width: 5, height: 5, borderRadius: '50%', background: entityColors.character, flexShrink: 0 }} />
+                    <Text style={{ fontSize: 11, color: `${entityColors.character}66`, flex: 1 }}>Gambles</Text>
+                    <Text style={{ fontSize: 12, fontWeight: 700, color: entityColors.character }}>{gambles.length}</Text>
                   </Box>
-                </Card>
+                  <Box style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0' }}>
+                    <Box style={{ width: 5, height: 5, borderRadius: '50%', background: entityColors.character, flexShrink: 0 }} />
+                    <Text style={{ fontSize: 11, color: `${entityColors.character}66`, flex: 1 }}>Arcs</Text>
+                    <Text style={{ fontSize: 12, fontWeight: 700, color: entityColors.character }}>{arcs.length}</Text>
+                  </Box>
+                </CinematicCard>
 
                 {/* Story Arcs compact */}
                 {arcs.length > 0 && (
-                  <Card
-                    withBorder
-                    radius="lg"
-                    shadow="md"
-                    style={getCardStyles(theme, entityColors.arc)}
-                    p="md"
-                  >
-                    <RelatedContentSection
-                      entityType="arc"
-                      title="Story Arcs"
-                      items={arcs}
-                      previewCount={4}
-                      viewAllHref={`/arcs?character=${character.name}`}
-                      getKey={(arc) => arc.id}
-                      variant="compact"
-                      getLabel={(arc) => arc.name}
-                      getHref={(arc) => `/arcs/${arc.id}`}
-                      itemDotColor={entityColors.arc}
-                    />
-                  </Card>
+                  <RelatedContentSection
+                    entityType="arc"
+                    title="Story Arcs"
+                    items={arcs}
+                    previewCount={4}
+                    viewAllHref={`/arcs?character=${character.name}`}
+                    getKey={(arc) => arc.id}
+                    variant="compact"
+                    getLabel={(arc) => arc.name}
+                    getHref={(arc) => `/arcs/${arc.id}`}
+                    itemDotColor={entityColors.arc}
+                  />
                 )}
 
                 {/* Gambles compact */}
                 {gambles.length > 0 && (
-                  <Card
-                    withBorder
-                    radius="lg"
-                    shadow="md"
-                    style={getCardStyles(theme, entityColors.gamble)}
-                    p="md"
-                  >
-                    <RelatedContentSection
-                      entityType="gamble"
-                      title="Gambles"
-                      items={gambles}
-                      previewCount={4}
-                      viewAllHref={`/gambles?character=${character.name}`}
-                      getKey={(g) => g.id}
-                      variant="compact"
-                      getLabel={(g) => g.name}
-                      getHref={(g) => `/gambles/${g.id}`}
-                      itemDotColor={entityColors.gamble}
-                    />
-                  </Card>
+                  <RelatedContentSection
+                    entityType="gamble"
+                    title="Gambles"
+                    items={gambles}
+                    previewCount={4}
+                    viewAllHref={`/gambles?character=${character.name}`}
+                    getKey={(g) => g.id}
+                    variant="compact"
+                    getLabel={(g) => g.name}
+                    getHref={(g) => `/gambles/${g.id}`}
+                    itemDotColor={entityColors.gamble}
+                  />
                 )}
 
                 {/* Quotes compact */}
                 {quotes && quotes.length > 0 && (
-                  <Card
-                    withBorder
-                    radius="lg"
-                    shadow="md"
-                    style={getCardStyles(theme, entityColors.quote)}
-                    p="md"
-                  >
-                    <RelatedContentSection
-                      entityType="quote"
-                      title="Quotes"
-                      items={quotes}
-                      previewCount={4}
-                      viewAllHref={`/quotes?character=${character.id}`}
-                      getKey={(q) => q.id}
-                      variant="compact"
-                      getLabel={(q) => q.text?.slice(0, 60) ?? '(quote)'}
-                      getHref={(q) => `/quotes/${q.id}`}
-                      itemDotColor={entityColors.quote}
-                    />
-                  </Card>
+                  <RelatedContentSection
+                    entityType="quote"
+                    title="Quotes"
+                    items={quotes}
+                    previewCount={4}
+                    viewAllHref={`/quotes?character=${character.id}`}
+                    getKey={(q) => q.id}
+                    variant="compact"
+                    getLabel={(q) => q.text?.slice(0, 60) ?? '(quote)'}
+                    getHref={(q) => `/quotes/${q.id}`}
+                    itemDotColor={entityColors.quote}
+                  />
                 )}
               </Stack>
             </Box>
@@ -460,38 +360,36 @@ export default function CharacterPageClient({
           </Tabs.Panel>
 
           <Tabs.Panel value="media" pt={theme.spacing.md}>
-            <Stack gap="md">
-              <Card withBorder radius="lg" shadow="lg" style={getCardStyles(theme, entityColors.media)}>
-                <Stack gap="md" p="md">
-                  <Group justify="space-between" align="center">
-                    <Group gap="sm">
-                      <ImageIcon size={20} color={entityColors.media} />
-                      <Title order={4} c={textColors.media}>Media Gallery</Title>
-                    </Group>
-                    <Button
-                      component={Link}
-                      href={`/media?ownerType=character&ownerId=${character.id}`}
-                      variant="outline"
-                      c={entityColors.media}
-                      size="sm"
-                      radius="xl"
-                    >
-                      View All
-                    </Button>
-                  </Group>
-                  <MediaGallery
-                    ownerType="character"
-                    ownerId={character.id}
-                    purpose="gallery"
-                    limit={8}
-                    showTitle={false}
-                    compactMode
-                    showFilters={false}
-                    initialMediaId={mediaId}
-                  />
-                </Stack>
-              </Card>
-            </Stack>
+            <CinematicCard entityColor={entityColors.media} padding="md">
+              <Group justify="space-between" align="center" mb={14}>
+                <Box
+                  style={{
+                    fontSize: '0.55rem', fontWeight: 900, letterSpacing: '0.22em', textTransform: 'uppercase',
+                    borderRadius: 4, padding: '3px 8px',
+                    background: `${entityColors.media}18`, border: `1px solid ${entityColors.media}30`, color: entityColors.media,
+                  }}
+                >
+                  Media Gallery
+                </Box>
+                <Box
+                  component={Link}
+                  href={`/media?ownerType=character&ownerId=${character.id}`}
+                  style={{ fontSize: 11, color: `${entityColors.media}88`, textDecoration: 'none' }}
+                >
+                  View All →
+                </Box>
+              </Group>
+              <MediaGallery
+                ownerType="character"
+                ownerId={character.id}
+                purpose="gallery"
+                limit={8}
+                showTitle={false}
+                compactMode
+                showFilters={false}
+                initialMediaId={mediaId}
+              />
+            </CinematicCard>
           </Tabs.Panel>
 
           <Tabs.Panel value="annotations" pt={theme.spacing.md}>
