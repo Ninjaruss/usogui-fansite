@@ -51,20 +51,26 @@ async function getArcData(id: string) {
       throw new Error('Invalid arc ID')
     }
 
-    const [arcData, eventsGroupedData, gamblesData] = await Promise.all([
+    const [arcData, eventsGroupedData, gamblesData, chaptersData] = await Promise.all([
       api.getArc(arcId),
       api.getEventsGroupedByArc(),
-      api.getArcGambles(arcId)
+      api.getArcGambles(arcId),
+      api.getChapters({ limit: 500, sort: 'number', order: 'ASC' })
     ])
 
     const arcGroup = eventsGroupedData.arcs.find((group: ArcGroup) => group.arc.id === arcId)
     const events = arcGroup?.events || []
     const gambles = gamblesData.data || []
 
+    const arcChapters = (chaptersData.data || chaptersData || []).filter(
+      (c: { number: number }) => c.number >= arcData.startChapter && c.number <= arcData.endChapter
+    )
+
     return {
       arc: arcData,
       events,
-      gambles
+      gambles,
+      chapters: arcChapters
     }
   } catch (error: unknown) {
     console.error('Error fetching arc data:', error)
@@ -114,9 +120,9 @@ export default async function ArcDetailPage({ params }: PageProps) {
     notFound()
   }
 
-  const { arc, events, gambles } = data
+  const { arc, events, gambles, chapters } = data
 
-  return <ArcPageClient initialArc={arc} initialEvents={events} initialGambles={gambles} />
+  return <ArcPageClient initialArc={arc} initialEvents={events} initialGambles={gambles} initialChapters={chapters} />
 }
 
 export const dynamic = 'force-dynamic'

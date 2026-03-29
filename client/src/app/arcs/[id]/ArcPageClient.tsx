@@ -20,9 +20,8 @@ import {
   getAlphaColor,
   setTabAccentColors,
   backgroundStyles,
-  getCardStyles
 } from '../../../lib/mantine-theme'
-import { ArrowUp, BookOpen, ArrowRight, Crown, GitBranch, Calendar, Image as ImageIcon, MessageSquare } from 'lucide-react'
+import { ArrowUp, BookOpen, Calendar, Image as ImageIcon, MessageSquare } from 'lucide-react'
 import Link from 'next/link'
 import { BreadcrumbNav, createEntityBreadcrumbs } from '../../../components/Breadcrumb'
 import EnhancedSpoilerMarkdown from '../../../components/EnhancedSpoilerMarkdown'
@@ -34,6 +33,7 @@ import ArcTimeline from '../../../components/ArcTimeline'
 import TimelineSpoilerWrapper from '../../../components/TimelineSpoilerWrapper'
 import { DetailPageHeader } from '../../../components/layouts/DetailPageHeader'
 import { RelatedContentSection } from '../../../components/layouts/RelatedContentSection'
+import { CinematicCard, CinematicSectionHeader } from '../../../components/layouts/CinematicCard'
 import { ArcStructuredData } from '../../../components/StructuredData'
 import { AnnotationSection } from '../../../components/annotations'
 import { useAuth } from '../../../providers/AuthProvider'
@@ -81,13 +81,21 @@ interface Gamble {
   chapterId?: number
 }
 
+interface Chapter {
+  id: number
+  number: number
+  title: string | null
+  summary: string | null
+}
+
 interface ArcPageClientProps {
   initialArc: Arc
   initialEvents: Event[]
   initialGambles: Gamble[]
+  initialChapters: Chapter[]
 }
 
-export default function ArcPageClient({ initialArc, initialEvents, initialGambles }: ArcPageClientProps) {
+export default function ArcPageClient({ initialArc, initialEvents, initialGambles, initialChapters }: ArcPageClientProps) {
   const theme = useMantineTheme()
   const { user } = useAuth()
   const searchParams = useSearchParams()
@@ -240,122 +248,107 @@ export default function ArcPageClient({ initialArc, initialEvents, initialGamble
               {/* Main column */}
               <Stack gap={theme.spacing.md}>
                 {/* Arc Description Section */}
-                <Card withBorder radius="lg" shadow="lg" padding={0} style={getCardStyles(theme, entityColors.arc)}>
-                  <Box style={{ height: 3, borderRadius: '6px 6px 0 0', background: `linear-gradient(90deg, ${entityColors.arc}, transparent 70%)` }} />
-                  <Box p="lg">
-                    <Group gap={10} mb={14} align="center">
-                      <Box style={{ width: 28, height: 28, borderRadius: 6, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: getAlphaColor(entityColors.arc, 0.15), border: `1px solid ${getAlphaColor(entityColors.arc, 0.30)}` }}>
-                        <BookOpen size={16} color={entityColors.arc} />
-                      </Box>
-                      <Text style={{ fontSize: '0.65rem', fontWeight: 800, letterSpacing: '0.18em', textTransform: 'uppercase', color: entityColors.arc, opacity: 0.85 }}>
-                        About This Arc
-                      </Text>
-                      <Box style={{ flex: 1, height: 1, background: `linear-gradient(to right, ${getAlphaColor(entityColors.arc, 0.20)}, transparent)` }} />
-                    </Group>
-                    <TimelineSpoilerWrapper chapterNumber={initialArc.startChapter}>
-                      <Box style={{ fontSize: 14, lineHeight: 1.6 }}>
-                        <EnhancedSpoilerMarkdown
-                          content={initialArc.description}
-                          className="arc-description"
-                          enableEntityEmbeds
-                          compactEntityCards={false}
-                        />
-                      </Box>
-                    </TimelineSpoilerWrapper>
-                  </Box>
-                </Card>
+                <CinematicCard entityColor={entityColors.arc}>
+                  <CinematicSectionHeader label="About This Arc" entityColor={entityColors.arc} />
+                  <TimelineSpoilerWrapper chapterNumber={initialArc.startChapter}>
+                    <Box style={{ fontSize: 14, lineHeight: 1.6 }}>
+                      <EnhancedSpoilerMarkdown
+                        content={initialArc.description}
+                        className="arc-description"
+                        enableEntityEmbeds
+                        compactEntityCards={false}
+                      />
+                    </Box>
+                  </TimelineSpoilerWrapper>
+                </CinematicCard>
 
                 {/* Chapter Navigation */}
-                <Card withBorder radius="lg" shadow="lg" padding={0} style={{ background: backgroundStyles.card, border: `1px solid ${getAlphaColor(entityColors.arc, 0.4)}` }}>
-                  <Box style={{ height: 3, borderRadius: '6px 6px 0 0', background: `linear-gradient(90deg, ${entityColors.arc}, transparent 70%)` }} />
-                  <Box p="md">
-                    <Group gap={10} mb={14} align="center">
-                      <Box style={{ width: 28, height: 28, borderRadius: 6, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: getAlphaColor(entityColors.arc, 0.15), border: `1px solid ${getAlphaColor(entityColors.arc, 0.30)}` }}>
-                        <ArrowRight size={16} color={entityColors.arc} />
-                      </Box>
-                      <Text style={{ fontSize: '0.65rem', fontWeight: 800, letterSpacing: '0.18em', textTransform: 'uppercase', color: entityColors.arc, opacity: 0.85 }}>
-                        Chapter Navigation
-                      </Text>
-                      <Box style={{ flex: 1, height: 1, background: `linear-gradient(to right, ${getAlphaColor(entityColors.arc, 0.20)}, transparent)` }} />
-                    </Group>
-                    <Group gap={theme.spacing.md} wrap="wrap">
-                      <Button
-                        component={Link}
-                        href={`/chapters/${initialArc.startChapter}`}
-                        variant="outline"
-                        c={entityColors.arc}
-                        size="md"
-                        radius="xl"
-                        style={{
-                          fontWeight: 700,
-                          fontFamily: 'var(--font-opti-goudy-text), serif',
-                          border: `2px solid ${entityColors.arc}`,
-                          transition: `all ${theme.other?.transitions?.durationShort || 200}ms ease`,
-                          flex: 1,
-                          minWidth: '200px',
-                          letterSpacing: '0.02em'
-                        }}
-                      >
-                        Start: Chapter {initialArc.startChapter}
-                      </Button>
-                      <Button
-                        component={Link}
-                        href={`/chapters/${initialArc.endChapter}`}
-                        variant="filled"
-                        style={{
-                          background: `linear-gradient(135deg, ${entityColors.arc} 0%, ${entityColors.arc}dd 100%)`,
-                          border: `1px solid ${entityColors.arc}`,
-                          fontWeight: 700,
-                          fontFamily: 'var(--font-opti-goudy-text), serif',
-                          flex: 1,
-                          minWidth: '200px',
-                          letterSpacing: '0.02em'
-                        }}
-                      >
-                        End: Chapter {initialArc.endChapter}
-                      </Button>
-                    </Group>
-                  </Box>
-                </Card>
+                {initialChapters.length > 0 && (
+                  <CinematicCard entityColor={entityColors.arc} padding="md">
+                    <CinematicSectionHeader label="Chapters" entityColor={entityColors.arc} />
+                    {(() => {
+                      const COLLAPSE_THRESHOLD = 6
+                      const PREVIEW_HEAD = 3
+                      const PREVIEW_TAIL = 1
+                      const chapters = initialChapters
+                      const showCollapsed = chapters.length > COLLAPSE_THRESHOLD
+                      const visibleChapters = showCollapsed
+                        ? [...chapters.slice(0, PREVIEW_HEAD), null, ...chapters.slice(-PREVIEW_TAIL)]
+                        : chapters
+                      const hiddenCount = chapters.length - PREVIEW_HEAD - PREVIEW_TAIL
+
+                      return (
+                        <Box>
+                          {visibleChapters.map((ch, idx) => {
+                            if (ch === null) {
+                              return (
+                                <Box key="ellipsis" style={{ padding: '6px 0', fontSize: 11, color: `${entityColors.arc}44`, borderBottom: `1px solid ${entityColors.arc}10`, fontStyle: 'italic' }}>
+                                  ··· {hiddenCount} more chapters
+                                </Box>
+                              )
+                            }
+                            const isFirst = ch.number === initialArc.startChapter
+                            const isLast = ch.number === initialArc.endChapter
+                            const isLastVisible = idx === visibleChapters.length - 1
+                            return (
+                              <Box
+                                key={ch.id}
+                                component={Link}
+                                href={`/chapters/${ch.number}`}
+                                style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 0', borderBottom: isLastVisible ? 'none' : `1px solid ${entityColors.arc}10`, textDecoration: 'none' }}
+                              >
+                                <Text style={{ fontSize: 11, fontWeight: 700, color: entityColors.arc, minWidth: 36, flexShrink: 0 }}>
+                                  Ch. {ch.number}
+                                </Text>
+                                {isFirst && (
+                                  <Box style={{ background: `${entityColors.arc}20`, border: `1px solid ${entityColors.arc}40`, borderRadius: 3, padding: '1px 5px', fontSize: 9, color: entityColors.arc, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', flexShrink: 0 }}>
+                                    Start
+                                  </Box>
+                                )}
+                                {isLast && (
+                                  <Box style={{ background: `${entityColors.arc}20`, border: `1px solid ${entityColors.arc}40`, borderRadius: 3, padding: '1px 5px', fontSize: 9, color: entityColors.arc, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', flexShrink: 0 }}>
+                                    End
+                                  </Box>
+                                )}
+                                <Text style={{ fontSize: 13, color: '#aaa', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                  {ch.title || `Chapter ${ch.number}`}
+                                </Text>
+                                <Text style={{ fontSize: 12, color: `${entityColors.arc}44` }}>→</Text>
+                              </Box>
+                            )
+                          })}
+                        </Box>
+                      )
+                    })()}
+                  </CinematicCard>
+                )}
               </Stack>
 
               {/* Aside column */}
               <Stack gap={theme.spacing.sm}>
                 {/* Details card */}
-                <Card withBorder radius="lg" shadow="lg" padding={0} style={getCardStyles(theme, entityColors.arc)}>
-                  <Box style={{ height: 3, borderRadius: '6px 6px 0 0', background: `linear-gradient(90deg, ${entityColors.arc}, transparent 70%)` }} />
-                  <Box p="md">
-                    <Group gap={10} mb={14} align="center">
-                      <Text style={{ fontSize: '0.65rem', fontWeight: 800, letterSpacing: '0.18em', textTransform: 'uppercase', color: entityColors.arc, opacity: 0.85 }}>Details</Text>
-                      <Box style={{ flex: 1, height: 1, background: `linear-gradient(to right, ${getAlphaColor(entityColors.arc, 0.20)}, transparent)` }} />
-                    </Group>
-                    {initialArc.startChapter != null && initialArc.endChapter != null && (
-                      <Box style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: '1px solid #161616' }}>
-                        <Box style={{ width: 24, height: 24, borderRadius: 5, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: getAlphaColor(entityColors.arc, 0.10), border: `1px solid ${getAlphaColor(entityColors.arc, 0.20)}` }}>
-                          <BookOpen size={14} color={entityColors.arc} />
-                        </Box>
-                        <Text style={{ fontSize: 11, color: '#555', flex: 1 }}>Chapters</Text>
-                        <Text style={{ fontSize: 12, fontWeight: 700, color: entityColors.arc }}>{initialArc.startChapter}–{initialArc.endChapter}</Text>
-                      </Box>
-                    )}
-                    <Box style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: initialArc.children?.length ? '1px solid #161616' : 'none' }}>
-                      <Box style={{ width: 24, height: 24, borderRadius: 5, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: getAlphaColor(entityColors.arc, 0.10), border: `1px solid ${getAlphaColor(entityColors.arc, 0.20)}` }}>
-                        <Crown size={14} color={entityColors.arc} />
-                      </Box>
-                      <Text style={{ fontSize: 11, color: '#555', flex: 1 }}>Gambles</Text>
-                      <Text style={{ fontSize: 12, fontWeight: 700, color: entityColors.arc }}>{initialGambles.length}</Text>
+                <CinematicCard entityColor={entityColors.arc} padding="md">
+                  <CinematicSectionHeader label="Details" entityColor={entityColors.arc} />
+                  {(initialArc.startChapter != null && initialArc.endChapter != null) && (
+                    <Box style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: `1px solid ${entityColors.arc}14` }}>
+                      <Box style={{ width: 5, height: 5, borderRadius: '50%', background: entityColors.arc, flexShrink: 0 }} />
+                      <Text style={{ fontSize: 11, color: `${entityColors.arc}66`, flex: 1 }}>Chapters</Text>
+                      <Text style={{ fontSize: 12, fontWeight: 700, color: entityColors.arc }}>Ch. {initialArc.startChapter}–{initialArc.endChapter}</Text>
                     </Box>
-                    {initialArc.children != null && initialArc.children.length > 0 && (
-                      <Box style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0' }}>
-                        <Box style={{ width: 24, height: 24, borderRadius: 5, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: getAlphaColor(entityColors.arc, 0.10), border: `1px solid ${getAlphaColor(entityColors.arc, 0.20)}` }}>
-                          <GitBranch size={14} color={entityColors.arc} />
-                        </Box>
-                        <Text style={{ fontSize: 11, color: '#555', flex: 1 }}>Sub-arcs</Text>
-                        <Text style={{ fontSize: 12, fontWeight: 700, color: entityColors.arc }}>{initialArc.children.length}</Text>
-                      </Box>
-                    )}
+                  )}
+                  <Box style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: `1px solid ${entityColors.arc}14` }}>
+                    <Box style={{ width: 5, height: 5, borderRadius: '50%', background: entityColors.arc, flexShrink: 0 }} />
+                    <Text style={{ fontSize: 11, color: `${entityColors.arc}66`, flex: 1 }}>Gambles</Text>
+                    <Text style={{ fontSize: 12, fontWeight: 700, color: entityColors.arc }}>{initialGambles.length}</Text>
                   </Box>
-                </Card>
+                  {initialArc.children && initialArc.children.length > 0 && (
+                    <Box style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0' }}>
+                      <Box style={{ width: 5, height: 5, borderRadius: '50%', background: entityColors.arc, flexShrink: 0 }} />
+                      <Text style={{ fontSize: 11, color: `${entityColors.arc}66`, flex: 1 }}>Sub-arcs</Text>
+                      <Text style={{ fontSize: 12, fontWeight: 700, color: entityColors.arc }}>{initialArc.children.length}</Text>
+                    </Box>
+                  )}
+                </CinematicCard>
 
                 {/* Gambles compact list */}
                 <RelatedContentSection
@@ -407,34 +400,26 @@ export default function ArcPageClient({ initialArc, initialEvents, initialGamble
 
           <Tabs.Panel value="media" pt={theme.spacing.md}>
             <Stack gap="md">
-              <Card withBorder radius="lg" shadow="lg" padding={0} style={{ background: backgroundStyles.card, border: `1px solid ${getAlphaColor(getEntityThemeColor(theme, 'media'), 0.4)}` }}>
-                <Box style={{ height: 3, borderRadius: '6px 6px 0 0', background: `linear-gradient(90deg, ${getEntityThemeColor(theme, 'media')}, transparent 70%)` }} />
-                <Box p="md">
-                  <Group justify="space-between" align="center" mb={14}>
-                    <Group gap={10} align="center">
-                      <Box style={{ width: 28, height: 28, borderRadius: 6, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: getAlphaColor(getEntityThemeColor(theme, 'media'), 0.15), border: `1px solid ${getAlphaColor(getEntityThemeColor(theme, 'media'), 0.30)}` }}>
-                        <ImageIcon size={16} color={getEntityThemeColor(theme, 'media')} />
-                      </Box>
-                      <Text style={{ fontSize: '0.65rem', fontWeight: 800, letterSpacing: '0.18em', textTransform: 'uppercase', color: getEntityThemeColor(theme, 'media'), opacity: 0.85 }}>
-                        Media Gallery
-                      </Text>
-                    </Group>
-                    <Button component={Link} href={`/media?ownerType=arc&ownerId=${initialArc.id}`} variant="outline" c={getEntityThemeColor(theme, 'media')} size="sm" radius="xl">
-                      View All
-                    </Button>
-                  </Group>
-                  <MediaGallery
-                    ownerType="arc"
-                    ownerId={initialArc.id}
-                    purpose="gallery"
-                    limit={8}
-                    showTitle={false}
-                    compactMode
-                    showFilters={false}
-                    initialMediaId={mediaId}
-                  />
-                </Box>
-              </Card>
+              <CinematicCard entityColor={entityColors.media} padding="md">
+                <Group justify="space-between" align="center" mb={14}>
+                  <Box style={{ fontSize: '0.55rem', fontWeight: 900, letterSpacing: '0.22em', textTransform: 'uppercase', borderRadius: 4, padding: '3px 8px', background: `${entityColors.media}18`, border: `1px solid ${entityColors.media}30`, color: entityColors.media }}>
+                    Media Gallery
+                  </Box>
+                  <Box component={Link} href={`/media?ownerType=arc&ownerId=${initialArc.id}`} style={{ fontSize: 11, color: `${entityColors.media}88`, textDecoration: 'none' }}>
+                    View All →
+                  </Box>
+                </Group>
+                <MediaGallery
+                  ownerType="arc"
+                  ownerId={initialArc.id}
+                  purpose="gallery"
+                  limit={8}
+                  showTitle={false}
+                  compactMode
+                  showFilters={false}
+                  initialMediaId={mediaId}
+                />
+              </CinematicCard>
             </Stack>
           </Tabs.Panel>
 
