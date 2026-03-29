@@ -2,15 +2,13 @@
 
 import React, { useEffect, useState } from 'react'
 import {
-  Card,
+  Box,
   Group,
   Stack,
   Text,
-  Title,
   Button,
   Collapse,
   Skeleton,
-  Badge,
   Modal,
   TextInput,
   Textarea,
@@ -19,7 +17,6 @@ import {
   useMantineTheme,
 } from '@mantine/core'
 import {
-  MessageSquare,
   ChevronDown,
   ChevronUp,
   Plus,
@@ -27,7 +24,8 @@ import {
 import Link from 'next/link'
 import api from '../../lib/api'
 import { Annotation, AnnotationOwnerType } from '../../types'
-import { textColors, getCardStyles, getEntityThemeColor } from '../../lib/mantine-theme'
+import { getEntityThemeColor } from '../../lib/mantine-theme'
+import { CinematicCard } from '../layouts/CinematicCard'
 import AnnotationCard from './AnnotationCard'
 
 interface AnnotationSectionProps {
@@ -53,7 +51,7 @@ export default function AnnotationSection({
   const [error, setError] = useState<string | null>(null)
   const [expanded, setExpanded] = useState(false)
 
-  const entityColor = theme.colors.violet[5]
+  const entityColor = getEntityThemeColor(theme, 'annotation')
 
   useEffect(() => {
     const fetchAnnotations = async () => {
@@ -150,11 +148,10 @@ export default function AnnotationSection({
     }
   }
 
-  // Don't render if loading and no annotations, or if there's an error
   if (loading) {
     return (
-      <Card withBorder radius="lg" shadow="lg" style={getCardStyles(theme, entityColor)}>
-        <Stack gap="md" p="md">
+      <CinematicCard entityColor={entityColor} padding="md">
+        <Stack gap="md">
           <Group gap="sm">
             <Skeleton circle height={24} width={24} />
             <Skeleton height={20} width={150} />
@@ -165,7 +162,7 @@ export default function AnnotationSection({
             ))}
           </Stack>
         </Stack>
-      </Card>
+      </CinematicCard>
     )
   }
 
@@ -179,30 +176,38 @@ export default function AnnotationSection({
   }
 
   return (
-    <Card withBorder radius="lg" shadow="lg" style={getCardStyles(theme, entityColor)}>
-      <Stack gap="md" p="md">
+    <CinematicCard entityColor={entityColor} padding="md">
+      <Stack gap="md">
         {/* Header */}
         <Group justify="space-between" align="center">
-          <Group gap="sm">
-            <MessageSquare size={20} color={entityColor} />
-            <Title order={4} c={textColors.primary}>
-              Annotations
-            </Title>
-            {annotations.length > 0 && (
-              <Badge size="sm" variant="light" color="violet">
-                {annotations.length}
-              </Badge>
-            )}
+          <Group gap={8} align="center" style={{ flex: 1 }}>
+            <Box
+              style={{
+                fontSize: '0.55rem',
+                fontWeight: 900,
+                letterSpacing: '0.22em',
+                textTransform: 'uppercase',
+                borderRadius: 4,
+                padding: '3px 8px',
+                background: `${entityColor}18`,
+                border: `1px solid ${entityColor}30`,
+                color: entityColor,
+                flexShrink: 0,
+              }}
+            >
+              {annotations.length > 0 ? `Annotations (${annotations.length})` : 'Annotations'}
+            </Box>
+            <Box style={{ flex: 1, height: 1, background: `linear-gradient(to right, ${entityColor}18, transparent)` }} />
           </Group>
 
-          <Group gap="sm">
+          <Group gap="sm" style={{ flexShrink: 0, marginLeft: 8 }}>
             {isAuthenticated && (
               <Button
                 component={Link}
                 href={`/submit-annotation?type=${ownerType}&id=${ownerId}`}
                 size="xs"
                 variant="light"
-                color="violet"
+                style={{ background: `${entityColor}20`, color: entityColor, border: `1px solid ${entityColor}30` }}
                 leftSection={<Plus size={14} />}
               >
                 Add
@@ -213,10 +218,9 @@ export default function AnnotationSection({
               <Button
                 variant="subtle"
                 size="xs"
+                style={{ color: `${entityColor}88` }}
                 onClick={() => setExpanded(!expanded)}
-                rightSection={
-                  expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />
-                }
+                rightSection={expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
               >
                 {expanded ? 'Collapse' : 'Expand'}
               </Button>
@@ -226,7 +230,7 @@ export default function AnnotationSection({
 
         {/* Empty state */}
         {annotations.length === 0 && (
-          <Text size="sm" c={textColors.tertiary} ta="center" py="md">
+          <Text size="sm" style={{ color: `${entityColor}55` }} ta="center" py="md">
             No annotations yet.
             {isAuthenticated
               ? ' Be the first to add one!'
@@ -237,7 +241,6 @@ export default function AnnotationSection({
         {/* Annotation list */}
         {annotations.length > 0 && (
           <>
-            {/* Preview (first 2 annotations) */}
             {!expanded && (
               <Stack gap="sm">
                 {annotations.slice(0, 2).map((annotation) => (
@@ -260,7 +263,7 @@ export default function AnnotationSection({
                   </div>
                 ))}
                 {annotations.length > 2 && (
-                  <Text size="xs" c={textColors.tertiary} ta="center">
+                  <Text size="xs" style={{ color: `${entityColor}55` }} ta="center">
                     +{annotations.length - 2} more annotation
                     {annotations.length - 2 !== 1 ? 's' : ''}
                   </Text>
@@ -268,7 +271,6 @@ export default function AnnotationSection({
               </Stack>
             )}
 
-            {/* Full list */}
             <Collapse in={expanded}>
               <Stack gap="sm">
                 {annotations.map((annotation) => (
@@ -303,7 +305,7 @@ export default function AnnotationSection({
         title="Edit Annotation"
         size="lg"
         styles={{
-          header: { backgroundColor: theme.colors.dark[7], color: textColors.primary },
+          header: { backgroundColor: theme.colors.dark[7], color: '#e8c0f8' },
           body: { backgroundColor: theme.colors.dark[7] },
           content: { backgroundColor: theme.colors.dark[7] },
         }}
@@ -360,6 +362,6 @@ export default function AnnotationSection({
           </Group>
         </Stack>
       </Modal>
-    </Card>
+    </CinematicCard>
   )
 }
