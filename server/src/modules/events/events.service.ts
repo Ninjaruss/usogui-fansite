@@ -431,7 +431,7 @@ export class EventsService {
       throw new NotFoundException(`Event with ID ${id} not found`);
     }
 
-    const changedFields = diffFields(event, updateData);
+    const changedFields = diffFields(event, cleanedUpdateData);
     if (characterIds !== undefined) changedFields.push('characters');
 
     // First update the basic event data
