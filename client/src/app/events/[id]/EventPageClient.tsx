@@ -21,9 +21,8 @@ import {
   fontSize,
   setTabAccentColors,
   backgroundStyles,
-  getCardStyles
 } from '../../../lib/mantine-theme'
-import { CalendarSearch, Image as ImageIcon, Edit, Crown, Users, Tag, Map, Check, BookOpen } from 'lucide-react'
+import { CalendarSearch, Image as ImageIcon, Edit } from 'lucide-react'
 import Link from 'next/link'
 import { useAuth } from '../../../providers/AuthProvider'
 import EnhancedSpoilerMarkdown from '../../../components/EnhancedSpoilerMarkdown'
@@ -34,6 +33,7 @@ import TimelineSpoilerWrapper from '../../../components/TimelineSpoilerWrapper'
 import MediaGallery from '../../../components/MediaGallery'
 import { BreadcrumbNav, createEntityBreadcrumbs } from '../../../components/Breadcrumb'
 import { DetailPageHeader } from '../../../components/layouts/DetailPageHeader'
+import { CinematicCard, CinematicSectionHeader } from '../../../components/layouts/CinematicCard'
 import type { Event } from '../../../types'
 import { api } from '../../../lib/api'
 
@@ -120,7 +120,7 @@ export default function EventPageClient({ initialEvent }: EventPageClientProps) 
           />
 
           <motion.div {...pageEnter}>
-            <Card withBorder radius="lg" className="gambling-card" shadow="xl" style={getCardStyles(theme)}>
+            <Card withBorder radius="lg" className="gambling-card" shadow="xl" style={{ background: backgroundStyles.card, border: `1px solid #1a1a1a` }}>
               <Tabs
                 value={activeTab}
                 onChange={(value) => value && setActiveTab(value)}
@@ -146,256 +146,206 @@ export default function EventPageClient({ initialEvent }: EventPageClientProps) 
                     {/* Main column — narrative content */}
                     <Stack gap={theme.spacing.md}>
                       {/* Event Description Section */}
-                      <Card withBorder radius="lg" shadow="lg" padding={0} style={getCardStyles(theme, entityColors.event)}>
-                        <Box style={{ height: 3, borderRadius: '6px 6px 0 0', background: `linear-gradient(90deg, ${entityColors.event}, transparent 70%)` }} />
-                        <Box p="lg">
-                          <Group gap={10} mb={14} align="center">
-                            <Box style={{ width: 28, height: 28, borderRadius: 6, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: getAlphaColor(entityColors.event, 0.15), border: `1px solid ${getAlphaColor(entityColors.event, 0.30)}` }}>
-                              <CalendarSearch size={16} color={entityColors.event} />
-                            </Box>
-                            <Text style={{ fontSize: '0.65rem', fontWeight: 800, letterSpacing: '0.18em', textTransform: 'uppercase', color: entityColors.event, opacity: 0.85 }}>Description</Text>
-                            <Box style={{ flex: 1, height: 1, background: `linear-gradient(to right, ${getAlphaColor(entityColors.event, 0.20)}, transparent)` }} />
-                          </Group>
-                          <TimelineSpoilerWrapper chapterNumber={initialEvent.chapterNumber}>
-                            <Box style={{ lineHeight: 1.6, fontSize: 14 }}>
-                              <EnhancedSpoilerMarkdown
-                                content={initialEvent.description}
-                                className="event-description"
-                                enableEntityEmbeds
-                                compactEntityCards={false}
-                              />
-                            </Box>
-                          </TimelineSpoilerWrapper>
-                        </Box>
-                      </Card>
+                      <CinematicCard entityColor={entityColors.event}>
+                        <CinematicSectionHeader label="Description" entityColor={entityColors.event} />
+                        <TimelineSpoilerWrapper chapterNumber={initialEvent.chapterNumber}>
+                          <Box style={{ lineHeight: 1.6, fontSize: 14 }}>
+                            <EnhancedSpoilerMarkdown
+                              content={initialEvent.description}
+                              className="event-description"
+                              enableEntityEmbeds
+                              compactEntityCards={false}
+                            />
+                          </Box>
+                        </TimelineSpoilerWrapper>
+                      </CinematicCard>
 
                       {/* Related Gamble Section */}
                       {initialEvent.gamble && (
-                        <Card withBorder radius="lg" shadow="lg" padding={0} style={getCardStyles(theme, entityColors.gamble)}>
-                          <Box style={{ height: 3, borderRadius: '6px 6px 0 0', background: `linear-gradient(90deg, ${entityColors.gamble}, transparent 70%)` }} />
-                          <Box p="lg">
-                            <Group justify="space-between" align="center" mb={14}>
-                              <Group gap={10} align="center">
-                                <Box style={{ width: 28, height: 28, borderRadius: 6, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: getAlphaColor(entityColors.gamble, 0.15), border: `1px solid ${getAlphaColor(entityColors.gamble, 0.30)}` }}>
-                                  <Crown size={16} color={entityColors.gamble} />
-                                </Box>
-                                <Text style={{ fontSize: '0.65rem', fontWeight: 800, letterSpacing: '0.18em', textTransform: 'uppercase', color: entityColors.gamble, opacity: 0.85 }}>Related Gamble</Text>
-                              </Group>
-                              <Button component={Link} href={`/gambles/${initialEvent.gamble.id}`} variant="outline" c={entityColors.gamble} size="sm" radius="xl" style={{ fontWeight: 600, border: `2px solid ${entityColors.gamble}` }}>
+                        <CinematicCard entityColor={entityColors.gamble}>
+                          <CinematicSectionHeader
+                            label="Related Gamble"
+                            entityColor={entityColors.gamble}
+                            extra={
+                              <Button component={Link} href={`/gambles/${initialEvent.gamble.id}`} variant="outline" c={entityColors.gamble} size="sm" radius="xl" style={{ fontWeight: 600, border: `2px solid ${entityColors.gamble}`, marginLeft: 'auto' }}>
                                 View Gamble
                               </Button>
-                            </Group>
-                            <TimelineSpoilerWrapper chapterNumber={initialEvent.chapterNumber}>
-                              <Paper withBorder radius="lg" p={theme.spacing.md} shadow="md" style={{
-                                border: `1px solid ${getAlphaColor(entityColors.gamble, 0.3)}`
-                              }}>
-                                <Stack gap={theme.spacing.sm}>
-                                  <Text fw={600} c={textColors.gamble}>{initialEvent.gamble.name}</Text>
+                            }
+                          />
+                          <TimelineSpoilerWrapper chapterNumber={initialEvent.chapterNumber}>
+                            <Paper withBorder radius="lg" p={theme.spacing.md} shadow="md" style={{
+                              border: `1px solid ${getAlphaColor(entityColors.gamble, 0.3)}`
+                            }}>
+                              <Stack gap={theme.spacing.sm}>
+                                <Text fw={600} c={textColors.gamble}>{initialEvent.gamble.name}</Text>
+                                <Stack gap={4}>
+                                  <Text size="sm" fw={600} c={textColors.secondary}>Rules</Text>
+                                  <EnhancedSpoilerMarkdown
+                                    content={initialEvent.gamble.rules}
+                                    className="event-gamble-rules"
+                                    enableEntityEmbeds
+                                    compactEntityCards
+                                  />
+                                </Stack>
+                                {initialEvent.gamble.winCondition && (
                                   <Stack gap={4}>
-                                    <Text size="sm" fw={600} c={textColors.secondary}>Rules</Text>
+                                    <Text size="sm" fw={600} c={textColors.secondary}>Win Condition</Text>
                                     <EnhancedSpoilerMarkdown
-                                      content={initialEvent.gamble.rules}
-                                      className="event-gamble-rules"
+                                      content={initialEvent.gamble.winCondition}
+                                      className="event-gamble-win-condition"
                                       enableEntityEmbeds
                                       compactEntityCards
                                     />
                                   </Stack>
-                                  {initialEvent.gamble.winCondition && (
-                                    <Stack gap={4}>
-                                      <Text size="sm" fw={600} c={textColors.secondary}>Win Condition</Text>
-                                      <EnhancedSpoilerMarkdown
-                                        content={initialEvent.gamble.winCondition}
-                                        className="event-gamble-win-condition"
-                                        enableEntityEmbeds
-                                        compactEntityCards
-                                      />
-                                    </Stack>
-                                  )}
-                                </Stack>
-                              </Paper>
-                            </TimelineSpoilerWrapper>
-                          </Box>
-                        </Card>
+                                )}
+                              </Stack>
+                            </Paper>
+                          </TimelineSpoilerWrapper>
+                        </CinematicCard>
                       )}
                     </Stack>
 
                     {/* Aside column — details and related content */}
                     <Stack gap={theme.spacing.sm}>
                       {/* Details card */}
-                      <Card withBorder radius="lg" shadow="md" padding={0} style={getCardStyles(theme, entityColors.event)}>
-                        <Box style={{ height: 3, borderRadius: '6px 6px 0 0', background: `linear-gradient(90deg, ${entityColors.event}, transparent 70%)` }} />
-                        <Box p="md">
-                          <Group gap={10} mb={14} align="center">
-                            <Text style={{ fontSize: '0.65rem', fontWeight: 800, letterSpacing: '0.18em', textTransform: 'uppercase', color: entityColors.event, opacity: 0.85 }}>Details</Text>
-                            <Box style={{ flex: 1, height: 1, background: `linear-gradient(to right, ${getAlphaColor(entityColors.event, 0.20)}, transparent)` }} />
-                          </Group>
-                          {/* Chapter row */}
-                          {initialEvent.chapterNumber != null && (
-                            <Box style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: '1px solid #161616' }}>
-                              <Box style={{ width: 24, height: 24, borderRadius: 5, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: getAlphaColor(entityColors.event, 0.10), border: `1px solid ${getAlphaColor(entityColors.event, 0.20)}` }}>
-                                <BookOpen size={14} color={entityColors.event} />
-                              </Box>
-                              <Text style={{ fontSize: 11, color: '#555', flex: 1 }}>Chapter</Text>
-                              <Text style={{ fontSize: 12, fontWeight: 700, color: entityColors.event }}>Ch. {initialEvent.chapterNumber}</Text>
-                            </Box>
-                          )}
-                          {/* Arc row */}
-                          {initialEvent.arc != null && (
-                            <Box style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: '1px solid #161616' }}>
-                              <Box style={{ width: 24, height: 24, borderRadius: 5, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: getAlphaColor(entityColors.event, 0.10), border: `1px solid ${getAlphaColor(entityColors.event, 0.20)}` }}>
-                                <Map size={14} color={entityColors.event} />
-                              </Box>
-                              <Text style={{ fontSize: 11, color: '#555', flex: 1 }}>Arc</Text>
-                              <Text component={Link} href={`/arcs/${initialEvent.arc.id}`} style={{ fontSize: 12, fontWeight: 700, color: entityColors.arc, textDecoration: 'none' }}>{initialEvent.arc.name}</Text>
-                            </Box>
-                          )}
-                          {/* Type row */}
-                          {initialEvent.type != null && (
-                            <Box style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: '1px solid #161616' }}>
-                              <Box style={{ width: 24, height: 24, borderRadius: 5, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: getAlphaColor(entityColors.event, 0.10), border: `1px solid ${getAlphaColor(entityColors.event, 0.20)}` }}>
-                                <Tag size={14} color={entityColors.event} />
-                              </Box>
-                              <Text style={{ fontSize: 11, color: '#555', flex: 1 }}>Type</Text>
-                              <Text style={{ fontSize: 12, fontWeight: 700, color: entityColors.event, textTransform: 'capitalize' }}>{initialEvent.type}</Text>
-                            </Box>
-                          )}
-                          {/* Status row */}
-                          {initialEvent.status != null && (
-                            <Box style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0' }}>
-                              <Box style={{ width: 24, height: 24, borderRadius: 5, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: getAlphaColor(entityColors.event, 0.10), border: `1px solid ${getAlphaColor(entityColors.event, 0.20)}` }}>
-                                <Check size={14} color={entityColors.event} />
-                              </Box>
-                              <Text style={{ fontSize: 11, color: '#555', flex: 1 }}>Status</Text>
-                              <Text style={{ fontSize: 12, fontWeight: 700, color: entityColors.event, textTransform: 'capitalize' }}>
-                                {initialEvent.status === 'pending' ? 'Unverified' : initialEvent.status === 'approved' ? 'Verified' : initialEvent.status}
-                              </Text>
-                            </Box>
-                          )}
-                          {canEdit && (
-                            <Button
-                              component={Link}
-                              href={`/submit-event?edit=${initialEvent.id}`}
-                              variant="outline"
-                              size="sm"
-                              radius="xl"
-                              leftSection={<Edit size={14} />}
-                              color={isRejected ? 'orange' : 'gray'}
-                              style={{ fontWeight: 600, marginTop: 12 }}
-                              fullWidth
-                            >
-                              {isRejected ? 'Edit & Resubmit' : 'Edit'}
-                            </Button>
-                          )}
-                        </Box>
-                      </Card>
+                      <CinematicCard entityColor={entityColors.event} padding="md">
+                        <CinematicSectionHeader label="Details" entityColor={entityColors.event} />
+                        {/* Chapter row */}
+                        {initialEvent.chapterNumber != null && (
+                          <Box style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: `1px solid ${entityColors.event}14` }}>
+                            <Box style={{ width: 5, height: 5, borderRadius: '50%', background: entityColors.event, flexShrink: 0 }} />
+                            <Text style={{ fontSize: 11, color: `${entityColors.event}66`, flex: 1 }}>Chapter</Text>
+                            <Text style={{ fontSize: 12, fontWeight: 700, color: entityColors.event }}>Ch. {initialEvent.chapterNumber}</Text>
+                          </Box>
+                        )}
+                        {/* Arc row */}
+                        {initialEvent.arc != null && (
+                          <Box style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: `1px solid ${entityColors.event}14` }}>
+                            <Box style={{ width: 5, height: 5, borderRadius: '50%', background: entityColors.arc, flexShrink: 0 }} />
+                            <Text style={{ fontSize: 11, color: `${entityColors.event}66`, flex: 1 }}>Arc</Text>
+                            <Text component={Link} href={`/arcs/${initialEvent.arc.id}`} style={{ fontSize: 12, fontWeight: 700, color: entityColors.arc, textDecoration: 'none' }}>{initialEvent.arc.name}</Text>
+                          </Box>
+                        )}
+                        {/* Type row */}
+                        {initialEvent.type != null && (
+                          <Box style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: `1px solid ${entityColors.event}14` }}>
+                            <Box style={{ width: 5, height: 5, borderRadius: '50%', background: entityColors.event, flexShrink: 0 }} />
+                            <Text style={{ fontSize: 11, color: `${entityColors.event}66`, flex: 1 }}>Type</Text>
+                            <Text style={{ fontSize: 12, fontWeight: 700, color: entityColors.event, textTransform: 'capitalize' }}>{initialEvent.type}</Text>
+                          </Box>
+                        )}
+                        {/* Status row */}
+                        {initialEvent.status != null && (
+                          <Box style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: canEdit ? `1px solid ${entityColors.event}14` : undefined }}>
+                            <Box style={{ width: 5, height: 5, borderRadius: '50%', background: entityColors.event, flexShrink: 0 }} />
+                            <Text style={{ fontSize: 11, color: `${entityColors.event}66`, flex: 1 }}>Status</Text>
+                            <Text style={{ fontSize: 12, fontWeight: 700, color: entityColors.event, textTransform: 'capitalize' }}>
+                              {initialEvent.status === 'pending' ? 'Unverified' : initialEvent.status === 'approved' ? 'Verified' : initialEvent.status}
+                            </Text>
+                          </Box>
+                        )}
+                        {canEdit && (
+                          <Button
+                            component={Link}
+                            href={`/submit-event?edit=${initialEvent.id}`}
+                            variant="outline"
+                            size="sm"
+                            radius="xl"
+                            leftSection={<Edit size={14} />}
+                            color={isRejected ? 'orange' : 'gray'}
+                            style={{ fontWeight: 600, marginTop: 12 }}
+                            fullWidth
+                          >
+                            {isRejected ? 'Edit & Resubmit' : 'Edit'}
+                          </Button>
+                        )}
+                      </CinematicCard>
 
                       {/* Featured Characters Section */}
                       {initialEvent.characters && initialEvent.characters.length > 0 && (
-                        <Card withBorder radius="lg" shadow="lg" padding={0} style={getCardStyles(theme, entityColors.character)}>
-                          <Box style={{ height: 3, borderRadius: '6px 6px 0 0', background: `linear-gradient(90deg, ${entityColors.character}, transparent 70%)` }} />
-                          <Box p="md">
-                            <Group gap={10} mb={14} align="center">
-                              <Box style={{ width: 28, height: 28, borderRadius: 6, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: getAlphaColor(entityColors.character, 0.15), border: `1px solid ${getAlphaColor(entityColors.character, 0.30)}` }}>
-                                <Users size={16} color={entityColors.character} />
-                              </Box>
-                              <Text style={{ fontSize: '0.65rem', fontWeight: 800, letterSpacing: '0.18em', textTransform: 'uppercase', color: entityColors.character, opacity: 0.85 }}>Featured Characters</Text>
-                              <Box style={{ flex: 1, height: 1, background: `linear-gradient(to right, ${getAlphaColor(entityColors.character, 0.20)}, transparent)` }} />
-                            </Group>
-                            <Box style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                              {initialEvent.characters.map((character) => (
-                                <Box
-                                  key={character.id}
-                                  component={Link}
-                                  href={`/characters/${character.id}`}
-                                  style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#131313', border: '1px solid #222', borderRadius: 8, padding: '6px 10px', textDecoration: 'none', cursor: 'pointer', transition: `all ${theme.other?.transitions?.durationShort || 200}ms ease` }}
-                                  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.borderColor = entityColors.character }}
-                                  onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.borderColor = '#222' }}
-                                >
-                                  <Box style={{ width: 28, height: 28, borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: getAlphaColor(entityColors.character, 0.20), border: `1px solid ${getAlphaColor(entityColors.character, 0.40)}`, fontSize: 10, fontWeight: 700, color: entityColors.character }}>
-                                    {character.name.split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase()}
-                                  </Box>
-                                  <Text style={{ fontSize: 13, fontWeight: 600, color: '#ddd' }}>{character.name}</Text>
+                        <CinematicCard entityColor={entityColors.character} padding="md">
+                          <CinematicSectionHeader label="Featured Characters" entityColor={entityColors.character} />
+                          <Box style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                            {initialEvent.characters.map((character) => (
+                              <Box
+                                key={character.id}
+                                component={Link}
+                                href={`/characters/${character.id}`}
+                                style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#131313', border: '1px solid #222', borderRadius: 8, padding: '6px 10px', textDecoration: 'none', cursor: 'pointer', transition: `all ${theme.other?.transitions?.durationShort || 200}ms ease` }}
+                                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.borderColor = entityColors.character }}
+                                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.borderColor = '#222' }}
+                              >
+                                <Box style={{ width: 28, height: 28, borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: getAlphaColor(entityColors.character, 0.20), border: `1px solid ${getAlphaColor(entityColors.character, 0.40)}`, fontSize: 10, fontWeight: 700, color: entityColors.character }}>
+                                  {character.name.split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase()}
                                 </Box>
-                              ))}
-                            </Box>
+                                <Text style={{ fontSize: 13, fontWeight: 600, color: '#ddd' }}>{character.name}</Text>
+                              </Box>
+                            ))}
                           </Box>
-                        </Card>
+                        </CinematicCard>
                       )}
 
                       {/* Tags Section */}
                       {initialEvent.tags && initialEvent.tags.length > 0 && (
-                        <Card withBorder radius="lg" shadow="lg" padding={0} style={getCardStyles(theme, entityColors.event)}>
-                          <Box style={{ height: 3, borderRadius: '6px 6px 0 0', background: `linear-gradient(90deg, ${entityColors.event}, transparent 70%)` }} />
-                          <Box p="md">
-                            <Group gap={10} mb={14} align="center">
-                              <Box style={{ width: 28, height: 28, borderRadius: 6, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: getAlphaColor(entityColors.event, 0.15), border: `1px solid ${getAlphaColor(entityColors.event, 0.30)}` }}>
-                                <Tag size={16} color={entityColors.event} />
-                              </Box>
-                              <Text style={{ fontSize: '0.65rem', fontWeight: 800, letterSpacing: '0.18em', textTransform: 'uppercase', color: entityColors.event, opacity: 0.85 }}>Tags</Text>
-                              <Box style={{ flex: 1, height: 1, background: `linear-gradient(to right, ${getAlphaColor(entityColors.event, 0.20)}, transparent)` }} />
-                            </Group>
-                            <Group gap="xs" wrap="wrap">
-                              {initialEvent.tags.map((tag) => (
-                                <Badge
-                                  key={tag.id}
-                                  variant="outline"
-                                  radius="sm"
-                                  size="sm"
-                                  c={entityColors.event}
-                                  style={{ borderColor: entityColors.event }}
-                                >
-                                  {tag.name}
-                                </Badge>
-                              ))}
-                            </Group>
-                          </Box>
-                        </Card>
+                        <CinematicCard entityColor={entityColors.event} padding="md">
+                          <CinematicSectionHeader label="Tags" entityColor={entityColors.event} />
+                          <Group gap="xs" wrap="wrap">
+                            {initialEvent.tags.map((tag) => (
+                              <Badge
+                                key={tag.id}
+                                variant="outline"
+                                radius="sm"
+                                size="sm"
+                                c={entityColors.event}
+                                style={{ borderColor: entityColors.event }}
+                              >
+                                {tag.name}
+                              </Badge>
+                            ))}
+                          </Group>
+                        </CinematicCard>
                       )}
 
                       {/* Other Gambles in this Arc */}
                       {arcGambles.length > 0 && (
-                        <Card withBorder radius="lg" shadow="lg" padding={0} style={getCardStyles(theme, entityColors.gamble)}>
-                          <Box style={{ height: 3, borderRadius: '6px 6px 0 0', background: `linear-gradient(90deg, ${entityColors.gamble}, transparent 70%)` }} />
-                          <Box p="md">
-                            <Group gap={10} mb={14} align="center">
-                              <Box style={{ width: 28, height: 28, borderRadius: 6, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: getAlphaColor(entityColors.gamble, 0.15), border: `1px solid ${getAlphaColor(entityColors.gamble, 0.30)}` }}>
-                                <Crown size={16} color={entityColors.gamble} />
-                              </Box>
-                              <Text style={{ fontSize: '0.65rem', fontWeight: 800, letterSpacing: '0.18em', textTransform: 'uppercase', color: entityColors.gamble, opacity: 0.85 }}>Gambles in this Arc</Text>
+                        <CinematicCard entityColor={entityColors.gamble} padding="md">
+                          <CinematicSectionHeader
+                            label="Gambles in this Arc"
+                            entityColor={entityColors.gamble}
+                            extra={
                               <Badge size="sm" variant="light" c={entityColors.gamble}>
                                 {arcGambles.length}
                               </Badge>
-                              <Box style={{ flex: 1, height: 1, background: `linear-gradient(to right, ${getAlphaColor(entityColors.gamble, 0.20)}, transparent)` }} />
-                            </Group>
-                            <Group gap={theme.spacing.xs} wrap="wrap">
-                              {arcGambles.map(gamble => (
-                                <Badge
-                                  key={gamble.id}
-                                  component={Link}
-                                  href={`/gambles/${gamble.id}`}
-                                  size="md"
-                                  variant="light"
-                                  c={textColors.gamble}
-                                  style={{
-                                    fontSize: fontSize.xs,
-                                    fontWeight: 600,
-                                    background: getAlphaColor(entityColors.gamble, 0.2),
-                                    border: `1px solid ${getAlphaColor(entityColors.gamble, 0.4)}`,
-                                    textDecoration: 'none',
-                                    cursor: 'pointer'
-                                  }}
-                                >
-                                  {gamble.name}
-                                  {gamble.chapter && (
-                                    <Text span size="xs" c={textColors.tertiary} ml={4}>
-                                      Ch.{gamble.chapter.number}
-                                    </Text>
-                                  )}
-                                </Badge>
-                              ))}
-                            </Group>
-                          </Box>
-                        </Card>
+                            }
+                          />
+                          <Group gap={theme.spacing.xs} wrap="wrap">
+                            {arcGambles.map(gamble => (
+                              <Badge
+                                key={gamble.id}
+                                component={Link}
+                                href={`/gambles/${gamble.id}`}
+                                size="md"
+                                variant="light"
+                                c={textColors.gamble}
+                                style={{
+                                  fontSize: fontSize.xs,
+                                  fontWeight: 600,
+                                  background: getAlphaColor(entityColors.gamble, 0.2),
+                                  border: `1px solid ${getAlphaColor(entityColors.gamble, 0.4)}`,
+                                  textDecoration: 'none',
+                                  cursor: 'pointer'
+                                }}
+                              >
+                                {gamble.name}
+                                {gamble.chapter && (
+                                  <Text span size="xs" c={textColors.tertiary} ml={4}>
+                                    Ch.{gamble.chapter.number}
+                                  </Text>
+                                )}
+                              </Badge>
+                            ))}
+                          </Group>
+                        </CinematicCard>
                       )}
                     </Stack>
                   </Box>
@@ -403,33 +353,26 @@ export default function EventPageClient({ initialEvent }: EventPageClientProps) 
 
                 <Tabs.Panel value="media" pt={theme.spacing.md}>
                   <Stack gap="md">
-                    <Card withBorder radius="lg" shadow="lg" padding={0} style={{ background: backgroundStyles.card, border: `1px solid ${getAlphaColor(getEntityThemeColor(theme, 'media'), 0.4)}` }}>
-                      <Box style={{ height: 3, borderRadius: '6px 6px 0 0', background: `linear-gradient(90deg, ${getEntityThemeColor(theme, 'media')}, transparent 70%)` }} />
-                      <Box p="md">
-                        <Group justify="space-between" align="center" mb={14}>
-                          <Group gap={10} align="center">
-                            <Box style={{ width: 28, height: 28, borderRadius: 6, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: getAlphaColor(getEntityThemeColor(theme, 'media'), 0.15), border: `1px solid ${getAlphaColor(getEntityThemeColor(theme, 'media'), 0.30)}` }}>
-                              <ImageIcon size={16} color={getEntityThemeColor(theme, 'media')} />
-                            </Box>
-                            <Text style={{ fontSize: '0.65rem', fontWeight: 800, letterSpacing: '0.18em', textTransform: 'uppercase', color: getEntityThemeColor(theme, 'media'), opacity: 0.85 }}>
-                              Media Gallery
-                            </Text>
-                          </Group>
-                          <Button component={Link} href={`/media?ownerType=event&ownerId=${initialEvent.id}`} variant="outline" c={getEntityThemeColor(theme, 'media')} size="sm" radius="xl">
+                    <CinematicCard entityColor={entityColors.media} padding="md">
+                      <CinematicSectionHeader
+                        label="Media Gallery"
+                        entityColor={entityColors.media}
+                        extra={
+                          <Button component={Link} href={`/media?ownerType=event&ownerId=${initialEvent.id}`} variant="outline" c={entityColors.media} size="sm" radius="xl" style={{ marginLeft: 'auto' }}>
                             View All
                           </Button>
-                        </Group>
-                        <MediaGallery
-                          ownerType="event"
-                          ownerId={initialEvent.id}
-                          purpose="gallery"
-                          limit={8}
-                          showTitle={false}
-                          compactMode
-                          showFilters={false}
-                        />
-                      </Box>
-                    </Card>
+                        }
+                      />
+                      <MediaGallery
+                        ownerType="event"
+                        ownerId={initialEvent.id}
+                        purpose="gallery"
+                        limit={8}
+                        showTitle={false}
+                        compactMode
+                        showFilters={false}
+                      />
+                    </CinematicCard>
                   </Stack>
                 </Tabs.Panel>
               </Tabs>
