@@ -3,8 +3,6 @@
 import React, { useEffect, useState } from 'react'
 import {
   Box,
-  Button,
-  Card,
   Container,
   Grid,
   Group,
@@ -22,9 +20,8 @@ import {
   fontSize,
   setTabAccentColors,
   backgroundStyles,
-  getCardStyles
 } from '../../../lib/mantine-theme'
-import { Book, Hash, BookOpen, ArrowRight, Bookmark } from 'lucide-react'
+import { Book, Hash, BookOpen } from 'lucide-react'
 import Link from 'next/link'
 import { motion } from 'motion/react'
 import { pageEnter } from '../../../lib/motion-presets'
@@ -33,6 +30,7 @@ import { usePageView } from '../../../hooks/usePageView'
 import { BreadcrumbNav, createEntityBreadcrumbs } from '../../../components/Breadcrumb'
 import { DetailPageHeader } from '../../../components/layouts/DetailPageHeader'
 import { RelatedContentSection } from '../../../components/layouts/RelatedContentSection'
+import { CinematicCard, CinematicSectionHeader } from '../../../components/layouts/CinematicCard'
 
 interface Volume {
   id: number
@@ -115,246 +113,226 @@ export default function VolumePageClient({ initialVolume, initialChapters, initi
           />
 
           <motion.div {...pageEnter}>
-            <Card withBorder radius="lg" className="gambling-card" shadow="xl" style={getCardStyles(theme)}>
-              <Tabs
-                value={activeTab}
-                onChange={(value) => value && setActiveTab(value)}
-                keepMounted={false}
-                variant="pills"
-                className="volume-tabs"
-              >
-                <Tabs.List>
-                  <Tabs.Tab value="overview" leftSection={<Book size={16} />}>Overview</Tabs.Tab>
-                  <Tooltip
-                    label="No chapters available for this volume"
-                    disabled={initialChapters.length > 0}
-                    position="bottom"
-                    withArrow
-                  >
-                    <Tabs.Tab value="chapters" leftSection={<BookOpen size={16} />} disabled={initialChapters.length === 0}>
-                      Chapters ({initialChapters.length})
-                    </Tabs.Tab>
-                  </Tooltip>
-                </Tabs.List>
+            <Tabs
+              value={activeTab}
+              onChange={(value) => value && setActiveTab(value)}
+              keepMounted={false}
+              variant="pills"
+              className="volume-tabs"
+            >
+              <Tabs.List>
+                <Tabs.Tab value="overview" leftSection={<Book size={16} />}>Overview</Tabs.Tab>
+                <Tooltip
+                  label="No chapters available for this volume"
+                  disabled={initialChapters.length > 0}
+                  position="bottom"
+                  withArrow
+                >
+                  <Tabs.Tab value="chapters" leftSection={<BookOpen size={16} />} disabled={initialChapters.length === 0}>
+                    Chapters ({initialChapters.length})
+                  </Tabs.Tab>
+                </Tooltip>
+              </Tabs.List>
 
-                <Tabs.Panel value="overview" pt={theme.spacing.md}>
-                  <Box
-                    style={{
-                      display: 'grid',
-                      gridTemplateColumns: 'minmax(0, 1fr) 260px',
-                      gap: 12,
-                      alignItems: 'start',
-                    }}
-                    className="detail-editorial-grid"
-                  >
-                    {/* Main column */}
-                    <Stack gap={theme.spacing.md}>
-                      {/* Volume Summary Section */}
-                      <Card withBorder radius="lg" shadow="lg" padding={0} style={getCardStyles(theme, entityColors.volume)}>
-                        <Box style={{ height: 3, borderRadius: '6px 6px 0 0', background: `linear-gradient(90deg, ${entityColors.volume}, transparent 70%)` }} />
-                        <Box p="lg">
-                          <Group gap={10} mb={14} align="center">
-                            <Box style={{ width: 28, height: 28, borderRadius: 6, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: getAlphaColor(entityColors.volume, 0.15), border: `1px solid ${getAlphaColor(entityColors.volume, 0.30)}` }}>
-                              <Book size={16} color={entityColors.volume} />
-                            </Box>
-                            <Text style={{ fontSize: '0.65rem', fontWeight: 800, letterSpacing: '0.18em', textTransform: 'uppercase', color: entityColors.volume, opacity: 0.85 }}>Volume Summary</Text>
-                            <Box style={{ flex: 1, height: 1, background: `linear-gradient(to right, ${getAlphaColor(entityColors.volume, 0.20)}, transparent)` }} />
-                          </Group>
-                          {initialVolume.description ? (
-                            <TimelineSpoilerWrapper chapterNumber={initialVolume.startChapter}>
-                              <Box style={{ lineHeight: 1.6 }}>
-                                <Text style={{ fontSize: 14, lineHeight: 1.6 }}>{initialVolume.description}</Text>
-                              </Box>
-                            </TimelineSpoilerWrapper>
-                          ) : (
-                            <Text size="sm" c={textColors.tertiary} style={{ fontStyle: 'italic', textAlign: 'center', padding: theme.spacing.xl }}>
-                              No summary available for this volume yet. Check back later for updates!
-                            </Text>
-                          )}
-                        </Box>
-                      </Card>
-
-                      {/* Chapter Navigation Section */}
-                      <Card withBorder radius="lg" shadow="lg" padding={0} style={getCardStyles(theme, entityColors.volume)}>
-                        <Box style={{ height: 3, borderRadius: '6px 6px 0 0', background: `linear-gradient(90deg, ${entityColors.volume}, transparent 70%)` }} />
-                        <Box p="md">
-                          <Group gap={10} mb={14} align="center">
-                            <Box style={{ width: 28, height: 28, borderRadius: 6, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: getAlphaColor(entityColors.volume, 0.15), border: `1px solid ${getAlphaColor(entityColors.volume, 0.30)}` }}>
-                              <ArrowRight size={16} color={entityColors.volume} />
-                            </Box>
-                            <Text style={{ fontSize: '0.65rem', fontWeight: 800, letterSpacing: '0.18em', textTransform: 'uppercase', color: entityColors.volume, opacity: 0.85 }}>Chapter Navigation</Text>
-                            <Box style={{ flex: 1, height: 1, background: `linear-gradient(to right, ${getAlphaColor(entityColors.volume, 0.20)}, transparent)` }} />
-                          </Group>
-                          <Group gap={theme.spacing.md} wrap="wrap">
-                            <Button
-                              component={Link}
-                              href={`/chapters/${initialVolume.startChapter}`}
-                              variant="outline"
-                              c={entityColors.volume}
-                              size="md"
-                              radius="xl"
-                              style={{
-                                fontWeight: 600,
-                                border: `2px solid ${entityColors.volume}`,
-                                transition: `all ${theme.other?.transitions?.durationShort || 200}ms ease`,
-                                flex: 1,
-                                minWidth: '200px'
-                              }}
-                            >
-                              Start: Chapter {initialVolume.startChapter}
-                            </Button>
-                            <Button
-                              component={Link}
-                              href={`/chapters/${initialVolume.endChapter}`}
-                              variant="filled"
-                              style={{
-                                background: `linear-gradient(135deg, ${entityColors.volume} 0%, ${entityColors.volume}dd 100%)`,
-                                border: `1px solid ${entityColors.volume}`,
-                                fontWeight: 600,
-                                flex: 1,
-                                minWidth: '200px'
-                              }}
-                            >
-                              End: Chapter {initialVolume.endChapter}
-                            </Button>
-                          </Group>
-                        </Box>
-                      </Card>
-                    </Stack>
-
-                    {/* Aside column */}
-                    <Stack gap={theme.spacing.sm}>
-                      {/* Details card */}
-                      <Card withBorder radius="lg" shadow="lg" padding={0} style={getCardStyles(theme, entityColors.volume)}>
-                        <Box style={{ height: 3, borderRadius: '6px 6px 0 0', background: `linear-gradient(90deg, ${entityColors.volume}, transparent 70%)` }} />
-                        <Box p="md">
-                          <Group gap={10} mb={14} align="center">
-                            <Text style={{ fontSize: '0.65rem', fontWeight: 800, letterSpacing: '0.18em', textTransform: 'uppercase', color: entityColors.volume, opacity: 0.85 }}>Details</Text>
-                            <Box style={{ flex: 1, height: 1, background: `linear-gradient(to right, ${getAlphaColor(entityColors.volume, 0.20)}, transparent)` }} />
-                          </Group>
-                          {initialVolume.startChapter != null && initialVolume.endChapter != null && (
-                            <Box style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: '1px solid #161616' }}>
-                              <Box style={{ width: 24, height: 24, borderRadius: 5, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: getAlphaColor(entityColors.volume, 0.10), border: `1px solid ${getAlphaColor(entityColors.volume, 0.20)}` }}>
-                                <BookOpen size={14} color={entityColors.volume} />
-                              </Box>
-                              <Text style={{ fontSize: 11, color: '#555', flex: 1 }}>Chapter Range</Text>
-                              <Text style={{ fontSize: 12, fontWeight: 700, color: entityColors.volume }}>Ch. {initialVolume.startChapter}–{initialVolume.endChapter}</Text>
-                            </Box>
-                          )}
-                          <Box style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: '1px solid #161616' }}>
-                            <Box style={{ width: 24, height: 24, borderRadius: 5, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: getAlphaColor(entityColors.volume, 0.10), border: `1px solid ${getAlphaColor(entityColors.volume, 0.20)}` }}>
-                              <Book size={14} color={entityColors.volume} />
-                            </Box>
-                            <Text style={{ fontSize: 11, color: '#555', flex: 1 }}>Chapter Count</Text>
-                            <Text style={{ fontSize: 12, fontWeight: 700, color: entityColors.volume }}>{initialChapters?.length ?? 0}</Text>
+              <Tabs.Panel value="overview" pt={theme.spacing.md}>
+                <Box
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'minmax(0, 1fr) 260px',
+                    gap: 12,
+                    alignItems: 'start',
+                  }}
+                  className="detail-editorial-grid"
+                >
+                  {/* Main column */}
+                  <Stack gap={theme.spacing.md}>
+                    {/* Volume Summary Section */}
+                    <CinematicCard entityColor={entityColors.volume}>
+                      <CinematicSectionHeader label="Volume Summary" entityColor={entityColors.volume} />
+                      {initialVolume.description ? (
+                        <TimelineSpoilerWrapper chapterNumber={initialVolume.startChapter}>
+                          <Box style={{ lineHeight: 1.6 }}>
+                            <Text style={{ fontSize: 14, lineHeight: 1.6 }}>{initialVolume.description}</Text>
                           </Box>
-                          <Box style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0' }}>
-                            <Box style={{ width: 24, height: 24, borderRadius: 5, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: getAlphaColor(entityColors.volume, 0.10), border: `1px solid ${getAlphaColor(entityColors.volume, 0.20)}` }}>
-                              <Bookmark size={14} color={entityColors.volume} />
+                        </TimelineSpoilerWrapper>
+                      ) : (
+                        <Text size="sm" c={textColors.tertiary} style={{ fontStyle: 'italic', textAlign: 'center', padding: theme.spacing.xl }}>
+                          No summary available for this volume yet. Check back later for updates!
+                        </Text>
+                      )}
+                    </CinematicCard>
+
+                    {/* Chapter Navigation List */}
+                    {initialChapters.length > 0 && (
+                      <CinematicCard entityColor={entityColors.volume} padding="md">
+                        <CinematicSectionHeader label="Chapters" entityColor={entityColors.volume} />
+                        {(() => {
+                          const COLLAPSE_THRESHOLD = 6
+                          const PREVIEW_HEAD = 3
+                          const PREVIEW_TAIL = 1
+                          const chapters = initialChapters
+                          const showCollapsed = chapters.length > COLLAPSE_THRESHOLD
+                          const visibleChapters = showCollapsed
+                            ? [...chapters.slice(0, PREVIEW_HEAD), null, ...chapters.slice(-PREVIEW_TAIL)]
+                            : chapters
+                          const hiddenCount = chapters.length - PREVIEW_HEAD - PREVIEW_TAIL
+
+                          return (
+                            <Box>
+                              {visibleChapters.map((ch, idx) => {
+                                if (ch === null) {
+                                  return (
+                                    <Box key="ellipsis" style={{ padding: '6px 0', fontSize: 11, color: `${entityColors.volume}44`, borderBottom: `1px solid ${entityColors.volume}10`, fontStyle: 'italic' }}>
+                                      ··· {hiddenCount} more chapters
+                                    </Box>
+                                  )
+                                }
+                                const isFirst = ch.number === initialVolume.startChapter
+                                const isLast = ch.number === initialVolume.endChapter
+                                const isLastVisible = idx === visibleChapters.length - 1
+                                return (
+                                  <Box
+                                    key={ch.id}
+                                    component={Link}
+                                    href={`/chapters/${ch.number}`}
+                                    style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 0', borderBottom: isLastVisible ? 'none' : `1px solid ${entityColors.volume}10`, textDecoration: 'none' }}
+                                  >
+                                    <Text style={{ fontSize: 11, fontWeight: 700, color: entityColors.chapter, minWidth: 36, flexShrink: 0 }}>
+                                      Ch. {ch.number}
+                                    </Text>
+                                    {isFirst && (
+                                      <Box style={{ background: `${entityColors.volume}20`, border: `1px solid ${entityColors.volume}40`, borderRadius: 3, padding: '1px 5px', fontSize: 9, color: entityColors.volume, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', flexShrink: 0 }}>
+                                        Start
+                                      </Box>
+                                    )}
+                                    {isLast && (
+                                      <Box style={{ background: `${entityColors.volume}20`, border: `1px solid ${entityColors.volume}40`, borderRadius: 3, padding: '1px 5px', fontSize: 9, color: entityColors.volume, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', flexShrink: 0 }}>
+                                        End
+                                      </Box>
+                                    )}
+                                    <Text style={{ fontSize: 13, color: '#aaa', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                      {ch.title || `Chapter ${ch.number}`}
+                                    </Text>
+                                    <Text style={{ fontSize: 12, color: `${entityColors.volume}44` }}>→</Text>
+                                  </Box>
+                                )
+                              })}
                             </Box>
-                            <Text style={{ fontSize: 11, color: '#555', flex: 1 }}>Arc Count</Text>
-                            <Text style={{ fontSize: 12, fontWeight: 700, color: entityColors.volume }}>{initialArcs?.length ?? 0}</Text>
-                          </Box>
-                        </Box>
-                      </Card>
+                          )
+                        })()}
+                      </CinematicCard>
+                    )}
+                  </Stack>
 
-                      {/* Chapters compact list */}
-                      <RelatedContentSection
-                        entityType="chapter"
-                        title="Chapters"
-                        items={initialChapters ?? []}
-                        previewCount={4}
-                        getKey={(c) => c.id}
-                        variant="compact"
-                        getLabel={(c) => `Chapter ${c.number}`}
-                        getHref={(c) => `/chapters/${c.id}`}
-                        itemDotColor={entityColors.chapter}
-                      />
+                  {/* Aside column */}
+                  <Stack gap={theme.spacing.sm}>
+                    {/* Details card */}
+                    <CinematicCard entityColor={entityColors.volume} padding="md">
+                      <CinematicSectionHeader label="Details" entityColor={entityColors.volume} />
+                      <Box style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: `1px solid ${entityColors.volume}14` }}>
+                        <Box style={{ width: 5, height: 5, borderRadius: '50%', background: entityColors.volume, flexShrink: 0 }} />
+                        <Text style={{ fontSize: 11, color: `${entityColors.volume}66`, flex: 1 }}>Chapter Range</Text>
+                        <Text style={{ fontSize: 12, fontWeight: 700, color: entityColors.volume }}>Ch. {initialVolume.startChapter}–{initialVolume.endChapter}</Text>
+                      </Box>
+                      <Box style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: `1px solid ${entityColors.volume}14` }}>
+                        <Box style={{ width: 5, height: 5, borderRadius: '50%', background: entityColors.volume, flexShrink: 0 }} />
+                        <Text style={{ fontSize: 11, color: `${entityColors.volume}66`, flex: 1 }}>Chapters</Text>
+                        <Text style={{ fontSize: 12, fontWeight: 700, color: entityColors.volume }}>{initialChapters.length}</Text>
+                      </Box>
+                      <Box style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0' }}>
+                        <Box style={{ width: 5, height: 5, borderRadius: '50%', background: entityColors.volume, flexShrink: 0 }} />
+                        <Text style={{ fontSize: 11, color: `${entityColors.volume}66`, flex: 1 }}>Arcs</Text>
+                        <Text style={{ fontSize: 12, fontWeight: 700, color: entityColors.volume }}>{initialArcs.length}</Text>
+                      </Box>
+                    </CinematicCard>
 
-                      {/* Arcs compact list */}
-                      <RelatedContentSection
-                        entityType="arc"
-                        title="Arcs"
-                        items={initialArcs ?? []}
-                        previewCount={4}
-                        getKey={(a) => a.id}
-                        variant="compact"
-                        getLabel={(a) => a.name}
-                        getHref={(a) => `/arcs/${a.id}`}
-                        itemDotColor={entityColors.arc}
-                      />
-                    </Stack>
-                  </Box>
-                </Tabs.Panel>
+                    {/* Chapters compact list */}
+                    <RelatedContentSection
+                      entityType="chapter"
+                      title="Chapters"
+                      items={initialChapters ?? []}
+                      previewCount={4}
+                      getKey={(c) => c.id}
+                      variant="compact"
+                      getLabel={(c) => `Chapter ${c.number}`}
+                      getHref={(c) => `/chapters/${c.id}`}
+                      itemDotColor={entityColors.chapter}
+                    />
 
-                <Tabs.Panel value="chapters" pt={theme.spacing.md}>
-                  <Stack gap={theme.spacing.lg}>
-                    <Card withBorder radius="lg" shadow="lg" padding={0} style={getCardStyles(theme, entityColors.volume)}>
-                      <Box style={{ height: 3, borderRadius: '6px 6px 0 0', background: `linear-gradient(90deg, ${entityColors.volume}, transparent 70%)` }} />
-                      <Box p="md">
-                        <Group justify="space-between" align="center" mb={14}>
-                          <Group gap={10} align="center">
-                            <Box style={{ width: 28, height: 28, borderRadius: 6, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: getAlphaColor(entityColors.volume, 0.15), border: `1px solid ${getAlphaColor(entityColors.volume, 0.30)}` }}>
-                              <BookOpen size={16} color={entityColors.volume} />
-                            </Box>
-                            <Text style={{ fontSize: '0.65rem', fontWeight: 800, letterSpacing: '0.18em', textTransform: 'uppercase', color: entityColors.volume, opacity: 0.85 }}>Chapters in This Volume</Text>
-                          </Group>
-                          <Box
+                    {/* Arcs compact list */}
+                    <RelatedContentSection
+                      entityType="arc"
+                      title="Arcs"
+                      items={initialArcs ?? []}
+                      previewCount={4}
+                      getKey={(a) => a.id}
+                      variant="compact"
+                      getLabel={(a) => a.name}
+                      getHref={(a) => `/arcs/${a.id}`}
+                      itemDotColor={entityColors.arc}
+                    />
+                  </Stack>
+                </Box>
+              </Tabs.Panel>
+
+              <Tabs.Panel value="chapters" pt={theme.spacing.md}>
+                <Stack gap={theme.spacing.lg}>
+                  <CinematicCard entityColor={entityColors.volume} padding="md">
+                    <CinematicSectionHeader label="Chapters in This Volume" entityColor={entityColors.volume} extra={
+                      <Box
+                        style={{
+                          padding: '2px 10px',
+                          borderRadius: 4,
+                          fontSize: fontSize.xs,
+                          fontWeight: 600,
+                          backgroundColor: getAlphaColor(entityColors.volume, 0.2),
+                          border: `1px solid ${getAlphaColor(entityColors.volume, 0.4)}`,
+                          color: entityColors.volume,
+                        }}
+                      >
+                        {initialChapters.length} chapters
+                      </Box>
+                    } />
+
+                    <Grid gutter="md">
+                      {initialChapters.map((chapter) => (
+                        <Grid.Col span={{ base: 12, sm: 6, lg: 4 }} key={chapter.number}>
+                          <Paper
+                            component={Link}
+                            href={`/chapters/${chapter.number}`}
+                            withBorder
+                            radius="md"
+                            p="md"
+                            shadow="md"
                             style={{
-                              padding: '2px 10px',
-                              borderRadius: 4,
-                              fontSize: fontSize.xs,
-                              fontWeight: 600,
-                              backgroundColor: getAlphaColor(entityColors.volume, 0.2),
-                              border: `1px solid ${getAlphaColor(entityColors.volume, 0.4)}`,
-                              color: textColors.volume,
+                              cursor: 'pointer',
+                              transition: `all ${theme.other?.transitions?.durationShort || 200}ms ease`,
+                              height: '100%',
+                              border: `1px solid ${getAlphaColor(entityColors.chapter, 0.3)}`,
+                              textDecoration: 'none'
                             }}
                           >
-                            {initialChapters.length} chapters
-                          </Box>
-                        </Group>
-
-                        <Grid gutter="md">
-                          {initialChapters.map((chapter) => (
-                            <Grid.Col span={{ base: 12, sm: 6, lg: 4 }} key={chapter.number}>
-                              <Paper
-                                component={Link}
-                                href={`/chapters/${chapter.number}`}
-                                withBorder
-                                radius="md"
-                                p="md"
-                                shadow="md"
-                                style={{
-                                  cursor: 'pointer',
-                                  transition: `all ${theme.other?.transitions?.durationShort || 200}ms ease`,
-                                  height: '100%',
-                                  border: `1px solid ${getAlphaColor(entityColors.chapter, 0.3)}`,
-                                  textDecoration: 'none'
-                                }}
-                              >
-                                <Stack gap="xs" h="100%" justify="center">
-                                  <Group gap="xs" justify="center">
-                                    <Hash size={16} color={entityColors.chapter} />
-                                    <Text size="lg" fw={600} c={entityColors.chapter}>
-                                      Chapter {chapter.number}
-                                    </Text>
-                                  </Group>
-                                  {chapter.title && (
-                                    <Text size="sm" c={textColors.tertiary} lineClamp={2} ta="center">
-                                      {chapter.title}
-                                    </Text>
-                                  )}
-                                </Stack>
-                              </Paper>
-                            </Grid.Col>
-                          ))}
-                        </Grid>
-                      </Box>
-                    </Card>
-                  </Stack>
-                </Tabs.Panel>
-              </Tabs>
-            </Card>
+                            <Stack gap="xs" h="100%" justify="center">
+                              <Group gap="xs" justify="center">
+                                <Hash size={16} color={entityColors.chapter} />
+                                <Text size="lg" fw={600} c={entityColors.chapter}>
+                                  Chapter {chapter.number}
+                                </Text>
+                              </Group>
+                              {chapter.title && (
+                                <Text size="sm" c={textColors.tertiary} lineClamp={2} ta="center">
+                                  {chapter.title}
+                                </Text>
+                              )}
+                            </Stack>
+                          </Paper>
+                        </Grid.Col>
+                      ))}
+                    </Grid>
+                  </CinematicCard>
+                </Stack>
+              </Tabs.Panel>
+            </Tabs>
           </motion.div>
         </Stack>
       </Container>
