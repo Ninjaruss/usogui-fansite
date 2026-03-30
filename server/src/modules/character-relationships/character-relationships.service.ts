@@ -15,6 +15,7 @@ import { CreateCharacterRelationshipDto } from './dto/create-character-relations
 import { UpdateCharacterRelationshipDto } from './dto/update-character-relationship.dto';
 import { EditLogService } from '../edit-log/edit-log.service';
 import { EditLogEntityType } from '../../entities/edit-log.entity';
+import { diffFields } from '../../common/utils/diff-fields';
 
 @Injectable()
 export class CharacterRelationshipsService {
@@ -325,7 +326,7 @@ export class CharacterRelationshipsService {
       }
     }
 
-    const changedFields = Object.keys(dto);
+    const changedFields = diffFields(relationship, dto);
     Object.assign(relationship, dto);
 
     if (!isMinorEdit) {

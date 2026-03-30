@@ -13,6 +13,7 @@ import { CreateCharacterOrganizationDto } from './dto/create-character-organizat
 import { UpdateCharacterOrganizationDto } from './dto/update-character-organization.dto';
 import { EditLogService } from '../edit-log/edit-log.service';
 import { EditLogEntityType } from '../../entities/edit-log.entity';
+import { diffFields } from '../../common/utils/diff-fields';
 
 @Injectable()
 export class CharacterOrganizationsService {
@@ -207,7 +208,7 @@ export class CharacterOrganizationsService {
       }
     }
 
-    const changedFields = Object.keys(dto);
+    const changedFields = diffFields(membership, dto);
 
     // Update fields
     Object.assign(membership, dto);
