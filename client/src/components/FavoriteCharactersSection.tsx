@@ -2,20 +2,17 @@
 
 import {
   Box,
-  Card,
   Text,
   Grid,
   Badge,
-  Stack,
   Group,
   Avatar,
   Image,
-  Tooltip,
   useMantineTheme,
   rgba
 } from '@mantine/core'
 import { getEntityThemeColor } from '../lib/mantine-theme'
-import { Heart, Crown, Trophy, User } from 'lucide-react'
+import { Crown, Trophy, Heart, User } from 'lucide-react'
 import Link from 'next/link'
 import { motion } from 'motion/react'
 import { FavoriteCharacterStats } from '../hooks/useFavoritesData'
@@ -38,20 +35,12 @@ export function FavoriteCharactersSection({ data }: Props) {
     }
   }
 
-  const borderColor = withAlpha(characterColor, 0.22, 'rgba(59, 130, 246, 0.22)')
+  const borderColor = withAlpha(characterColor, 0.14, 'rgba(59, 130, 246, 0.14)')
   const softSurface = withAlpha(surface, 0.92, surface)
-  const subtleText = withAlpha('#ffffff', 0.7, 'rgba(255, 255, 255, 0.7)')
+  const subtleText = withAlpha('#ffffff', 0.45, 'rgba(255, 255, 255, 0.45)')
 
   const { mostFavorited, mostPrimary, mostLoyal } = data
   const hasAnyData = mostFavorited.length > 0 || mostPrimary.length > 0 || mostLoyal.length > 0
-
-  const cardStyle = {
-    height: '100%',
-    display: 'flex',
-    flexDirection: 'column' as const,
-    backgroundColor: softSurface,
-    border: `1px solid ${borderColor}`,
-  }
 
   const renderCharacterImage = (
     entityImageUrl: string | null | undefined,
@@ -67,7 +56,7 @@ export function FavoriteCharactersSection({ data }: Props) {
           h={size}
           radius="sm"
           fit="cover"
-          style={{ border: `2px solid ${borderColor}`, flexShrink: 0 }}
+          style={{ border: `1px solid ${borderColor}`, flexShrink: 0 }}
         />
       )
     }
@@ -76,7 +65,7 @@ export function FavoriteCharactersSection({ data }: Props) {
         size={size}
         radius="sm"
         color="blue"
-        style={{ border: `2px solid ${borderColor}`, flexShrink: 0 }}
+        style={{ border: `1px solid ${borderColor}`, flexShrink: 0 }}
       >
         <User size={Math.round(size * 0.4)} />
       </Avatar>
@@ -88,135 +77,184 @@ export function FavoriteCharactersSection({ data }: Props) {
     getLabel: (item: any) => string,
     title: string,
     icon: React.ReactNode,
-    description: string,
     delay: number,
   ) => (
     <Grid.Col span={{ base: 12, md: 4 }}>
-      <Card style={cardStyle}>
-        <Box style={{ flexGrow: 1 }}>
-          <Box style={{ textAlign: 'center', marginBottom: '1rem' }}>
-            <Group justify="center" gap="xs" style={{ marginBottom: '0.5rem' }}>
-              {icon}
-              <Text fw={700} size="lg">{title}</Text>
-            </Group>
-            <Text size="xs" style={{ color: subtleText }}>{description}</Text>
-          </Box>
+      <Box
+        style={{
+          backgroundColor: softSurface,
+          border: `1px solid ${borderColor}`,
+          borderRadius: '0.625rem',
+          padding: '0.875rem 0.75rem 0.625rem',
+          position: 'relative',
+          overflow: 'hidden',
+          height: '100%',
+        }}
+      >
+        {/* Top accent bar */}
+        <Box aria-hidden style={{
+          position: 'absolute', top: 0, left: 0, right: 0, height: 2,
+          background: withAlpha(characterColor, 0.45, 'rgba(59,130,246,0.45)'),
+          borderRadius: '0.625rem 0.625rem 0 0',
+        }} />
 
-          {items.length > 0 ? (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay }}
+        {/* Category heading */}
+        <Group justify="center" gap={5} style={{ marginBottom: '0.625rem' }}>
+          {icon}
+          <Text style={{
+            fontSize: '0.625rem',
+            fontWeight: 700,
+            letterSpacing: '0.1em',
+            textTransform: 'uppercase',
+            color: subtleText,
+          }}>
+            {title}
+          </Text>
+        </Group>
+
+        {items.length > 0 ? (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.35, delay }}
+          >
+            {/* Winner row */}
+            <Link
+              href={`/characters/${items[0].character.id}`}
+              style={{ textDecoration: 'none', color: 'inherit' }}
             >
-              <Group align="flex-start" gap="md" wrap="nowrap">
-                {/* Winner */}
-                <Link
-                  href={`/characters/${items[0].character.id}`}
-                  style={{ flex: 1, minWidth: 0, textDecoration: 'none' }}
-                >
-                  <Stack align="center" gap="xs">
-                    {renderCharacterImage(items[0].character.entityImageUrl, items[0].character.name, 80)}
-                    <Text fw={700} size="sm" ta="center" style={{ lineHeight: 1.2, color: '#fff' }}>
-                      {items[0].character.name}
-                    </Text>
-                    <Badge variant="light" size="sm" style={{ color: getEntityThemeColor(theme, 'character') }}>
-                      {getLabel(items[0])}
-                    </Badge>
-                  </Stack>
-                </Link>
-
-                {/* Runner-up */}
-                {items[1] && (
-                  <Link
-                    href={`/characters/${items[1].character.id}`}
-                    style={{ flex: 0.75, minWidth: 0, textDecoration: 'none', opacity: 0.55 }}
+              <Group
+                gap={10}
+                wrap="nowrap"
+                style={{
+                  padding: '0.5rem',
+                  background: withAlpha(characterColor, 0.06, 'rgba(59,130,246,0.06)'),
+                  border: `1px solid ${withAlpha(characterColor, 0.15, 'rgba(59,130,246,0.15)')}`,
+                  borderRadius: '0.4375rem',
+                  marginBottom: '0.375rem',
+                  cursor: 'pointer',
+                }}
+              >
+                {renderCharacterImage(items[0].character.entityImageUrl, items[0].character.name, 44)}
+                <Box style={{ flex: 1, minWidth: 0 }}>
+                  <Text
+                    fw={700}
+                    style={{
+                      fontSize: '0.75rem',
+                      color: '#fff',
+                      lineHeight: 1.2,
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                    }}
                   >
-                    <Stack align="center" gap="xs">
-                      {renderCharacterImage(items[1].character.entityImageUrl, items[1].character.name, 54)}
-                      <Text fw={500} size="xs" ta="center" style={{ color: subtleText, lineHeight: 1.2 }}>
-                        {items[1].character.name}
-                      </Text>
-                      <Badge variant="light" size="xs" style={{ color: subtleText }}>
-                        {getLabel(items[1])}
-                      </Badge>
-                    </Stack>
-                  </Link>
-                )}
+                    {items[0].character.name}
+                  </Text>
+                  <Text style={{ fontSize: '0.625rem', color: subtleText, marginTop: 2 }}>
+                    {getLabel(items[0])}
+                  </Text>
+                </Box>
+                <Badge
+                  variant="light"
+                  size="xs"
+                  style={{
+                    color: getEntityThemeColor(theme, 'character'),
+                    flexShrink: 0,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.04em',
+                  }}
+                >
+                  #1
+                </Badge>
               </Group>
-            </motion.div>
-          ) : (
-            <Card
-              withBorder
-              padding="sm"
-              style={{
-                backgroundColor: withAlpha(surface, 0.86, surface),
-                border: `1px solid ${borderColor}`,
-              }}
-            >
-              <Text size="sm" style={{ color: subtleText, textAlign: 'center' }}>
-                Not enough data yet
-              </Text>
-            </Card>
-          )}
-        </Box>
-      </Card>
+            </Link>
+
+            {/* Runner-up row */}
+            {items[1] && (
+              <Link
+                href={`/characters/${items[1].character.id}`}
+                style={{ textDecoration: 'none', color: 'inherit' }}
+              >
+                <Group
+                  gap={8}
+                  wrap="nowrap"
+                  style={{
+                    padding: '0.3125rem 0.5rem',
+                    borderRadius: '0.375rem',
+                    opacity: 0.55,
+                    cursor: 'pointer',
+                  }}
+                >
+                  {renderCharacterImage(items[1].character.entityImageUrl, items[1].character.name, 30)}
+                  <Text
+                    style={{
+                      fontSize: '0.6875rem',
+                      fontWeight: 500,
+                      color: 'rgba(255,255,255,0.7)',
+                      flex: 1,
+                      minWidth: 0,
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                    }}
+                  >
+                    {items[1].character.name}
+                  </Text>
+                  <Text style={{ fontSize: '0.625rem', color: subtleText, whiteSpace: 'nowrap' }}>
+                    {getLabel(items[1])}
+                  </Text>
+                </Group>
+              </Link>
+            )}
+          </motion.div>
+        ) : (
+          <Text size="sm" style={{ color: subtleText, textAlign: 'center', padding: '0.5rem 0' }}>
+            Not enough data yet
+          </Text>
+        )}
+      </Box>
     </Grid.Col>
   )
 
+  if (!hasAnyData) {
+    return (
+      <Box style={{ textAlign: 'center', padding: '1rem 0', marginBottom: '1rem' }}>
+        <Text size="sm" style={{ color: subtleText }}>
+          No character favorites yet. Set your favorites in your profile!
+        </Text>
+      </Box>
+    )
+  }
+
   return (
-    <Box style={{ marginBottom: '3rem' }}>
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.9 }}
-      >
-        <Box style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <Group justify="center" gap="xs" style={{ marginBottom: '0.75rem' }}>
-            <Heart className="w-6 h-6" color={characterColor} />
-            <Text fw={700} size="xl">
-              Fan Favorite Characters
-            </Text>
-          </Group>
-          <Text size="md" style={{ color: subtleText }}>
-            Community-voted favorites across three categories
-          </Text>
-        </Box>
-
-        <Grid gutter="xl">
-          {renderCategory(
-            mostFavorited,
-            (item) => `${item.totalCount} fan${item.totalCount !== 1 ? 's' : ''}`,
-            'Most Favorited',
-            <Trophy className="w-5 h-5" color={characterColor} />,
-            'Characters with the most fans',
-            0.1,
-          )}
-          {renderCategory(
-            mostPrimary,
-            (item) => `${item.primaryCount} #1 pick${item.primaryCount !== 1 ? 's' : ''}`,
-            'Fan Favorite #1',
-            <Crown className="w-5 h-5" color={characterColor} />,
-            "Most chosen as someone's #1",
-            0.2,
-          )}
-          {renderCategory(
-            mostLoyal,
-            (item) => `${Math.round(item.loyaltyRatio * 100)}% chose as #1`,
-            'Most Loyal Following',
-            <Heart className="w-5 h-5" color={characterColor} />,
-            'Highest % chosen as #1 (min. 3 fans)',
-            0.3,
-          )}
-        </Grid>
-
-        {!hasAnyData && (
-          <Box style={{ textAlign: 'center', padding: '1rem 0' }}>
-            <Text size="sm" style={{ color: subtleText }}>
-              No character favorites yet. Set your favorites in your profile!
-            </Text>
-          </Box>
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay: 0.9 }}
+    >
+      <Grid gutter="md">
+        {renderCategory(
+          mostFavorited,
+          (item) => `${item.totalCount} fan${item.totalCount !== 1 ? 's' : ''}`,
+          'Most Favorited',
+          <Trophy size={12} color={characterColor} />,
+          0.1,
         )}
-      </motion.div>
-    </Box>
+        {renderCategory(
+          mostPrimary,
+          (item) => `${item.primaryCount} #1 pick${item.primaryCount !== 1 ? 's' : ''}`,
+          'Fan Favorite #1',
+          <Crown size={12} color={characterColor} />,
+          0.2,
+        )}
+        {renderCategory(
+          mostLoyal,
+          (item) => `${Math.round(item.loyaltyRatio * 100)}% chose as #1`,
+          'Most Loyal',
+          <Heart size={12} color={characterColor} />,
+          0.3,
+        )}
+      </Grid>
+    </motion.div>
   )
 }
