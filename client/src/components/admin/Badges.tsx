@@ -65,7 +65,7 @@ const BadgePreview = ({ badge, size = 'medium' }: { badge?: any; size?: 'small' 
 };
 
 export const BadgeList = () => (
-  <List actions={<BadgeActions />} sort={{ field: 'displayOrder', order: 'ASC' }}>
+  <List actions={<BadgeActions />}>
     <Datagrid rowClick="show">
       <FunctionField
         label="Preview"
@@ -73,8 +73,8 @@ export const BadgeList = () => (
           <BadgePreview badge={record} size="small" />
         )}
       />
-      <TextField source="name" sortable />
-      <TextField source="type" sortable />
+      <TextField source="name" />
+      <TextField source="type" />
       <FunctionField
         label="Description"
         render={(record: any) => (
@@ -95,10 +95,10 @@ export const BadgeList = () => (
           </Box>
         )}
       />
-      <NumberField source="displayOrder" sortable label="Order" />
-      <BooleanField source="isActive" sortable />
-      <BooleanField source="isManuallyAwardable" sortable label="Manual Award" />
-      <DateField source="createdAt" sortable showTime={false} />
+      <NumberField source="displayOrder" label="Order" />
+      <BooleanField source="isActive" />
+      <BooleanField source="isManuallyAwardable" label="Manual Award" />
+      <DateField source="createdAt" showTime={false} />
     </Datagrid>
   </List>
 );
