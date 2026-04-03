@@ -95,8 +95,8 @@ export default async function GamblesPage({ searchParams }: GamblesPageProps) {
       }
     } else {
       // Normal gamble fetching with search
-      const params: { page: number; limit: number; gambleName?: string } = { page, limit: 12 }
-      if (search) params.gambleName = search
+      const params: { page: number; limit: number; name?: string } = { page, limit: 12 }
+      if (search) params.name = search
       response = await api.getGambles(params)
     }
     

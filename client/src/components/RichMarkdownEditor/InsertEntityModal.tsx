@@ -72,7 +72,7 @@ async function searchEntities(
         }))
       }
       case 'gamble': {
-        const res = await api.getGambles({ gambleName: query, limit: 10 })
+        const res = await api.getGambles({ name: query, limit: 10 })
         return (res.data ?? []).map((g: any) => ({
           id: g.id,
           label: g.name ?? `Gamble #${g.id}`,

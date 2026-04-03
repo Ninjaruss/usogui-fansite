@@ -178,9 +178,9 @@ export default function GamblesPageContent({
     }
 
     const params: any = { page, limit: 12 }
-    if (searchQuery) params.gambleName = searchQuery
-    if (sortBy === 'name') { params.sortBy = 'name'; params.sortOrder = 'ASC' }
-    else if (sortBy === 'chapter') { params.sortBy = 'chapterId'; params.sortOrder = 'ASC' }
+    if (searchQuery) params.name = searchQuery
+    if (sortBy === 'name') { params.sort = 'name'; params.order = 'ASC' }
+    else if (sortBy === 'chapter') { params.sort = 'chapterId'; params.order = 'ASC' }
     const resAny = await api.getGambles(params)
     return { data: resAny.data || [], total: resAny.total || 0, page: resAny.page || page, perPage: 12, totalPages: resAny.totalPages || Math.max(1, Math.ceil((resAny.total || 0) / 12)) }
   }, [characterFilter, searchQuery, sortBy])
