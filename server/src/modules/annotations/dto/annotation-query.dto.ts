@@ -59,7 +59,7 @@ export class AnnotationQueryDto {
   })
   @IsOptional()
   @IsIn(['ASC', 'DESC'])
-  sortOrder?: 'ASC' | 'DESC' = 'DESC';
+  order?: 'ASC' | 'DESC' = 'DESC';
 
   @ApiPropertyOptional({
     description: 'Field to sort by',

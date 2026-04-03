@@ -84,7 +84,7 @@ export class AnnotationsService {
       authorId,
       page = 1,
       limit = 20,
-      sortOrder = 'DESC',
+      order = 'DESC',
       sort = 'createdAt',
     } = query;
 
@@ -128,7 +128,7 @@ export class AnnotationsService {
       createdAt: 'annotation.createdAt',
     };
     const sortField = ANNOTATION_SORT_FIELDS[sort] ?? 'annotation.createdAt';
-    queryBuilder.orderBy(sortField, sortOrder);
+    queryBuilder.orderBy(sortField, order);
 
     const skip = (page - 1) * limit;
     queryBuilder.skip(skip).take(limit);

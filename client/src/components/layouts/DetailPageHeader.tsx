@@ -70,7 +70,7 @@ export function DetailPageHeader({
   const [currentIndex, setCurrentIndex]   = useState(0)
   const [isPortraitHovered, setIsPortraitHovered] = useState(false)
   const [isModalOpen, setIsModalOpen]     = useState(false)
-  const [isSpoilerRevealed, setIsSpoilerRevealed] = useState(false)
+  const [revealedItemIds, setRevealedItemIds] = useState<Set<number>>(new Set())
 
   const loadMedia = useCallback(async () => {
     // Skip API call if caller provided pre-fetched media
@@ -128,8 +128,8 @@ export function DetailPageHeader({
   const currentMedia = allMedia[currentIndex] ?? null
 
   const isCurrentSpoilerProtected =
-    !isSpoilerRevealed &&
     !!currentMedia &&
+    !revealedItemIds.has(currentMedia.id) &&
     (currentMedia.isSpoiler || (
       !!currentMedia.chapterNumber &&
       currentMedia.chapterNumber > (userProgress ?? 0)
@@ -143,9 +143,6 @@ export function DetailPageHeader({
     setCurrentIndex(i => (i < allMedia.length - 1 ? i + 1 : 0))
   }, [allMedia.length])
 
-  useEffect(() => {
-    setIsSpoilerRevealed(false)
-  }, [currentIndex])
 
   const renderLightboxImage = (media: MediaItem) => {
     const mediaInfo = analyzeMediaUrl(media.url)
@@ -293,7 +290,7 @@ export function DetailPageHeader({
             maxHeight="100%"
             spoilerChapter={spoilerChapter ?? undefined}
             onSpoilerRevealed={() => {
-              setIsSpoilerRevealed(true)
+              if (currentMedia) setRevealedItemIds(prev => new Set(prev).add(currentMedia.id))
               onSpoilerRevealed?.()
             }}
             priority

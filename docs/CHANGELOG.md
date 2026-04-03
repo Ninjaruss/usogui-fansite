@@ -5,6 +5,11 @@
 - QA passthrough of specific detail pages like gambles
 - Sync reading progress with other trackers? (i.e. myanimelist, anilist, etc.)
 
+## 2026-04-03
+- Changelog and activity reflects specific changes rather than showing the entire entity was changed
+- Admin dashboard sort fixes
+- Fixed click to expand breaking for entity display images (broke due to spoiler revealed boolean)
+
 ## 2026-03-28
 - Recent migration scripts fixed and ran
 - Volume showcase now can be handled via edit page to select single or paired volumes
