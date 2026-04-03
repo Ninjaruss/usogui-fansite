@@ -214,7 +214,8 @@ export class GamblesService {
     };
     const changedFields = diffFields(scalarSnapshot, scalarDto);
     // Relations use presence detection — value-diffing TypeORM entity arrays is unreliable
-    if (updateGambleDto.participantIds !== undefined) changedFields.push('participants');
+    if (updateGambleDto.participantIds !== undefined)
+      changedFields.push('participants');
     if (updateGambleDto.factions !== undefined) changedFields.push('factions');
 
     // Update basic fields
@@ -306,15 +307,15 @@ export class GamblesService {
   }
 
   async search(filters: {
-    gambleName?: string;
+    name?: string;
     participantName?: string;
     teamName?: string;
     chapterId?: number;
     characterId?: number;
     limit?: number;
     page?: number;
-    sortBy?: string;
-    sortOrder?: 'ASC' | 'DESC';
+    sort?: string;
+    order?: 'ASC' | 'DESC';
   }): Promise<{
     data: Gamble[];
     total: number;
@@ -330,9 +331,9 @@ export class GamblesService {
       .leftJoinAndSelect('factions.members', 'factionMembers')
       .leftJoinAndSelect('factionMembers.character', 'factionMemberChar');
 
-    if (filters.gambleName) {
-      query.andWhere('LOWER(gamble.name) LIKE LOWER(:gambleName)', {
-        gambleName: `%${filters.gambleName}%`,
+    if (filters.name) {
+      query.andWhere('LOWER(gamble.name) LIKE LOWER(:name)', {
+        name: `%${filters.name}%`,
       });
     }
 
@@ -355,11 +356,14 @@ export class GamblesService {
     }
 
     // Apply sorting
-    const sortOrder = filters.sortOrder === 'DESC' ? 'DESC' : 'ASC';
-    if (filters.sortBy === 'name') {
-      query.orderBy('gamble.name', sortOrder).addOrderBy('gamble.id', 'ASC');
+    const sortDir: 'ASC' | 'DESC' = filters.order === 'ASC' ? 'ASC' : 'DESC';
+    if (filters.sort === 'name') {
+      query.orderBy('gamble.name', sortDir).addOrderBy('gamble.id', 'ASC');
+    } else if (filters.sort === 'createdAt') {
+      query.orderBy('gamble.createdAt', sortDir).addOrderBy('gamble.id', 'ASC');
     } else {
-      query.orderBy('gamble.chapterId', 'ASC').addOrderBy('gamble.id', 'ASC');
+      // Default: sort by chapterId (respects requested direction)
+      query.orderBy('gamble.chapterId', sortDir).addOrderBy('gamble.id', 'ASC');
     }
 
     // Get total count for pagination
