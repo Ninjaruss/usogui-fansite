@@ -213,6 +213,7 @@ export class GamblesService {
       chapterId: updateGambleDto.chapterId,
     };
     const changedFields = diffFields(scalarSnapshot, scalarDto);
+    // Relations use presence detection — value-diffing TypeORM entity arrays is unreliable
     if (updateGambleDto.participantIds !== undefined) changedFields.push('participants');
     if (updateGambleDto.factions !== undefined) changedFields.push('factions');
 
