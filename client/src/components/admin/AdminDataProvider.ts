@@ -589,7 +589,7 @@ export const AdminDataProvider: DataProvider = {
     if (resource === 'guides') {
       query.sortBy = field
       query.sortOrder = order
-    } else if (['characters', 'arcs', 'events', 'gambles', 'organizations', 'tags', 'quotes', 'chapters', 'volumes', 'media'].includes(resource)) {
+    } else if (['characters', 'arcs', 'events', 'gambles', 'organizations', 'tags', 'quotes', 'chapters', 'volumes', 'media', 'character-relationships', 'character-organizations', 'annotations'].includes(resource)) {
       query.sort = field
       query.order = order
     }
