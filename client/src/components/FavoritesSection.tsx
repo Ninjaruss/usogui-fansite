@@ -306,42 +306,40 @@ export function FavoritesSection() {
                         opacity: index === 0 ? 1 : index === 1 ? 0.55 : 0.3,
                       }}
                     >
-                      <Group justify="space-between" align="flex-start" gap={6} wrap="nowrap">
-                        <Box style={{ minWidth: 0, flex: 1 }}>
-                          <Text fw={700} style={{
-                            fontSize: '0.6875rem',
-                            color: '#fff',
-                            whiteSpace: 'nowrap',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            marginBottom: 2,
-                          }}>
-                            <span aria-hidden style={{ color: 'rgba(225,29,72,0.45)', marginRight: '0.25em' }}>♠</span>
-                            {item.gamble.name}
-                          </Text>
-                          {item.gamble.rules && (
-                            <Text style={{
-                              fontSize: '0.625rem',
-                              color: subtleText,
-                              lineHeight: 1.4,
+                      <Link href={`/gambles/${item.gamble.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                        <Group justify="space-between" align="flex-start" gap={6} wrap="nowrap">
+                          <Box style={{ minWidth: 0, flex: 1 }}>
+                            <Text fw={700} style={{
+                              fontSize: '0.6875rem',
+                              color: '#fff',
+                              whiteSpace: 'nowrap',
                               overflow: 'hidden',
                               textOverflow: 'ellipsis',
-                              display: '-webkit-box',
-                              WebkitLineClamp: 1,
-                              WebkitBoxOrient: 'vertical',
+                              marginBottom: 2,
                             }}>
-                              {item.gamble.rules}
+                              <span aria-hidden style={{ color: 'rgba(225,29,72,0.45)', marginRight: '0.25em' }}>♠</span>
+                              {item.gamble.name}
                             </Text>
-                          )}
-                        </Box>
-                        <Box style={{ textAlign: 'right', flexShrink: 0 }}>
-                          <Link href={`/gambles/${item.gamble.id}`} style={{ textDecoration: 'none' }}>
-                            <Text style={{ fontSize: '0.625rem', color: subtleText, whiteSpace: 'nowrap' }}>
-                              {item.userCount} user{item.userCount !== 1 ? 's' : ''}
-                            </Text>
-                          </Link>
-                        </Box>
-                      </Group>
+                            {item.gamble.rules && (
+                              <Text style={{
+                                fontSize: '0.625rem',
+                                color: subtleText,
+                                lineHeight: 1.4,
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                display: '-webkit-box',
+                                WebkitLineClamp: 1,
+                                WebkitBoxOrient: 'vertical',
+                              }}>
+                                {item.gamble.rules}
+                              </Text>
+                            )}
+                          </Box>
+                          <Text style={{ fontSize: '0.625rem', color: subtleText, whiteSpace: 'nowrap', flexShrink: 0 }}>
+                            {item.userCount} user{item.userCount !== 1 ? 's' : ''}
+                          </Text>
+                        </Group>
+                      </Link>
                     </Box>
                   </motion.div>
                 ))}
