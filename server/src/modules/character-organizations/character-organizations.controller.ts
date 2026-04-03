@@ -83,6 +83,8 @@ export class CharacterOrganizationsController {
     @Query('userProgress') userProgress?: string,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
+    @Query('sort') sort?: string,
+    @Query('order') order?: 'ASC' | 'DESC',
   ) {
     return this.service.findAll({
       characterId: characterId ? parseInt(characterId, 10) : undefined,
@@ -90,6 +92,8 @@ export class CharacterOrganizationsController {
       userProgress: userProgress ? parseInt(userProgress, 10) : undefined,
       page: page ? parseInt(page, 10) : 1,
       limit: limit ? parseInt(limit, 10) : 25,
+      sort,
+      order,
     });
   }
 

@@ -36,6 +36,8 @@ export class CharacterOrganizationsService {
     userProgress?: number;
     page?: number;
     limit?: number;
+    sort?: string;
+    order?: 'ASC' | 'DESC';
   }): Promise<{ data: CharacterOrganization[]; total: number }> {
     const {
       characterId,
@@ -43,13 +45,23 @@ export class CharacterOrganizationsService {
       userProgress,
       page = 1,
       limit = 25,
+      sort,
+      order,
     } = filters;
+
+    const CO_SORT_FIELDS: Record<string, string> = {
+      id: 'co.id',
+      createdAt: 'co.createdAt',
+      startChapter: 'co.startChapter',
+    };
+    const sortField = CO_SORT_FIELDS[sort ?? ''] ?? 'co.id';
+    const sortDir: 'ASC' | 'DESC' = order === 'ASC' ? 'ASC' : 'DESC';
 
     const query = this.repo
       .createQueryBuilder('co')
       .leftJoinAndSelect('co.character', 'character')
       .leftJoinAndSelect('co.organization', 'organization')
-      .orderBy('co.startChapter', 'ASC');
+      .orderBy(sortField, sortDir);
 
     if (characterId) {
       query.andWhere('co.characterId = :characterId', { characterId });
