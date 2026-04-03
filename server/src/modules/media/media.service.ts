@@ -542,13 +542,23 @@ export class MediaService {
       throw new ForbiddenException('Cannot edit approved submissions');
     }
 
-    // Snapshot scalar fields before mutation for accurate diffing
+    // Snapshot scalar fields before mutation for accurate diffing.
+    // mediaDtoScalars is paired here so both sides of the diff are co-located.
+    // url is excluded from mediaDtoScalars when a file is uploaded to avoid
+    // double-reporting (the upload is already captured as 'file').
     const mediaSnapshot = {
       description: media.description,
       ownerType: media.ownerType,
       ownerId: media.ownerId,
       chapterNumber: media.chapterNumber,
       url: media.url,
+    };
+    const mediaDtoScalars = {
+      description: updateData.description,
+      ownerType: updateData.ownerType,
+      ownerId: updateData.ownerId,
+      chapterNumber: updateData.chapterNumber,
+      url: !file ? updateData.url : undefined,
     };
 
     // Update metadata fields if provided
@@ -648,13 +658,6 @@ export class MediaService {
 
     const saved = await this.mediaRepo.save(media);
 
-    const mediaDtoScalars = {
-      description: updateData.description,
-      ownerType: updateData.ownerType,
-      ownerId: updateData.ownerId,
-      chapterNumber: updateData.chapterNumber,
-      url: !file ? updateData.url : undefined,
-    };
     const changedFieldNames = diffFields(mediaSnapshot, mediaDtoScalars);
     if (file) changedFieldNames.push('file');
 
