@@ -105,7 +105,7 @@ export class GamblesController {
       'Retrieve all gambles with optional filtering by name, participant, team, chapter, or character. Supports pagination.',
   })
   @ApiQuery({
-    name: 'gambleName',
+    name: 'name',
     required: false,
     description: 'Filter by gamble name (case-insensitive partial match)',
     example: 'protoporos',
@@ -153,16 +153,16 @@ export class GamblesController {
     example: 1,
   })
   @ApiQuery({
-    name: 'sortBy',
+    name: 'sort',
     required: false,
-    description: 'Field to sort by (name or chapterId)',
-    example: 'name',
+    description: 'Field to sort by (name, chapterId, or createdAt)',
+    example: 'chapterId',
   })
   @ApiQuery({
-    name: 'sortOrder',
+    name: 'order',
     required: false,
     description: 'Sort order (ASC or DESC)',
-    example: 'ASC',
+    example: 'DESC',
   })
   @ApiResponse({
     status: 200,
@@ -206,7 +206,7 @@ export class GamblesController {
     },
   })
   async findAll(
-    @Query('gambleName') gambleName?: string,
+    @Query('name') name?: string,
     @Query('participantName') participantName?: string,
     @Query('teamName') teamName?: string,
     @Query('chapterId', new ParseIntPipe({ optional: true }))
@@ -215,31 +215,31 @@ export class GamblesController {
     characterId?: number,
     @Query('limit', new ParseIntPipe({ optional: true })) limit?: number,
     @Query('page') page = '1',
-    @Query('sortBy') sortBy?: string,
-    @Query('sortOrder') sortOrder?: 'ASC' | 'DESC',
+    @Query('sort') sort?: string,
+    @Query('order') order?: 'ASC' | 'DESC',
   ) {
     const pageNum = parseInt(page) || 1;
 
     // If any filters or sort are provided, use the search functionality
     if (
-      gambleName ||
+      name ||
       participantName ||
       teamName ||
       chapterId ||
       characterId ||
       limit ||
-      sortBy
+      sort
     ) {
       return this.gamblesService.search({
-        gambleName,
+        name,
         participantName,
         teamName,
         chapterId,
         characterId,
         limit: limit || 12, // Default limit for client
         page: pageNum,
-        sortBy,
-        sortOrder,
+        sort,
+        order,
       });
     }
 
