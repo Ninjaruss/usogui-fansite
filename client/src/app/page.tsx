@@ -120,18 +120,20 @@ export default function HomePage() {
             marginBottom: '3rem',
             position: 'relative',
             padding: 'clamp(3rem, 6vw, 5rem) 1rem',
-            overflow: 'hidden',
             borderRadius: '1rem',
           }}
         >
-          {/* Radial red glow */}
-          <Box aria-hidden="true" style={{
-            position: 'absolute', inset: 0, pointerEvents: 'none',
-            background: 'radial-gradient(ellipse 70% 60% at 50% 50%, rgba(225,29,72,0.10) 0%, transparent 70%)',
-          }} />
-          {/* Manga texture overlays */}
-          <Box aria-hidden="true" className="manga-speed-lines" style={{ color: 'rgba(225,29,72,0.6)' }} />
-          <Box aria-hidden="true" className="manga-halftone" style={{ color: 'rgba(255,255,255,1)' }} />
+          {/* Decorative layer — overflow hidden to clip bg effects to rounded box */}
+          <Box aria-hidden="true" style={{ position: 'absolute', inset: 0, borderRadius: '1rem', overflow: 'hidden', pointerEvents: 'none' }}>
+            {/* Radial red glow */}
+            <Box style={{
+              position: 'absolute', inset: 0,
+              background: 'radial-gradient(ellipse 70% 60% at 50% 50%, rgba(225,29,72,0.10) 0%, transparent 70%)',
+            }} />
+            {/* Manga texture overlays */}
+            <Box className="manga-speed-lines" style={{ color: 'rgba(225,29,72,0.6)' }} />
+            <Box className="manga-halftone" style={{ color: 'rgba(255,255,255,1)' }} />
+          </Box>
 
           {/* Content above overlays */}
           <Box style={{ position: 'relative', zIndex: 1 }}>
