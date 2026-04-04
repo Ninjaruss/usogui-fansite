@@ -156,40 +156,79 @@ export function FavoritesSection() {
                   <Text fw={700} size="sm">Popular Profile Pics</Text>
                 </Group>
 
-                {favoriteCharacterMedia.map((item, index) => (
+                {/* Featured #1 */}
+                {favoriteCharacterMedia[0] && (
+                  <motion.div
+                    initial={{ opacity: 0, x: -12 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.25, delay: 0 }}
+                  >
+                    <Link href={`/characters/${favoriteCharacterMedia[0].media.character.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                      <Box style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.625rem',
+                        padding: '0.5rem',
+                        background: withAlpha(theme.other?.usogui?.character || theme.colors.blue?.[6] || accent, 0.06, 'rgba(59,130,246,0.06)'),
+                        border: `1px solid ${withAlpha(theme.other?.usogui?.character || theme.colors.blue?.[6] || accent, 0.15, 'rgba(59,130,246,0.15)')}`,
+                        borderRadius: '0.4375rem',
+                        marginBottom: '0.5rem',
+                      }}>
+                        <Avatar
+                          src={favoriteCharacterMedia[0].media.url}
+                          alt={favoriteCharacterMedia[0].media.character.name}
+                          size={52}
+                          radius="xl"
+                          style={{ border: `1px solid ${withAlpha(theme.other?.usogui?.character || theme.colors.blue?.[6] || accent, 0.3, 'rgba(59,130,246,0.3)')}`, flexShrink: 0 }}
+                        />
+                        <Box style={{ flex: 1, minWidth: 0 }}>
+                          <Text fw={700} style={{ fontSize: '0.6875rem', color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {favoriteCharacterMedia[0].media.character.name}
+                          </Text>
+                          <Text style={{ fontSize: '0.625rem', color: subtleText }}>
+                            Ch. {favoriteCharacterMedia[0].media.chapterNumber || 'N/A'}
+                          </Text>
+                        </Box>
+                        <Box style={{ textAlign: 'right', flexShrink: 0 }}>
+                          <Text style={{ fontSize: '0.5625rem', color: subtleText, marginBottom: 2 }}>
+                            {favoriteCharacterMedia[0].userCount} user{favoriteCharacterMedia[0].userCount !== 1 ? 's' : ''}
+                          </Text>
+                          <Text style={{ fontSize: '0.5625rem', color: theme.other?.usogui?.character || theme.colors.blue?.[6] || accent, fontWeight: 700, background: withAlpha(theme.other?.usogui?.character || theme.colors.blue?.[6] || accent, 0.12, 'rgba(59,130,246,0.12)'), border: `1px solid ${withAlpha(theme.other?.usogui?.character || theme.colors.blue?.[6] || accent, 0.25, 'rgba(59,130,246,0.25)')}`, borderRadius: '0.25rem', padding: '1px 5px' }}>
+                            #1
+                          </Text>
+                        </Box>
+                      </Box>
+                    </Link>
+                  </motion.div>
+                )}
+
+                {/* Compact #2 and #3 */}
+                {favoriteCharacterMedia.slice(1).map((item, idx) => (
                   <motion.div
                     key={item.media.id}
                     initial={{ opacity: 0, x: -12 }}
                     animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.25, delay: index * 0.06 }}
+                    transition={{ duration: 0.25, delay: (idx + 1) * 0.06 }}
                   >
-                    <Box
-                      style={{
-                        borderBottom: index === favoriteCharacterMedia.length - 1 ? 'none' : '1px solid rgba(255,255,255,0.05)',
-                        paddingTop: index === 0 ? 0 : '0.4375rem',
-                        paddingBottom: index === favoriteCharacterMedia.length - 1 ? 0 : '0.4375rem',
-                        opacity: index === 0 ? 1 : index === 1 ? 0.55 : 0.3,
-                      }}
-                    >
+                    <Box style={{
+                      borderBottom: idx === favoriteCharacterMedia.slice(1).length - 1 ? 'none' : '1px solid rgba(255,255,255,0.04)',
+                      padding: '0.25rem 0.125rem',
+                      opacity: idx === 0 ? 0.45 : 0.22,
+                    }}>
                       <Link href={`/characters/${item.media.character.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-                        <Group gap={9} wrap="nowrap">
+                        <Group gap={7} wrap="nowrap">
                           <Avatar
                             src={item.media.url}
                             alt={item.media.character.name}
-                            size={index === 0 ? 34 : index === 1 ? 28 : 24}
+                            size={idx === 0 ? 28 : 22}
                             radius="xl"
                             style={{ border: `1px solid ${withAlpha(theme.other?.usogui?.character || theme.colors.blue?.[6] || accent, 0.3, 'rgba(59,130,246,0.3)')}`, flexShrink: 0 }}
                           />
-                          <Box style={{ flex: 1, minWidth: 0 }}>
-                            <Text fw={600} style={{ fontSize: '0.6875rem', color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                              {item.media.character.name}
-                            </Text>
-                            <Text style={{ fontSize: '0.625rem', color: subtleText }}>
-                              Ch. {item.media.chapterNumber || 'N/A'}
-                            </Text>
-                          </Box>
-                          <Text style={{ fontSize: '0.625rem', color: subtleText, whiteSpace: 'nowrap', flexShrink: 0 }}>
-                            {item.userCount} user{item.userCount !== 1 ? 's' : ''}
+                          <Text style={{ fontSize: '0.625rem', color: 'rgba(255,255,255,0.65)', fontWeight: 500, flex: 1, minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {item.media.character.name}
+                          </Text>
+                          <Text style={{ fontSize: '0.5625rem', color: subtleText, whiteSpace: 'nowrap', flexShrink: 0 }}>
+                            {item.userCount}
                           </Text>
                         </Group>
                       </Link>
@@ -219,48 +258,85 @@ export function FavoritesSection() {
                   <Text fw={700} size="sm">Top Quotes</Text>
                 </Group>
 
-                {favoriteQuotes.map((item, index) => (
+                {/* Featured #1 */}
+                {favoriteQuotes[0] && (
+                  <motion.div
+                    initial={{ opacity: 0, x: -12 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.25, delay: 0 }}
+                  >
+                    <Box style={{
+                      padding: '0.5625rem 0.625rem',
+                      background: withAlpha(theme.other?.usogui?.quote || theme.colors.green?.[5] || '#4ade80', 0.06, 'rgba(81,207,102,0.06)'),
+                      border: `1px solid ${withAlpha(theme.other?.usogui?.quote || theme.colors.green?.[5] || '#4ade80', 0.15, 'rgba(81,207,102,0.15)')}`,
+                      borderRadius: '0.4375rem',
+                      marginBottom: '0.5rem',
+                    }}>
+                      <Link href={`/characters/${favoriteQuotes[0].quote.character.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                        <Text
+                          style={{
+                            fontStyle: 'italic',
+                            fontSize: '0.6875rem',
+                            color: 'rgba(255,255,255,0.88)',
+                            lineHeight: 1.55,
+                            marginBottom: '0.375rem',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            display: '-webkit-box',
+                            WebkitLineClamp: 3,
+                            WebkitBoxOrient: 'vertical',
+                            fontFamily: 'var(--font-opti-goudy-text)',
+                          }}
+                        >
+                          "{favoriteQuotes[0].quote.text}"
+                        </Text>
+                        <Group justify="space-between" align="center">
+                          <Text style={{ fontSize: '0.625rem', color: subtleText }}>
+                            — {favoriteQuotes[0].quote.character.name}
+                          </Text>
+                          <Text style={{ fontSize: '0.5625rem', color: subtleText }}>
+                            {favoriteQuotes[0].userCount} user{favoriteQuotes[0].userCount !== 1 ? 's' : ''}
+                          </Text>
+                        </Group>
+                      </Link>
+                    </Box>
+                  </motion.div>
+                )}
+
+                {/* Compact #2 and #3 */}
+                {favoriteQuotes.slice(1).map((item, idx) => (
                   <motion.div
                     key={item.quote.id}
                     initial={{ opacity: 0, x: -12 }}
                     animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.25, delay: index * 0.06 }}
+                    transition={{ duration: 0.25, delay: (idx + 1) * 0.06 }}
                   >
-                    <Box
-                      style={{
-                        borderBottom: index === favoriteQuotes.length - 1 ? 'none' : '1px solid rgba(255,255,255,0.05)',
-                        paddingTop: index === 0 ? 0 : '0.4375rem',
-                        paddingBottom: index === favoriteQuotes.length - 1 ? 0 : '0.4375rem',
-                        opacity: index === 0 ? 1 : index === 1 ? 0.55 : 0.3,
-                      }}
-                    >
-                      <Text
-                        style={{
-                          fontStyle: 'italic',
-                          fontSize: '0.6875rem',
-                          color: 'rgba(255,255,255,0.8)',
-                          lineHeight: 1.5,
-                          marginBottom: '0.25rem',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          display: '-webkit-box',
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: 'vertical',
-                          fontFamily: 'var(--font-opti-goudy-text)',
-                        }}
-                      >
-                        "{item.quote.text}"
-                      </Text>
-                      <Group justify="space-between" align="center">
-                        <Link href={`/characters/${item.quote.character.id}`} style={{ textDecoration: 'none' }}>
-                          <Text style={{ fontSize: '0.625rem', color: subtleText, cursor: 'pointer' }}>
-                            — {item.quote.character.name}
+                    <Box style={{
+                      borderBottom: idx === favoriteQuotes.slice(1).length - 1 ? 'none' : '1px solid rgba(255,255,255,0.04)',
+                      padding: '0.25rem 0.125rem',
+                      opacity: idx === 0 ? 0.45 : 0.22,
+                    }}>
+                      <Link href={`/characters/${item.quote.character.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                        <Group justify="space-between" align="center" gap={4} wrap="nowrap">
+                          <Text
+                            style={{
+                              fontStyle: 'italic',
+                              fontSize: '0.625rem',
+                              color: 'rgba(255,255,255,0.7)',
+                              flex: 1,
+                              minWidth: 0,
+                              whiteSpace: 'nowrap',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                            }}
+                          >
+                            "{item.quote.text}"
                           </Text>
-                        </Link>
-                        <Text style={{ fontSize: '0.625rem', color: subtleText }}>
-                          {item.userCount} user{item.userCount !== 1 ? 's' : ''}
-                        </Text>
-                      </Group>
+                          <Text style={{ fontSize: '0.5625rem', color: subtleText, whiteSpace: 'nowrap', flexShrink: 0 }}>
+                            {item.userCount}
+                          </Text>
+                        </Group>
+                      </Link>
                     </Box>
                   </motion.div>
                 ))}
@@ -287,52 +363,85 @@ export function FavoritesSection() {
                   <Text fw={700} size="sm">Top Gambles</Text>
                 </Group>
 
-                {favoriteGambles.map((item, index) => (
+                {/* Featured #1 */}
+                {favoriteGambles[0] && (
+                  <motion.div
+                    initial={{ opacity: 0, x: -12 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.25, delay: 0 }}
+                  >
+                    <Link href={`/gambles/${favoriteGambles[0].gamble.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                      <Box style={{
+                        padding: '0.5625rem 0.625rem',
+                        background: withAlpha(theme.other?.usogui?.gamble || accent, 0.05, 'rgba(225,29,72,0.05)'),
+                        border: `1px solid ${withAlpha(theme.other?.usogui?.gamble || accent, 0.14, 'rgba(225,29,72,0.14)')}`,
+                        borderRadius: '0.4375rem',
+                        marginBottom: '0.5rem',
+                      }}>
+                        <Text fw={700} style={{
+                          fontSize: '0.6875rem',
+                          color: '#fff',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          marginBottom: 2,
+                        }}>
+                          <span aria-hidden style={{ color: 'rgba(225,29,72,0.5)', marginRight: '0.25em' }}>♠</span>
+                          {favoriteGambles[0].gamble.name}
+                        </Text>
+                        {favoriteGambles[0].gamble.rules && (
+                          <Text style={{
+                            fontSize: '0.625rem',
+                            color: subtleText,
+                            lineHeight: 1.4,
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            display: '-webkit-box',
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: 'vertical',
+                            marginBottom: '0.3125rem',
+                          }}>
+                            {favoriteGambles[0].gamble.rules}
+                          </Text>
+                        )}
+                        <Text style={{ fontSize: '0.5625rem', color: subtleText }}>
+                          {favoriteGambles[0].userCount} user{favoriteGambles[0].userCount !== 1 ? 's' : ''}
+                        </Text>
+                      </Box>
+                    </Link>
+                  </motion.div>
+                )}
+
+                {/* Compact #2 and #3 */}
+                {favoriteGambles.slice(1).map((item, idx) => (
                   <motion.div
                     key={item.gamble.id}
                     initial={{ opacity: 0, x: -12 }}
                     animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.25, delay: index * 0.06 }}
+                    transition={{ duration: 0.25, delay: (idx + 1) * 0.06 }}
                   >
-                    <Box
-                      style={{
-                        borderBottom: index === favoriteGambles.length - 1 ? 'none' : '1px solid rgba(255,255,255,0.05)',
-                        paddingTop: index === 0 ? 0 : '0.4375rem',
-                        paddingBottom: index === favoriteGambles.length - 1 ? 0 : '0.4375rem',
-                        opacity: index === 0 ? 1 : index === 1 ? 0.55 : 0.3,
-                      }}
-                    >
+                    <Box style={{
+                      borderBottom: idx === favoriteGambles.slice(1).length - 1 ? 'none' : '1px solid rgba(255,255,255,0.04)',
+                      padding: '0.25rem 0.125rem',
+                      opacity: idx === 0 ? 0.45 : 0.22,
+                    }}>
                       <Link href={`/gambles/${item.gamble.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-                        <Group justify="space-between" align="flex-start" gap={6} wrap="nowrap">
-                          <Box style={{ minWidth: 0, flex: 1 }}>
-                            <Text fw={700} style={{
-                              fontSize: '0.6875rem',
-                              color: '#fff',
-                              whiteSpace: 'nowrap',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                              marginBottom: 2,
-                            }}>
-                              <span aria-hidden style={{ color: 'rgba(225,29,72,0.45)', marginRight: '0.25em' }}>♠</span>
-                              {item.gamble.name}
-                            </Text>
-                            {item.gamble.rules && (
-                              <Text style={{
-                                fontSize: '0.625rem',
-                                color: subtleText,
-                                lineHeight: 1.4,
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                                display: '-webkit-box',
-                                WebkitLineClamp: 1,
-                                WebkitBoxOrient: 'vertical',
-                              }}>
-                                {item.gamble.rules}
-                              </Text>
-                            )}
-                          </Box>
-                          <Text style={{ fontSize: '0.625rem', color: subtleText, whiteSpace: 'nowrap', flexShrink: 0 }}>
-                            {item.userCount} user{item.userCount !== 1 ? 's' : ''}
+                        <Group justify="space-between" align="center" gap={6} wrap="nowrap">
+                          <Text style={{
+                            fontSize: '0.625rem',
+                            color: 'rgba(255,255,255,0.65)',
+                            fontWeight: 500,
+                            flex: 1,
+                            minWidth: 0,
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                          }}>
+                            <span aria-hidden style={{ color: 'rgba(225,29,72,0.4)', marginRight: '0.2em' }}>♠</span>
+                            {item.gamble.name}
+                          </Text>
+                          <Text style={{ fontSize: '0.5625rem', color: subtleText, whiteSpace: 'nowrap', flexShrink: 0 }}>
+                            {item.userCount}
                           </Text>
                         </Group>
                       </Link>
