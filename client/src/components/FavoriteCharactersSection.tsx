@@ -79,7 +79,7 @@ export function FavoriteCharactersSection({ data }: Props) {
     icon: React.ReactNode,
     delay: number,
   ) => (
-    <Grid.Col span={{ base: 12, md: 4 }}>
+    <Grid.Col span={{ base: 12, sm: 4 }}>
       <Box
         style={{
           backgroundColor: softSurface,
@@ -237,21 +237,21 @@ export function FavoriteCharactersSection({ data }: Props) {
           mostFavorited,
           (item) => `${item.totalCount} fan${item.totalCount !== 1 ? 's' : ''}`,
           'Most Favorited',
-          <Trophy size={12} color={characterColor} />,
+          <Trophy size={16} color={characterColor} />,
           0.1,
         )}
         {renderCategory(
           mostPrimary,
           (item) => `${item.primaryCount} #1 pick${item.primaryCount !== 1 ? 's' : ''}`,
           'Fan Favorite #1',
-          <Crown size={12} color={characterColor} />,
+          <Crown size={16} color={characterColor} />,
           0.2,
         )}
         {renderCategory(
           mostLoyal,
           (item) => `${Math.round(item.loyaltyRatio * 100)}% chose as #1`,
           'Most Loyal',
-          <Heart size={12} color={characterColor} />,
+          <Heart size={16} color={characterColor} />,
           0.3,
         )}
       </Grid>

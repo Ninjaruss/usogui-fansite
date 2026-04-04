@@ -53,7 +53,7 @@ export function FavoritesSection() {
         <Skeleton height={40} width={300} style={{ marginBottom: '1.5rem' }} />
         <Grid gutter="md">
           {[1, 2, 3].map((i) => (
-            <Grid.Col span={{ base: 12, md: 4 }} key={i}>
+            <Grid.Col span={{ base: 12, sm: 4 }} key={i}>
               <Card style={{ backgroundColor: softSurface, border: `1px solid ${borderColor}` }}>
                 <Stack gap="sm">
                   <Skeleton height={24} width="80%" />
@@ -139,7 +139,7 @@ export function FavoritesSection() {
         <Grid gutter="md">
           {/* Popular Profile Pics */}
           {favoriteCharacterMedia.length > 0 && (
-            <Grid.Col span={{ base: 12, md: 4 }}>
+            <Grid.Col span={{ base: 12, sm: 4 }}>
               <Card
                 className="community-card-elevated"
                 style={{
@@ -152,7 +152,7 @@ export function FavoritesSection() {
                 } as React.CSSProperties}
               >
                 <Group gap={6} style={{ marginBottom: '0.75rem' }}>
-                  <User size={14} color={theme.other?.usogui?.character || theme.colors.blue?.[6] || accent} />
+                  <User size={18} color={theme.other?.usogui?.character || theme.colors.blue?.[6] || accent} />
                   <Text fw={700} size="sm">Popular Profile Pics</Text>
                 </Group>
 
@@ -202,7 +202,7 @@ export function FavoritesSection() {
 
           {/* Top Quotes */}
           {favoriteQuotes.length > 0 && (
-            <Grid.Col span={{ base: 12, md: 4 }}>
+            <Grid.Col span={{ base: 12, sm: 4 }}>
               <Card
                 className="community-card-elevated"
                 style={{
@@ -215,7 +215,7 @@ export function FavoritesSection() {
                 } as React.CSSProperties}
               >
                 <Group gap={6} style={{ marginBottom: '0.75rem' }}>
-                  <Quote size={14} color={theme.other?.usogui?.quote || theme.colors.green?.[5] || '#4ade80'} />
+                  <Quote size={18} color={theme.other?.usogui?.quote || theme.colors.green?.[5] || '#4ade80'} />
                   <Text fw={700} size="sm">Top Quotes</Text>
                 </Group>
 
@@ -270,7 +270,7 @@ export function FavoritesSection() {
 
           {/* Top Gambles */}
           {favoriteGambles.length > 0 && (
-            <Grid.Col span={{ base: 12, md: 4 }}>
+            <Grid.Col span={{ base: 12, sm: 4 }}>
               <Card
                 className="community-card-elevated"
                 style={{
@@ -283,7 +283,7 @@ export function FavoritesSection() {
                 } as React.CSSProperties}
               >
                 <Group gap={6} style={{ marginBottom: '0.75rem' }}>
-                  <Dices size={14} color={theme.other?.usogui?.gamble || accent} />
+                  <Dices size={18} color={theme.other?.usogui?.gamble || accent} />
                   <Text fw={700} size="sm">Top Gambles</Text>
                 </Group>
 
