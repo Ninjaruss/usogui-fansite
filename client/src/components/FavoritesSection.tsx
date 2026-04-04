@@ -265,14 +265,14 @@ export function FavoritesSection() {
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.25, delay: 0 }}
                   >
-                    <Box style={{
-                      padding: '0.5625rem 0.625rem',
-                      background: withAlpha(theme.other?.usogui?.quote || theme.colors.green?.[5] || '#4ade80', 0.06, 'rgba(81,207,102,0.06)'),
-                      border: `1px solid ${withAlpha(theme.other?.usogui?.quote || theme.colors.green?.[5] || '#4ade80', 0.15, 'rgba(81,207,102,0.15)')}`,
-                      borderRadius: '0.4375rem',
-                      marginBottom: '0.5rem',
-                    }}>
-                      <Link href={`/characters/${favoriteQuotes[0].quote.character.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                    <Link href={`/characters/${favoriteQuotes[0].quote.character.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                      <Box style={{
+                        padding: '0.5625rem 0.625rem',
+                        background: withAlpha(theme.other?.usogui?.quote || theme.colors.green?.[5] || '#4ade80', 0.06, 'rgba(81,207,102,0.06)'),
+                        border: `1px solid ${withAlpha(theme.other?.usogui?.quote || theme.colors.green?.[5] || '#4ade80', 0.15, 'rgba(81,207,102,0.15)')}`,
+                        borderRadius: '0.4375rem',
+                        marginBottom: '0.5rem',
+                      }}>
                         <Text
                           style={{
                             fontStyle: 'italic',
@@ -298,8 +298,8 @@ export function FavoritesSection() {
                             {favoriteQuotes[0].userCount} user{favoriteQuotes[0].userCount !== 1 ? 's' : ''}
                           </Text>
                         </Group>
-                      </Link>
-                    </Box>
+                      </Box>
+                    </Link>
                   </motion.div>
                 )}
 
